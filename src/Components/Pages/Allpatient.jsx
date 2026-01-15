@@ -1,11 +1,13 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
-import { ToastContainer, toast } from "react-toastify"
+import { ToastContainer, toast } from "react-toastify";
 import BASE_URL from "../../Base";
-import "react-toastify/dist/ReactToastify.css"
+import "react-toastify/dist/ReactToastify.css";
+import { apiFetch } from "../../fetchapi";
+
 
 const Allpatient = () => {
-  const [patientdata,setPatientData]=useState([]);
+const [patientdata,setPatientData]=useState([]);
 const[patientError,setPatientError]=useState(null);
 const[patientloading,setPatientLoading]=useState(true);
 const[Addform,setAddform]=useState(false);
@@ -17,18 +19,22 @@ const [addErrors, setAddErrors] = useState({});
 const [editErrors, setEditErrors] = useState({});
 const[searchTerm,setSearchTerm]=useState("");
   const patienttableRef = useRef(null);
+  const[Currentpage,setCurrentpage]=useState(1);
+  const[patientperpage,setpatientperpage]=useState(5);
+
 const [newPatient, setNewPatient] = useState({
     name: '',
     gender: '',
     age: '',
     description: ''
   });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPatient((prev) => ({ ...prev, [name]: value }));
   };
 
-  const filteredData = patientdata.filter((patient) => {
+  const filteredData = patientdata?.filter((patient) => {
     const matchesSearch =
       patient?.name === null || patient?.name?.toLowerCase().includes(searchTerm?.toLowerCase())
     return matchesSearch
@@ -42,69 +48,58 @@ const [newPatient, setNewPatient] = useState({
   })
 
 const getAllpatientList = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/ecom/patient/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      })
-      const data = await response.json()
-      const sortedData = data
-    
+  try {
+    const data = await apiFetch(`${BASE_URL}/healthcare/patient/`, {
+      method: "GET",
+    });
 
-      setPatientData(sortedData)
+   
+    if (!data) return;
 
-      console.log("patientdata---->", sortedData)
-    } catch (err) {
-      console.error(err.message)
-  setPatientError("Something went wrong while fetching data.")
-      toast.error(" Failed to fetch customer data", {
-        position: "top-center",
-        autoClose: 2000,
-      })
-    } finally {
-      setPatientLoading(false)
-    }
+    setPatientData(data);
+
+  } catch (err) {
+    console.error("Patient Fetch Error:", err);
+
+    setPatientError("Something went wrong while fetching data.");
+
+    toast.error("Failed to fetch patient data", {
+      position: "top-center",
+      autoClose: 2000,
+    });
+  } finally {
+    setPatientLoading(false);
   }
+};
+
 useEffect(()=>{
 getAllpatientList();
 },[])
+
 
 
 const handleAddPatient = async (e) => {
   e.preventDefault();
 
   try {
-    const response = await fetch(`${BASE_URL}/ecom/patient/`, {
+    const addedPatient = await apiFetch(`${BASE_URL}/healthcare/patient/`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify(newPatient),
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to add patient");
-    }
-
-    const addedPatient = await response.json();
     setPatientData((prev) => [...prev, addedPatient]);
     setNewPatient({ name: "", gender: "", age: "", description: "" });
     setAddform(false);
+
     toast.success("Patient added successfully!", {
       position: "top-center",
       autoClose: 2000,
     });
   } catch (err) {
-    console.error(err);
-    toast.error("Failed to add patient", {
-      position: "top-center",
-      autoClose: 2000,
-    });
+    toast.error("Failed to add patient");
   }
 };
+
 
 const handleEditClick = (patient) => {
   setSelectedPatient(patient); 
@@ -131,22 +126,15 @@ const handleDownload = () => {
   XLSX.writeFile(wb, "patient_data.xlsx");
 };
 
+
 const handlePatientDelete = async (id) => {
   try {
-    const response = await fetch(
-   `${BASE_URL}/ecom/patient/${id}/`,
-      {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+   await apiFetch(`${BASE_URL}/healthcare/patient/${id}/`, {
+      method: "DELETE",
+    });
 
-    if (!response.ok) {
-      throw new Error("Failed to delete patient");
-    }
-
-    
-    setPatientData((prev) => prev.filter((p) => p.id !== id));
+   
+    setPatientData((prev) => prev.filter((p) => p?.id !== id));
 
     toast.success("Patient deleted successfully!", {
       position: "top-center",
@@ -167,35 +155,30 @@ const handleEditInputChange = (e) => {
   setSelectedPatient((prev) => ({ ...prev, [name]: value }));
 };
 
+
+
 const handleEditPatient = async (e) => {
   e.preventDefault();
 
   try {
-    const response = await fetch(
-     `${BASE_URL}/ecom/patient/${selectedPatient.id}/`,
+    
+    const updatedPatient = await apiFetch(
+      `${BASE_URL}/healthcare/patient/${selectedPatient?.id}/`,
       {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(selectedPatient),
       }
     );
 
-    if (!response.ok) {
-      throw new Error("Failed to update patient");
-    }
 
-    const updatedPatient = await response.json();
-
-  
     setPatientData((prev) =>
       prev.map((patient) =>
-        patient.id === updatedPatient.id ? updatedPatient : patient
+        patient?.id === updatedPatient?.id ? updatedPatient : patient
       )
     );
 
     setEditForm(false);
+
     toast.success("Patient updated successfully!", {
       position: "top-center",
       autoClose: 2000,
@@ -208,6 +191,14 @@ const handleEditPatient = async (e) => {
     });
   }
 };
+
+
+const indexoflastpatient = Currentpage * patientperpage;
+const indexooffirstpatient = indexoflastpatient - patientperpage;
+const Currentpatient = filteredData?.slice(indexooffirstpatient, indexoflastpatient);
+
+const totalpages = Math.ceil(filteredData?.length/patientperpage);
+const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
 
 
 
@@ -257,23 +248,25 @@ const handleEditPatient = async (e) => {
         <tbody>
           {patientloading? (
             <tr>
-              <td colSpan="6">Loading patient data...</td>
-            </tr>
+            <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+              <div className="circular-loader"></div>
+            </td>
+          </tr>
           ) : patientError ? (
             <tr>
               <td colSpan="6" style={{ color: "red" }}>
                 {patientError}
               </td>
             </tr>
-          ) : filteredData.length > 0 ? (
-            filteredData.map((patient,index) => 
+          ) : Currentpatient?.length > 0 ? (
+            Currentpatient?.map((patient,index) => 
               (           
-                <tr key={patient.id}>
-                <td>{index+1} </td>
-                <td>{patient.name}</td>
-                <td>{patient.gender}</td>
-                <td>{patient.age}</td>
-                <td>{patient.description}</td>
+                <tr key={patient?.id}>
+                <td>{indexooffirstpatient + index + 1}</td>
+                <td>{patient?.name}</td>
+                <td>{patient?.gender}</td>
+                <td>{patient?.age}Years</td>
+                <td>{patient?.description}</td>
                 <td>
                   <div className="action-buttons">
                     <button className="action-btn view" >
@@ -290,15 +283,12 @@ const handleEditPatient = async (e) => {
 <button
   className="action-btn delete"
   onClick={() => {
-    setSelectedPatientId(patient.id);
+    setSelectedPatientId(patient?.id);
     setDeleteConfirmModal(true);
   }}
 >
   🗑
 </button>
-
-
-
                   </div>
                 </td>
               </tr>
@@ -312,10 +302,17 @@ const handleEditPatient = async (e) => {
             </tr>
           )}
         </tbody>
+        {filteredData?.length> patientperpage &&(
+          <div className="pagination">
+            <button onClick={()=>handlepagechange(Currentpage - 1)} disabled={Currentpage===1}>Prev </button>
+            {Array.from({ length: totalpages }, (_, i) => i + 1).map(number => (
+              <button key={number} className={Currentpage === number ? "active" : ""} onClick={() => handlepagechange(number)}>{number}</button>
+            ))}
+            <button onClick={()=>handlepagechange(Currentpage + 1)} disaabled={Currentpage===totalpages}>Next</button>
+
+          </div>
+        )}
       </table>
-    
-
-
          <ToastContainer
           position="top-center"
           autoClose={3000}
@@ -351,15 +348,9 @@ const handleEditPatient = async (e) => {
                 onChange={handleInputChange}
                 required
               />
-          
-
+        
             
-              <label>Description:</label>
-              <textarea
-                name="description"
-                value={newPatient.description}
-                onChange={handleInputChange}
-              />
+             
                   <label>Gender:</label>
               <select
                 name="gender"
@@ -372,6 +363,13 @@ const handleEditPatient = async (e) => {
                 <option value="female">Female</option>
               
               </select>
+
+               <label>Description:</label>
+              <textarea
+                name="description"
+                value={newPatient.description}
+                onChange={handleInputChange}
+              />
            
               <div className="form-buttons">
 

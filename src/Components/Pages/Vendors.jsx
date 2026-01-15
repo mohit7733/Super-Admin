@@ -5,14 +5,24 @@ import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { countries, statesByCountry } from "../data/locationData"
 import BASE_URL from "../../Base";
+import { MdEditLocationAlt } from "react-icons/md";
+import { FiFileText } from "react-icons/fi";
+import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
+
+
 
 const userId = localStorage.getItem("USER_ID")
 const initialFormState = {
   user: userId,
+  first_name:"",
+  last_name:"",
   store_name: "",
-  verified_phone_number: "",
-  is_approved: false,
+  phone_number: "",
   profile_picture: null,
+  gst_number:"",
+  documentType: "",
+  documentFile: null,
+  documents: [],
 }
 const intialAddressform = {
   pincode: "",
@@ -49,22 +59,32 @@ const Vendors = () => {
   const [otpErrors, setOtpErrors] = useState({})
   const bulktableRef = useRef(null)
   const [selectedVendors, setSelectedVendors] = useState([]);
-  const [deleteBulkModal,setDeleteBulkModal]=useState(false);
   const fetchedOnce = useRef(false);
    const [userId, setUserId] = useState(null);
+   const [currentpage,setcurentpage]=useState(1);
+   const[Vendorperpage,setVendorperpage]=useState(5);
+  const [previewImage, setPreviewImage] = useState(null);
+const [imageModal, setimageModal] = useState(false);
+ const [uploadedDocs, setUploadedDocs] = useState([]);
+ const[VendoropenModal,setVendorModal] = useState(false);
+ const[SelectedVendorId,setSelectedIdVendor] = useState(null);
+ const [RejectionVendorModal,setRejectionModal] = useState(false);
+ const[Reason,setReason]=useState("");
+ const [selectedStatus, setSelectedStatus] = useState("");
+ const[ActionButtonModal,setActionModal] = useState(false);
+ const [openMenuId, setOpenMenuId] = useState(null);
 
-  const handleOtpDigitChange = (e, index) => {
-    const value = e.target.value.replace(/\D/g, "")
-    if (value.length <= 1) {
-      const updated = [...otpDigits]
-      updated[index] = value
-      setOtpDigits(updated)
-      if (value && index < otpRefs.current.length - 1) {
-        otpRefs.current[index + 1]?.focus()
-      }
-    }
-  }
 
+ 
+
+const documentOptions = [
+    { value: "gst_certificate", label: "GST Certificate" },
+    { value: "shop_license", label: " Shop License" },
+    { value: "owner_id_proof", label: "Government ID Proof" },
+  ];
+ 
+  
+  
   const handleOtpKeyDown = (e, index) => {
     if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
       otpRefs.current[index - 1]?.focus()
@@ -76,26 +96,62 @@ const Vendors = () => {
   useEffect(() => {
     if (!fetchedOnce.current) {
       getVendorList();
-      fetchedOnce.current = true; // mark as fetched
+      fetchedOnce.current = true; 
     }
   }, []);
 
 
   const getVendorList = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/ecom/vendor/`)
-      const data = await res.json()
-      console.log("vendorlistss", data)
-      setVendorData(data.data)
-    } catch (err) {
-      console.error(err.message)
-      setError("Something went wrong while fetching data.")
-      toast.error("Failed to fetch vendor Data")
-    } finally {
-      setLoading(false)
-    }
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
   }
 
+  try {
+    const response = await fetch(`${BASE_URL}/vendors/vendor/`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+    const sortedData = data.data;
+    setVendorData(sortedData);
+    console.log("vendordata---->", sortedData);
+
+  } catch (err) {
+    console.error(err.message);
+    setError("Something went wrong while fetching vendor data.");
+    toast.error("Failed to fetch vendor data");
+  } finally {
+    setLoading(false);
+  }
+};
+const handleDocumentUpload = (e) => {
+  const file = e.target.files[0];
+  setForm({ ...form, documentFile: file }); 
+};
+
+
+
+ const openDocumentModal = (i) => {
+ 
+  setVendorModal(true);
+  setSelectedIdVendor(i);
+  }
   
   const handleNavigate = (id) => {
     console.log(id)
@@ -129,60 +185,73 @@ const Vendors = () => {
     return Object.keys(errors).length === 0
   }
 
+ 
   const validateVendorForm = () => {
-    const errors = {}
+  const errors = {};
 
-    if (!form.store_name || form.store_name.trim().length < 2) {
-      errors.store_name = "Store name must be at least 2 characters long"
+  
+  if (!form.store_name || form.store_name.trim().length < 2) {
+    errors.store_name = "Store name must be at least 2 characters long";
+  }
+
+  
+  if (!form.gst_number || form.gst_number.trim() === "") {
+    errors.gst_number = "GST number is required";
+  } else {
+    const gst = form.gst_number.trim().toUpperCase();
+
+    
+    if (gst.length !== 15) {
+      errors.gst_number = "GST number must be exactly 15 characters";
     }
 
-    // if (!form.verified_phone_number || !/^\d{10}$/.test(form.verified_phone_number)) {
-    //   errors.verified_phone_number = "Phone number must be exactly 10 digits"
-    // }
+   
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
+    if (!gstRegex.test(gst)) {
+      errors.gst_number = "Invalid GST format. Example: 27ABCDE1234F1Z5";
+    }
   }
+
+  setFormErrors(errors);
+  return Object.keys(errors).length === 0;
+};
+
 
   const validatePhoneNumber = () => {
     const errors = {}
 
-    if (!form.verified_phone_number || !/^\d{10}$/.test(form.verified_phone_number)) {
-      errors.verified_phone_number = "Phone number must be exactly 10 digits"
+    if (!form.phone_number || !/^\d{10}$/.test(form.verified_phone_number)) {
+      errors.phone_number = "Phone number must be exactly 10 digits"
     }
 
     setPhoneErrors(errors)
     return Object.keys(errors).length === 0
   }
 
-  const validateOTP = () => {
-    const errors = {}
-    const otpValue = otpDigits.join("")
-
-    if (!otpValue || otpValue.length !== 4) {
-      errors.otp = "Please enter complete 4-digit OTP"
-    }
-
-    if (!/^\d{4}$/.test(otpValue)) {
-      errors.otp = "OTP must contain only numbers"
-    }
-
-    setOtpErrors(errors)
-    return Object.keys(errors).length === 0
-  }
+  
 
   const handleStatusChange = async (vendorId, newStatus) => {
+    
+    const token = sessionStorage.getItem("superadmin_token")
     try {
-      const response = await fetch(`${BASE_URL}/ecom/vendor/${vendorId}/`, {
+      const response = await fetch(`${BASE_URL}/vendors/approvevendor/${vendorId}/`, {
         method: "PUT",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          Authorization:`bearer${token}`
         },
         body: JSON.stringify({
-          is_approved: newStatus === "approved" ? true : false,
+      status: newStatus
         }),
       })
+      if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
 
       if (!response.ok) {
         throw new Error("Failed to update status")
@@ -190,7 +259,7 @@ const Vendors = () => {
 
       setVendorData((prev) =>
         prev.map((vendor) =>
-          vendor.id === vendorId ? { ...vendor, is_approved: newStatus === "approved" ? true : false } : vendor,
+          vendor.id === vendorId ? { ...vendor,status :newStatus } : vendor,
         ),
       )
     } catch (err) {
@@ -206,49 +275,66 @@ const updateVendor = (updatedVendor) => {
 }
 
 
-  const handleDelete = async (id) => {
-    try {
-      await fetch(`${BASE_URL}/ecom/vendor/${id}/`, {
-        method: "DELETE",
-      })
-      setVendorData(vendorData.filter((v) => v.id !== id))
-      toast.success("Vendor deleted successfully")
-    } catch {
-      toast.error("Failed to delete vendor")
-    }
-  }
+const handleDelete = async (id) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
- 
-const handleResendOtp = async () => {
-  if (!form.verified_phone_number || !/^\d{10}$/.test(form.verified_phone_number)) {
-    toast.error("Invalid phone number. Please try again.");
+  
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
     return;
   }
 
   try {
-    const response = await fetch(`${BASE_URL}/user/send-otp/`, {
-      method: "POST",
+    const res = await fetch(`${BASE_URL}/vendors/vendor/${id}/`, {
+      method: "DELETE",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ phone_number: `+91${form.verified_phone_number}` }),
     });
 
-    const data = await response.json();
-
-    if (response.ok) {
-      toast.success("OTP resent successfully");
-      setOtpDigits(["", "", "", ""]); 
-      otpRefs.current[0]?.focus();    
-    } else {
-      toast.error(data.message || "Failed to resend OTP");
+   
+    if (res.status === 401 || res.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
     }
+
+    if (!res.ok) {
+      toast.error("Failed to delete vendor");
+      return;
+    }
+
+    
+    setVendorData((prev) => prev.filter((v) => v.id !== id));
+    toast.success("Vendor deleted successfully");
+
   } catch (err) {
-    toast.error("Network error while resending OTP");
     console.error(err);
+    toast.error("Something went wrong while deleting vendor");
   }
 };
+
+ const submitRejection = async (e) => {
+  e.preventDefault();
+
+  await handleStatusChange(selectedVendorId, selectedStatus, Reason);
+  setRejectionModal(false);
+  setReason("");
+  setSelectedIdVendor(null);
+  setSelectedStatus("");
+};
+const handleRejectClick = (VendorId, statusType) => {
+  setSelectedVendorId(VendorId);
+  setSelectedStatus(statusType);  
+  setRejectionModal(true);
+};
+
+
+ 
 
   const handleAddaddress = (e) => {
   const { name, value } = e.target;
@@ -258,7 +344,7 @@ const handleResendOtp = async () => {
     [name]: value,
   }));
 
-  // Inline validation for live error clearing
+
   let errorMsg = "";
 
   if (name === "pincode") {
@@ -340,12 +426,14 @@ const handleResendOtp = async () => {
       toast.error("Vendor not selected for address")
       return
     }
+    const token = sessionStorage.getItem("superadmin_token");
+
 
    
     const method = addressEditingId ? "PUT" : "POST";
 const url = addressEditingId
-  ? `${BASE_URL}/ecom/vendoraddress/${addressEditingId}/`
-  : `${BASE_URL}/ecom/vendoraddress/`;
+  ? `${BASE_URL}/vendors/vendoraddress${addressEditingId}/`
+  : `${BASE_URL}/vendors/vendoraddress`;
 
     try {
       const response = await fetch(url, {
@@ -353,9 +441,17 @@ const url = addressEditingId
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(finalData),
       })
+
+      if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
 
       if (!response.ok) throw new Error("Server responded with an error.")
 
@@ -370,68 +466,92 @@ const url = addressEditingId
     }
   }
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault()
 
-    if (!validateVendorForm()) {
-      toast.error("Please enter valid information")
-      return
+const handleFormSubmit = async (e) => {
+  e.preventDefault();
+
+  const token = sessionStorage.getItem("superadmin_token");
+
+  const formData = new FormData();
+  formData.append("first_name",form.first_name);
+  formData.append("last_name",form.last_name);
+  formData.append("store_name", form.store_name);
+  formData.append("mobile_number", `+91${form.verified_phone_number}`);
+  formData.append("gst_number", form.gst_number);
+
+ 
+  if (form.profile_picture && typeof form.profile_picture !== "string") {
+    formData.append("profile_picture", form.profile_picture);
+  }
+
+  
+  let docIndex = 0;
+  uploadedDocs.forEach((item) => {
+    if (item.file) {
+      formData.append(`document_types[${docIndex}]`, item.type);
+      formData.append(`documents[${docIndex}]`, item.file); 
+      
+      docIndex++;
     }
+  });
 
-    const formData = new FormData()
-    formData.append("store_name", form.store_name)
-  formData.append("mobile_number", `+91${form.verified_phone_number}`)
-    if (form.profile_picture && typeof form.profile_picture !== "string") {
-      formData.append("profile_picture", form.profile_picture)
-    }
+  const method = editingId ? "PUT" : "POST";
 
-    const method = editingId ? "PUT" : "POST"
-    console.log("method", method)
-
-    // if (method === "POST") {
-    //   formData.append("user", userId)
-    // }
-    if (method === "POST") {
-    const uid = userId || localStorage.getItem("USER_ID"); // get from state or localStorage
+  if (method === "POST") {
+    const uid = userId || localStorage.getItem("USER_ID");
     if (uid) formData.append("user", uid);
   }
 
-    // const url = editingId
-    //   ? `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/${editingId}/`
-    //   : "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/"
-    const url = editingId
-  ? `${BASE_URL}/ecom/vendor/${editingId}/`
-  : `${BASE_URL}/ecom/vendor/`;
+  const url = editingId
+    ? `${BASE_URL}/vendors/vendor/${editingId}/`
+    : `${BASE_URL}/vendors/vendor/`;
 
-    try {
-      const response = await fetch(url, {
-        method,
-        body: formData,
-      })
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+       
+      },
+      body: formData,
+    });
 
-      if (!response.ok) {
-        throw new Error("Server responded with an error.")
-      }
-const data = await response.json();
+    if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again.");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error("Server error");
+    }
+
+    const data = await response.json();
 
     if (editingId) {
-     
       updateVendor(data);
     } else {
-      
       setVendorData((prev) => [...prev, data]);
     }
 
     await getVendorList();
-      handleCloseModal()
-      toast.success(`Vendor ${editingId ? "updated" : "added"} successfully`)
-    } catch (err) {
-      console.error("Submit Error:", err)
-      toast.error("Failed to save vendor")
-     handleCloseModal()
-    setForm(initialFormState) 
-    }
+    handleCloseModal();
+
+    toast.success(`Vendor ${editingId ? "updated" : "added"} successfully`);
+  } catch (err) {
+    console.error("Submit Error:", err);
+    toast.error("Failed to save vendor");
+    handleCloseModal();
+    setForm(initialFormState);
   }
+};
+
+
+  const handleRemoveDocument = (type) => {
+      setUploadedDocs((prev) => prev.filter((doc) => doc.type !== type));
+      toast.info("Document removed successfully");
+    };
 
   const handleCloseAdddModal = () => {
     setAddModal(false)
@@ -440,47 +560,100 @@ const data = await response.json();
     setAddressVendorId(null)
   }
 
-  const handlevendorverifiedSubmit = async (e) => {
-    e.preventDefault()
 
-    if (!validatePhoneNumber()) {
-      toast.error("Please enter a valid 10-digit phone number")
-      return
+
+
+
+const handleAddDocument = (e) => {
+    e.preventDefault();
+
+    if (!form.documentType || !form.documentFile) {
+      toast.error("Please select document type and upload file");
+      return;
     }
 
-    try {
-      const response = await fetch(`${BASE_URL}/user/send-otp/`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone_number: `+91${form.verified_phone_number}` }),
-      })
+    const newDoc = {
+      type: form.documentType,
+      file: form.documentFile,
+    };
 
-      const dataverified = await response.json()
+    setUploadedDocs((prev) => {
 
-      console.log("dataverified", dataverified)
-
-      if (response.ok) {
-        setISUserID(dataverified.is_new_user)
-        setVendorverifiedModal(false)
-        setVendorotp(true) 
-         
-        toast.success("OTP sent successfully")
-      } else {
-        toast.error(dataverified.message || "Failed to send OTP. Please try again.")
+      const existing = prev.find((d) => d.type === newDoc.type);
+      if (existing) {
+        return prev.map((d) => (d.type === newDoc.type ? newDoc : d));
       }
-    } catch (err) {
-      toast.error("Network error while sending OTP. Please check your internet.")
-      console.error(err)
-       setForm(initialFormState) 
-    }
-  }
+      return [...prev, newDoc];
+    });
 
- 
+
+    setForm((prev) => ({
+      ...prev,
+      documentType: "",
+      documentFile: null,
+    }));
+
+    toast.success("Document added!");
+  };
+
+
+
+
+const handlevendorverifiedSubmit = async (e) => {
+  e.preventDefault();
+
+  const token = sessionStorage.getItem("superadmin_token");
+
+  try {
+    const payload = {
+      phone_number: `+91${form.verified_phone_number}`,
+      role: "vendor", 
+    };
+
+    const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+    console.log("User Create Response:", data);
+
+    if (response.ok) {
+      const uid = data?.user?.id;
+
+      if (uid) {
+        
+        setUserId(uid);
+        localStorage.setItem("USER_ID", uid);
+      }
+
+      toast.success("User created! Please complete vendor registration");
+
+      setVendorverifiedModal(false);
+      setModalOpen(true);
+    }
+  } catch (err) {
+    toast.error("Failed to create user. Please try again");
+    console.error("Vendor creation failed", err);
+  }
+};
+
+
+
 const exportToCSV = () => {
-  if (!vendorData || vendorData.length === 0) {
+  if (!vendorData || vendorData?.length === 0) {
     toast.error("No vendor data to export");
     return;
   }
@@ -489,7 +662,7 @@ const exportToCSV = () => {
     "S.No": index + 1,
     "Store Name": vendor.store_name || "NA",
     "Phone Number": vendor.verified_phone_number || "NA",
-    "Status": vendor.is_approved ? "Approved" : "Pending",
+    "Status": vendor.status || "NA",
     "Location": vendor.pickup_locations?.map(
       (loc) =>
         `${loc.pincode || ""}, ${loc.country || ""}, ${loc.state || ""}, ${loc.city || ""}, ${loc.address_line1 || ""}, ${loc.address_line2 || ""}`
@@ -504,94 +677,6 @@ const exportToCSV = () => {
 };
 
   
-const handlevendorotpsubmit = async (e) => {
-  e.preventDefault();
-
-  if (!validateOTP()) {
-    toast.error("Please enter a valid 4-digit OTP");
-    return;
-  }
-
-  const otpValue = otpDigits.join("");
-
-  try {
-    const payload = {
-      phone_number: `+91${form.verified_phone_number}`,
-      otp: otpValue.trim(),
-    };
-
-    let response;
-    if (ISUserID) {
-     
-      response = await fetch(
-       `${BASE_URL}/user/register/`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-    } else {
-     
-      response = await fetch(
-    `${BASE_URL}/user/vendorlogin/` ,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-    }
-
-    const data = await response.json();
-    console.log("vendor OTP response:", data);
-
-    if (response.ok) {
-      if (ISUserID) {
-      
-        if (data.is_vendor === true) {
-          toast.info("Vendor already exists with this number");
-          setVendorotp(false);
-          setOtpDigits(["", "", "", ""]);
-        } else {
-          toast.success("OTP verified! Please complete vendor registration");
-          setUserId(data.user_id); 
-          setModalOpen(true);
-          setVendorotp(false);
-          setVendorverifiedModal(false);
-          setOtpDigits(["", "", "", ""]);
-        }
-      } else {
-     
-        if (data.is_new_vendor === false) {
-          toast.info("Vendor already exists, logged in successfully");
-          localStorage.setItem("USER_ID", data.user_id); 
-          setVendorotp(false);
-          setOtpDigits(["", "", "", ""]);
-        } else {
-          toast.success("Vendor login successfully, please complete registration");
-          localStorage.setItem("USER_ID", data.user_id); 
-          setModalOpen(true);
-          setVendorotp(false);
-          setVendorverifiedModal(false);
-          setOtpDigits(["", "", "", ""]);
-        }
-      }
-    } else {
-      toast.error(data.message || "Invalid or expired OTP");
-    }
-  } catch (err) {
-    toast.error("Failed to verify OTP. Please try again");
-    console.error("Vendor OTP verification failed", err);
-  }
-};
-
 
 
 
@@ -612,7 +697,15 @@ const handleCheckboxChange = (vendorId) => {
 };
 
 
-  const filteredVendors = vendorData.filter((vendor) => {
+const getInitials = (firstName = "", lastName = "") => {
+  return (
+    (firstName?.[0] || "").toUpperCase() +
+    (lastName?.[0] || "").toUpperCase()
+  );
+};
+
+
+  const filteredVendors = vendorData?.filter((vendor) => {
     const matchesSearch =
       vendor?.store_name === null || vendor?.store_name?.toLowerCase().includes(searchTerm?.toLowerCase())
     return matchesSearch
@@ -625,13 +718,17 @@ const handleCheckboxChange = (vendorId) => {
     return a.store_name.localeCompare(b.store_name);
   })
   const availableStates = statesByCountry[Addform.country] || []
-
-
+  
+const indexoflastvendor = currentpage*Vendorperpage;
+const indexoffirstvendor= indexoflastvendor - Vendorperpage;
+const totalPages = Math.ceil(filteredVendors.length/Vendorperpage);
+const CurrentVendorpage =filteredVendors.slice(indexoffirstvendor,indexoflastvendor)
+const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
 
 
   return (
     <>
-      <div className="page-header">
+        <div className="page-header">
         <h2>Vendors List</h2>
 
         <div className="vendors-controls">
@@ -675,190 +772,500 @@ const handleCheckboxChange = (vendorId) => {
             <tr>
               <th>Id</th>
               <th>Profile</th>
+              <th> vendor</th>
               <th>Store Name</th>
               <th>Location</th>
+              <th>Gst Number</th>
               <th>Phone Number</th>
+                <th>Status</th>
+                 <th> Documents </th>
+
               <th>Action</th>
-              <th>Status</th>
+             
+              
             </tr>
           </thead>
           {loading ? (
-            <p>Loading vendor data...</p>
+             <tr>
+            <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
+              <div className="circular-loader"></div>
+            </td>
+          </tr>
           ) : error ? (
             <p style={{ color: "red" }}>{error}</p>
           ) : (
             <tbody>
-              {filteredVendors.map((vendor,index) => (
+              {CurrentVendorpage.map((vendor,index) => (
                 <tr key={vendor.id}>
                 
-                  <td className="id1">{index+1}</td>
-                  <td>
-                    {vendor.profile_picture ? (
-                      <img
-                        src={vendor.profile_picture || "/placeholder.svg"}
-                        alt="profile"
-                        style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover" }}
-                      />
-                    ) : (
-                      "No Image"
-                    )}
-                  </td>
-                   
-                  <td>{vendor.store_name ?? "NA"}</td>
+                  <td className="id1">{indexoffirstvendor+index+1}</td>
+ <td>
+  <div className="customer-avatar-wrapper">
+    {vendor.profile_picture ? (
+      <img
+        src={vendor.profile_picture}
+        alt="profile"
+        className="customer-avatar-img"
+        onClick={() => {
+          setPreviewImage(vendor.profile_picture);
+        setimageModal(true);
+        }}
+      />
+    ) : (
+      <div className="customer-avatar">
+        {getInitials(vendor.first_name, vendor.last_name)}
+      </div>
+    )}
+  </div>
+</td>
+<td>{vendor.first_name && vendor.last_name ?`${vendor.first_name} ${vendor.last_name}`:"NA"}</td>
+  
+
+ 
+<td>{vendor.store_name ?? "NA"}</td>
                   <td>
                     {vendor.pickup_locations?.map(
                       (loc) =>
                         `${loc.pincode + "," + loc.country + " ," + loc.state + "," + loc.city + "" + loc.address_line1 + "," + loc.address_line2}`,
                     )}
                   </td>
-                  <td>{vendor.verified_phone_number}</td>
-                  <td>
-                    <div className="action-buttons">
-                      {/* <button className="action-btn view" title="View vendor product" onClick={() => handleNavigate(vendor.id)}>
-                        👁
-                      </button> */}
-                      {vendor.is_approved && (
+                                    <td>{vendor.gst_number}</td>
+                                     
+                                    <td>{vendor.verified_phone_number}</td>
+                                  <td>
+                                  <select
+  value={vendor.status}
+  onChange={(e) => {
+   const newStatus = e.target.value;
+    if (newStatus === "rejected" || newStatus === "suspended") {
+      handleRejectClick(vendor.id, newStatus);  
+    } else {
+      handleStatusChange(vendor.id, newStatus);
+    }
+  }}
+  className="status-dropdown"
+>
+  <option value="approved">Approved</option>
+  <option value="pending">Pending</option>
+  <option value="rejected">Rejected</option>
+  <option value="suspended">Suspended</option>
+</select>
+                  </td>
+
+    <td style={{ textAlign: "center" }}>
+                                    <FiFileText size={20} color="#71a33f"
+                                      onClick={() => openDocumentModal(vendor)}
+                                    />
+                                  </td>                            
+               
+ <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+
   <button
-    className="action-btn view"
-    title="View vendor product"
-    onClick={() => handleNavigate(vendor.id)}
+    className="action-menu-toggle"
+    onClick={() =>
+      setOpenMenuId(openMenuId === vendor.id ? null : vendor.id)
+    }
+    style={{
+      background: "transparent",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "20px",
+    }}
   >
-    👁
+    <BsThreeDotsVertical />
   </button>
+
+
+
+ 
+  {openMenuId === vendor.id && (
+    <div
+      className="action-buttons-modal"
+      
+    >
+      {vendor.status === "approved" && (
+        <button
+          className="action-btn1"
+          title="View vendor product"
+          onClick={() => handleNavigate(vendor.id)}
+        >
+         <span className="icon">👁</span> 
+  <span>Detail Page</span>
+        </button>
+      )}
+
+      <button
+        title="Edit Vendor Details"
+        className="action-btn1 "
+        onClick={() => {
+          const existingDocs = [];
+          if (vendor?.documents?.length > 0) {
+            vendor?.documents?.forEach((doc) => {
+              existingDocs.push({
+                type: doc.document_type,
+                file: null,
+                existingUrl: doc.file_url,
+              });
+            });
+          }
+
+          setForm({
+            first_name: vendor.first_name || "",
+            last_name: vendor.last_name || "",
+            store_name: vendor.store_name || "",
+            gst_number: vendor.gst_number || "",
+            verified_phone_number: vendor.verified_phone_number
+              ? vendor.verified_phone_number.startsWith("+91")
+                ? vendor.verified_phone_number.slice(3)
+                : vendor.verified_phone_number
+              : "",
+            profile_picture: vendor.profile_picture || null,
+            documentType: "",
+            documentFile: null,
+          });
+
+          setUploadedDocs(
+            vendor.documents?.map((doc) => ({
+              type: doc.document_type,
+              file: null,
+              existingUrl: doc.file_url,
+            })) || []
+          );
+
+          setEditingId(vendor.id);
+          setModalOpen(true);
+        }}
+      >
+ <span className="icon">✏️</span>
+  <span>Edit Detail</span>
+      </button>
+
+      <button
+        className="action-btn1"
+        title="Delete vendor"
+        onClick={() => {
+          setSelectedVendorId(vendor.id);
+          setDeleteConfirmModal(true);
+        }}
+      >
+  <span className="icon">🗑</span>
+  <span>Delete</span>
+      </button>
+
+      {vendor.pickup_locations.length === 0 && (
+        <button
+          className="action-btn1"
+          title="Add Address"
+          onClick={() => {
+            setAddModal(true);
+            setAddressVendorId(vendor.id);
+            setAddform(intialAddressform);
+            setAddressEditingId(null);
+          }}
+        >
+  <span className="icon">➕</span>
+  <span>Add Address</span>
+        </button>
+      )}
+{vendor.pickup_locations.length > 0 &&(
+   <button
+        title="Edit Address "
+        className="action-btn1"
+        onClick={() => {
+          const addr = vendor.pickup_locations?.[0];
+          setAddModal(true);
+          setAddressVendorId(vendor.id);
+
+          if (addr) {
+            setAddressEditingId(addr.id);
+            setAddform({
+              pincode: addr.pincode ?? "",
+              country: addr.country ?? "",
+              state: addr.state ?? "",
+              city: addr.city ?? "",
+              address_line1: addr.address_line1 ?? "",
+              address_line2: addr.address_line2 ?? "",
+            });
+          } else {
+            setAddressEditingId(null);
+            setAddform(intialAddressform);
+            setAddressErrors({});
+          }
+        }}
+      >
+   <span className="icon">📍</span>
+  <span>Edit Address</span>
+
+      </button>
 )}
+      
+    </div>
+  )}
+</td>
 
-                      <button
-                      title="Edit Vendor Details"
-                        className="action-btn edit"
-                        onClick={() => {
-                         
-setForm({
-  store_name: vendor.store_name || "",
-  verified_phone_number: vendor.verified_phone_number
-    ? vendor.verified_phone_number.startsWith("+91")
-      ? vendor.verified_phone_number.slice(3) 
-      : vendor.verified_phone_number
-    : "",
-  profile_picture: vendor.profile_picture || null,
-})
+ 
 
-
-                          setEditingId(vendor.id)
-                          setModalOpen(true)
-                        }}
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className="action-btn delete"
-                        title="Delete vendor"
-                        onClick={() => {
-                          setSelectedVendorId(vendor.id)
-                          setDeleteConfirmModal(true)
-                        }}
-                      >
-                        🗑
-                      </button>
-                      {vendor.pickup_locations.length <= 0 && (
-                        <button
-                          className="action-btn edit"
-                          title="Add Address"
-                          onClick={() => {
-                            setAddModal(true)
-                            setAddressVendorId(vendor.id)
-                            setAddform(intialAddressform)
-                            setAddressEditingId(null)
-                          }}
-                        >
-                          ➕
-                        </button>
-                      )}
-                      <button
-                      title="edit Address Details"
-                        className="action-btn edit"
-                        onClick={() => {
-                          const addr = vendor.pickup_locations?.[0]
-                          setAddModal(true)
-                          setAddressVendorId(vendor.id)
-                          if (addr) {
-                            setAddressEditingId(addr.id)
-                            setAddform({
-                              pincode: addr.pincode ?? "",
-                              country: addr.country ?? "",
-                              state: addr.state ?? "",
-                              city: addr.city ?? "",
-                              address_line1: addr.address_line1 ?? "",
-                              address_line2: addr.address_line2 ?? "",
-                            })
-                          } else {
-                            setAddressEditingId(null)
-                            setAddform(intialAddressform)
-                            setAddressErrors({})
-                          }
-                        }}
-                      >
-                        📍
-                      </button>
-                    </div>
-                  </td>
-                  <td>
-                    <select
-                      value={vendor.is_approved ? "approved" : "pending"}
-                      onChange={(e) => handleStatusChange(vendor.id, e.target.value)}
-                      className="status-dropdown"
-                    >
-                      <option value="approved">Approved</option>
-                      <option value="pending">Pending</option>
-                    </select>
-                  </td>
+                  
                 </tr>
               ))}
             </tbody>
           )}
         </table>
-        </div>
+          {filteredVendors?.length> Vendorperpage &&(
+          < div className="pagination"> 
 
-        {modalOpen && (
-          <div className="modal">
-            <form className="customer-form" onSubmit={handleFormSubmit}>
-              <h3>{editingId ? "Edit Vendor" : "Add Vendor"}</h3>
+<button onClick={()=>handlePageChange(currentpage-1)} disabled={currentpage === 1}> Prev</button>
+ 
+{Array.from({ length: totalPages}, (_, i) => i + 1).map(number => (
+  <button
+    key={number} 
+    className={currentpage === number ? "active" : ""} 
+    onClick={() => handlePageChange(number)}
+  >
+    {number}
+  </button>
+))}
 
-              <label>Store Name:</label>
-              <input
-                name="store_name"
-                value={form.store_name}
-                onChange={handleInputChange}
-                style={{ borderColor: formErrors.store_name ? "red" : "" }}
-                
-              />
-              {formErrors.store_name && <span style={{ color: "red", fontSize: "12px" }}>{formErrors.store_name}</span>}
+<button onClick={()=>handlePageChange(currentpage +1)} disabled={currentpage === totalPages}> Next</button>
 
-              <label>Contact Number:</label>
-              <input
-                type="text"
-                disabled
-                name="verified_phone_number"
-                value={form.verified_phone_number}
-                onChange={handleInputChange}
-                style={{ borderColor: formErrors.verified_phone_number ? "red" : "" }}
-                
-              />
-              {formErrors.verified_phone_number && (
-                <span style={{ color: "red", fontSize: "12px" }}>{formErrors.verified_phone_number}</span>
-              )}
-
-              <label>Profile Picture:</label>
-              <input type="file" onChange={handleImageUpload} accept="image/*" />
-
-              <div className="form-buttons">
-                <button type="submit">Save</button>
-                <button type="button" onClick={handleCloseModal}>
-                  Cancel
-                </button>
-              </div>
-            </form>
           </div>
         )}
+
+        </div>
+
+       {modalOpen && (
+  <div className="modal">
+    <form className="product-form" onSubmit={handleFormSubmit}>
+      <h3>{editingId ? "Edit Vendor" : "Add Vendor"}</h3>
+
+
+<div className="form-grid">
+
+      <div className="form-column-1">
+        <div className="form-field">
+          <label> First Name :</label>
+        <input
+        name = "first_name"
+        value ={form.first_name}
+        onChange={handleInputChange}
+        
+        />
+        </div>
+        <div className="form-field">
+          <label> Last Name :</label>
+          <input
+          name = "last_name"
+          value ={form.last_name}
+          onChange ={handleInputChange}
+          
+          />
+        </div>
+
+        <div className="form-field">
+          <label>Store Name:</label>
+          <input
+            name="store_name"
+            value={form.store_name}
+            onChange={handleInputChange}
+            style={{ borderColor: formErrors.store_name ? "red" : "" }}
+          />
+          {formErrors.store_name && <span className="error-msg">{formErrors.store_name}</span>}
+        </div>
+
+        <div className="form-field">
+          <label>Contact Number:</label>
+          <input
+            type="text"
+            disabled
+            name="verified_phone_number"
+            value={form.verified_phone_number}
+            onChange={handleInputChange}
+          
+          />
+          {formErrors.verified_phone_number && <span className="error-msg">{formErrors.verified_phone_number}</span>}
+        </div>
+
+        <div className="form-field">
+          <label>Profile Picture:</label>
+          <input type="file" onChange={handleImageUpload} accept="image/*" />
+        </div>
+                <div className="form-field">
+          <label>GST Number:</label>
+          <input
+            type="text"
+            value={form.gst_number}
+            onChange={handleInputChange}
+            placeholder="Enter GST Number"
+            name="gst_number"
+          />
+          {formErrors.gst_number && <span className="error-msg">{formErrors.gst_number}</span>}
+        </div>
+
+        </div>
+<div className="form-column-2">
+       
+
+           <div className="form-field">
+                  <label>Documents: *</label>
+                  <select
+                    name="documentType"
+                    value={form.documentType}
+                    onChange={handleInputChange}
+                   
+                  >
+                    <option value="">-- Select Document --</option>
+
+                    {documentOptions
+                      .filter((opt) => !uploadedDocs.some((doc) => doc.type === opt.value))
+                      .map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+
+                  </select>
+                
+                </div>
+
+
+               <div className="form-field">
+  <label>Upload Document (PDF)</label>
+ <input
+  type="file"
+  name="documentFile"
+  accept="application/pdf"
+  onChange={handleDocumentUpload}
+/>
+
+
+ 
+
+  <button
+    type="button"
+    onClick={handleAddDocument}
+    style={{
+      padding: "4px 10px",
+      background: "#69c140",
+      color: "#fff",
+      border: "none",
+      borderRadius: "4px",
+      cursor: "pointer",
+      marginTop: "5px",
+    }}
+  >
+    Add
+  </button>
+
+  
+  {uploadedDocs.length > 0 && (
+    <div className="uploaded-doc-list" style={{ marginTop: "10px" }}>
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {uploadedDocs.map((doc, i) => (
+          <li
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "5px",
+              borderBottom: "1px solid #ddd",
+              paddingBottom: "3px",
+            }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                maxWidth: "200px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              ✅ <strong>{doc.type}</strong> —{" "}
+              {doc.file
+                ? doc.file.name
+                : doc.existingUrl
+                ? "Previously uploaded"
+                : "No file"}
+            </span>
+
+            <div style={{ display: "flex", alignItems: "center" }}>
+
+              {doc.existingUrl && (
+                <a
+                  href={doc.existingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "blue",
+                    textDecoration: "underline",
+                    marginRight: "10px",
+                  }}
+                >
+                  View
+                </a>
+              )}
+
+         
+
+              <label
+                style={{
+                  cursor: "pointer",
+                  color: "green",
+                  marginRight: "10px",
+                }}
+              >
+                Replace
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setUploadedDocs((prev) =>
+                        prev.map((d) =>
+                          d.type === doc.type
+                            ? { ...d, file, existingUrl: null }
+                            : d
+                        )
+                      );
+                      toast.success("Document replaced!");
+                    }
+                  }}
+                />
+              </label>
+
+          
+              <button
+                type="button"
+                onClick={() => handleRemoveDocument(doc.type)}
+                style={{
+                  color: "red",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                }}
+              >
+                🗑
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+  </div>
+</div>
+</div>
+      <div className="form-buttons">
+        <button type="submit">Save</button>
+        <button type="button" onClick={handleCloseModal}>Cancel</button>
+      </div>
+    </form>
+  </div>
+)}
+
 
         {viewVendor && (
           <div className="modal-overlay">
@@ -881,7 +1288,7 @@ setForm({
                 <strong>Contact Number:</strong> {viewVendor.mobile_number}
               </p>
               <p>
-                <strong>Status:</strong> {viewVendor.is_approved ? "Approved" : "Pending"}
+                <strong>Status:</strong> {viewVendor.status}
               </p>
 
               <p>
@@ -919,7 +1326,7 @@ setForm({
                 <span style={{ color: "red", fontSize: "17px" }}>{phoneErrors.verified_phone_number}</span>
               )}
               <div className="form-buttons">
-                <button type="submit">Save</button>
+                <button type="submit"> Create Vendor</button>
                 <button 
                
                   type="button"
@@ -935,66 +1342,7 @@ setForm({
             </form>
           </div>
         )}
-        {vendorotp && (
-          <div className="otp-modal-overlay">
-            <div className="otp-modal">
-              <form onSubmit={handlevendorotpsubmit} className="otp-form">
-                <h2 className="otp-title">Enter Your OTP</h2>
-
-                <div className="otp-input-group">
-                  {otpDigits.map((digit, index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      maxLength={1}
-                      inputMode="numeric"
-                      className="otp-input"
-                      autoFill="off"
-                      value={digit}
-                      onChange={(e) => handleOtpDigitChange(e, index)}
-                      onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                      ref={(el) => (otpRefs.current[index] = el)}
-                      style={{ borderColor: otpErrors.otp ? "red" : "" }}
-                    />
-                  ))}
-                </div>
-                {otpErrors.otp && (
-                  <span
-                    style={{ color: "red", fontSize: "17px", textAlign: "center", display: "block", marginTop: "-12px",marginBottom:"7px" }}
-                  >
-                    {otpErrors.otp}
-                  </span>
-                )}
-
-                <div className="otp-button-group">
-                  <button
-            type="button"
-           className="otp-btn resend-btn"
-
-            onClick={handleResendOtp}
-          >
-            Resend otp
-          </button>
-                  <button type="submit" className="otp-btn verify-btn">
-                    Verify
-                  </button>
-                  <button
-                    type="button"
-                    className="otp-btn resend-btn"
-                    onClick={() => {
-                      setVendorotp(false)
-                      setOtpDigits(["", "", "", ""])
-                      setOtpErrors({})
-                      setForm(initialFormState)
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+      
         {deleteConfirmModal && (
           <div className="modal">
             <div className="modal-content">
@@ -1014,12 +1362,24 @@ setForm({
             </div>
           </div>
         )}
+
+        {imageModal && (
+ <div className="image-preview-overlay" onClick={() => setimageModal(false)}>
+    <div className="image-preview-modal" onClick={(e) => e.stopPropagation()}>
+      <img src={previewImage} alt="Preview" />
+      
+    </div>
+  </div>)}
+
 {AddModal && (
   <div className="modal">
     <form className="address-form" onSubmit={handleAddressSubmit}>
       <h3>{addressEditingId ? "Edit Address" : "Add Address"}</h3>
 
       <label>Pincode:</label>
+
+
+      
       <input
         type="text"
         name="pincode"
@@ -1104,23 +1464,55 @@ setForm({
     </form>
   </div>
 )}
-{/* {deleteBulkModal && (
-  <div className="modal">
-    <div className="modal-content">
-      <h3>Are you sure you want to delete {selectedVendors.length} selected vendors?</h3>
-      <div className="form-buttons">
-        <button
-          className="otp-btn verify-btn"
-          onClick={handleBulkDelete}
-        >
-          Yes
-        </button>
-        <button onClick={() => setDeleteBulkModal(false)}>No</button>
-      </div>
-    </div>
-  </div>
-)} */}
+{}
 
+ {VendoropenModal && (
+        <div className="modal-overlay" onClick={() => setVendorData(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Uploaded Documents</h3>
+
+            {SelectedVendorId?.documents && SelectedVendorId.documents.length > 0 ? (
+              <ul className="doc-list">
+                {SelectedVendorId.documents.map((doc, i) => (
+                  <li key={i}>
+                    {doc.file_url ? (
+                      <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                        📄 {doc.document_type_display || doc.document_type}
+                      </a>
+                    ) : (
+                      <span className="docno">📄 No Document Uploaded</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="no-docs">No documents uploaded.</p>
+            )}
+            <button className="close-btn" onClick={() => setVendorModal(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+{RejectionVendorModal &&(
+  <div className=" modal">
+    <div className="modal-content">
+    <form classsName="customer-form">
+      <h3> Enter Rejection Reason </h3>
+      <textarea
+      value={Reason}
+      placeholder ="enter the reason "
+      onChange={(e)=>setReason(e.target.value)}
+      />
+      <div className="form-buttons">
+        <button onClick={submitRejection} type = "submit">   Submit  </button>
+        <button type="button" onClick ={()=>setRejectionModal(false)}> Cancel </button>
+      </div>
+
+    </form>
+    </div>
+    </div>
+)}
 
 
         <ToastContainer

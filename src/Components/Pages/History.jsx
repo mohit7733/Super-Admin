@@ -2,33 +2,49 @@ import * as XLSX from "xlsx";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../../Base";
+import Order from "./Order";
+import { toast, ToastContainer } from "react-toastify"
 
 const History = () => {
   const [paymentData, setPaymentData] = useState([]);
   const [paymentError, setPaymentError] = useState(null);
   const [paymentLoading, setPaymentLoading] = useState(true);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-
   const [currentPage, setCurrentPage] = useState(1);
   const [historyPerPage] = useState(5);
-
   const [refundForm, setRefundForm] = useState(false);
-  const [refundFormData, setRefundFormData] = useState({ first_name: "", reason: "" });
-  const [refundFormErrors, setRefundFormErrors] = useState({ first_name: "", reason: "" });
-
+  const[ImagePaymentModal,setImagepaymentModal]=useState(false)
+  const[previewpaymentImage,setPrviewImage]=useState(null)
   const navigate = useNavigate();
   const tableRef = useRef(null);
 
-
   const getPaymentList = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/ecom/payment/`);
-      const data = await response.json();
-      setPaymentData(data);
-    } catch (err) {
+    const token= sessionStorage.getItem("superadmin_token")
+  try {
+    const response = await fetch(`${BASE_URL}/payments/payment/`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+     Authorization : `Bearer ${token}`
+
+       
+      },
+    });
+
+     if (response.status === 401 || response.status === 403) {
+                          toast.error("Session expired. Please login again");
+                          sessionStorage.removeItem("superadmin_token");
+                          navigate("/login");
+                          return;
+                      }
+         
+    const data =await response.json();
+    setPaymentData(data)
+  }
+    catch (err) {
       console.error(err.message);
       setPaymentError("Something went wrong while fetching data.");
     } finally {
@@ -40,28 +56,24 @@ const History = () => {
     getPaymentList();
   }, []);
 
+
   const filteredData = paymentData.filter((payment) => {
     const matchesSearch =
       !searchTerm ||
-      (payment.customer_name &&
-        payment.customer_name.toLowerCase().includes(searchTerm.toLowerCase()));
+      (payment?.customer_name &&
+        payment?.customer_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesDate =
       !selectedDate ||
       (payment.created_at &&
         new Date(payment.created_at).toISOString().split("T")[0] === selectedDate);
-
-   
-
     return matchesSearch && matchesDate;
   });
 
- 
   const indexOfLastHistory = currentPage * historyPerPage;
   const indexOfFirstHistory = indexOfLastHistory - historyPerPage;
   const currentHistory = filteredData.slice(indexOfFirstHistory, indexOfLastHistory);
-  const totalPages = Math.ceil(filteredData.length / historyPerPage);
-
+  const totalPages = Math.ceil(filteredData?.length / historyPerPage);
   const totalAmount = filteredData.reduce(
     (sum, item) => sum + parseFloat(item.amount || 0),
     0
@@ -77,11 +89,7 @@ const History = () => {
     navigate(`/Items/${id}`);
   };
 
-  const handleRefundInputChange = (e) => {
-    const { name, value } = e.target;
-    setRefundFormData((prev) => ({ ...prev, [name]: value }));
-    setRefundFormErrors({ ...refundFormErrors, [name]: "" });
-  };
+
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -95,12 +103,12 @@ const History = () => {
     }
 
     const exportData = filteredData.map((item) => ({
-      "Payment ID": item.razorpay_order_id || "N/A",
-      Customer: item.customer_name || "N/A",
-      Amount: item.amount || 0,
-      Method: item.payment_method || "N/A",
-      Date: item.created_at ? new Date(item.created_at).toISOString().split("T")[0] : "N/A",
-      Status: item.payment_status || "N/A",
+      "Payment ID": item?.razorpay_order_id || "N/A",
+      Customer: item?.customer_name || "N/A",
+      Amount: item?.amount || 0,
+      Method: item?.payment_method || "N/A",
+      Date: item?.created_at ? new Date(item.created_at).toISOString().split("T")[0] : "N/A",
+      Status: item?.payment_status || "N/A",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -129,11 +137,12 @@ const History = () => {
             <input
               type="date"
               value={selectedDate}
-              onChange={(e) => {
-                setSelectedDate(e.target.value);
-                setCurrentPage(1);
-              }}
               className="status-filter"
+              onChange={(e) => {
+  setSelectedDate(e.target.value);
+  setCurrentPage(1);
+}}
+
             />
            
             <button className="export-btn" onClick={exportToExcel}>
@@ -175,7 +184,11 @@ const History = () => {
         </thead>
         <tbody>
           {paymentLoading ? (
-            <tr><td colSpan="10">Loading payment data...</td></tr>
+               <tr>
+            <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
+              <div className="circular-loader"></div>
+            </td>
+          </tr>
           ) : paymentError ? (
             <tr><td colSpan="10" style={{ color: "red" }}>{paymentError}</td></tr>
           ) : currentHistory.length === 0 ? (
@@ -231,12 +244,7 @@ const History = () => {
                     >
                       👁
                     </button>
-                    <button
-                      className="action-btn view"
-                      onClick={() => setRefundForm(true)}
-                    >
-                      ↩
-                    </button>
+                  
                   </div>
                 </td>
               </tr>
@@ -245,7 +253,6 @@ const History = () => {
         </tbody>
       </table>
 
-    
       {filteredData.length > historyPerPage && (
         <div className="pagination">
           <button
@@ -272,7 +279,7 @@ const History = () => {
         </div>
       )}
 
-      {refundForm && (
+      {/* {refundForm && (
         <div className="modal">
           <form className="customer-form">
             <h3>Refund Form</h3>
@@ -303,7 +310,7 @@ const History = () => {
             </div>
           </form>
         </div>
-      )}
+      )} */}
     </>
   );
 };

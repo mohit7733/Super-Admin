@@ -4,16 +4,22 @@ import { useNavigate } from "react-router-dom"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import BASE_URL from "../../Base";
+import { apiFetch } from "../../fetchapi";
+import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
+
+
 
 const userId = localStorage.getItem("USER_ID")
 
 console.log("USER_ID", userId)
 
 const initialCustomerFormState = {
-  // user: userId,
+
+ profile_picture:"" ,
   first_name: "",
   email: "",
   verified_phone_number: "",
+  gender:"",
 }
 
 const initialFormErrors = {
@@ -21,6 +27,7 @@ const initialFormErrors = {
   email: "",
   verified_phone_number: "",
   otp: "",
+  gender:"",
 }
 
 
@@ -33,7 +40,7 @@ const Customers = () => {
   const [CustomerForm, setCustomerForm] = useState(initialCustomerFormState)
   const [editingCustomerId, setEditingCustomerId] = useState(null)
   const [customermodalOpen, setCustomerModalOpen] = useState(false)
-  const [customerotpModal, setCustomerOtpModal] = useState(false)
+ 
   const [ISUserID, setISUserID] = useState(false)
   const [otpVerified, setOtpVerified] = useState(false)
   const navigate = useNavigate()
@@ -50,17 +57,22 @@ const Customers = () => {
   const [userId, setUserId] = useState(null);
   const [currentpage,setCurrentpage]=useState(1);
   const[customerperpage,setcustomerperpage]=useState(5);
-
+  const[ImageCustomerModal,setImageCustomerModal]=useState(false);
+  const[ImageCustomerPreview,setImageCustomerPreview]=useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  
+ 
   
     
   const validateCustomerForm = () => {
     const errors = {};
 
     if (!CustomerForm.first_name.trim()) {
-      errors.first_name = "First name is required";
-    } else if (!/^[a-zA-Z\s]+$/.test(CustomerForm.first_name)) {
-      errors.first_name = "First name should contain only letters and spaces";
-    }
+  errors.first_name = "First name is required";
+} else if (!/^[A-Z][a-zA-Z\s]*$/.test(CustomerForm.first_name)) {
+  errors.first_name = "First name should start with a capital letter and contain only letters and spaces";
+}
+
 
     if (!CustomerForm.email.trim()) {
       errors.email = "Email is required";
@@ -71,14 +83,8 @@ const Customers = () => {
 
     console.log("Validation Errors:", errors);
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors)?.length === 0;
   };
-
-//   const indexoflastcustomer=currentpage*customerperpage;
-//   const indexoffirstcustomer=indexoflastcustomer - customerperpage;
-//   const  currentCustomer=filteredCustomers.slice(indexoffirstcustomer,indexoflastcustomer)
-//  const totalPages = Math.ceil(filteredCustomers.length /customerperpage);
-// const handlePageChange =(pagenumber)=>setCurrentpage(pagenumber);
 
 
   
@@ -92,21 +98,21 @@ const Customers = () => {
     }
 
     setPhoneFormErrors(errors)
-    return Object.keys(errors).length === 0
+    return Object.keys(errors)?.length === 0
   }
 
   const validateOtpForm = () => {
     const errors = {}
     const otpValue = getOtpValue()
 
-    if (!otpValue || otpValue.length !== 4) {
+    if (!otpValue || otpValue?.length !== 4) {
       errors.otp = "Please enter complete 4-digit OTP"
     } else if (!/^\d{4}$/.test(otpValue)) {
       errors.otp = "OTP should contain only numbers"
     }
 
     setOtpFormErrors(errors)
-    return Object.keys(errors).length === 0
+    return Object.keys(errors)?.length === 0
   }
 
 
@@ -119,7 +125,7 @@ const Customers = () => {
   }
   const handleDownload = () => {
 
-    const exportData = customerData.map((c) => ({
+    const exportData = customerData?.map((c) => ({
       Name: c.first_name,
       Email: c.email,
       "Phone Number": c.verified_phone_number,
@@ -170,290 +176,244 @@ const Customers = () => {
 
   const getOtpValue = () => otpDigits.join("")
 
-  const send_otp = async (e) => {
-    e.preventDefault()
+//   const handleCreateCustomer = async (e) => {
+//     e.preventDefault()
 
-    if (!validatePhoneForm()) {
-      return
-    }
+//     if (!validatePhoneForm()) {
+//       return
+//     }
+// const token = sessionStorage.getItem("superadmin_token")
+  
+//     try {
+//       const payload = {
+//         phone_number:`+91${CustomerForm.verified_phone_number}`,
+//         role :"customer",
+//       }
+//       const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`,{
+//         method: "POST",
+//         headers: {
+//           Accept: "application/json",
+//           "Content-Type": "application/json",
+//           Authorization : `Bearer ${token}`
+//         },
+//         body: JSON.stringify(payload),
+//       })
 
-    console.log("mobilenumber", `+91${CustomerForm.verified_phone_number}`)
+//       console.log("server response", response)
+//       const data = await response.json()
 
-    try {
-      const response = await fetch(`${BASE_URL}/user/send-otp/`,{
+//        if (response.ok) {
+//       const uid = data?.user?.id;
+
+//       if (uid) {
+        
+//         setUserId(uid);
+//         localStorage.setItem("USER_ID", uid);
+//       }
+
+//       toast.success("User created! Please complete Customer registration");
+
+//        setOtpVerified(false);
+//       setCustomerModalOpen(true);
+//     }
+//   } catch (err) {
+//       toast.error("Failed to send OTP, please try again", {
+//         position: "top-center",
+//       })
+//     }
+//   }
+const handleCreateCustomer = async (e) => {
+  e.preventDefault();
+
+  if (!validatePhoneForm()) {
+    return;
+  }
+
+  const token = sessionStorage.getItem("superadmin_token");
+
+  try {
+    const payload = {
+      phone_number: `+91${CustomerForm.verified_phone_number}`,
+      role: "customer",
+    };
+
+    const response = await fetch(
+      `${BASE_URL}/user/super-admin/create-user/`,
+      {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          phone_number: `+91${CustomerForm.verified_phone_number}`,
-        }),
-      })
-
-      console.log("server response", response)
-      const data = await response.json()
-
-      if (response.ok) {
-        setOtpVerified(false)
-
-        const Is_user = data.is_new_user
-        setISUserID(Is_user)
-        setCustomerOtpModal(true)
-        toast.success("OTP sent successfully", {
-          position: "top-center",
-          autoClose: 2000,
-        });
-
- console.log("sentotp", response)
-
+        body: JSON.stringify(payload),
       }
-     
-      
-      else {
-        toast.error(" Invalid phone number", {
-          position: "top-center",
-          autoClose: 2000,
-        })
-        setOtpVerified(true)
-      }
-    } catch (err) {
-      toast.error("Failed to send OTP, please try again", {
-        position: "top-center",
-      })
+    );
+
+    
+    if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
     }
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const existingRoles = data?.user?.roles || [];
+      const isNewUser = data?.is_new_user;
+      const uid = data?.user?.id;
+
+
+      if (!isNewUser && existingRoles.includes("customer")) {
+        toast.error("Customer already exists with this phone number");
+        return;
+      }
+
+   
+      if (isNewUser) {
+        toast.success("User created. Please complete customer registration");
+      }
+
+      
+      if (!isNewUser && !existingRoles.includes("customer")) {
+        toast.info("User exists with another role. Please complete customer registration");
+      }
+
+      if (uid) {
+        setUserId(uid);
+        localStorage.setItem("USER_ID", uid);
+      }
+
+      setOtpVerified(false);
+      setCustomerModalOpen(true);
+    }
+  } catch (err) {
+    toast.error("Something went wrong. Please try again", {
+      position: "top-center",
+    });
   }
+};
+
  
 
   const handleCustomerDelete = async (id) => {
-    console.log("idddddd", id)
+  try {
+    const response = await apiFetch(`${BASE_URL}/customers/customer/${id}/`, {
+      method: "DELETE",
+    });
 
-    try {
-      const response = await fetch(`${BASE_URL}/ecom/customer/${id}/`, {
-        method: "DELETE",
-      })
+    
+    if (!response) return;
 
-      console.log("response", response)
+    
+    toast.success("Customer deleted successfully", {
+      position: "top-center",
+      autoClose: 2000,
+    });
 
-      if (response.ok) {
-        toast.success(" Customer deleted successfully", {
-          position: "top-center",
-          autoClose: 2000,
-        })
-        setCustomerData(customerData.filter((c) => c.id !== id))
-      } else {
-        toast.error(" Failed to delete customer", {
-          position: "top-center",
-          autoClose: 2000,
-        })
-      }
-    } catch {
-      toast.error(" Failed to delete customer", {
-        position: "top-center",
-        autoClose: 2000,
-      })
-    }
+    setCustomerData((prev) => prev.filter((c) => c.id !== id));
+
+  } catch (err) {
+    console.error("Delete Error:", err);
+
+    toast.error("Failed to delete customer", {
+      position: "top-center",
+      autoClose: 2000,
+    });
   }
+};
 
-  const newThisYearCount = customerData.filter((customer) => {
+
+  const newThisYearCount = customerData?.filter((customer) => {
     if (!customer.created_at) return false
     const createdDate = new Date(customer.created_at)
     const now = new Date()
     return createdDate.getFullYear() === now.getFullYear()
-  }).length
+  })?.length
 
   const handleCustomerFormSubmit = async (e) => {
-    console.log("aaaa", CustomerForm.verified_phone_number)
-    e.preventDefault()
+  e.preventDefault();
 
+  if (!validateCustomerForm()) return;
 
-    if (!validateCustomerForm()) {
-      return
-    }
-
-    console.log("editnfcustomeidd", editingCustomerId)
-
-    const method = editingCustomerId ? "PUT" : "POST";
+  const method = editingCustomerId ? "PUT" : "POST";
   const url = editingCustomerId
-    ? `${BASE_URL}/ecom/customer/${editingCustomerId}/`
-    : `${BASE_URL}/ecom/customer/`;
+    ? `${BASE_URL}/customers/customer/${editingCustomerId}/`
+    : `${BASE_URL}/customers/customer/`;
 
-    console.log("method", method, url, userId)
+  const formData = new FormData();
 
-    const formData = new FormData()
-   if (method === "POST") {
-   
+  if (method === "POST") {
     const uid = userId || localStorage.getItem("USER_ID");
     if (uid) formData.append("user", uid);
   }
 
-    Object.entries(CustomerForm).forEach(([key, value]) => {
-      formData.append(key, value)
-    })
-
-    console.log("urlll--->", url, method, formData)
-
-    try {
-      const response = await fetch(url, {
-        method,
-        body: formData,
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        if (method === "POST") {
-          setCustomerData((prev) => [...prev, data])
-          toast.success(" Customer added successfully", {
-            position: "top-center",
-            autoClose: 2000,
-          })
-        } else {
-          setCustomerData((prev) =>
-            prev.map((cust) => (cust.id === editingCustomerId ? { ...cust, ...CustomerForm } : cust)),
-          )
-          toast.success(" Customer updated successfully", {
-            position: "top-center",
-            autoClose: 2000,
-          })
-        }
-
-        handleCloseCustomerModal()
-        getCustomerList()
-      } else {
-        toast.error(" Failed to save customer", {
-          position: "top-center",
-          autoClose: 2000,
-        })
-      }
-    } catch (err) {
-      console.error(err)
-      toast.error(" Failed to save customer", {
-        position: "top-center",
-        autoClose: 2000,
-      })
-    }
-  }
-  const resendOtp = async () => {
-    if (!validatePhoneForm()) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`${BASE_URL}/user/send-otp/`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone_number: `+91${CustomerForm.verified_phone_number}`,
-        }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        toast.success("OTP resent successfully", {
-          position: "top-center",
-          autoClose: 2000,
-        });
-      } else {
-        toast.error("Failed to resend OTP", {
-          position: "top-center",
-          autoClose: 2000,
-        });
-      }
-    } catch (err) {
-      toast.error("Error resending OTP", {
-        position: "top-center",
-      });
-    }
-  };
-
-
-  const handleOtpSubmit = async (e) => {
-  e.preventDefault();
-
-  if (!validateOtpForm()) return;
+  Object.entries(CustomerForm).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
 
   try {
-    const OTPValue = getOtpValue();
-    console.log("Final OTP", OTPValue);
+    const data = await apiFetch(url, {
+      method,
+      body: formData,
 
-    const payload = {
-      phone_number: `+91${CustomerForm.verified_phone_number}`,
-      otp: OTPValue,
-    };
+      headers: {},
+    });
 
-    let response;
-    if (ISUserID) {
-   
-      response = await fetch(`${BASE_URL}/user/register/`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+    
+    if (!data) return;
+
+    if (method === "POST") {
+      setCustomerData((prev) => [...prev, data]);
+      toast.success("Customer added successfully", {
+        position: "top-center",
+        autoClose: 2000,
       });
     } else {
-     
-      response = await fetch(`${BASE_URL}/user/customerlogin/`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      setCustomerData((prev) =>
+        prev.map((cust) =>
+          cust.id === editingCustomerId ? { ...cust, ...CustomerForm } : cust
+        )
+      );
+      toast.success("Customer updated successfully", {
+        position: "top-center",
+        autoClose: 2000,
       });
     }
 
-    const data = await response.json();
-    console.log("server response", response);
-    console.log("data response", data);
+    handleCloseCustomerModal();
+    getCustomerList();
 
-    if (response.ok) {
-    
-      if (ISUserID) {
-    
-        if (data.is_customer === true) {
-          toast.info("Customer already exists with this number");
-            setCustomerOtpModal(false)
-          setCustomerForm(initialCustomerFormState)
-          setOtpDigits(["", "", "", ""])
-          
-        } else {
-          toast.success("OTP verified! Please complete registration");
-            setUserId(data.user_id);
-             setOtpVerified(false)
-          setCustomerModalOpen(true)
-          setCustomerOtpModal(false)
-          setOtpDigits(["", "", "", ""])
-        }
-      } else {
-     
-        if (data.is_new_customer === false) {
-          toast.info("Customer already exists, logged in successfully");
-         setCustomerOtpModal(false)
-          setCustomerForm(initialCustomerFormState)
-          setOtpDigits(["", "", "", ""])
-        } else {
-          toast.success("Customer login successfully");
-          localStorage.setItem("USER_ID", data.user_id);
-           setOtpVerified(false)
-          setCustomerModalOpen(true)
-          setCustomerOtpModal(false)
-          setOtpDigits(["", "", "", ""])
-        }
-      }
-    } else {
-      toast.error(data.message || "Invalid or expired OTP");
-    }
   } catch (err) {
-    console.error("OTP verification failed", err);
-    toast.error("Failed to verify OTP. Please try again");
+    console.error("Customer save error:", err);
+    toast.error("Failed to save customer", {
+      position: "top-center",
+      autoClose: 2000,
+    });
   }
 };
+const getInitials = (firstName = "", lastName = "") => {
+  return (
+    (firstName?.[0] || "").toUpperCase() +
+    (lastName?.[0] || "").toUpperCase()
+  );
+};
+
+
+ 
+
+ 
+const handleCustomerFileChange = (e) => {
+  const file = e.target.files[0];
+
+  setCustomerForm((prev) => ({
+    ...prev,
+    profile_picture: file,
+  }));
+};
+
 
   const handleCustomerInputChange = (e) => {
     const { name, value } = e.target;
@@ -490,26 +450,27 @@ const Customers = () => {
   }
 
 
-  const getCustomerList = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/ecom/customer/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      })
-      const data = await response.json()
-      const sortedData = data.data
-      setCustomerData(sortedData)
-      console.log("customerrdatta---->", sortedData)
-    } catch (err) {
-      console.error(err.message)
-      setCustomerError("Something went wrong while fetching data.")
-    } finally {
-      setCustomerLoading(false)
-    }
+ const getCustomerList = async () => {
+  try {
+    const data = await apiFetch(`${BASE_URL}/customers/customer/`, {
+      method: "GET",
+    });
+
+    
+    if (!data) return;
+
+    const sortedData = data.data || [];
+    setCustomerData(sortedData);
+    console.log("customerrdatta ---->", sortedData);
+
+  } catch (err) {
+    console.error("Customer Fetch Error:", err);
+    setCustomerError("Something went wrong while fetching data.");
+  } finally {
+    setCustomerLoading(false);
   }
+};
+
 
   useEffect(() => {
     if (!fetchedOnce.current) {
@@ -520,32 +481,33 @@ const Customers = () => {
 
 
  
-  const filteredCustomers = [...customerData] 
-    .filter((customer) =>
-      !customer?.first_name ||
-      customer?.first_name?.toLowerCase().includes(searchcustomerTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (!a.first_name) return 1;
-      if (!b.first_name) return -1;
-      return a.first_name.localeCompare(b.first_name);
-    });
+  const filteredCustomers = customerData
+  ?.filter((customer) =>
+    !customer?.first_name ||
+    customer?.first_name
+      ?.toLowerCase()
+      ?.includes(searchcustomerTerm.toLowerCase())
+  )
+  ?.sort((a, b) => {
+    if (!a.first_name) return 1;
+    if (!b.first_name) return -1;
+    return a.first_name.localeCompare(b.first_name);
+  }) || [];
 
 
 
-
-  const newThisMonthCount = customerData.filter((customer) => {
+  const newThisMonthCount = customerData?.filter((customer) => {
     if (!customer.created_at) return false
     const createdDate = new Date(customer.created_at)
     const now = new Date()
     return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear()
-  }).length
+  })?.length
 
 
    const indexoflastcustomer=currentpage*customerperpage;
   const indexoffirstcustomer=indexoflastcustomer - customerperpage;
-  const  currentCustomer=filteredCustomers.slice(indexoffirstcustomer,indexoflastcustomer)
- const totalPages = Math.ceil(filteredCustomers.length /customerperpage);
+  const  currentCustomer=filteredCustomers?.slice(indexoffirstcustomer,indexoflastcustomer)
+ const totalPages = Math.ceil(filteredCustomers?.length /customerperpage);
 const handlePageChange =(pagenumber)=>setCurrentpage(pagenumber);
 useEffect(() => {
   setCurrentpage(1);
@@ -590,7 +552,7 @@ useEffect(() => {
         <div className="stat-card">
 
           <h3>Total Customers</h3>
-          <div className="stat-value">{customerData.length}</div>
+          <div className="stat-value">{customerData?.length}</div>
         </div>
 
         <div className="stat-card">
@@ -611,37 +573,94 @@ useEffect(() => {
         <table className="customers-table" ref={bulktableRef}>
           <thead>
             <tr>
+              <th>Profile</th>
               <th>Name</th>
               <th>Email</th>
+              <th>Gender</th>
               <th>Phone Number</th>
+             
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {Loading ? (
-              <tr>
-                <td colSpan="6">Loading customer data...</td>
-              </tr>
+             <tr>
+            <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+              <div className="circular-loader"></div>
+            </td>
+          </tr>
             ) : error ? (
               <tr>
                 <td colSpan="6" style={{ color: "red" }}>
                   {error}
                 </td>
               </tr>
-            ) : currentCustomer.length > 0 ? (
+            ) : currentCustomer?.length > 0 ? (
               currentCustomer.map((customer) =>
               (
                 <tr key={customer.id}>
+   <td>
+  <div className="customer-avatar-wrapper">
+    {customer.profile_picture ? (
+      <img
+        src={customer.profile_picture}
+        alt="profile"
+        className="customer-avatar-img"
+        onClick={() => {
+          setImageCustomerPreview(customer.profile_picture);
+          setImageCustomerModal(true);
+        }}
+      />
+    ) : (
+      <div className="customer-avatar">
+        {getInitials(customer.first_name, customer.last_name)}
+      </div>
+    )}
+  </div>
+</td>
+
+
                   <td>{customer.first_name} </td>
                   <td>{customer.email}</td>
+                   <td>{customer.gender}</td>
                   <td>{customer.verified_phone_number}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn view" title=" View Customer Order " onClick={() => handleNavigate(customer.id)}>
-                        👁
+                 
+                
+
+<td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+
+  <button
+    className="action-menu-toggle"
+    onClick={() =>
+      setOpenMenuId(openMenuId ===customer.id ? null : customer.id)
+    }
+    style={{
+      background: "transparent",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "20px",
+    }}
+  >
+    <BsThreeDotsVertical />
+  </button>
+
+
+
+ 
+  {openMenuId === customer.id && (
+    <div
+      className="action-buttons-modal"
+      
+    >
+
+        <button className="action-btn1" title=" View Customer Order " onClick={() => handleNavigate(customer.id)}>
+                        
+                        <span className="icon">  👁</span>
+  <span>Detail page</span>
                       </button>
-                      <button
-                        className="action-btn edit"
+     
+ <button
+                        className="action-btn1"
                         title="Edit Customer Details"
                         onClick={() => {
                           setCustomerModalOpen(true)
@@ -651,24 +670,34 @@ useEffect(() => {
                             first_name: customer.first_name,
                             email: customer.email,
                             verified_phone_number: customer?.verified_phone_number,
+                            gender:customer?.gender
                           })
                         }}
                       >
-                        ✏️
-                      </button>
-                      <button
-                        className="action-btn delete"
+ <span className="icon">✏️</span>
+  <span>Edit Detail</span>
+      </button>
+
+        <button
+                        className="action-btn1"
                         title="Delete Customer"
                         onClick={() => {
                           setSelectedCustomerId(customer.id);
                           setDeleteConfirmModal(true);
                         }}
-                      >
-                        🗑
-                      </button>
+                        >
+  <span className="icon">🗑</span>
+  <span>Delete</span>
+      </button>
 
-                    </div>
-                  </td>
+     
+
+      
+    </div>
+  )}
+</td>
+
+
                 </tr>
               )
               )
@@ -681,10 +710,11 @@ useEffect(() => {
             )}
           </tbody>
         </table>
-        {filteredCustomers.length>  customerperpage &&(
+        {filteredCustomers?.length>  customerperpage &&(
           < div className="pagination"> 
 
-<button onClick={()=>handlePageChange(currentpage-1)}> Prev</button>
+<button onClick={()=>handlePageChange(currentpage-1)} disabled={currentpage === 1}> Prev</button>
+ 
 {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
   <button 
     key={number} 
@@ -695,8 +725,7 @@ useEffect(() => {
   </button>
 ))}
 
-
-<button onClick={()=>handlePageChange(currentpage +1)}> Next</button>
+<button onClick={()=>handlePageChange(currentpage +1)} disabled={currentpage ===totalPages}> Next</button>
 
           </div>
         )}
@@ -706,6 +735,17 @@ useEffect(() => {
         <div className="modal">
           <form className="customer-form" onSubmit={handleCustomerFormSubmit}>
             <h3>{editingCustomerId ? "Edit Customer" : "Add Customer"}</h3>
+             
+             <label>Profile</label>
+            <input
+
+            name="profile_picture"
+            type="file"
+            placeholder="Upload your profile"
+           
+           onChange={handleCustomerFileChange}
+            />
+
 
             <label htmlFor="first_name">First Name:</label>
             <input
@@ -722,6 +762,9 @@ useEffect(() => {
               <div style={{ color: "red", fontSize: "17px", marginTop: "4px" }}>{formErrors.first_name}</div>
             )}
 
+          
+
+
             <label htmlFor="email">Email:</label>
             <input
               type="email"
@@ -734,6 +777,18 @@ useEffect(() => {
               <div style={{ color: "red", fontSize: "17px", marginTop: "4px" }}>{formErrors.email}</div>
             )}
 
+            <label htmlFor="gender">Gender</label>
+           <select 
+          
+           name="gender"
+           value={CustomerForm.gender}
+            onChange={handleCustomerInputChange}
+           >
+              <option value="">Select Gender</option>
+            <option value="male"> Male</option>
+            <option value="female"> Female</option>
+           </select>
+
             <label htmlFor="phone_number">Mobile Number:</label>
             <input
               type="text"
@@ -743,8 +798,9 @@ useEffect(() => {
               placeholder="Enter your phone number"
               value={CustomerForm.verified_phone_number}
               onChange={handleCustomerInputChange}
-              required
+              
             />
+            
 
 
             <div className="form-buttons">
@@ -759,7 +815,7 @@ useEffect(() => {
 
       {otpVerified && (
         <div className="modal">
-          <form className="customer-form" onSubmit={send_otp}>
+          <form className="customer-form" onSubmit={handleCreateCustomer}>
             <h2>Enter your Phone Number</h2>
 
             <input
@@ -778,7 +834,7 @@ useEffect(() => {
             )}
 
             <div className="form-buttons">
-              <button type="submit">Send OTP</button>
+              <button type="submit">Create Customer</button>
               <button
                 type="button"
                 onClick={() => {
@@ -814,55 +870,20 @@ useEffect(() => {
         </div>
       )}
 
-      {customerotpModal && (
-        <div className="otp-modal-overlay">
-          <div className="otp-modal">
-            <form onSubmit={handleOtpSubmit} className="otp-form">
-              <h2 className="otp-title">Enter Your OTP</h2>
 
-              <div className="otp-input-group">
-                {otpDigits.map((digit, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    maxLength={1}
-                    inputMode="numeric"
-                    className="otp-input"
-                    autoComplete="off"
-                    value={digit}
-                    onChange={(e) => handleOtpChange(e, index)}
-                    onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                    ref={(el) => (otpRefs.current[index] = el)}
-                  />
-                ))}
-              </div>
-              {otpFormErrors.otp && (
-                <div style={{ color: "red", fontSize: "17px", marginTop: "-13px", textAlign: "center", marginBottom: "7px" }}>
-                  {otpFormErrors.otp}
-                </div>
-              )}
 
-              <div className="otp-button-group">
-                <button type="button" className="otp-btn resend-btn" onClick={resendOtp}>Resend OTP</button>
-                <button type="submit" className="otp-btn verify-btn">
-                  Verify
-                </button>
-                <button
-                  className="otp-btn resend-btn"
-                  type="button"
-                  onClick={() => {
-                    setCustomerOtpModal(false)
-                    setOtpDigits(["", "", "", ""])
-                    setOtpFormErrors({ otp: "" })
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+     
+{
+  ImageCustomerModal && (
+     <div className="image-preview-overlay" onClick={() => setImageCustomerModal(false)}>
+    <div className="image-preview-modal" onClick={(e) => e.stopPropagation()}>
+      <img src={ImageCustomerPreview} alt="Preview" />
+      
+    </div>
+  </div>
+  )
+}
+
 
       <ToastContainer position="top-center" autoClose={1000} />
     </>

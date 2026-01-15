@@ -5,15 +5,18 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { useNavigate } from "react-router-dom"
 import BASE_URL from "../../Base";
-import { CloudUpload } from "../AllSvgs";
-import { FiUpload } from "react-icons/fi";
-import { FaFilePdf } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
+import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
+import { FaAvianex } from "react-icons/fa";
+
+
 const userId = localStorage.getItem("USER_ID")
 console.log("userIduserIduserId", userId)
 
 const intialDoctorform = {
-  name: "",
+  profile_image:"",
+ first_name:"",
+ last_name:"",
   email: "",
   assured_muni: false,
   verified_phone_number: "",
@@ -29,14 +32,10 @@ const intialDoctorform = {
   qualification: "",
   documentType: "",
   documentFile: null,
-  documents: {
-    qualification_marksheet: null,
-    ayush_registration_certificate: null,
-    government_id_proof: null,
-
-  },
+  documents: [],
 
 }
+
 
 
 const Doctor = () => {
@@ -52,19 +51,17 @@ const Doctor = () => {
   const [verifiedDoctorModal, setVerifiedDoctorModal] = useState(false)
   const [otpDigits, setOtpDigits] = useState(["", "", "", ""])
   const otpRefs = useRef([])
-
   const [phoneErrors, setPhoneErrors] = useState({})
   const [otpErrors, setOtpErrors] = useState({})
   const [doctorFormErrors, setDoctorFormErrors] = useState({})
-
   const [DoctorformModal, setDoctorformModal] = useState(false)
   const [Doctorform, setDoctorform] = useState(intialDoctorform)
   const [specialities, setSpecialities] = useState([])
   const [EditingDoctorId, setEditingDoctorId] = useState(null)
   const [spec, setSpecs] = useState([])
-  const [Isuser, setISUser] = useState(false)
+ 
   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false)
-  const [selectedVendorId, setSelectedVendorId] = useState(null)
+  const [selectedDoctorId, setSelectedDoctorId] = useState(null)
   const [AddSpeciality, setAddspecialityform] = useState(false);
   const [newSpecilization, setNewSpecilization] = useState("")
   const [treatmentTypes, setTreatmentTypes] = useState([]);
@@ -72,50 +69,32 @@ const Doctor = () => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [uploadedDocs, setUploadedDocs] = useState([]);
-  const [Doctordocform, setDoctordocform] = useState({
-    documentType: "",
-    documentFile: null,
-  });
+  const [doctorperpage,setDoctorperpage]=useState(5);
+  const [currentpage,setCurrentpage]=useState(1);
+  const [showReasonModal, setShowReasonModal] = useState(false);
+ 
+  const [rejectReason, setRejectReason] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const[OpenthreedotId,setOpenthreedotId] =useState(null);
+  const[previewImage,setPreviewImage]=useState("");
+  const[ImageModal,setImageModal]=useState(false);
+  const [selectedSpecialities, setSelectedSpecialities] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
 
+  
+  const documentOptions = [
+    { value: "marksheet", label: "Qualification Marksheet" },
+    { value: "registration_certificate", label: "Ayush Registration Certificate" },
+    { value: "id_proof", label: "Government ID Proof" },
+  ];
 
-
-
-
+  
   console.log(Doctorform, "form------>");
-
-
-  const docUrl = Doctorform.qualification_marksheet;
-
-  const fileName = docUrl
-    ? typeof docUrl === "string"
-      ? docUrl.substring(docUrl.lastIndexOf("/") + 1)
-      : docUrl.name
-
-
-
-    : "";
-
-  const docurl1 = Doctorform.ayush_registration_certificate;
-  const fileName1 = docurl1
-    ? typeof docurl1 === "string"
-      ? docurl1.substring(docurl1.lastIndexOf("/") + 1)
-      : docurl1.name
-    : "";
-
-  const docurl2 = Doctorform.government_id_proof;
-  const fileName2 = docurl2
-    ? typeof docurl2 === "string"
-      ? docurl2.substring(docurl2.lastIndexOf("/") + 1)
-      : docurl2.name
-    : "";
+  console.log("selecteddoctor", selectedDoctor);
 
   const [userId, setUserId] = useState("");
-
-
-
   const doctortableRef = useRef(null);
   const fetchedOnce = useRef(false);
-
   const navigate = useNavigate();
   const validatePhoneNumber = (phone) => {
     const errors = {}
@@ -133,9 +112,9 @@ const Doctor = () => {
     return errors
   }
 
+
   const validateOTP = (otp) => {
     const errors = {}
-
     if (!otp || otp.length !== 4) {
       errors.otp = "Please enter the complete 4-digit OTP"
     } else if (!/^\d{4}$/.test(otp)) {
@@ -145,39 +124,50 @@ const Doctor = () => {
     return errors
   }
 
+
+
   const validateDoctorForm = (formData, phoneNum) => {
     const errors = {}
+    
+if (!formData?.first_name?.trim()) {
+  errors.first_name = "First name is required";
+} else if (!/^[A-Za-z.\s]+$/.test(formData.first_name.trim())) {
+  errors.first_name = "First name can only contain letters and spaces";
+} else if (formData.first_name.trim().length < 2) {
+  errors.first_name = "First name must be at least 2 characters";
+} else if (formData.first_name.trim().length > 50) {
+  errors.first_name = "First name should not exceed 50 characters";
+} else if (!/^[A-Z]/.test(formData.first_name.trim())) {
+  errors.first_name = "First name must start with a capital letter";
+}
 
-
-    if (!formData.name.trim()) {
-      errors.name = "Doctor name is required"
-    } else if (formData.name.trim().length < 2) {
-      errors.name = "Doctor name must be at least 2 characters"
-    } else if (!/^[a-zA-Z\s.]+$/.test(formData.name.trim())) {
-      errors.name = "Doctor name should only contain letters, spaces, and dots"
-    } else if (formData.name.trim().length > 50) {
-      errors.name = "Doctor name should not exceed 50 characters"
-    }
-
-
-    if (!formData.email.trim()) {
+if (!formData?.last_name?.trim()) {
+  errors.last_name = "First name is required";
+} else if (!/^[A-Za-z\s]+$/.test(formData.last_name.trim())) {
+  errors.last_name = "Last name can only contain letters and spaces";
+} else if (formData.last_name.trim().length < 2) {
+  errors.last_name = "Last name must be at least 2 characters";
+} else if (formData.last_name.trim().length > 50) {
+  errors.last_name = "Last name should not exceed 50 characters";
+} 
+    if (!formData?.email?.trim()) {
       errors.email = "Email is required"
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       errors.email = "Please enter a valid email address"
     }
 
-    if (!formData.address_line.trim()) {
+    if (!formData?.address_line?.trim()) {
       errors.address_line = "Address is required"
-    } else if (formData.address_line.trim().length < 10) {
+    } else if (formData.address_line?.trim().length < 10) {
       errors.address_line = "Address should be at least 10 characters"
-    } else if (formData.address_line.trim().length > 200) {
+    } else if (formData.address_line?.trim().length > 200) {
       errors.address_line = "Address should not exceed 200 characters"
     }
 
 
-    if (!formData.consultation_fee) {
+    if (!formData?.consultation_fee) {
       errors.consultation_fee = "Consultation fee is required"
-    } else if (isNaN(formData.consultation_fee)) {
+    } else if (isNaN(formData?.consultation_fee)) {
       errors.consultation_fee = "Consultation fee must be a valid number"
     } else if (Number.parseFloat(formData.consultation_fee) <= 0) {
       errors.consultation_fee = "Consultation fee must be greater than 0"
@@ -186,7 +176,7 @@ const Doctor = () => {
     }
 
 
-    if (!formData.experience_years) {
+    if (!formData?.experience_years) {
       errors.experience_years = "Experience is required"
     } else if (isNaN(formData.experience_years)) {
       errors.experience_years = "Experience must be a valid number"
@@ -197,7 +187,7 @@ const Doctor = () => {
     }
 
 
-    if (!formData.specialization_ids) {
+    if (!formData?.specialization_ids) {
       errors.specialization_ids = "Please select a specialization"
     }
     if (!formData.ayush_registration_number?.trim()) {
@@ -214,26 +204,17 @@ const Doctor = () => {
     }
 
 
-
-
-
-
-
-    if (!formData.available_from) {
+    if (!formData?.available_from) {
       errors.available_from = "Available from time is required"
     }
 
-    if (!formData.available_to) {
+    if (!formData?.available_to) {
       errors.available_to = "Available to time is required"
     }
 
 
-
-
-
-
-    if (formData.available_from && formData.available_to) {
-      if (formData.available_from >= formData.available_to) {
+    if (formData?.available_from && formData?.available_to) {
+      if (formData?.available_from >= formData?.available_to) {
         errors.available_to = "Available to time must be after available from time"
       }
     }
@@ -241,7 +222,7 @@ const Doctor = () => {
 
     if (!EditingDoctorId && phoneNum) {
       const phoneValidation = validatePhoneNumber(phoneNum)
-      if (phoneValidation.phone) {
+      if (phoneValidation?.phone) {
         errors.verified_phone_number = phoneValidation.phone
       }
     }
@@ -256,21 +237,13 @@ const Doctor = () => {
   }
 
 
-
-
-
-  const handleNavigate = (id) => {
-    console.log(id)
-    navigate(`/Patient/${id}`)
-  }
+  
   const handleNavigateDoctor = (id) => {
     console.log(id)
     navigate(`/DoctorDetail/${id}`)
   }
   const handleRemoveDocument = (type) => {
     setUploadedDocs((prev) => prev.filter((doc) => doc.type !== type));
-
-
     toast.info("Document removed successfully");
   };
 
@@ -281,15 +254,44 @@ const Doctor = () => {
     setSpecs([])
     setEditingDoctorId(null)
   }
+  
+
+  
+const submitRejection = async (e) => {
+  e.preventDefault();
+
+  await handleStatusChange(selectedDoctorId, selectedStatus, rejectReason);
+
+  setShowReasonModal(false);
+  setRejectReason("");
+  setSelectedDoctorId(null);
+  setSelectedStatus("");
+};
+
+const handleRejectClick = (doctorId, statusType) => {
+  setSelectedDoctorId(doctorId);
+  setSelectedStatus(statusType);  
+ setShowReasonModal(true);
+};
 
   const getdoctorlist = async () => {
+    const token= sessionStorage.getItem("superadmin_token")
     try {
-      const response = await fetch(`${BASE_URL}/ecom/doctor/`, {
+      const response = await fetch(`${BASE_URL}/healthcare/doctor/`, {
+        method:'GET',
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+           Authorization: `Bearer ${token}`,
+
         },
       })
+      if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
+    }
       const data = await response.json()
       setDoctorData(data.data)
     } catch (err) {
@@ -308,29 +310,36 @@ const Doctor = () => {
     }
   }, []);
 
-  const filteredDoctors = Doctordata.filter((doctor) => {
-    const matchesSearch =
-      doctor.name.toLowerCase().includes(doctorsearch.toLowerCase()) ||
-      doctor.specializations?.some((s) => s.name.toLowerCase().includes(doctorsearch.toLowerCase()))
+  
+const filteredDoctors = Doctordata.filter((doctor) => {
+  const searchLower = doctorsearch?.toLowerCase() || "";
 
-    const matchesStatus =
-      statusFilter === "All" ||
-      (statusFilter === "verified" && doctor.assured_muni) ||
-      (statusFilter === "unverified" && !doctor.assured_muni)
+  const matchesSearch =
+  
+    !searchLower ||
+    (doctor?.first_name?.toLowerCase()?.includes(searchLower)) ||
+    (doctor?.specializations?.some((s) =>
+      s?.name?.toLowerCase()?.includes(searchLower)
+    ));
 
-    const matchesSpecialization =
-      specializationfilter === "All" || doctor.specializations?.some((s) => s.name === specializationfilter)
+  const matchesStatus =
+    statusFilter === "All" ||
+    (statusFilter === "verified" && doctor.assured_muni) ||
+    (statusFilter === "unverified" && !doctor.assured_muni);
 
+  const matchesSpecialization =
+    specializationfilter === "All" || 
+    doctor.specializations?.some((s) => s.name === specializationfilter);
 
-    return matchesSearch && matchesStatus && matchesSpecialization
-  })
-    .sort((a, b) => {
-      if (!a.name) return 1;
-      if (!b.name) return -1;
-      return a.name.localeCompare(b.name);
-    });
+  return matchesSearch && matchesStatus && matchesSpecialization;
+})
+.sort((a, b) => {
+  const nameA = a.first_name || ""; 
+  const nameB = b.first_name || "";
+  return nameA.localeCompare(nameB);
+});
 
-  console.log(filteredDoctors, "filterdoc");
+console.log(filteredDoctors, "filterdoc");
 
   const openDocumentModal = (i) => {
     setOpenModal(true);
@@ -338,41 +347,38 @@ const Doctor = () => {
   }
   console.log(selectedDoctor, "selected");
 
+ const handleDoctorDelete = async (id) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-  const handleOtpDigitChange = (e, index) => {
-    const value = e.target.value.replace(/\D/g, "")
-    if (value.length <= 1) {
-      const updated = [...otpDigits]
-      updated[index] = value
-      setOtpDigits(updated)
+  try {
+    const response = await fetch(`${BASE_URL}/healthcare/doctor/${id}/`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,   
+      },
+    });
 
-      if (otpErrors.otp) {
-        setOtpErrors({})
-      }
-
-      if (value && index < otpRefs.current.length - 1) {
-        otpRefs.current[index + 1]?.focus()
-      }
+   
+    if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
     }
-  }
 
-  const handleOtpKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus()
+    if (!response.ok) {
+      toast.error("Failed to delete");
+      return;
     }
-  }
 
-  const handleDoctorDelete = async (id) => {
-    try {
-      await fetch(`${BASE_URL}/ecom/doctor/${id}/`, {
-        method: "DELETE",
-      })
-      setDoctorData(Doctordata.filter((c) => c.id !== id))
-      toast.success("Doctor deleted successfully")
-    } catch {
-      toast.error("Failed to delete")
-    }
+    setDoctorData(Doctordata.filter((c) => c.id !== id));
+    toast.success("Doctor deleted successfully");
+
+  } catch {
+    toast.error("Failed to delete");
   }
+};
+
 
   const handleCloseDoctorModal = () => {
     setDoctorModal(false)
@@ -381,95 +387,111 @@ const Doctor = () => {
   }
 
 
+  
+const handleDoctorformSubmit = async (e) => {
+e.preventDefault();
 
-  const handleDoctorformSubmit = async (e) => {
-    e.preventDefault();
+console.log("uploadedDocs", uploadedDocs);
+const formErrors = validateDoctorForm(Doctorform, phonenumber);
+console.log(formErrors, "error");
 
-    console.log("uploadedDocsuploadedDocsuploadedDocs", uploadedDocs);
+
+if (Object.keys(formErrors).length > 0) {
+    setDoctorFormErrors(formErrors);
+    toast.error("Please fix the validation errors");
+    return;
+ }
+
+const method = EditingDoctorId ? "PUT" : "POST";
+ const url = EditingDoctorId
+    ? `${BASE_URL}/healthcare/doctor/${EditingDoctorId}/`
+    : `${BASE_URL}/healthcare/doctor/`;
+
+  const newFormData = new FormData();
+  newFormData.append("first_name", Doctorform.first_name.trim());
+  newFormData.append("last_name", Doctorform.last_name.trim());
+  newFormData.append("email", Doctorform.email.trim());
+  newFormData.append("address_line", Doctorform.address_line.trim());
+  newFormData.append("assured_muni", Doctorform.assured_muni);
+  newFormData.append("verified_phone_number", `+91${phonenumber}`);
+  newFormData.append("experience_years", Number.parseInt(Doctorform.experience_years));
+  newFormData.append("consultation_fee", Number.parseFloat(Doctorform.consultation_fee));
+  newFormData.append("available_from", Doctorform.available_from);
+  newFormData.append("available_to", Doctorform.available_to);
+  newFormData.append("treatment_type_ids", Doctorform.treatment_type_id);
+  newFormData.append("ayush_registration_number", Doctorform.ayush_registration_number);
+  newFormData.append("qualification", Doctorform.qualification);
+ 
+if (Doctorform.profile_image instanceof File) {
+  newFormData.append("profile_image", Doctorform.profile_image);
+}
 
 
-    const formErrors = validateDoctorForm(Doctorform, phonenumber);
-    console.log(formErrors, "error");
 
-    if (Object.keys(formErrors).length > 0) {
-      setDoctorFormErrors(formErrors);
-      toast.error("Please fix the validation errors");
+  let docIndex = 0;
+  uploadedDocs.forEach((item) => {
+    if (item.file) {  
+      newFormData.append(`document_types[${docIndex}]`, item.type);
+      newFormData.append(`documents[${docIndex}]`, item.file);
+      docIndex++;
+    }
+  });
+
+  if (Array.isArray(Doctorform.specialization_ids)) {
+    Doctorform.specialization_ids.forEach((id) =>
+      newFormData.append("specialization_ids", id)
+    );
+  } else {
+    newFormData.append("specialization_ids", Doctorform.specialization_ids);
+  }
+  
+  if (!EditingDoctorId) {
+    const user = userId || localStorage.getItem("USER_ID");
+    newFormData.append("user", user);
+  }
+
+const token = sessionStorage.getItem("superadmin_token");
+  try {
+    const response = await fetch(url, {
+      method,
+      body: newFormData,
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      }
+    });
+
+if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
       return;
     }
 
-    const method = EditingDoctorId ? "PUT" : "POST";
-    const url = EditingDoctorId
-      ? `${BASE_URL}/ecom/doctor/${EditingDoctorId}/`
-      : `${BASE_URL}/ecom/doctor/`;
 
-    console.log(method, url, spec, "spec");
+    const result = await response.json();
 
-    const newFormData = new FormData();
-
-    newFormData.append("name", Doctorform.name.trim());
-    newFormData.append("email", Doctorform.email.trim());
-    newFormData.append("address_line", Doctorform.address_line.trim());
-    newFormData.append("assured_muni", Doctorform.assured_muni);
-    newFormData.append("verified_phone_number", `+91${phonenumber}`);
-    newFormData.append("experience_years", Number.parseInt(Doctorform.experience_years));
-    newFormData.append("consultation_fee", Number.parseFloat(Doctorform.consultation_fee));
-    newFormData.append("available_from", Doctorform.available_from);
-    newFormData.append("available_to", Doctorform.available_to);
-    newFormData.append("treatment_type_ids", Doctorform.treatment_type_id);
-    newFormData.append("ayush_registration_number", Doctorform.ayush_registration_number);
-    newFormData.append("qualification", Doctorform.qualification);
-   
-    if (Array.isArray(Doctorform.specialization_ids)) {
-      Doctorform.specialization_ids.forEach((id) =>
-        newFormData.append("specialization_ids", id)
+    if (response.ok) {
+      toast.success(
+        EditingDoctorId
+          ? "Doctor updated successfully"
+          : "Doctor added successfully"
       );
+      setDoctorformModal(false);
+      clearDoctorForm();
+      clearAllErrors();
+      setUploadedDocs([]);
+      getdoctorlist();
     } else {
-      newFormData.append("specialization_ids", Doctorform.specialization_ids);
+      toast.error(result.message || "Failed to save doctor");
     }
+  } catch (err) {
+    console.error("Doctor save error:", err.message);
+    toast.error("Error saving doctor");
+  }
+};
 
 
-    if (uploadedDocs && uploadedDocs.length > 0) {
-      uploadedDocs.forEach((doc) => {
-        if (doc.type && doc.file) {
-          newFormData.append(doc.type, doc.file);
-        }
-      });
-    }
-
-    if (!EditingDoctorId) {
-      const user = userId || localStorage.getItem("USER_ID");
-      newFormData.append("user", user);
-    }
-
-    console.log("doctornewFormData----->", newFormData);
-
-    try {
-      const response = await fetch(url, {
-        method,
-        body: newFormData,
-
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast.success(
-          EditingDoctorId
-            ? "Doctor updated successfully"
-            : "Doctor added successfully"
-        );
-        setDoctorformModal(false);
-        clearDoctorForm();
-        clearAllErrors();
-        getdoctorlist();
-      } else {
-        toast.error(result.message || "Failed to save doctor");
-      }
-    } catch (err) {
-      console.error("Doctor save error:", err.message);
-      toast.error("Error saving doctor");
-    }
-  };
 
   const handleAddDocument = (e) => {
     e.preventDefault();
@@ -503,77 +525,85 @@ const Doctor = () => {
     toast.success("Document added!");
   };
 
+const handleAddSpecialization = async (e) => {
+  e.preventDefault();
 
+  if (!newSpecilization.trim()) {
+    toast.error("Specialization name is required");
+    return;
+  }
 
+  if (!/^[A-Za-z\s]+$/.test(newSpecilization)) {
+    toast.error("Specialization must contain only alphabets");
+    return;
+  }
 
-  const handleAddSpecialization = async (e) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
+  try {
+    const response = await fetch(`${BASE_URL}/healthcare/speciality/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name: newSpecilization }),
+    });
 
-    e.preventDefault();
-    if (!newSpecilization.trim()) {
-      toast.error("Specialization name is required");
-
+    if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
       return;
     }
 
-    if (!/^[A-Za-z\s]+$/.test(newSpecilization)) {
-      toast.error("Specialization must contain only alphabets");
-
-
-      return;
-
-
-    }
+    const data = await response.json();
+  
 
 
 
-    try {
-      const response = await fetch(`${BASE_URL}/ecom/speciality/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: newSpecilization,
-        }),
-      });
+if (!response.ok) {
+  const errorMsg =
+    data?.errors?.name
+    ;
 
-      const data = await response.json();
-      console.log("Specialization Response:", data);
-
-      if (!response.ok) {
-        toast.error(data.message || "Specialization already exists");
+  toast.error(errorMsg);
+  return;
+}
 
 
-        return;
-      }
 
-      toast.success("Specialization added successfully!");
+    toast.success("Specialization added successfully!");
+    setNewSpecilization("");
+    fetchSpecialization();
+    setAddspecialityform(false);
 
-
-      setNewSpecilization("");
-
-
-      fetchSpecilization();
-
-      setAddspecialityform(false);
-
-    } catch (error) {
-      console.error("Error adding specialization:", error);
-      toast.error("Error adding specialization.");
-    }
-  };
+  } catch (error) {
+    console.error("Error adding specialization:", error);
+    toast.error("Error adding specialization.");
+  }
+};
 
 
   const fetchTreatmentTypes = async () => {
+     const token = sessionStorage.getItem("superadmin_token");
+
     try {
-      const response = await fetch(`${BASE_URL}/ecom/treatmenttypes/`, {
+      const response = await fetch(`${BASE_URL}/healthcare/treatmenttypes/`, {
         method: "GET",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
         },
       });
+        if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
+    }
+
       const data = await response.json();
       setTreatmentTypes(data);
     } catch (error) {
@@ -588,265 +618,150 @@ const Doctor = () => {
 
 
 
-  const handledoctorSubmit = async (e) => {
-    e.preventDefault()
 
-    const phoneValidation = validatePhoneNumber(phonenumber)
+const handledoctorSubmit = async (e) => {
 
-    if (Object.keys(phoneValidation).length > 0) {
-      setPhoneErrors(phoneValidation)
-      return
-    }
 
-    try {
-      const doctor = await fetch(`${BASE_URL}/user/send-otp/`, {
+  e.preventDefault();
+
+  const phoneValidation = validatePhoneNumber(phonenumber);
+  if (Object.keys(phoneValidation).length > 0) {
+    setPhoneErrors(phoneValidation);
+    return;
+  }
+
+  const token = sessionStorage.getItem("superadmin_token");
+
+  try {
+    const payload = {
+      phone_number: `+91${phonenumber}`,
+      role: "doctor",
+    };
+
+    const response = await fetch(
+      `${BASE_URL}/user/super-admin/create-user/`,
+      {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ phone_number: `+91${phonenumber}` }),
-      })
-
-      console.log("doctor", doctor)
-      const data = await doctor.json()
-
-      if (doctor.ok) {
-        console.log("OTP sent response:", data)
-        setISUser(data.is_new_user)
-        setDoctorModal(false)
-        setVerifiedDoctorModal(true)
-        setPhoneErrors({})
-        toast.success("OTP sent successfully")
-      } else {
-        toast.error(data.message || "Failed to send OTP")
+        body: JSON.stringify(payload),
       }
-    } catch (err) {
-      console.error("OTP send error:", err)
-      toast.error("Failed to send OTP")
+    );
+
+    
+    if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
     }
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const existingRoles = data?.user?.roles || [];
+      const isNewUser = data?.is_new_user;
+      const uid = data?.user?.id;
+
+      
+      if (!isNewUser && existingRoles.includes("doctor")) {
+        toast.error("Doctor already exists with this phone number");
+        return;
+      }
+
+     
+      if (isNewUser) {
+        toast.success("User created. Please complete doctor registration");
+      }
+
+      
+      if (!isNewUser && !existingRoles.includes("doctor")) {
+        toast.info("User exists. Please complete doctor registration");
+      }
+
+      
+      if (uid) {
+        setUserId(uid);
+        localStorage.setItem("USER_ID", uid);
+      }
+
+      setDoctorModal(false);
+      setDoctorformModal(true);
+    }
+  } catch (err) {
+    console.error("Doctor create error:", err);
+    toast.error("Something went wrong. Please try again");
+  }
+};
+
+
+ 
+  const handleDoctorinputchange = (e) => {
+  const { name, value, type, checked, files } = e.target;
+
+  if (doctorFormErrors[name]) {
+    setDoctorFormErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
   }
 
 
-  // const handleDoctorinputchange = (e) => {
-  //   const { name, value, type, checked, files } = e.target
-  //   console.log(e.target, "files");
-
-  //   if (doctorFormErrors[name]) {
-  //     setDoctorFormErrors((prev) => ({
-  //       ...prev,
-  //       [name]: "",
-  //     }))
-  //   }
-
-  //   setDoctorform((prev) => ({
-  //     ...prev,
-  //     [name]:
-  //       type === "checkbox"
-  //         ? checked
-  //         : type === "file"
-  //           ? files && files.length > 0
-  //             ? files[0]
-  //             : null
-  //           : value,
-  //   }));
-  //   if (name === "specialization_ids") {
-  //     setSpecs([Number.parseInt(value)])
-  //   }
-  // }
-
-
-
-  const handleDoctorinputchange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-    console.log("Input change detected:", name, value, files);
-
-    if (doctorFormErrors[name]) {
-      setDoctorFormErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-
-
-    if (type === "checkbox") {
-      setDoctorform((prev) => ({
-        ...prev,
-        [name]: checked,
-      }));
-    }
-
-    else if (name === "document_file") {
-
-      // array 
-      setDoctorform((prev) => ({
-        ...prev,
-        documents: files ? Array.from(files) : [],
-      }));
-
-
-      console.log(Doctorform, "aftersaveee------>");
-    }
-
-
-    // else if (type === "file") {
-
-    //   setDoctorform((prev) => ({
-    //     ...prev,
-    //     [name]: files && files.length > 0 ? files[0] : null,
-    //   }));
-    // } 
-    else if (name === "specialization_ids") {
-
-      setSpecs([Number.parseInt(value)]);
-      setDoctorform((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-    else {
-
-      setDoctorform((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
-
-
-  const handleFileClear = (e, fieldName) => {
-    e.preventDefault();
-
-    setDoctorform((prevForm) => ({
-      ...prevForm,
-      [fieldName]: null,
+  if (type === "checkbox") {
+    setDoctorform((prev) => ({
+      ...prev,
+      [name]: checked,
     }));
-  };
+    return;
+  }
 
+  
+  if (type === "file" && name === "profile_image") {
+    setDoctorform((prev) => ({
+      ...prev,
+      profile_image: files && files.length > 0 ? files[0] : null,
+    }));
+    return;
+  }
 
+  
+  if (name === "documentFile") {
+    setDoctorform((prev) => ({
+      ...prev,
+      documentFile: files && files.length > 0 ? files[0] : null,
+    }));
+    return;
+  }
 
-  const handleVerifiedDoctorSubmit = async (e) => {
-    e.preventDefault();
-    const otp = otpDigits.join("");
+  setDoctorform((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
 
-    const otpValidation = validateOTP(otp);
-    if (Object.keys(otpValidation).length > 0) {
-      setOtpErrors(otpValidation);
-      return;
-    }
-
-    try {
-      const payload = {
-        phone_number: `+91${phonenumber}`,
-        otp,
-      };
-
-      const response = await fetch(`${BASE_URL}/user/register/`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      console.log("server response", response);
-      console.log("data response", data);
-      setUserId(data.user_id);
-
-
-      if (response.ok) {
-
-        localStorage.setItem("USER_ID", data.user_id);
-
-        if (data.is_doctor === false) {
-
-          setVerifiedDoctorModal(false);
-          setDoctorformModal(true);
-          setOtpErrors({});
-          toast.success("Phone verified successfully");
-        } else {
-
-          setVerifiedDoctorModal(false);
-          clearAllErrors();
-          setPhonenumber("");
-          setOtpDigits(["", "", "", ""]);
-        }
-      } else {
-        toast.error(data.message || "Invalid or expired OTP");
-      }
-    } catch (err) {
-      console.error("Error during doctor verification:", err.message);
-      toast.error(`Verification failed: ${err.message}`);
-    }
-  };
-
-
-  const handleDoctorLoginSubmit = async (e) => {
-    e.preventDefault();
-    const otp = otpDigits.join("");
-
-    const otpValidation = validateOTP(otp);
-    if (Object.keys(otpValidation).length > 0) {
-      setOtpErrors(otpValidation);
-      return;
-    }
-
-    try {
-      const payload = {
-        phone_number: `+91${phonenumber}`,
-        otp,
-      };
-
-      const response = await fetch(`${BASE_URL}/user/doctorlogin/`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      console.log("server response", response);
-      console.log("data response", data);
-
-      if (response.ok) {
-
-        localStorage.setItem("USER_ID", data.user_id);
-
-        if (data.is_new_doctor === false) {
-          toast.info(" Doctor Already created");
-          setVerifiedDoctorModal(false);
-          clearAllErrors();
-          setPhonenumber("");
-          setOtpDigits(["", "", "", ""]);
-        } else {
-
-          toast.success("Doctor login Sucessfully");
-          setVerifiedDoctorModal(false);
-          setDoctorformModal(true);
-        }
-      } else {
-        toast.error(data.message || "Invalid or expired OTP");
-      }
-    } catch (err) {
-      console.error("Error during doctor login:", err.message);
-      toast.error(`Login failed: ${err.message}`);
-    }
-  };
-
+  
   const handleDoctorDownload = () => {
     const exportData = Doctordata.map((d, index) => ({
       ID: index + 1,
-      Name: d.name,
+      "First Name": d.first_name,
+      "Last Name":d.last_name,
+      "Phone Number":d.verified_phone_number,
       Email: d.email,
-      "Phone Number": d.verified_phone_number,
       "Consultation Fee (₹)": d.consultation_fee,
       Specialization: d.specializations?.map((s) => s.name).join(", "),
-      "Experience (Years)": d.experience_years,
-      Status: d.assured_muni ? "Verified" : "Unverified",
+      Experience : d.experience_years,
+      "Ayush Register Number" : d.ayush_registration_number,
+      Qualtification : d.qualification,
+      Status : d.status,
+    "Available To":d.available_from,
+    "Available From":d.available_to,
+      "Treatment":d.treatment_type,
+      "Address":d.address_line,
+
+
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData)
@@ -857,109 +772,114 @@ const Doctor = () => {
     XLSX.writeFile(wb, "doctor_data.xlsx");
   };
 
-
-  const handleResendOtp = async () => {
-    try {
-      const phoneValidation = validatePhoneNumber(phonenumber)
-
-      if (Object.keys(phoneValidation).length > 0) {
-        setPhoneErrors(phoneValidation)
-        return
-      }
-
-      const response = await fetch(`${BASE_URL}/user/send-otp/`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ phone_number: `+91${phonenumber}` }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setOtpDigits(["", "", "", ""])
-        toast.success("OTP resent successfully")
-      } else {
-        toast.error(data.message || "Failed to resend OTP")
-      }
-    } catch (err) {
-      console.error("Resend OTP error:", err)
-      toast.error("Failed to resend OTP")
-    }
-  }
-
-
   const handleverifiedDoctor = () => {
     setVerifiedDoctorModal(false)
     setOtpErrors({})
     setOtpDigits(["", "", "", ""])
   }
 
-  const fetchSpecilization = async () => {
-    try {
-      const verified = await fetch(`${BASE_URL}/ecom/speciality/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      })
-      const data = await verified.json()
-      setSpecialities(data)
-    } catch (error) {
-      console.error("Error fetching specialities:", error)
+ const fetchSpecialization = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  try {
+    const response = await fetch(`${BASE_URL}/healthcare/speciality/`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
     }
+
+    const data = await response.json();
+    console.log("Fetched Specialities:", data);
+    setSpecialities(data);
+
+  } catch (error) {
+    console.error("Error fetching specialities:", error);
+    toast.error("Failed to fetch specialities");
   }
+};
 
   useEffect(() => {
-    fetchSpecilization()
+    fetchSpecialization();
   }, [])
 
 
+ 
+  const indexoflastdoctor =currentpage*doctorperpage;
+  const indexoffirstdoctor= indexoflastdoctor - doctorperpage;
+  const currentDoctor= filteredDoctors.slice(indexoffirstdoctor,indexoflastdoctor)
+  const totalpages=Math.ceil(filteredDoctors.length/doctorperpage);
 
-  const handleStatusChange = async (doctorId, newStatus) => {
-    const updatedStatus = newStatus === "verified";
-
-    try {
-      const response = await fetch(
-        `${BASE_URL}/ecom/doctor/${doctorId}/`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({ assured_muni: updatedStatus }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-
-        setDoctorData((prev) =>
-          prev.map((doc) =>
-            doc.id === doctorId ? { ...doc, assured_muni: updatedStatus } : doc
-          )
-        );
-        toast.success(`Doctor status updated to ${newStatus}!`);
-      } else {
-        toast.error(data.message || "Failed to update status");
-      }
-    } catch (error) {
-      console.error("Error updating doctor status:", error);
-      toast.error("Failed to update status");
-    }
-  };
-
-  console.log("filtereddddd", filteredDoctors)
-
+const handlePageChange=(pageNumber)=>setCurrentpage(pageNumber)
   const handleSelection = () => {
     setDropdownOpen(!dropdownOpen);
   }
 
+
+const getInitials = (firstName, lastName) => {
+  const safeFirstName = (firstName || "").toString();
+  const safeLastName = (lastName || "").toString();
+
+  const cleanFirstName = safeFirstName
+    .replace(/^dr\.?\s*/i, "")
+    .trim();
+
+  const firstInitial = cleanFirstName.charAt(0)?.toUpperCase() || "";
+  const lastInitial = safeLastName.charAt(0)?.toUpperCase() || "";
+
+  return `${firstInitial}${lastInitial}` || "?";
+};
+
+
+
+
+  const handleStatusChange = async (doctorId, newStatus,reason = "") => {
+    const token = sessionStorage.getItem("superadmin_token")
+    try {
+      const response = await fetch(`${BASE_URL}/healthcare/approvedoctor/${doctorId}/`, {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization:`Bearer ${token}`
+        },
+        body: JSON.stringify({
+      status: newStatus,
+       rejection_reason: reason 
+        }),
+      })
+      if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+      if (!response.ok) {
+        throw new Error("Failed to update status")
+      }
+
+      setDoctorData((prev) =>
+        prev.map((doctor) =>
+          doctor.id === doctorId ? { ...doctor, status : newStatus } : doctor,
+        ),
+      )
+    } catch (err) {
+      console.error(err)
+      toast.error("Error updating vendor status")
+    }
+  }
+
+ 
   return (
     <>
       <div className="page-header">
@@ -968,6 +888,7 @@ const Doctor = () => {
 
       <div className="doctor-controls">
         <div className="search-bar">
+
           <input
             type="text"
             placeholder="Search doctor by name or specialization..."
@@ -990,7 +911,7 @@ const Doctor = () => {
             className="status-filter"
           >
             <option value="All">All Specializations</option>
-            {specialities.map((s) => (
+            {specialities?.map((s) => (
               <option key={s.id} value={s.name}>
                 {s.name}
               </option>
@@ -1001,7 +922,7 @@ const Doctor = () => {
             + Add Doctor
           </button>
           <button className="add-customer-btn" onClick={handleDoctorDownload}>
-            Export Detils
+            Export Details
           </button>
 
         </div>
@@ -1014,11 +935,11 @@ const Doctor = () => {
         </div>
         <div className="stat-card">
           <h3>Verified Doctors</h3>
-          <div className="stat-value">{Doctordata.filter((d) => d.assured_muni).length}</div>
+          <div className="stat-value">{Doctordata.filter((d) => d.status ==="approved").length}</div>
         </div>
         <div className="stat-card">
           <h3>Unverified Doctors</h3>
-          <div className="stat-value">{Doctordata.filter((d) => !d.assured_muni).length}</div>
+          <div className="stat-value">{Doctordata.filter((d) => d.status ==="pending").length}</div>
         </div>
       </div>
       <div className="table-container">
@@ -1026,135 +947,218 @@ const Doctor = () => {
           <thead>
             <tr>
               <th>ID</th>
+              <th>profile</th>
               <th>Name</th>
               <th>Email</th>
               <th>Phone</th>
               <th>Address</th>
-              <th>Actions</th>
               <th>Status</th>
               <th> Fees </th>
               <th>Availability</th>
-              <th> Ayush.No</th>
+              <th>Ayush.No</th>
               <th>Qualification </th>
               <th>Specialization</th>
               <th>Type</th>
               <th>Experience</th>
-              <th>Documents </th>
+               <th>Documents </th>
+               <th>Actions</th>
+            
+              
             </tr>
           </thead>
           <tbody>
             {Loading ? (
-              <tr>
-                <td colSpan="11">Loading Doctor data...</td>
-              </tr>
+                <tr>
+            <td colSpan="15" style={{ textAlign: "center", padding: "20px" }}>
+              <div className="circular-loader"></div>
+            </td>
+          </tr>
+
             ) : error ? (
               <tr>
                 <td colSpan="11" style={{ color: "red" }}>
                   {error}
                 </td>
               </tr>
-            ) : filteredDoctors.length > 0 ? (
-              filteredDoctors.map((item, index) => (
+            ) : currentDoctor.length > 0 ? (
+              currentDoctor.map((item, index) => (
                 <tr key={item.id}>
-                  <td>{index + 1}</td>
-                  <td>{item.name}</td>
-                  <td>{item.email}</td>
-                  <td>{item.verified_phone_number}</td>
-                  <td>{item.address_line}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        title="patient list"
-                        className="action-btn view" onClick={() => handleNavigate(item.id)}>
-                        👁
-                      </button>
-                      <button
-                        className="action-btn edit"
-                        title="Edit Doctor Details"
-                        onClick={() => {
-                          setDoctorform({
-                            name: item.name,
-                            email: item.email,
-                            address_line: item.address_line,
-                            assured_muni: item.assured_muni,
-                            verified_phone_number: item.verified_phone_number,
-                            experience_years: item.experience_years,
-                            specialization_ids: item.specializations ?
-                              item.specializations.map(spec => String(spec.id)) : [],
-                            consultation_fee: item.consultation_fee,
-                            available_from: item.available_from || "",
-                            available_to: item.available_to || "",
-                            treatment_type_id: item.treatment_type?.[0]?.id || "",
-                            ayush_registration_number: item.ayush_registration_number,
-                            qualification: item.qualification,
-                            ayush_registration_certificate: item.ayush_registration_certificate,
-                            qualification_marksheet: item.qualification_marksheet,
-                            government_id_proof: item.government_id_proof,
+                  <td>{indexoffirstdoctor + index+1}</td>
+               
+                 <td>
+  <div className="customer-avatar-wrapper">
+    {item.profile_image ? (
+      <img
+        src={item.profile_image}
+        alt="profile"
+        className="customer-avatar-img"
+        onClick={() => {
+          setImageModal(true);
+     setPreviewImage(item.profile_image);
+        }}
+      />
+    ) : (
+      <div className="customer-avatar">
+        {getInitials(item.first_name, item.last_name)}
+      </div>
+    )}
+  </div>
+</td>
+<td>
+  {item.first_name
+    ? `${item.first_name}${item.last_name
+      
+      ? " " + item.last_name : ""}`
+    : "NA"}
+</td>
 
-                          })
-
-                          setSpecs(item.specializations ? item.specializations.map(spec => spec.id) : [])
-                          setPhonenumber(item.verified_phone_number?.replace("+91", ""))
-                          setEditingDoctorId(item.id)
-
-                          setDoctorformModal(true)
-                          clearAllErrors()
-                        }}
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className="action-btn delete"
-                        title="Delete"
-                        onClick={() => {
-                          setSelectedVendorId(item.id)
-                          setDeleteConfirmModal(true)
-                        }}
-                      >
-                        🗑
-                      </button>
-                      <button
-                        className="action-btn"
-                        title="Doctor Detail Page"
-                        onClick={() => handleNavigateDoctor(item.id)}
-                      >
-                        📄
-                      </button>
-
-
-                    </div>
+  
+                  <td>{item?.email}</td>
+                  <td>{item?.verified_phone_number}</td>
+                  <td>{item?.address_line}</td>
+                    <td>
+                <select
+  value={item?.status}
+  onChange={(e) => {
+   const newStatus = e.target.value;
+    if (newStatus === "rejected" || newStatus === "suspended") {
+      handleRejectClick(item.id, newStatus);  
+    } else {
+      handleStatusChange(item.id, newStatus);
+    }
+  }}
+  className="status-dropdown"
+>
+  <option value="approved">Approved</option>
+  <option value="pending">Pending</option>
+  <option value="rejected">Rejected</option>
+  <option value="suspended">Suspended</option>
+</select>
                   </td>
 
-                  <td>
-                    <select
-                      value={item.assured_muni ? "verified" : "unverified"}
-                      onChange={(e) => handleStatusChange(item.id, e.target.value)}
-                      className="status-dropdown"
-                    >
-                      <option value="verified">Verified</option>
-                      <option value="unverified">Unverified</option>
-                    </select>
-                  </td>
-
-                  <td>₹{item.consultation_fee}</td>
+                  <td>₹{item?.consultation_fee}</td>
                   <td style={{ color: "blue" }}>
-                    {item.available_from} - {item.available_to}
+                    {item?.available_from} - {item?.available_to}
                   </td>
 
-                  <td>{item.ayush_registration_number}</td>
-                  <td>{item.qualification}</td>
+                  <td>{item?.ayush_registration_number}</td>
+                  <td>{item?.qualification}</td>
 
-                  <td>{item.specializations?.map((s) => s.name).join(", ")}</td>
+                  <td>{item?.specializations?.map((s) => s.name).join(", ")}</td>
 
-                  <td>{item.treatment_type.map((item) => item.treatment_type)}</td>
-                  <td>{item.experience_years} years</td>
+                  <td>{item?.treatment_type.map((item) => item.treatment_type)}</td>
+                  <td>{item?.experience_years} years</td>
 
 
                   <td style={{ textAlign: "center" }}>
-                    <FiFileText size={20} color="#007bff"
+                    <FiFileText size={20} color="#71a33f"
                       onClick={() => openDocumentModal(item)}
                     />
                   </td>
+
+<td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+
+  <button
+    className="action-menu-toggle"
+    onClick={() =>
+      setOpenthreedotId(OpenthreedotId === item.id ? null : item.id)
+    }
+    style={{
+      background: "transparent",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "20px",
+    }}
+  >
+    <BsThreeDotsVertical />
+  </button>
+
+
+
+ 
+  {OpenthreedotId === item.id && (
+    <div
+      className="action-buttons-modal"
+      
+    >
+        <button
+                        className="action-btn1"
+                        title=" Detail Page"
+                        onClick={() => handleNavigateDoctor(item.id)}
+                      >
+    <span className="icon">👁</span> 
+  <span>Detail Page</span>
+  </button>
+
+
+   <button
+  className="action-btn1"
+  title="Edit Doctor Details"
+  onClick={() => {
+    const existingDocs = [];
+    if (item.documents && item.documents.length > 0) {
+      item.documents.forEach((doc) => {
+        existingDocs.push({
+          type: doc.document_type,
+          file: null,
+          existingUrl: doc.file_url,
+        });
+      });
+    }
+
+
+    setDoctorform({
+      profile_image:item.profile_image,
+         first_name:item.first_name,
+         last_name:item.last_name,
+      email: item.email,
+      address_line: item.address_line,
+      assured_muni: item.assured_muni,
+      verified_phone_number: item.verified_phone_number,
+      experience_years: item.experience_years,
+      specialization_ids: item.specializations
+        ? item.specializations.map((spec) => String(spec.id))
+        : [],
+      consultation_fee: item.consultation_fee,
+      available_from: item.available_from || "",
+      available_to: item.available_to || "",
+      treatment_type_id: item.treatment_type?.[0]?.id || "",
+      ayush_registration_number: item.ayush_registration_number,
+      qualification: item.qualification,
+      documentType: "",
+      documentFile: null,
+    });
+
+    setUploadedDocs(existingDocs);
+    setSpecs(
+      item.specializations ? item.specializations.map((spec) => spec.id) : []
+    );
+    setPhonenumber(item.verified_phone_number?.replace("+91", ""));
+    setEditingDoctorId(item.id);
+    clearAllErrors();
+    setDoctorformModal(true);
+  }}
+>
+   <span className="icon">✏️</span>
+  <span>Edit Detail</span>
+</button>
+
+                    
+
+   <button
+                        className="action-btn1"
+                        title="Delete"
+                        onClick={() => {
+                          setSelectedDoctorId(item.id)
+                          setDeleteConfirmModal(true)
+                        }}
+                      >
+   <span className="icon">🗑</span>
+  <span>Delete </span>
+                      </button>  
+    </div>
+  )}
+</td>
 
 
 
@@ -1169,6 +1173,26 @@ const Doctor = () => {
             )}
           </tbody>
         </table>
+
+  {filteredDoctors.length> doctorperpage &&(
+          < div className="pagination"> 
+
+ <button onClick={()=>handlePageChange(currentpage-1)} disabled={currentpage === 1}> Prev</button>
+ 
+{Array.from({ length: totalpages}, (_, i) => i + 1).map(number => (
+  <button
+    key={number} 
+    className={currentpage === number ? "active" : ""} 
+    onClick={() => handlePageChange(number)}
+  >
+    {number}
+  </button>
+))}
+
+<button onClick={()=>handlePageChange(currentpage +1)} disabled={currentpage === totalpages}> Next</button>
+
+          </div>
+        )}
       </div>
 
 
@@ -1198,7 +1222,7 @@ const Doctor = () => {
               </span>
             )}
             <div className="form-buttons">
-              <button type="submit">Send OTP</button>
+              <button type="submit">Create Doctor</button>
               <button type="button" onClick={handleCloseDoctorModal}>
                 Cancel
               </button>
@@ -1207,65 +1231,7 @@ const Doctor = () => {
         </div>
       )}
 
-      {verifiedDoctorModal && (
-        <div className="otp-modal-overlay">
-          <div className="otp-modal">
-            <form
-              onSubmit={Isuser ? handleVerifiedDoctorSubmit : handleDoctorLoginSubmit}
-              className="otp-form"
-            >
-
-              <h2 className="otp-title">Enter Your OTP</h2>
-
-              <div className="otp-input-group">
-                {otpDigits.map((digit, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    maxLength={1}
-                    inputMode="numeric"
-                    className="otp-input"
-                    autoComplete="off"
-                    value={digit}
-                    onChange={(e) => handleOtpDigitChange(e, index)}
-                    onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                    ref={(el) => (otpRefs.current[index] = el)}
-                    style={{ borderColor: otpErrors.otp ? "red" : "" }}
-                  />
-                ))}
-              </div>
-
-              {otpErrors.otp && (
-                <span
-                  style={{
-                    color: "red",
-                    fontSize: "17px",
-                    display: "block",
-                    marginTop: "-14px",
-                    textAlign: "center",
-                    marginBottom: "4px",
-                  }}
-                >
-                  {otpErrors.otp}
-                </span>
-              )}
-
-              <div className="otp-button-group">
-                <button type="button" onClick={handleResendOtp} className="otp-btn resend-btn">
-                  Resend OTP
-                </button>
-                <button type="submit" className="otp-btn verify-btn">
-                  Verify
-                </button>
-                <button type="button" onClick={handleverifiedDoctor} className="otp-btn cancel-btn">
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
+     
 
       {DoctorformModal && (
         <div className="modal">
@@ -1276,16 +1242,38 @@ const Doctor = () => {
 
               <div className="form-column-1">
                 <div className="form-field">
-                  <label>Doctor Name: *</label>
+                  <label>Profile Picture :</label>
+                <input
+    type="file"
+    name="profile_image"
+    accept="image/*"
+    onChange={handleDoctorinputchange}
+  />
+                </div>
+                <div className="form-field">
+                  <label>First Name: *</label>
                   <input
-                    name="name"
-                    value={Doctorform.name}
+                    name="first_name"
+                    value={Doctorform.first_name}
                     onChange={handleDoctorinputchange}
 
-                    style={{ borderColor: doctorFormErrors.name ? "red" : "" }}
+                    style={{ borderColor: doctorFormErrors.first_name ? "red" : "" }}
                   />
-                  {doctorFormErrors.name && (
-                    <span className="error-text">{doctorFormErrors.name}</span>
+                  {doctorFormErrors.first_name&& (
+                    <span className="error-text">{doctorFormErrors.first_name}</span>
+                  )}
+                </div>
+                 <div className="form-field">
+                  <label>Last Name: *</label>
+                  <input
+                    name="last_name"
+                    value={Doctorform.last_name}
+                    onChange={handleDoctorinputchange}
+
+                    style={{ borderColor: doctorFormErrors.last_name ? "red" : "" }}
+                  />
+                  {doctorFormErrors.last_name&& (
+                    <span className="error-text">{doctorFormErrors.last_name}</span>
                   )}
                 </div>
 
@@ -1347,6 +1335,7 @@ const Doctor = () => {
                         : "-- Select Specialities --"}
                     </div>
 
+
                     {dropdownOpen && (
                       <div className="multi-select-options">
                         {specialities.map((spec) => (
@@ -1394,21 +1383,22 @@ const Doctor = () => {
                     )}
                   </div>
 
+
                   <button
                     type="button"
-                  
+
                     onClick={() => setAddspecialityform(true)}
 
 
-                     style={{
-                      
+                    style={{
+
                       padding: "4px 10px",
-                      background:"#69c140",
+                      background: "#71a33f",
                       color: "#fff",
                       border: "none",
                       borderRadius: "4px",
                       cursor: "pointer",
-                      width:"105%",
+                   
                     }}
                   >
                     + Add Speciality
@@ -1488,7 +1478,8 @@ const Doctor = () => {
                     name="treatment_type_id"
                     value={Doctorform.treatment_type_id}
                     onChange={handleDoctorinputchange}
-                    style={{ borderColor: doctorFormErrors.treatment_type_id ? "red" : "" }}
+                 
+                    className="form-select1"
                   >
                     <option value="">-- Select Treatment Type --</option>
                     {treatmentTypes.map((type) => (
@@ -1514,8 +1505,7 @@ const Doctor = () => {
                     placeholder="Enter Ayurveda Registration Number"
                     value={Doctorform.ayush_registration_number || ""}
                     onChange={handleDoctorinputchange}
-                   style={{ borderColor: doctorFormErrors.treatment_type_id ? "red" : "" }}
-
+                  
                   />
                   {doctorFormErrors.ayush_registration_number && (
                     <span className="error-text">
@@ -1533,7 +1523,6 @@ const Doctor = () => {
                     placeholder="Enter Qualification (e.g. BAMS, MD, PhD)"
                     value={Doctorform.qualification || ""}
                     onChange={handleDoctorinputchange}
-                  style={{ borderColor: doctorFormErrors.treatment_type_id ? "red" : "" }}
 
                   />
                   {doctorFormErrors.qualification && (
@@ -1552,100 +1541,160 @@ const Doctor = () => {
                     style={{ borderColor: doctorFormErrors.documentType ? "red" : "" }}
                   >
                     <option value="">-- Select Document --</option>
-                    <option value="qualification_marksheet">Qualification Marksheet</option>
-                    <option value="ayush_registration_certificate">Ayush Registration Certificate</option>
-                    <option value="government_id_proof">Government ID Proof</option>
+
+                    {documentOptions
+                      .filter((opt) => !uploadedDocs.some((doc) => doc.type === opt.value))
+                      .map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+
                   </select>
                   {doctorFormErrors.documentType && (
                     <span className="error-text">{doctorFormErrors.documentType}</span>
                   )}
                 </div>
 
-                <div className="form-field">
-                  <label>Upload Document (PDF)</label>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    name="documentFile"
-                    onChange={handleDoctorinputchange}
-                    style={{ borderColor: doctorFormErrors.documentFile ? "red" : "" }}
-                  />
-
-                  {doctorFormErrors.documentFile && (
-                    <span className="error-text">{doctorFormErrors.documentFile}</span>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={handleAddDocument}
-                    style={{
-                      padding: "4px 10px",
-                      background: "#69c140",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Add
-                  </button>
-
-                  {uploadedDocs.length > 0 && (
-                    <div className="uploaded-doc-list" style={{ marginTop: "10px" }}>
-                      <ul style={{ listStyle: "none", padding: 0 }}>
-                        {uploadedDocs.map((doc, i) => (
-                          <li
-                            key={i}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "5px",
-                              borderBottom: "1px solid #ddd",
-                              paddingBottom: "3px",
-                            }}
-                          >
-                            <span
-                              style={{
-                                display: "inline-block",
-                                maxWidth: "200px",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                              title={doc.file.name}
-                            >
-                              ✅ <strong>{doc.type}</strong> — {doc.file.name}
-                            </span>
-                            <button
-                              type="button"
-                              className="action-btn "
-                              onClick={() => handleRemoveDocument(doc.type)}
-                              style={{
-                                marginLeft: "10px",
-                                color: "red",
-                                cursor: "pointer",
-                                border: "none",
-                                background: "transparent",
-                              }}
-                            >
-                              🗑 
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
+             
 
 
 
 
+               <div className="form-field">
+  <label>Upload Document (PDF)</label>
+  <input
+    type="file"
+    name="documentFile"
+    onChange={handleDoctorinputchange}
+    accept="application/pdf"
+    style={{
+      borderColor: doctorFormErrors.documentFile ? "red" : "",
+    }}
+  />
+
+  {doctorFormErrors.documentFile && (
+    <span className="error-text">{doctorFormErrors.documentFile}</span>
+  )}
+
+  <button
+    type="button"
+    onClick={handleAddDocument}
+    style={{
+      padding: "4px 10px",
+      background: "#71a33f",
+      color: "#fff",
+      border: "none",
+      borderRadius: "4px",
+      cursor: "pointer",
+      marginTop: "5px",
+    }}
+  >
+    Add
+  </button>
+
+  
+  {uploadedDocs.length > 0 && (
+    <div className="uploaded-doc-list" style={{ marginTop: "10px" }}>
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {uploadedDocs.map((doc, i) => (
+          <li
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "5px",
+              borderBottom: "1px solid #ddd",
+              paddingBottom: "3px",
+            }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                maxWidth: "200px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              ✅ <strong>{doc.type}</strong> —{" "}
+              {doc.file
+                ? doc.file.name
+                : doc.existingUrl
+                ? "Previously uploaded"
+                : "No file"}
+            </span>
+
+            <div style={{ display: "flex", alignItems: "center" }}>
+
+              {doc.existingUrl && (
+                <a
+                  href={doc.existingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "blue",
+                    textDecoration: "underline",
+                    marginRight: "10px",
+                  }}
+                >
+                  View
+                </a>
+              )}
+
+         
+
+              <label
+                style={{
+                  cursor: "pointer",
+                  color: "green",
+                  marginRight: "10px",
+                }}
+              >
+                Replace
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setUploadedDocs((prev) =>
+                        prev.map((d) =>
+                          d.type === doc.type
+                            ? { ...d, file, existingUrl: null }
+                            : d
+                        )
+                      );
+                      toast.success("Document replaced!");
+                    }
+                  }}
+                />
+              </label>
+
+          
+              <button
+                type="button"
+                onClick={() => handleRemoveDocument(doc.type)}
+                style={{
+                  color: "red",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                }}
+              >
+                🗑
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
 
               </div>
-
-
-
 
             </div>
             <div className="form-buttons">
@@ -1664,8 +1713,6 @@ const Doctor = () => {
           </form>
         </div>
       )}
-
-
       {AddSpeciality && (
         <div className="modal">
           <form className="customer-form" onSubmit={handleAddSpecialization}>
@@ -1696,7 +1743,7 @@ const Doctor = () => {
               <button
                 className="otp-btn verify-btn"
                 onClick={() => {
-                  handleDoctorDelete(selectedVendorId)
+                  handleDoctorDelete(selectedDoctorId)
                   setDeleteConfirmModal(false)
                 }}
               >
@@ -1713,20 +1760,16 @@ const Doctor = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Uploaded Documents</h3>
 
-            {selectedDoctor ? (
+            {selectedDoctor?.documents && selectedDoctor.documents.length > 0 ? (
               <ul className="doc-list">
-                {[
-                  { name: "Qualification Marksheet", url: selectedDoctor?.qualification_marksheet },
-                  { name: "Ayush Registration Certificate", url: selectedDoctor?.ayush_registration_certificate },
-                  { name: "Government ID Proof", url: selectedDoctor?.government_id_proof },
-                ].map((doc, i) => (
+                {selectedDoctor.documents.map((doc, i) => (
                   <li key={i}>
-                    {doc.url ? (
-                      <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                        📄 {doc.name}
+                    {doc.file_url ? (
+                      <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                        📄 {doc.document_type_display || doc.document_type}
                       </a>
                     ) : (
-                      <span className="docno">  📄 No Document Uploaded</span>
+                      <span className="docno">📄 No Document Uploaded</span>
                     )}
                   </li>
                 ))}
@@ -1734,16 +1777,38 @@ const Doctor = () => {
             ) : (
               <p className="no-docs">No documents uploaded.</p>
             )}
-
             <button className="close-btn" onClick={() => setOpenModal(false)}>
               Close
             </button>
           </div>
         </div>
-      )
-      }
+      )}
 
 
+     {ImageModal &&(
+      <div className="image-preview-overlay" onClick={() => setImageModal(false)}>
+    <div className="image-preview-modal" onClick={(e) => e.stopPropagation()}>
+      <img src={previewImage} alt="Preview" />
+      
+    </div>
+    </div>
+     )}
+ 
+
+{showReasonModal &&(
+  <div className="modal">
+    <div className="modal-content">
+<h2> Enter Rejection Reason</h2>
+<textarea
+value={rejectReason}
+placeholder =  " Enter the reason for the Rejection....."
+onChange={(e)=>setRejectReason(e.target.value)}
+/>
+<button onClick ={submitRejection}> Submit</button>
+<button onClick = {()=> setSelectedDoctor(false)}>Cancel</button>
+    </div>
+     </div>
+)}
       <ToastContainer
         position="top-center"
         autoClose={3000}
@@ -1761,4 +1826,6 @@ const Doctor = () => {
 }
 
 export default Doctor
+
+
 

@@ -19,10 +19,12 @@ const Header = ({ sidebarCollapsed, setSidebarCollapsed }) => {
     setShowModal((prev) => !prev)
   }
 
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    e.preventDefault();
     console.log("User logged out")
     setShowModal(false)
-        navigate("/login", { replace: true })
+    sessionStorage.clear();
+        navigate("/login")
   }
 
   return (

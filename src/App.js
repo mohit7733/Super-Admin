@@ -1,196 +1,270 @@
 
+
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
+
+
 import Sidebar from './Components/Sidebar/Sidebar';
+import Header from './Components/Sidebar/Header';
+
+
+import Login from './Components/Pages/Auth/login';
+import Dashboard from './Components/Pages/Dashboard';
 import Product from './Components/Pages/Product';
 import Order from './Components/Pages/Order';
-import Dashboard from './Components/Pages/Dashboard';
 import Customer from './Components/Pages/Customer';
 import Vendors from './Components/Pages/Vendors';
 import History from './Components/Pages/History';
-import Header from './Components/Sidebar/Header';
-import Login from './Components/Pages/Auth/login';
 import Doctor from './Components/Pages/Doctor';
 import Vendorproduct from './Components/Pages/Vendorproduct';
 import Orderlist from './Components/Pages/Orderlist';
-import Patient from './Components/Pages/Patient';
 import Center from './Components/Pages/Center';
 import DoctorDetail from './Components/Pages/DoctorDetail';
-import Booking from './Components/Pages/Booking';
 import Allpatient from './Components/Pages/Allpatient';
 import Items from './Components/Pages/Items';
 import Support from './Components/Pages/Support';
+import Auditlogs from './Components/Pages/Auditlogs';
+import StarRating from './Components/Pages/StarRating';
+import Wellnessdetail from './Components/Pages/Wellnessdetail';
+import ProtectedRoute from "./Components/Pages/ProtectedRoute";
 
 
 const Layout = ({ children }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <>
-      <Header sidebarCollapsed={sidebarCollapsed} setSidebarCollapsed={setSidebarCollapsed} />
-      <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
-      <div className={`main-content ${sidebarCollapsed ? "collapsed" : "expanded"}`}>{children}</div>
+      <Header
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+      />
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+      />
+      <div className={`main-content ${sidebarCollapsed ? "collapsed" : "expanded"}`}>
+        {children}
+      </div>
     </>
-  )
-}
+  );
+};
 
 
 function App() {
   return (
     <Router>
       <Routes>
- 
+
+       
         <Route path="/" element={<Login />} />
-           { <Route path="/login" element={<Login />} /> }
-         <Route path="/customer/OTP" element={<Login />} />
-      
-     
+        <Route path="/login" element={<Login />} />
+
+        
         <Route
           path="/dashboard"
           element={
-            <Layout>
-              <Dashboard />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Dashboard />
+              </Layout>
+             </ProtectedRoute>
           }
         />
+
+       
         <Route
           path="/product"
           element={
-            <Layout>
-              <Product />
-            </Layout>
+             <ProtectedRoute>
+              <Layout>
+                <Product />
+              </Layout>
+             </ProtectedRoute>
           }
         />
+
+      
         <Route
           path="/order"
           element={
-            <Layout>
-              <Order />
-            </Layout>
+             <ProtectedRoute>
+              <Layout>
+                <Order />
+              </Layout>
+             </ProtectedRoute>
+          }
+        />
+
+       
+        <Route
+          path="/Doctor"
+          element={
+             <ProtectedRoute>
+              <Layout>
+                <Doctor />
+              </Layout>
+             </ProtectedRoute>
           }
         />
 
          <Route
-          path="/Doctor"
-          element={
-            <Layout>
-              <Doctor />
-            </Layout>
-          }
-        />
-        <Route
           path="/customer"
           element={
-            <Layout>
-              <Customer />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Customer />
+              </Layout>
+             </ProtectedRoute>
           }
         />
-        <Route
+<Route
           path="/vendors"
           element={
-            <Layout>
-              <Vendors />
-            </Layout>
+             <ProtectedRoute>
+              <Layout>
+                <Vendors />
+              </Layout>
+             </ProtectedRoute>
           }
         />
 
-        
+      
         <Route
           path="/history"
           element={
-            <Layout>
-              <History />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <History />
+              </Layout>
+          </ProtectedRoute>
           }
         />
 
- 
+       
         <Route
           path="/Allpatient"
           element={
-            <Layout>
-              <Allpatient/>
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Allpatient />
+              </Layout>
+           </ProtectedRoute>
           }
         />
 
+       
+        <Route
+          path="/Wellnessdetail"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Wellnessdetail />
+              </Layout>
+             </ProtectedRoute>
+          }
+        />
 
-  <Route
+       
+        <Route
           path="/Center"
           element={
-            <Layout>
-              <Center />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Center />
+              </Layout>
+             </ProtectedRoute>
           }
         />
 
- <Route
-          path="/Booking"
-          element={
-            <Layout>
-              <Booking />
-            </Layout>
-          }
-        />
+       
+       
 
-<Route
+       
+        <Route
           path="/Support"
           element={
-            <Layout>
-              <Support />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Support />
+              </Layout>
+           </ProtectedRoute>
           }
         />
 
         
-         <Route
+        <Route
           path="/Vendorproduct/:vendorId"
           element={
-            <Layout>
-              <Vendorproduct />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Vendorproduct />
+              </Layout>
+            </ProtectedRoute>
           }
         />
-<Route
+ <Route
           path="/Orderlist/:customerId"
           element={
-            <Layout>
-              <Orderlist />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Orderlist />
+              </Layout>
+             </ProtectedRoute>
           }
         />
 
+       
         <Route
-          path="/Patient/:PatientId"
+          path="/StarRating"
           element={
-            <Layout>
-              <Patient />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <StarRating />
+              </Layout>
+             </ProtectedRoute>
           }
         />
+
+      
+       
         <Route
           path="/DoctorDetail/:DoctorId"
           element={
-            <Layout>
-              <DoctorDetail />
-            </Layout>
+
+            
+           <ProtectedRoute>
+              <Layout>
+                <DoctorDetail />
+              </Layout>
+           </ProtectedRoute>
           }
         />
-            <Route
+
+      
+        <Route
           path="/Items/:PaymentId"
           element={
-            <Layout>
-              <Items />
-            </Layout>
+             <ProtectedRoute>
+              <Layout>
+                <Items />
+              </Layout>
+             </ProtectedRoute>
           }
         />
-        
 
+      
+        <Route
+          path="/Auditlogs"
+          element={
+             <ProtectedRoute>
+              <Layout>
+                <Auditlogs />
+              </Layout>
+             </ProtectedRoute>
+          }
+        />
 
-         
-        
       </Routes>
     </Router>
   );

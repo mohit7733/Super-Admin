@@ -2,6 +2,12 @@ import React, { useState, useEffect } from "react";
 import WeeklyOrdersChart from "../Charts/WeeklyOrdersChart";
 import { FaUsers, FaStore, FaBox, FaUserMd } from "react-icons/fa";
 import BASE_URL from "../../Base";
+import { useNavigate } from "react-router-dom";
+
+import { ToastContainer, toast } from "react-toastify"
+import { useRef } from "react";
+
+
 
 const Dashboard = () => {
   const [customerData, setCustomerData] = useState([]);
@@ -29,106 +35,137 @@ const Dashboard = () => {
 
   const [weekStart, setWeekStart] = useState("sun");
   const [showRevenue, setShowRevenue] = useState(true);
+  const [stats, setStats] = useState({
+  total_customers: 0,
+  active_vendors: 0,
+  total_products: 0,
+  verified_doctors: 0
+});
+const [statsLoading, setStatsLoading] = useState(true);
+const [statsError, setStatsError] = useState(null);
+const navigate = useNavigate();
 
-  // Pagination logic
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = orderData.slice(indexOfFirstOrder, indexOfLastOrder);
   const totalPages = Math.ceil(orderData.length / ordersPerPage);
 
     const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
-
-
-  // Metrics
   const metrics = [
-    { title: "TOTAL CUSTOMERS", value: customerData.length, color: "purple", icon: <FaUsers /> },
-    {
-      title: "ACTIVE VENDORS",
-      value: vendorData.filter((v) => v.is_approved === true).length,
-      color: "red",
-      icon: <FaStore />,
-    },
-    { title: "TOTAL PRODUCTS", value: productData.length, color: "blue", icon: <FaBox /> },
-    {
-      title: "VERIFIED DOCTOR",
-      value: doctorData.filter((d) => d.assured_muni).length,
-      color: "green",
-      icon: <FaUserMd />,
-    },
-  ];
+  { 
+    title: "TOTAL CUSTOMERS", 
+    value: stats.total_customers, 
+    color: "purple", 
+    icon: <FaUsers /> 
+  },
+  { 
+    title: "ACTIVE VENDORS", 
+    value: stats.active_vendors, 
+    color: "red", 
+    icon: <FaStore /> 
+  },
+  { 
+    title: "TOTAL PRODUCTS", 
+    value: stats.total_products, 
+    color: "blue", 
+    icon: <FaBox /> 
+  },
+  { 
+    title: "VERIFIED DOCTOR", 
+    value: stats.verified_doctors, 
+    color: "green", 
+    icon: <FaUserMd /> 
+  },
+];
+
+const statusLabelMap = {
+  placed: "Placed",
+  confirmed: "Confirmed",
+  shipped: "Shipped",
+  out_for_delivery: "Out for Delivery",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+  returned: "Returned",
+  refunded: "Refunded",
+  packing: "Packing",
+
+
+};
 
   const getOrderList = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/ecom/order/`);
-      const data = await response.json();
-      setOrderData(data.data || []);
-    } catch (err) {
-      console.error(err.message);
-      setOrderError("Something went wrong while fetching data.");
-    } finally {
-      setOrderLoading(false);
-    }
-  };
+  const token = sessionStorage.getItem("superadmin_token");
 
-  const getCustomerList = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/ecom/customer/`);
-      const data = await response.json();
-      setCustomerData(data.data || []);
-    } catch (err) {
-      console.error(err.message);
-      setCustomerError("Something went wrong while fetching data.");
-    } finally {
-      setCustomerLoading(false);
-    }
-  };
+ 
 
-  const getVendorList = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/ecom/vendor/`);
-      const data = await res.json();
-      setVendorData(data.data || []);
-    } catch (err) {
-      console.error(err.message);
-      setVendorError("Something went wrong while fetching data.");
-    } finally {
-      setVendorLoading(false);
+  try {
+    const response = await fetch(`${BASE_URL}/orders/order/`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
     }
-  };
+   
 
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/ecom/product/`);
-      const data = await res.json();
-      setProducts(Array.isArray(data) ? data : data.results || []);
-    } catch (err) {
-      console.error(err.message);
-      setProductError("Something went wrong while fetching data.");
-    } finally {
-      setLoadingProduct(false);
+    const data = await response.json();
+    setOrderData(data.data || []);
+  } catch (err) {
+    console.error(err);
+    setOrderError("Something went wrong while fetching orders.");
+  } finally {
+    setOrderLoading(false);
+  }
+};
+
+const getDashboardStats = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+ 
+
+  try {
+    const response = await fetch(`${BASE_URL}/orders/dashboard/stats/`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+   if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
     }
-  };
 
-  const getDoctorList = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/ecom/doctor/`);
-      const data = await res.json();
-      setDoctorData(data.data || []);
-    } catch (err) {
-      console.error(err.message);
-      setErrorDoctor("Something went wrong while fetching data.");
-    } finally {
-      setLoadingDoctor(false);
-    }
-  };
+    const data = await response.json();
+    setStats(data || {});
+  } catch (err) {
+    console.error(err);
+    setStatsError("Failed to load dashboard stats");
+  } finally {
+    setStatsLoading(false);
+  }
+};
 
-  useEffect(() => {
-    getOrderList();
-    getCustomerList();
-    getVendorList();
-    fetchProducts();
-    getDoctorList();
-  }, []);
+ const apiCalled = useRef(false);
+
+useEffect(() => {
+  if (apiCalled.current) return;
+
+  apiCalled.current = true;
+  getOrderList();
+  getDashboardStats();
+}, []);
+
 
   return (
     <div className="dashboard">
@@ -197,9 +234,11 @@ const Dashboard = () => {
             </thead>
             <tbody>
               {orderLoading ? (
-                <tr>
-                  <td colSpan="5">Loading Orders...</td>
-                </tr>
+                  <tr>
+            <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
+              <div className="circular-loader"></div>
+            </td>
+          </tr>
               ) : orderError ? (
                 <tr>
                   <td colSpan="5" style={{ color: "red" }}>
@@ -213,7 +252,7 @@ const Dashboard = () => {
                     <td>{order.customer_name}</td>
                     <td>{order.created_at ? new Date(order.created_at).toISOString().split("T")[0] : ""}</td>
                     <td>
-                      <span className={`status-badge ${order.order_status}`}>{order.order_status}</span>
+                    {statusLabelMap[order?.order_status] || order?.order_status}
                     </td>
                     <td>₹{order.total_amount}</td>
                   </tr>
@@ -245,7 +284,20 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+        <ToastContainer
+              position="top-center"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              closeButton
+            />
     </div>
+    
   );
 };
 

@@ -7,7 +7,8 @@ import HistoryIcon from '@mui/icons-material/History';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import HealingIcon from '@mui/icons-material/FitnessCenter';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
-// import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import { FiClock, FiList } from "react-icons/fi";
+
 import { FaTicketAlt } from "react-icons/fa";
 
 <FaTicketAlt />
@@ -63,12 +64,7 @@ export const SidebarData = () => [
     path:"/Center",
 
   },
-  //  {
-  //   title:" Booking",
-  //   icon:<EventAvailableIcon sx={{ fontSize:20}}/>,
-  //   path:"/Booking",
-
-  // },
+  
   {
     title:" Patient",
     icon: <PersonIcon sx={{ fontSize: 20 }}/>,
@@ -81,6 +77,12 @@ export const SidebarData = () => [
     path:"/Support",
 
   },
+  {
+    title:"Audit Logs",
+    icon:<FiClock  sx={{fontSize:20}}/>,
+    path:"/Auditlogs"
+      
+  }
 
 ];
 

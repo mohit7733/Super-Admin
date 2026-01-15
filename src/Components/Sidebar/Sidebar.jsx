@@ -17,19 +17,13 @@ const Sidebar = ({ collapsed }) => {
       <div className="sidebar-header">
         <div className="logo1">
           <div>
- {/* <imgwidth: 111px;
-    height: 51px;
-    margin-top: 5px;
-        src={logo1}
-        alt="Sidebar Icon"
-        style={{ width: '70px', height: '92px', backgroundColor:'#466425', }}
-      /> */}
+ 
           </div>
           {collapsed ? <span className="logo-collapsed">A</span> : <img
         src={logo1}
         alt="Sidebar Icon"
         className="logo-expanded"
-        style={{ width: '111px', height: '51px', marginTop: '5px' }}
+        style={{ width: '111px', height: '51px', marginTop: '3px' ,marginLeft:'64px'}}
 
       /> }
         </div>

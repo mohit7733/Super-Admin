@@ -112,8 +112,6 @@ const Support = () => {
               <th>Priority</th>
               <th>Status</th>
               <th>Date</th>
-             
-
             </tr>
           </thead>
           <tbody>
