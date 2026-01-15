@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
 import { ToastContainer, toast } from "react-toastify"
+import BASE_URL from "../../Base";
 import "react-toastify/dist/ReactToastify.css"
 
 const Allpatient = () => {
@@ -42,7 +43,7 @@ const [newPatient, setNewPatient] = useState({
 
 const getAllpatientList = async () => {
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/patient/", {
+      const response = await fetch(`${BASE_URL}/ecom/patient/`, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -76,7 +77,7 @@ const handleAddPatient = async (e) => {
   e.preventDefault();
 
   try {
-    const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/patient/", {
+    const response = await fetch(`${BASE_URL}/ecom/patient/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -133,7 +134,7 @@ const handleDownload = () => {
 const handlePatientDelete = async (id) => {
   try {
     const response = await fetch(
-      `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/patient/${id}/`,
+   `${BASE_URL}/ecom/patient/${id}/`,
       {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -171,7 +172,7 @@ const handleEditPatient = async (e) => {
 
   try {
     const response = await fetch(
-      `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/patient/${selectedPatient.id}/`,
+     `${BASE_URL}/ecom/patient/${selectedPatient.id}/`,
       {
         method: "PUT",
         headers: {
@@ -341,8 +342,6 @@ const handleEditPatient = async (e) => {
                 onChange={handleInputChange}
               
               />
-       
-
      
               <label>Age:</label>
               <input
@@ -361,9 +360,6 @@ const handleEditPatient = async (e) => {
                 value={newPatient.description}
                 onChange={handleInputChange}
               />
-
-
-
                   <label>Gender:</label>
               <select
                 name="gender"
@@ -442,6 +438,8 @@ const handleEditPatient = async (e) => {
   
   </div>
 )}
+
+
 
 {deleteConfirmModal && (
   <div className="modal">

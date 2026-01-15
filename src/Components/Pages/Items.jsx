@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { ToastContainer, toast } from "react-toastify";
+import BASE_URL from "../../Base";
 
 import "react-toastify/dist/ReactToastify.css";
 const Items = () => {
@@ -12,7 +13,7 @@ const[ItemsError,setItemsError]=useState(null);
     const { PaymentId } = params;
     const getItemsList= async () => {
     try {
-       const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/payment/${PaymentId}/`, {
+       const response = await fetch( `${BASE_URL}/ecom/payment/${PaymentId}/`, {
         method: 'GET',
         headers: {
           Accept: "application/json",
@@ -84,6 +85,7 @@ getItemsList();
       </tr>
     ))
   ) : (
+
     <tr>
       <td colSpan="5" style={{ textAlign: "center" }}>
         No Data Found

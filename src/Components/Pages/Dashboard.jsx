@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import WeeklyOrdersChart from "../Charts/WeeklyOrdersChart";
 import { FaUsers, FaStore, FaBox, FaUserMd } from "react-icons/fa";
+import BASE_URL from "../../Base";
 
 const Dashboard = () => {
   const [customerData, setCustomerData] = useState([]);
@@ -58,7 +59,7 @@ const Dashboard = () => {
 
   const getOrderList = async () => {
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/order/");
+      const response = await fetch(`${BASE_URL}/ecom/order/`);
       const data = await response.json();
       setOrderData(data.data || []);
     } catch (err) {
@@ -71,7 +72,7 @@ const Dashboard = () => {
 
   const getCustomerList = async () => {
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/customer/");
+      const response = await fetch(`${BASE_URL}/ecom/customer/`);
       const data = await response.json();
       setCustomerData(data.data || []);
     } catch (err) {
@@ -84,7 +85,7 @@ const Dashboard = () => {
 
   const getVendorList = async () => {
     try {
-      const res = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/");
+      const res = await fetch(`${BASE_URL}/ecom/vendor/`);
       const data = await res.json();
       setVendorData(data.data || []);
     } catch (err) {
@@ -97,7 +98,7 @@ const Dashboard = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/product/");
+      const res = await fetch(`${BASE_URL}/ecom/product/`);
       const data = await res.json();
       setProducts(Array.isArray(data) ? data : data.results || []);
     } catch (err) {
@@ -110,7 +111,7 @@ const Dashboard = () => {
 
   const getDoctorList = async () => {
     try {
-      const res = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/doctor/");
+      const res = await fetch(`${BASE_URL}/ecom/doctor/`);
       const data = await res.json();
       setDoctorData(data.data || []);
     } catch (err) {

@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import BASE_URL from "../../Base";
 
 const userId = localStorage.getItem("USER_ID")
 
@@ -29,12 +30,10 @@ const Customers = () => {
   const [customerData, setCustomerData] = useState([])
   const [error, setCustomerError] = useState(null)
   const [Loading, setCustomerLoading] = useState(true)
-
   const [CustomerForm, setCustomerForm] = useState(initialCustomerFormState)
   const [editingCustomerId, setEditingCustomerId] = useState(null)
   const [customermodalOpen, setCustomerModalOpen] = useState(false)
   const [customerotpModal, setCustomerOtpModal] = useState(false)
-  // const [OTP, setOtp] = useState("")
   const [ISUserID, setISUserID] = useState(false)
   const [otpVerified, setOtpVerified] = useState(false)
   const navigate = useNavigate()
@@ -49,11 +48,11 @@ const Customers = () => {
   const bulktableRef = useRef(null);
   const fetchedOnce = useRef(false);
   const [userId, setUserId] = useState(null);
+  const [currentpage,setCurrentpage]=useState(1);
+  const[customerperpage,setcustomerperpage]=useState(5);
+
+  
     
-
-
-
-
   const validateCustomerForm = () => {
     const errors = {};
 
@@ -75,6 +74,14 @@ const Customers = () => {
     return Object.keys(errors).length === 0;
   };
 
+//   const indexoflastcustomer=currentpage*customerperpage;
+//   const indexoffirstcustomer=indexoflastcustomer - customerperpage;
+//   const  currentCustomer=filteredCustomers.slice(indexoffirstcustomer,indexoflastcustomer)
+//  const totalPages = Math.ceil(filteredCustomers.length /customerperpage);
+// const handlePageChange =(pagenumber)=>setCurrentpage(pagenumber);
+
+
+  
   const validatePhoneForm = () => {
     const errors = {}
 
@@ -125,8 +132,6 @@ const Customers = () => {
     XLSX.writeFile(wb, "Customers.xlsx");
   };
 
-
-
   const handleNavigate = (id) => {
     navigate(`/Orderlist/${id}`)
   }
@@ -175,7 +180,7 @@ const Customers = () => {
     console.log("mobilenumber", `+91${CustomerForm.verified_phone_number}`)
 
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/send-otp/", {
+      const response = await fetch(`${BASE_URL}/user/send-otp/`,{
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -194,16 +199,7 @@ const Customers = () => {
 
         const Is_user = data.is_new_user
         setISUserID(Is_user)
-        //         toast.success("OTP sent successfully", {
-        //   position: "top-center",
-        //   autoClose: 2000,
-        //   onClose: () => {
-        //     setCustomerOtpModal(true)
-        //   },
-        // })
-        setCustomerOtpModal(true);
-
-
+        setCustomerOtpModal(true)
         toast.success("OTP sent successfully", {
           position: "top-center",
           autoClose: 2000,
@@ -233,7 +229,7 @@ const Customers = () => {
     console.log("idddddd", id)
 
     try {
-      const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/customer/${id}/`, {
+      const response = await fetch(`${BASE_URL}/ecom/customer/${id}/`, {
         method: "DELETE",
       })
 
@@ -277,10 +273,10 @@ const Customers = () => {
 
     console.log("editnfcustomeidd", editingCustomerId)
 
-    const method = editingCustomerId ? "PUT" : "POST"
-    const url = editingCustomerId
-      ? `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/customer/${editingCustomerId}/`
-      : "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/customer/"
+    const method = editingCustomerId ? "PUT" : "POST";
+  const url = editingCustomerId
+    ? `${BASE_URL}/ecom/customer/${editingCustomerId}/`
+    : `${BASE_URL}/ecom/customer/`;
 
     console.log("method", method, url, userId)
 
@@ -344,7 +340,7 @@ const Customers = () => {
     }
 
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/send-otp/", {
+      const response = await fetch(`${BASE_URL}/user/send-otp/`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -375,93 +371,6 @@ const Customers = () => {
   };
 
 
-  // const handleOtpSubmit = async (e) => {
-  //   e.preventDefault()
-
-  //   if (!validateOtpForm()) {
-  //     return
-  //   }
-
-  //   try {
-  //     let response
-
-  //     const OTPValue = getOtpValue()
-  //     console.log("Final OTP", OTPValue)
-
-  //     const payload = {
-  //       phone_number: `+91${CustomerForm.verified_phone_number}`,
-  //       otp: OTPValue,
-  //     }
-
-  //     console.log("paloadd", payload);
-
-  //     if (ISUserID) {
-  //       response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/register/", {
-  //         method: "POST",
-  //         headers: {
-  //           Accept: "application/json",
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(payload),
-  //       })
-  //     } else {
-  //       response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/customerlogin/", {
-  //         method: "POST",
-  //         headers: {
-  //           Accept: "application/json",
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(payload),
-  //       })
-  //     }
-
-  //     const data = await response.json()
-  //     console.log("serverreposne1111", response)
-  //     console.log("dataaresposne", data)
-
-  //     if (ISUserID) {
-  //       localStorage.setItem("USER_ID", data.user_id)
-  //     }
-
-  //     if (response.ok) {
-
-
-
-  //       if (data.is_new_customer===true|| data?.is_customer===true) {
-  //         toast.info(" Customer already exists with this number", {
-  //           position: "top-center",
-  //           autoClose: 3000,
-  //         })
-  //         setCustomerOtpModal(false)
-  //         setCustomerForm(initialCustomerFormState)
-  //         setOtpDigits(["", "", "", ""])
-  //       } else {
-  //         toast.success(" OTP verified! Please complete registration", {
-  //           position: "top-center",
-  //           autoClose: 2000,
-  //         })
-  //         setOtpVerified(false)
-  //         setCustomerModalOpen(true)
-  //         setCustomerOtpModal(false)
-  //         setOtpDigits(["", "", "", ""])
-  //       }
-  //     } else {
-  //       toast.error(" Invalid or expired OTP!", {
-  //         position: "top-center",
-  //         autoClose: 3000,
-  //       })
-  //     }
-  //   } catch (err) {
-  //     console.error("OTP verification failed", err)
-  //     toast.error(" Failed to verify OTP. Please try again", {
-  //       position: "top-center",
-  //       autoClose: 2000,
-  //     })
-  //   }
-  // }
-
-
-
   const handleOtpSubmit = async (e) => {
   e.preventDefault();
 
@@ -479,7 +388,7 @@ const Customers = () => {
     let response;
     if (ISUserID) {
    
-      response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/register/", {
+      response = await fetch(`${BASE_URL}/user/register/`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -489,7 +398,7 @@ const Customers = () => {
       });
     } else {
      
-      response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/customerlogin/", {
+      response = await fetch(`${BASE_URL}/user/customerlogin/`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -504,10 +413,7 @@ const Customers = () => {
     console.log("data response", data);
 
     if (response.ok) {
-      // if (ISUserID) {
-      //   localStorage.setItem("USER_ID", data.user_id);
-      // }
-
+    
       if (ISUserID) {
     
         if (data.is_customer === true) {
@@ -549,17 +455,7 @@ const Customers = () => {
   }
 };
 
-
-// const resetCustomerOtpFlow = () => {
-//   setCustomerOtpModal(false);
-//   setCustomerForm(initialCustomerFormState);
-//   setOtpDigits(["", "", "", ""]);
-// };
-
-
   const handleCustomerInputChange = (e) => {
-
-
     const { name, value } = e.target;
 
     let updatedValue = value;
@@ -576,10 +472,7 @@ const Customers = () => {
       [name]: updatedValue,
     }));
 
-    // setCustomerForm((prev) => ({
-    //   ...prev,
-    //   [name]: value,
-    // }))
+  
 
     if (formErrors[name]) {
       setFormErrors((prev) => ({
@@ -599,7 +492,7 @@ const Customers = () => {
 
   const getCustomerList = async () => {
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/customer/", {
+      const response = await fetch(`${BASE_URL}/ecom/customer/`, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -608,18 +501,11 @@ const Customers = () => {
       })
       const data = await response.json()
       const sortedData = data.data
-
-
       setCustomerData(sortedData)
-
       console.log("customerrdatta---->", sortedData)
     } catch (err) {
       console.error(err.message)
       setCustomerError("Something went wrong while fetching data.")
-      // toast.error(" Failed to fetch customer data", {
-      //   position: "top-center",
-      //   autoClose: 2000,
-      // })
     } finally {
       setCustomerLoading(false)
     }
@@ -628,19 +514,13 @@ const Customers = () => {
   useEffect(() => {
     if (!fetchedOnce.current) {
       getCustomerList();
-      fetchedOnce.current = true; // mark as fetched
+      fetchedOnce.current = true; 
     }
   }, []);
 
 
-  // const filteredCustomers = customerData?.filter(
-  //   (customer) =>
-  //     customer?.first_name === null ||
-  //     customer?.first_name?.toLowerCase().includes(searchcustomerTerm.toLowerCase())
-  // ).sort((a, b) => a.first_name.localeCompare(b.first_name))
-
-  // console.log('customerData-',customerData)
-  const filteredCustomers = [...customerData] // copy first
+ 
+  const filteredCustomers = [...customerData] 
     .filter((customer) =>
       !customer?.first_name ||
       customer?.first_name?.toLowerCase().includes(searchcustomerTerm.toLowerCase())
@@ -661,6 +541,17 @@ const Customers = () => {
     return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear()
   }).length
 
+
+   const indexoflastcustomer=currentpage*customerperpage;
+  const indexoffirstcustomer=indexoflastcustomer - customerperpage;
+  const  currentCustomer=filteredCustomers.slice(indexoffirstcustomer,indexoflastcustomer)
+ const totalPages = Math.ceil(filteredCustomers.length /customerperpage);
+const handlePageChange =(pagenumber)=>setCurrentpage(pagenumber);
+useEffect(() => {
+  setCurrentpage(1);
+}, [searchcustomerTerm]);
+
+
   return (
     <>
       <div className="page-header">
@@ -679,16 +570,6 @@ const Customers = () => {
         </div>
 
         <div className="filter-controls">
-
-
-          {/* <button className="add-customer-btn" onClick={() => setOtpVerified(true)}>
-            + Add Customer
-          </button> */}
-
-          {/* <button className="export-btn" onClick={() => exportToCSV(filteredCustomers)}>
-            Export Details
-          </button> */}
-
           <button
             className="add-customer-btn"
             onClick={() => {
@@ -747,8 +628,8 @@ const Customers = () => {
                   {error}
                 </td>
               </tr>
-            ) : filteredCustomers.length > 0 ? (
-              filteredCustomers.map((customer) =>
+            ) : currentCustomer.length > 0 ? (
+              currentCustomer.map((customer) =>
               (
                 <tr key={customer.id}>
                   <td>{customer.first_name} </td>
@@ -800,6 +681,25 @@ const Customers = () => {
             )}
           </tbody>
         </table>
+        {filteredCustomers.length>  customerperpage &&(
+          < div className="pagination"> 
+
+<button onClick={()=>handlePageChange(currentpage-1)}> Prev</button>
+{Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
+  <button 
+    key={number} 
+    className={currentpage === number ? "active" : ""} 
+    onClick={() => handlePageChange(number)}
+  >
+    {number}
+  </button>
+))}
+
+
+<button onClick={()=>handlePageChange(currentpage +1)}> Next</button>
+
+          </div>
+        )}
       </div>
 
       {customermodalOpen && (
@@ -913,11 +813,6 @@ const Customers = () => {
           </div>
         </div>
       )}
-
-
-
-
-
 
       {customerotpModal && (
         <div className="otp-modal-overlay">

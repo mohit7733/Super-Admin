@@ -1,11 +1,9 @@
 
-
-
-
 import * as XLSX from "xlsx";
 import { useRef } from "react";
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
+import BASE_URL from "../../Base";
 import "react-toastify/dist/ReactToastify.css";
 
 const OrderModal = ({ order, onClose }) => {
@@ -46,12 +44,14 @@ const Order = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [ordersPerPage, setOrdersPerPage] = useState(5);
+  const [activeType, setActiveType] = useState("product");
+
   const tableRef = useRef();
 
 
   const getOrderList = async () => {
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/order/", {
+      const response = await fetch(`${BASE_URL}/ecom/order/`, {
         method: "GET",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
       });
@@ -93,6 +93,7 @@ const Order = () => {
 
 
   const statusOptions = {
+
     placed: [
       { value: "confirmed", label: "Confirmed" },
       { value: "delivered", label: "Delivered" },
@@ -135,7 +136,7 @@ const Order = () => {
 
   const handleDeleteOrder = async (id) => {
     try {
-      const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/order/${id}/`, {
+      const response = await fetch(`${BASE_URL}/ecom/order/${id}/`, {
         method: "DELETE",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
       });
@@ -155,7 +156,7 @@ const Order = () => {
  
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/order/${id}/`, {
+      const response = await fetch(`${BASE_URL}/ecom/order/${id}/`, {
         method: "PUT",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
         body: JSON.stringify({ order_status: newStatus }),
@@ -173,21 +174,36 @@ const Order = () => {
   };
 
 
+ 
   const filteredOrder = orderData.filter(order => {
-    const matchesStatus = statusOrderFilter === "all" || order.order_status === statusOrderFilter;
+  const matchesType = order.order_type === activeType;
 
-    const matchesDate = !SelectedDate || (order.created_at && (() => {
-      const orderDate = new Date(order.created_at);
-      const selectedDate = new Date(SelectedDate);
-      return orderDate.getFullYear() === selectedDate.getFullYear() &&
-             orderDate.getMonth() === selectedDate.getMonth() &&
-             orderDate.getDate() === selectedDate.getDate();
-    })());
+  const matchesStatus =
+    statusOrderFilter === "all" || order.order_status === statusOrderFilter;
 
-    const matchesSearch = !searchOrderTerm || (order.customer_name && order.customer_name.toLowerCase().includes(searchOrderTerm.toLowerCase()));
+  const matchesDate =
+    !SelectedDate ||
+    (order.created_at &&
+      (() => {
+        const orderDate = new Date(order.created_at);
+        const selectedDate = new Date(SelectedDate);
+        return (
+          orderDate.getFullYear() === selectedDate.getFullYear() &&
+          orderDate.getMonth() === selectedDate.getMonth() &&
+          orderDate.getDate() === selectedDate.getDate()
+        );
+      })());
 
-    return matchesStatus && matchesDate && matchesSearch;
-  });
+  const matchesSearch =
+    !searchOrderTerm ||
+    (order.customer_name &&
+      order.customer_name
+        .toLowerCase()
+        .includes(searchOrderTerm.toLowerCase()));
+
+  return matchesType && matchesStatus && matchesDate && matchesSearch;
+});
+
 
   
   const indexOfLastOrder = currentPage * ordersPerPage;
@@ -245,6 +261,19 @@ const Order = () => {
          </div>
         </div>
      </div>
+<div className="filter-buttons">
+  <button
+    onClick={() => setActiveType("product")}
+  >
+    Product Orders
+  </button>
+  <button
+    onClick={() => setActiveType("consultation")}
+  >
+    Consultation Orders
+  </button>
+</div>
+
 
       <div className="table-container">
         <table ref={tableRef} className="order-table">
@@ -273,6 +302,7 @@ const Order = () => {
                   <td>{order.customer_name}</td>
                   <td>{order.created_at ? new Date(order.created_at).toISOString().split("T")[0] : ""}</td>
                   <td>{order.delivery_address_details?.house_details}, {order.delivery_address_details?.city}, {order.delivery_address_details?.pincode}</td>
+      
                   <td>₹{order.total_amount}</td>
                   <td>{order.payment_method}</td>
                   <td>{order.payment_status}</td>

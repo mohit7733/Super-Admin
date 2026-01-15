@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 const Support = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
+  
   const dummyTickets = [
     {
       id: "TCK-1001",

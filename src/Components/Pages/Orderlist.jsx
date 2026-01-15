@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import BASE_URL from "../../Base";
 
 
 const Orderlist = () => {
@@ -13,10 +14,13 @@ const Orderlist = () => {
   const [OrderlistData, setOrderlistData] = useState([]);
   const [error, setError] = useState(null);
   const [orderlistloading, setOrderlistloading] = useState(true);
+  const [CustomerData, setCustomerData] = useState([]);
+  const [Customererror, setCustomererror] = useState(null);
+  const [Customerloading, setCustomerloading] = useState(true);
 
   const fetchOrderlist = async () => {
     try {
-      const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/getorderbycustomerid/${customerId}/`, {
+      const response = await fetch(`${BASE_URL}/ecom/getorderbycustomerid/${customerId}/`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -42,7 +46,7 @@ const Orderlist = () => {
   const handlecancelorder = async (orderId) => {
     try {
       const response = await fetch(
-        `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/cancelorder/`,
+        `${BASE_URL}/ecom/cancelorder/`,
         {
           method: "POST",
           headers: {
@@ -60,7 +64,7 @@ const Orderlist = () => {
 
       const result = await response.json();
       console.log("Cancel Order Response:", result);
-toast.success("Order cancelled successfully ")
+      toast.success("Order cancelled successfully ")
       fetchOrderlist();
 
 
@@ -71,21 +75,50 @@ toast.success("Order cancelled successfully ")
     }
   };
 
-  
 
 
 
-const filteredOrders = OrderlistData.filter(order => {
-  const title = order.items[0]?.vendor_product?.title;
-  if (!title) return false;
-  return title.toLowerCase().includes(SearchOrderlistTerm.toLowerCase());
-});
+
+  const filteredOrders = OrderlistData.filter(order => {
+    const title = order.items[0]?.vendor_product?.title;
+    if (!title) return false;
+    return title.toLowerCase().includes(SearchOrderlistTerm.toLowerCase());
+  });
 
 
+  const getcustomerdetail = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/ecom/customer/${customerId}/`, {
+        method: 'GET',
+        headers: {
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          }
+        }
+      })
+      const data = await response.json();
+      setCustomerData(response)
+      console.log("ddddd", response)
 
-const showOrders = SearchOrderlistTerm.trim()
-  ? filteredOrders
-  : OrderlistData;
+    }
+    catch (err) {
+      console.error(err.message);
+      setCustomererror('Something went wrong while fetching data.');
+    }
+    finally {
+      setCustomerloading(false);
+    }
+
+  }
+  useEffect(() => {
+    getcustomerdetail();
+  }, [])
+
+
+  const showOrders = SearchOrderlistTerm.trim()
+    ? filteredOrders
+    : OrderlistData;
 
 
 
@@ -93,11 +126,9 @@ const showOrders = SearchOrderlistTerm.trim()
   return (
     <>
       <div className="page-header">
-   <h2> 
-  {OrderlistData.length > 0
-    ? OrderlistData[0]?.customer_name
-    : "No customer order found"}
-</h2>
+        <h2>
+          Customer Detail
+        </h2>
 
       </div>
 
@@ -130,14 +161,28 @@ const showOrders = SearchOrderlistTerm.trim()
         <div className="stat-card">
           <h3>Active Orders</h3>
           <div className="stat-value">
-{OrderlistData.filter((v)=> v.order_status === "placed").length}
+            {OrderlistData.filter((v) => v.order_status === "placed").length}
           </div>
 
         </div>
         <div className="stat-card">
           <h3>Sucessful order</h3>
           <div className="stat-value">
-{OrderlistData.filter((v)=> v.order_status ==="delivered").length}
+            {OrderlistData.filter((v) => v.order_status === "delivered").length}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="doctor-info">
+          {/* <img src="" alt="Customer" className="doctor-photo" /> */}
+          <div className="doctor-details">
+            <h3>{CustomerData?.firstname} {CustomerData?.lastname}</h3>
+            <p><strong>First Name:</strong> {CustomerData?.firstname}</p>
+
+            <p><strong>Email:</strong> {CustomerData?.email}</p>
+            <p><strong>Phone Number:</strong> {CustomerData?.verified_phone_number}</p>
+
           </div>
         </div>
       </div>
@@ -168,10 +213,10 @@ const showOrders = SearchOrderlistTerm.trim()
               </td>
             </tr>
           ) : showOrders.length > 0 ? (
-            showOrders.map((order,index) => (
+            showOrders.map((order, index) => (
               <tr key={order.id}>
 
-                <td>{index+1}</td>
+                <td>{index + 1}</td>
                 <td>{order.items[0]?.vendor_product?.title}</td>
                 <td>
                   <img
@@ -215,10 +260,11 @@ const showOrders = SearchOrderlistTerm.trim()
           )}
         </tbody>
       </table>
-<ToastContainer
+      <ToastContainer
         position="top-center"
         autoClose={3000}
         hideProgressBar={false}
+
         newestOnTop={false}
         closeOnClick
         rtl={false}
@@ -227,9 +273,6 @@ const showOrders = SearchOrderlistTerm.trim()
         pauseOnHover
         closeButton
       />
-
-
-
     </>
   );
 };

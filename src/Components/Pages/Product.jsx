@@ -1,6 +1,7 @@
 import React,  { useState, useEffect, useRef }  from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import BASE_URL from "../../Base";
 
 const initialProductForm = {
   title: "",
@@ -33,7 +34,7 @@ const Product = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/product/");
+      const response = await fetch(`${BASE_URL}/ecom/product/`);
       const data = await response.json();
       if (Array.isArray(data)) {
         setProducts(data);
@@ -56,7 +57,7 @@ const Product = () => {
   
   const fetchCategoryOptions = async () => {
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/productcategory/");
+      const response = await fetch(`${BASE_URL}/ecom/productcategory/`);
       const data = await response.json();
       setCategoryOptions(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -91,7 +92,7 @@ const Product = () => {
     if (!deleteProductId) return;
     try {
       const response = await fetch(
-        `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/product/${deleteProductId}/`,
+       `${BASE_URL}/ecom/product/${deleteProductId}/`,
         { method: "DELETE" }
       );
 
@@ -148,10 +149,15 @@ const validateForm = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    // const method = productEditing ? "PUT" : "POST";
+    // const url = productEditing
+    //   ? `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/product/${productEditing}/`
+    //   : "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/product/";
     const method = productEditing ? "PUT" : "POST";
-    const url = productEditing
-      ? `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/product/${productEditing}/`
-      : "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/product/";
+const url = productEditing
+  ? `${BASE_URL}/ecom/product/${productEditing}/`
+  : `${BASE_URL}/ecom/product/`;
+
 
     const formData = new FormData();
     formData.append("title", productForm.title);
@@ -172,7 +178,7 @@ const validateForm = () => {
 
       if (!response.ok) throw new Error("Failed to save product");
       const savedProduct = await response.json();
-
+console.log("response",response)
       setProducts((prev) =>
         productEditing
           ? prev.map((p) => (p.id === savedProduct.id ? savedProduct : p))
@@ -185,7 +191,6 @@ const validateForm = () => {
       toast.error("Failed to submit product");
     }
   };
-
 
   const handleProductCloseModal = () => {
     setShowProductModal(false);

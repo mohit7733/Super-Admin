@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import { useParams } from 'react-router-dom';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import BASE_URL from "../../Base";
 
 const Patient = () => {
   const [Loading, setPatientLoading] = useState(true);
@@ -30,7 +31,7 @@ const Patient = () => {
   const getPatientlist = async () => {
     try {
       const response = await fetch(
-        `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/PatientsByDoctor/${PatientId}/`
+       `${BASE_URL}/ecom/PatientsByDoctor/${PatientId}/`
       );
       const data = await response.json();
       console.log("responseee", data);
@@ -70,15 +71,15 @@ const Patient = () => {
 
 
 
-  const getCustomers = async () => {
-    try {
-      const res = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/customer/");
-      const data = await res.json();
-      setCustomers(data.data);
-    } catch (err) {
-      console.error(err.message);
-    }
-  };
+  // const getCustomers = async () => {
+  //   try {
+  //     const res = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/customer/");
+  //     const data = await res.json();
+  //     setCustomers(data.data);
+  //   } catch (err) {
+  //     console.error(err.message);
+  //   }
+  // };
 
 
 
@@ -88,7 +89,7 @@ const Patient = () => {
 
     try {
       const response = await fetch(
-        `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/consultationapproval/`,
+       `${BASE_URL}/ecom/consultationapproval/`,
         {
           method: "POST",
           headers: {
@@ -122,9 +123,9 @@ const Patient = () => {
   };
 
 
-  useEffect(() => {
-    getCustomers();
-  }, []);
+  // useEffect(() => {
+  //   getCustomers();
+  // }, []);
 
 
   return (

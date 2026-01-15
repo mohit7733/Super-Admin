@@ -33,7 +33,7 @@ export const SidebarData = () => [
 
   },
   {
-    title:"vendors",
+    title:"Vendors",
     icon:<StorefrontIcon sx={{ fontSize: 20 }}/>,
     path:"/Vendors",
 
@@ -58,19 +58,19 @@ export const SidebarData = () => [
 
   },
    {
-    title:" wellnesscenter",
+    title:" Wellnesscenter",
     icon:<HealingIcon sx={{ fontSize:20}}/>,
     path:"/Center",
 
   },
-   {
-    title:" Booking",
-    icon:<EventAvailableIcon sx={{ fontSize:20}}/>,
-    path:"/Booking",
+  //  {
+  //   title:" Booking",
+  //   icon:<EventAvailableIcon sx={{ fontSize:20}}/>,
+  //   path:"/Booking",
 
-  },
+  // },
   {
-    title:" patient",
+    title:" Patient",
     icon: <PersonIcon sx={{ fontSize: 20 }}/>,
     path:"/Allpatient",
 

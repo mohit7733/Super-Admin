@@ -4,6 +4,9 @@ import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import BASE_URL from "../../Base";
+
+
 const intialvendorProductform = {
   product: '',
   category: '',
@@ -59,7 +62,6 @@ const Vendorproduct = () => {
 
   });
 
-
   const [error, setError] = useState(null);
   const params = useParams();
   const { vendorId } = params;
@@ -67,7 +69,7 @@ const Vendorproduct = () => {
 
   const handleDeleteProduct = async (id) => {
     try {
-      const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendorproduct/${id}/`, {
+      const response = await fetch(`${BASE_URL}/ecom/vendorproduct/${id}/`, {
         method: 'DELETE'
       });
       if (!response.ok) throw new Error('Delete failed');
@@ -104,16 +106,16 @@ const Vendorproduct = () => {
     return Object.keys(errors).length === 0;
   };
 
-
-
   const validateVendorForm = () => {
     let newErrors = {};
+
     if (!formData.category) newErrors.category = "Category is required";
     if (!formData.product) newErrors.product = "Product is required";
     if (!formData.variant) newErrors.variant = "Variant is required";
 
     if (!formData.stock) newErrors.stock = "Stock is required";
     else if (isNaN(formData.stock)) newErrors.stock = "Stock must be a number";
+
 
     if (!formData.discount_percentage) newErrors.discount_percentage = "Discount % is required";
     else if (isNaN(formData.discount_percentage))
@@ -122,9 +124,9 @@ const Vendorproduct = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const validateProductAddForm = () => {
     let newErrors = {};
-
 
     if (!productAddForm.title) {
       newErrors.title = "Product title is required";
@@ -245,11 +247,7 @@ const Vendorproduct = () => {
         [name]: value,
       });
     }
-
-
-
   };
-
 
   const handlevariantsubmit = async (e) => {
     e.preventDefault();
@@ -269,7 +267,7 @@ const Vendorproduct = () => {
 
     try {
       const response = await fetch(
-        "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/productvariant/",
+      `${BASE_URL}/ecom/productvariant/`,
         {
           method: "POST",
           headers: {
@@ -305,8 +303,6 @@ const Vendorproduct = () => {
     }
   };
 
-
-
   const handleEditProduct = async (product) => {
 
     await fetchProductOptions(product.category?.id);
@@ -335,11 +331,9 @@ const Vendorproduct = () => {
     setShowform(true);
   };
 
-
-
   const fetchProductOptions = async (categoryID) => {
     try {
-      const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/productscategory/${categoryID}/`, {
+      const response = await fetch(`${BASE_URL}/ecom/productscategory/${categoryID}/`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -358,6 +352,7 @@ const Vendorproduct = () => {
   const handleVendorProductSubmit = async (e) => {
     e.preventDefault();
     if (!validateVendorForm()) return;
+
 
     let payload;
 
@@ -393,13 +388,21 @@ const Vendorproduct = () => {
     console.log("Vendorpoduct", payload);
 
     try {
-      let url = "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendorproduct/";
-      let method = "POST";
+      // let url = "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendorproduct/";
+      // let method = "POST";
 
-      if (isEditing) {
-        url = `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendorproduct/${isEditing}/`;
-        method = "PUT";
-      }
+      // if (isEditing) {
+      //   url = `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendorproduct/${isEditing}/`;
+      //   method = "PUT";
+      // }
+
+let url = `${BASE_URL}/ecom/vendorproduct/`;
+let method = "POST";
+
+if (isEditing) {
+  url = `${BASE_URL}/ecom/vendorproduct/${isEditing}/`;
+  method = "PUT";
+}
 
       const response = await fetch(url, {
         method,
@@ -416,11 +419,12 @@ const Vendorproduct = () => {
       if (!response.ok) {
         const errorData = await response.json();
         toast.error(errorData.error);
-         toast.error(errorData.non_field_errors[0])
+        toast.error(errorData.non_field_errors[0])
          
         return;
       }
 
+      
       toast.success(isEditing ? "Vendor product updated successfully!" : "Vendor product added successfully!");
       fetchVendorProducts();
       setformData(intialvendorProductform);
@@ -438,7 +442,7 @@ const Vendorproduct = () => {
   const fetchCategoryOptions = async () => {
 
     try {
-      const response = await fetch('https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/productcategory/', {
+      const response = await fetch(`${BASE_URL}/ecom/productcategory/`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -462,7 +466,7 @@ const Vendorproduct = () => {
   }
 
   const method = "POST";
-  const url = "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/product/";
+  const url = `${BASE_URL}/ecom/product/`;
 
   const formData = new FormData();
   formData.append("title", productAddForm.title);
@@ -510,7 +514,7 @@ const Vendorproduct = () => {
 
   const fetchVariantOptions = async (productID) => {
     try {
-      const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/variantbyproduct/${productID}/`, {
+      const response = await fetch(`${BASE_URL}/ecom/variantbyproduct/${productID}/`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -539,7 +543,7 @@ const Vendorproduct = () => {
     formData.append("slug", "milk");
 
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/productcategory/", {
+      const response = await fetch(`${BASE_URL}/ecom/productcategory/`, {
         method: "POST",
         body: formData,
       });
@@ -582,7 +586,7 @@ const Vendorproduct = () => {
 
   const fetchVendorProducts = async () => {
     try {
-      const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendorproductsbyvendorid/${vendorId}/`, {
+      const response = await fetch(`${BASE_URL}/ecom/vendorproductsbyvendorid/${vendorId}/`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',

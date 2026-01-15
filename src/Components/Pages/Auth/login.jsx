@@ -34,7 +34,6 @@ const Login = () => {
     setRememberMe(checked);
     
     if (!checked) {
-      
       setPhone('');
       setPassword('');
       localStorage.removeItem("phone_number");
@@ -45,7 +44,6 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    
     if (phone_number === '7807425002' && password === 'admin') {
       toast.success("Login Successful!", { position: "top-center", autoClose: 2000 });
       
@@ -130,3 +128,4 @@ const Login = () => {
 }
 
 export default Login;
+ 

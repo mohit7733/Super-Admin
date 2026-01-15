@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-
 const Booking = () => {
     const[filter,setFilter]=useState("all")
     const[searchTerm,setSearchTerm]=useState("")
@@ -14,6 +13,7 @@ const Booking = () => {
     time: "10:00 AM",
     status: "Pending",
   },
+
   {
     id: 2,
     patientName: "Jane Roe",
@@ -39,6 +39,7 @@ const filterData = dummyBookings
     booking.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     booking.doctorName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
   return (
     <>
@@ -74,8 +75,6 @@ const filterData = dummyBookings
           <h3>Total Consultation</h3>
           <div className="stat-value">{dummyBookings.length}</div>
         </div>
-       
-
         <div className="stat-card">
            
           <h3> Completed Consultation</h3>
@@ -92,7 +91,6 @@ const filterData = dummyBookings
        
         
         <div className="stat-card">
-            
           <h3>Approve Consultation</h3>
            <div className="stat-value">{dummyBookings.filter((c)=>c.status==="Confirmed").length}</div> 
         </div>
@@ -105,6 +103,7 @@ const filterData = dummyBookings
 
         }>Pending</button>
         
+
       </div>
 
 <div className="table-container">
@@ -161,7 +160,6 @@ const filterData = dummyBookings
       </div>
       {Bookingform && (
   <div className="modal">
-
 
       <form
         className="customer-form"

@@ -4,10 +4,9 @@ import { useNavigate } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { countries, statesByCountry } from "../data/locationData"
-
+import BASE_URL from "../../Base";
 
 const userId = localStorage.getItem("USER_ID")
-
 const initialFormState = {
   user: userId,
   store_name: "",
@@ -84,7 +83,7 @@ const Vendors = () => {
 
   const getVendorList = async () => {
     try {
-      const res = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/")
+      const res = await fetch(`${BASE_URL}/ecom/vendor/`)
       const data = await res.json()
       console.log("vendorlistss", data)
       setVendorData(data.data)
@@ -174,7 +173,7 @@ const Vendors = () => {
 
   const handleStatusChange = async (vendorId, newStatus) => {
     try {
-      const response = await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/${vendorId}/`, {
+      const response = await fetch(`${BASE_URL}/ecom/vendor/${vendorId}/`, {
         method: "PUT",
         headers: {
           Accept: "application/json",
@@ -209,7 +208,7 @@ const updateVendor = (updatedVendor) => {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/${id}/`, {
+      await fetch(`${BASE_URL}/ecom/vendor/${id}/`, {
         method: "DELETE",
       })
       setVendorData(vendorData.filter((v) => v.id !== id))
@@ -227,7 +226,7 @@ const handleResendOtp = async () => {
   }
 
   try {
-    const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/send-otp/", {
+    const response = await fetch(`${BASE_URL}/user/send-otp/`, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -342,13 +341,11 @@ const handleResendOtp = async () => {
       return
     }
 
-    const method = addressEditingId ? "PUT" : "POST"
-    const url =
-      addressEditingId === null
-        ? "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendoraddress/"
-        : `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendoraddress/${addressEditingId}/`
-
-    console.log(finalData, "id")
+   
+    const method = addressEditingId ? "PUT" : "POST";
+const url = addressEditingId
+  ? `${BASE_URL}/ecom/vendoraddress/${addressEditingId}/`
+  : `${BASE_URL}/ecom/vendoraddress/`;
 
     try {
       const response = await fetch(url, {
@@ -399,9 +396,12 @@ const handleResendOtp = async () => {
     if (uid) formData.append("user", uid);
   }
 
+    // const url = editingId
+    //   ? `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/${editingId}/`
+    //   : "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/"
     const url = editingId
-      ? `https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/${editingId}/`
-      : "https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/"
+  ? `${BASE_URL}/ecom/vendor/${editingId}/`
+  : `${BASE_URL}/ecom/vendor/`;
 
     try {
       const response = await fetch(url, {
@@ -449,7 +449,7 @@ const data = await response.json();
     }
 
     try {
-      const response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/send-otp/", {
+      const response = await fetch(`${BASE_URL}/user/send-otp/`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -485,37 +485,6 @@ const exportToCSV = () => {
     return;
   }
 
-
-// const handleBulkDelete = async () => {
-//   if (selectedVendors.length === 0) return;
-
-//   try {
-//     // Send DELETE request for each selected vendor
-//     await Promise.all(
-//       selectedVendors.map((id) =>
-//         fetch(`https://q8f99wg9-8000.inc1.devtunnels.ms/ecom/vendor/${id}/`, {
-//           method: "DELETE",
-//         })
-//       )
-//     );
-
-//     // Remove deleted vendors from state
-//     setVendorData((prev) =>
-//       prev.filter((vendor) => !selectedVendors.includes(vendor.id))
-//     );
-
-//     toast.success(`${selectedVendors.length} vendor(s) deleted successfully`);
-//     setSelectedVendors([]);
-//   } catch (err) {
-//     console.error(err);
-//     toast.error("Failed to delete selected vendors");
-//   } finally {
-//     setDeleteBulkModal(false);
-//   }
-// };
-
-
-
   const exportData = vendorData.map((vendor, index) => ({
     "S.No": index + 1,
     "Store Name": vendor.store_name || "NA",
@@ -534,67 +503,7 @@ const exportToCSV = () => {
   XLSX.writeFile(wb, "Vendors_List.xlsx");
 };
 
-  // const handlevendorotpsubmit = async (e) => {
-  //   e.preventDefault()
-
-  //   if (!validateOTP()) {
-  //     toast.error("Please enter a valid 4-digit OTP")
-  //     return
-  //   }
-
-  //   const otpValue = otpDigits.join("")
-
-  //   try {
-  //     let response
-  //     const payload = {
-  //       phone_number: `+91${form.verified_phone_number}`,
-  //       otp: otpValue.trim(),
-  //     }
-  //     if (ISUserID) {
-  //       response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/register/", {
-  //         method: "POST",
-  //         headers: {
-  //           Accept: "application/json",
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(payload),
-  //       })
-  //     } else {
-  //       response = await fetch("https://q8f99wg9-8000.inc1.devtunnels.ms/user/vendorlogin/", {
-  //         method: "POST",
-  //         headers: {
-  //           Accept: "application/json",
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(payload),
-  //       })
-  //     }
-
-  //     const data = await response.json()
-  //     console.log("dataaresposne", data)
-
-  //     if (response.ok) {
-  //       localStorage.setItem("USER_ID", data.user_id)
-  //       if (!data.is_new_vendor) {
-  //         toast.error("Vendor is already created with this number")
-  //         setVendorotp(false)
-  //         setOtpDigits(["", "", "", ""])
-  //       } else {
-  //         setVendorotp(false)
-  //         setModalOpen(true)
-  //         setVendorverifiedModal(false)
-  //         setOtpDigits(["", "", "", ""])
-  //         toast.success("OTP verified! Please complete registration")
-  //       }
-  //     } else {
-  //       toast.error(data.message || "Failed to verify OTP.")
-  //     }
-  //   } catch (err) {
-  //     toast.error("Failed to verify OTP")
-  //     console.error(err)
-  //   }
-  // }
-
+  
 const handlevendorotpsubmit = async (e) => {
   e.preventDefault();
 
@@ -613,9 +522,9 @@ const handlevendorotpsubmit = async (e) => {
 
     let response;
     if (ISUserID) {
-      // Vendor Registration
+     
       response = await fetch(
-        "https://q8f99wg9-8000.inc1.devtunnels.ms/user/register/",
+       `${BASE_URL}/user/register/`,
         {
           method: "POST",
           headers: {
@@ -626,9 +535,9 @@ const handlevendorotpsubmit = async (e) => {
         }
       );
     } else {
-      // Vendor Login
+     
       response = await fetch(
-        "https://q8f99wg9-8000.inc1.devtunnels.ms/user/vendorlogin/",
+    `${BASE_URL}/user/vendorlogin/` ,
         {
           method: "POST",
           headers: {
@@ -645,29 +554,29 @@ const handlevendorotpsubmit = async (e) => {
 
     if (response.ok) {
       if (ISUserID) {
-        // Registration case
+      
         if (data.is_vendor === true) {
           toast.info("Vendor already exists with this number");
           setVendorotp(false);
           setOtpDigits(["", "", "", ""]);
         } else {
           toast.success("OTP verified! Please complete vendor registration");
-          setUserId(data.user_id); // Save in state for later registration
+          setUserId(data.user_id); 
           setModalOpen(true);
           setVendorotp(false);
           setVendorverifiedModal(false);
           setOtpDigits(["", "", "", ""]);
         }
       } else {
-        // Login case
+     
         if (data.is_new_vendor === false) {
           toast.info("Vendor already exists, logged in successfully");
-          localStorage.setItem("USER_ID", data.user_id); // Save in localStorage
+          localStorage.setItem("USER_ID", data.user_id); 
           setVendorotp(false);
           setOtpDigits(["", "", "", ""]);
         } else {
           toast.success("Vendor login successfully, please complete registration");
-          localStorage.setItem("USER_ID", data.user_id); // Save in localStorage
+          localStorage.setItem("USER_ID", data.user_id); 
           setModalOpen(true);
           setVendorotp(false);
           setVendorverifiedModal(false);
@@ -743,14 +652,6 @@ const handleCheckboxChange = (vendorId) => {
            <button className="export-btn" onClick={exportToCSV}>
   Export Details
 </button>
-{/* {selectedVendors.length > 0 && (
-  <button
-    className="add-vendor-btn"
-    onClick={() => setDeleteConfirmModal(true)}
-  >
-    Delete Selected 
-  </button>
-)} */}
 
           </div>
         </div>
@@ -789,11 +690,7 @@ const handleCheckboxChange = (vendorId) => {
             <tbody>
               {filteredVendors.map((vendor,index) => (
                 <tr key={vendor.id}>
-                  {/* <input
-        type="checkbox"
-        checked={selectedVendors.includes(vendor.id)}
-        onChange={() => handleCheckboxChange(vendor.id)}
-      /> */}
+                
                   <td className="id1">{index+1}</td>
                   <td>
                     {vendor.profile_picture ? (
@@ -817,9 +714,19 @@ const handleCheckboxChange = (vendorId) => {
                   <td>{vendor.verified_phone_number}</td>
                   <td>
                     <div className="action-buttons">
-                      <button className="action-btn view" title="View vendor product" onClick={() => handleNavigate(vendor.id)}>
+                      {/* <button className="action-btn view" title="View vendor product" onClick={() => handleNavigate(vendor.id)}>
                         👁
-                      </button>
+                      </button> */}
+                      {vendor.is_approved && (
+  <button
+    className="action-btn view"
+    title="View vendor product"
+    onClick={() => handleNavigate(vendor.id)}
+  >
+    👁
+  </button>
+)}
+
                       <button
                       title="Edit Vendor Details"
                         className="action-btn edit"
