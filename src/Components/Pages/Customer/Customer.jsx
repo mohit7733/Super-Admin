@@ -47,12 +47,18 @@ const Customers = () => {
   const bulktableRef = useRef(null);
   const fetchedOnce = useRef(false);
   const [userId, setUserId] = useState(null);
-  const [currentpage,setCurrentpage]=useState(1);
-  const[customerperpage,setcustomerperpage]=useState(5);
+  
+  const [thisMonthCount, setThisMonthCount] = useState(0);
+const [thisYearCount, setThisYearCount] = useState(0);
+
   const[ImageCustomerModal,setImageCustomerModal]=useState(false);
   const[ImageCustomerPreview,setImageCustomerPreview]=useState(null);
  const [openMenuId, setOpenMenuId] = useState(null);
- 
+ const [currentPage, setCurrentPage] = useState(1);
+const [totalCount, setTotalCount] = useState(0);
+const [nextPage, setNextPage] = useState(null);
+const [previousPage, setPreviousPage] = useState(null);
+
   
  
   
@@ -213,12 +219,7 @@ const handleCreateCustomer = async (e) => {
 };
 
 
-  const newThisYearCount = customerData?.filter((customer) => {
-    if (!customer.created_at) return false
-    const createdDate = new Date(customer.created_at)
-    const now = new Date()
-    return createdDate.getFullYear() === now.getFullYear()
-  })?.length
+  
 
   const handleCustomerFormSubmit = async (e) => {
   e.preventDefault();
@@ -337,68 +338,74 @@ const handleCustomerFileChange = (e) => {
   }
 
 
- const getCustomerList = async () => {
+
+const getCustomerList = async (page = 1, searchTerm = "") => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setCustomerLoading(true);
+
   try {
-    const data = await apiFetch(`${BASE_URL}/customers/customer/`, {
-      method: "GET",
-    });
+    const response = await fetch(
+      `${BASE_URL}/customers/customer/?page=${page}&search=${searchTerm}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    
-    if (!data) return;
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
 
-    const sortedData = data.data || [];
-    setCustomerData(sortedData);
-    console.log("customerrdatta ---->", sortedData);
+    const data = await response.json();
+
+    console.log("Customer API Response:", data);
+
+    setCustomerData(data.data || []);
+    setTotalCount(data.count || 0);
+    setNextPage(data.next);
+    setPreviousPage(data.previous);
+    setCurrentPage(page);
+    setThisMonthCount(data.this_month_count || 0);
+    setThisYearCount(data.this_year_count || 0);
 
   } catch (err) {
     console.error("Customer Fetch Error:", err);
     setCustomerError("Something went wrong while fetching data.");
+    toast.error("Failed to fetch customer data");
   } finally {
     setCustomerLoading(false);
   }
 };
 
+useEffect(() => {
+  const delay = setTimeout(() => {
+    getCustomerList(1, searchcustomerTerm);
+  }, 500);
 
-  useEffect(() => {
-    if (!fetchedOnce.current) {
-      getCustomerList();
-      fetchedOnce.current = true; 
-    }
-  }, []);
-
+  return () => clearTimeout(delay);
+}, [searchcustomerTerm]);
 
  
-  const filteredCustomers = customerData
-  ?.filter((customer) =>
-    !customer?.first_name ||
-    customer?.first_name
-      ?.toLowerCase()
-      ?.includes(searchcustomerTerm.toLowerCase())
-  )
-  ?.sort((a, b) => {
-    if (!a.first_name) return 1;
-    if (!b.first_name) return -1;
-    return a.first_name.localeCompare(b.first_name);
-  }) || [];
+  
+
+ 
 
 
-
-  const newThisMonthCount = customerData?.filter((customer) => {
-    if (!customer.created_at) return false
-    const createdDate = new Date(customer.created_at)
-    const now = new Date()
-    return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear()
-  })?.length
-
-
-   const indexoflastcustomer=currentpage*customerperpage;
-  const indexoffirstcustomer=indexoflastcustomer - customerperpage;
-  const  currentCustomer=filteredCustomers?.slice(indexoffirstcustomer,indexoflastcustomer)
- const totalPages = Math.ceil(filteredCustomers?.length /customerperpage);
- const handlePageChange =(pagenumber)=>setCurrentpage(pagenumber);
-useEffect(() => {
-  setCurrentpage(1);
-}, [searchcustomerTerm]);
+  
 
 
   return (
@@ -439,13 +446,15 @@ useEffect(() => {
         <div className="stat-card">
 
           <h3>Total Customers</h3>
-          <div className="stat-value">{customerData?.length}</div>
+         <div className="stat-value">{totalCount}</div>
+
         </div>
 
         <div className="stat-card">
 
           <h3>New This Year</h3>
-          <div className="stat-value">{newThisYearCount}</div>
+
+          <div className="stat-value">{thisYearCount}</div>
         </div>
 
 
@@ -453,7 +462,7 @@ useEffect(() => {
         <div className="stat-card">
 
           <h3>New This Month</h3>
-          <div className="stat-value">{newThisMonthCount}</div>
+          <div className="stat-value">{thisMonthCount}</div>
         </div>
       </div>
       <div className="table-container">
@@ -482,8 +491,8 @@ useEffect(() => {
                   {error}
                 </td>
               </tr>
-            ) : currentCustomer?.length > 0 ? (
-              currentCustomer.map((customer) =>
+            ) : customerData?.length > 0 ? (
+              customerData.map((customer) =>
               (
                 <tr key={customer.id}>
    <td>
@@ -597,25 +606,29 @@ useEffect(() => {
             )}
           </tbody>
         </table>
-        {filteredCustomers?.length>  customerperpage &&(
-          < div className="pagination"> 
-
-<button onClick={()=>handlePageChange(currentpage-1)} disabled={currentpage === 1}> Prev</button>
- 
-{Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
-  <button 
-    key={number} 
-    className={currentpage === number ? "active" : ""} 
-    onClick={() => handlePageChange(number)}
+      {(previousPage || nextPage) && (
+  <div className="pagination">
+  <button
+    onClick={() => getCustomerList(currentPage - 1, searchcustomerTerm)}
+    disabled={!previousPage}
   >
-    {number}
+    Prev
   </button>
-))}
 
-<button onClick={()=>handlePageChange(currentpage +1)} disabled={currentpage ===totalPages}> Next</button>
+  <span style={{ margin: "0 10px" }}>
+    Page {currentPage}
+  </span>
 
-          </div>
-        )}
+  <button
+    onClick={() => getCustomerList(currentPage + 1, searchcustomerTerm)}
+    disabled={!nextPage}
+  >
+    Next
+  </button>
+</div>
+
+)}
+
       </div>
 
       {customermodalOpen && (
