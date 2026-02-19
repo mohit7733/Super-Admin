@@ -3,11 +3,11 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import { countries, statesByCountry } from "../data/locationData"
-import BASE_URL from "../../Base";
-import { MdEditLocationAlt } from "react-icons/md";
+import { countries, statesByCountry } from "../../data/locationData"
+import BASE_URL from "../../../Base";
+
 import { FiFileText } from "react-icons/fi";
-import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
+import {  BsThreeDotsVertical } from "react-icons/bs";
 
 
 
@@ -33,7 +33,7 @@ const intialAddressform = {
   address_line2: "",
 }
 
-const Vendors = () => {
+const Vendor = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [vendorData, setVendorData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -177,12 +177,12 @@ const handleDocumentUpload = (e) => {
       errors.city = "Please select a city"
     }
 
-    if (!Addform.address_line1 || Addform.address_line1.trim().length < 5) {
+    if (!Addform.address_line1 || Addform.address_line1.trim()?.length < 5) {
       errors.address_line1 = "Address line 1 must be at least 5 characters long"
     }
 
     setAddressErrors(errors)
-    return Object.keys(errors).length === 0
+    return Object.keys(errors)?.length === 0
   }
 
  
@@ -190,7 +190,7 @@ const handleDocumentUpload = (e) => {
   const errors = {};
 
   
-  if (!form.store_name || form.store_name.trim().length < 2) {
+  if (!form.store_name || form.store_name.trim()?.length < 2) {
     errors.store_name = "Store name must be at least 2 characters long";
   }
 
@@ -201,7 +201,7 @@ const handleDocumentUpload = (e) => {
     const gst = form.gst_number.trim().toUpperCase();
 
     
-    if (gst.length !== 15) {
+    if (gst?.length !== 15) {
       errors.gst_number = "GST number must be exactly 15 characters";
     }
 
@@ -214,24 +214,13 @@ const handleDocumentUpload = (e) => {
   }
 
   setFormErrors(errors);
-  return Object.keys(errors).length === 0;
+  return Object.keys(errors)?.length === 0;
 };
 
 
-  const validatePhoneNumber = () => {
-    const errors = {}
-
-    if (!form.phone_number || !/^\d{10}$/.test(form.verified_phone_number)) {
-      errors.phone_number = "Phone number must be exactly 10 digits"
-    }
-
-    setPhoneErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
   
 
-  const handleStatusChange = async (vendorId, newStatus) => {
+ const handleStatusChange = async (vendorId, newStatus) => {
     
     const token = sessionStorage.getItem("superadmin_token")
     try {
@@ -336,7 +325,7 @@ const handleRejectClick = (VendorId, statusType) => {
 
  
 
-  const handleAddaddress = (e) => {
+const handleAddaddress = (e) => {
   const { name, value } = e.target;
 
   setAddform((prev) => ({
@@ -361,11 +350,11 @@ const handleRejectClick = (VendorId, statusType) => {
     errorMsg = "Please select a state";
   }
 
-  if (name === "city" && value.trim().length === 0) {
+  if (name === "city" && value.trim()?.length === 0) {
     errorMsg = "Please select a city";
   }
 
-  if (name === "address_line1" && value.trim().length < 5) {
+  if (name === "address_line1" && value.trim()?.length < 5) {
     errorMsg = "Address line 1 must be at least 5 characters long";
   }
 
@@ -432,8 +421,8 @@ const handleRejectClick = (VendorId, statusType) => {
    
     const method = addressEditingId ? "PUT" : "POST";
 const url = addressEditingId
-  ? `${BASE_URL}/vendors/vendoraddress${addressEditingId}/`
-  : `${BASE_URL}/vendors/vendoraddress`;
+  ? `${BASE_URL}/vendors/vendoraddress/${addressEditingId}/`
+  : `${BASE_URL}/vendors/vendoraddress/`;
 
     try {
       const response = await fetch(url, {
@@ -476,9 +465,9 @@ const handleFormSubmit = async (e) => {
   formData.append("first_name",form.first_name);
   formData.append("last_name",form.last_name);
   formData.append("store_name", form.store_name);
-  formData.append("mobile_number", `+91${form.verified_phone_number}`);
+  formData.append("secondary_number", `+91${form.verified_phone_number}`);
   formData.append("gst_number", form.gst_number);
-
+  
  
   if (form.profile_picture && typeof form.profile_picture !== "string") {
     formData.append("profile_picture", form.profile_picture);
@@ -499,7 +488,7 @@ const handleFormSubmit = async (e) => {
 
   if (method === "POST") {
     const uid = userId || localStorage.getItem("USER_ID");
-    if (uid) formData.append("user", uid);
+    if (uid) formData.append("user_id", uid);
   }
 
   const url = editingId
@@ -628,21 +617,20 @@ const handlevendorverifiedSubmit = async (e) => {
     }
 
     const data = await response.json();
-    console.log("User Create Response:", data);
+   
 
-    if (response.ok) {
-      const uid = data?.user?.id;
+    if (!response.ok) {
+      toast.error(data?.error)
+      return;
+    }
 
-      if (uid) {
-        
-        setUserId(uid);
-        localStorage.setItem("USER_ID", uid);
-      }
-
-      toast.success("User created! Please complete vendor registration");
-
-      setVendorverifiedModal(false);
-      setModalOpen(true);
+    const uid = data?.user?.id;
+    toast.success("vendor Created. please Complete your vendor registration");
+    if(uid){
+      setUserId(uid);
+      localStorage.setItem("USER_ID", uid);
+  setVendorverifiedModal(false);
+    setModalOpen(true);
     }
   } catch (err) {
     toast.error("Failed to create user. Please try again");
@@ -721,7 +709,7 @@ const getInitials = (firstName = "", lastName = "") => {
   
 const indexoflastvendor = currentpage*Vendorperpage;
 const indexoffirstvendor= indexoflastvendor - Vendorperpage;
-const totalPages = Math.ceil(filteredVendors.length/Vendorperpage);
+const totalPages = Math.ceil(filteredVendors?.length/Vendorperpage);
 const CurrentVendorpage =filteredVendors.slice(indexoffirstvendor,indexoflastvendor)
 const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
 
@@ -743,9 +731,20 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
           </div>
 
           <div className="filter-controls">
-            <button className="add-vendor-btn" onClick={() => setVendorverifiedModal(true)}>
-              + Add Vendor
-            </button>
+          <button
+  className="add-vendor-btn"
+  onClick={() => {
+    setVendorverifiedModal(true);
+
+    
+    setUploadedDocs([]);     
+    setEditingId(null);      
+    setForm(initialFormState);
+  }}
+>
+  + Add Vendor
+</button>
+
            <button className="export-btn" onClick={exportToCSV}>
   Export Details
 </button>
@@ -755,15 +754,15 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
         <div className="vendors-stats">
           <div className="stat-card">
             <h3>Total Vendors</h3>
-            <div className="stat-value">{vendorData.length}</div>
+            <div className="stat-value">{vendorData?.length}</div>
           </div>
           <div className="stat-card">
             <h3>Active Vendors</h3>
-            <div className="stat-value">{vendorData.filter((v) => v.is_approved === true).length}</div>
+            <div className="stat-value">{vendorData?.filter((v) => v.is_approved === true)?.length}</div>
           </div>
           <div className="stat-card">
             <h3>Pending Approval</h3>
-            <div className="stat-value">{vendorData.filter((v) => v.is_approved === false).length}</div>
+            <div className="stat-value">{vendorData?.filter((v) => v.is_approved === false)?.length}</div>
           </div>
         </div>
         <div classsName="table-container">
@@ -845,8 +844,8 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
   }}
   className="status-dropdown"
 >
-  <option value="approved">Approved</option>
   <option value="pending">Pending</option>
+  <option value="approved">Approved</option>
   <option value="rejected">Rejected</option>
   <option value="suspended">Suspended</option>
 </select>
@@ -952,7 +951,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
   <span>Delete</span>
       </button>
 
-      {vendor.pickup_locations.length === 0 && (
+      {vendor.pickup_locations?.length === 0 && (
         <button
           className="action-btn1"
           title="Add Address"
@@ -967,7 +966,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
   <span>Add Address</span>
         </button>
       )}
-{vendor.pickup_locations.length > 0 &&(
+{vendor.pickup_locations?.length > 0 &&(
    <button
         title="Edit Address "
         className="action-btn1"
@@ -1001,11 +1000,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
       
     </div>
   )}
-</td>
-
- 
-
-                  
+</td>    
                 </tr>
               ))}
             </tbody>
@@ -1145,7 +1140,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
     onClick={handleAddDocument}
     style={{
       padding: "4px 10px",
-      background: "#69c140",
+      background: "#71a33f",
       color: "#fff",
       border: "none",
       borderRadius: "4px",
@@ -1157,7 +1152,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
   </button>
 
   
-  {uploadedDocs.length > 0 && (
+  {uploadedDocs?.length > 0 && (
     <div className="uploaded-doc-list" style={{ marginTop: "10px" }}>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {uploadedDocs.map((doc, i) => (
@@ -1471,7 +1466,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Uploaded Documents</h3>
 
-            {SelectedVendorId?.documents && SelectedVendorId.documents.length > 0 ? (
+            {SelectedVendorId?.documents && SelectedVendorId.documents?.length > 0 ? (
               <ul className="doc-list">
                 {SelectedVendorId.documents.map((doc, i) => (
                   <li key={i}>
@@ -1532,5 +1527,5 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
   )
 }
 
-export default Vendors
+export default Vendor;
 

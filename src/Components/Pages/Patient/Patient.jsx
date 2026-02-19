@@ -1,12 +1,13 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import BASE_URL from "../../Base";
+import BASE_URL from "../../../Base";
 import "react-toastify/dist/ReactToastify.css";
-import { apiFetch } from "../../fetchapi";
+import { apiFetch } from "../../../fetchapi";
+import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
 
 
-const Allpatient = () => {
+const   Patient = () => {
 const [patientdata,setPatientData]=useState([]);
 const[patientError,setPatientError]=useState(null);
 const[patientloading,setPatientLoading]=useState(true);
@@ -21,6 +22,7 @@ const[searchTerm,setSearchTerm]=useState("");
   const patienttableRef = useRef(null);
   const[Currentpage,setCurrentpage]=useState(1);
   const[patientperpage,setpatientperpage]=useState(5);
+  
 
 const [newPatient, setNewPatient] = useState({
     name: '',
@@ -276,6 +278,7 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
                  <button
   className="action-btn edit"
   onClick={() => handleEditClick(patient)}
+  
 >
   ✏️
 </button>
@@ -466,5 +469,5 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
   )
 }
 
-export default Allpatient
+export default Patient;
 

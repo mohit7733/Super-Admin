@@ -6,9 +6,9 @@ import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 import "react-toastify/dist/ReactToastify.css";
-import BASE_URL from "../../Base";
-import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
-import { apiFetch } from "../../fetchapi";
+import BASE_URL from "../../../Base";
+import {  BsThreeDotsVertical } from "react-icons/bs";
+import { apiFetch } from "../../../fetchapi";
 
 const intialvendorProductform = {
   product: '',
@@ -18,6 +18,7 @@ const intialvendorProductform = {
   selling_price: '',
   discount_percentage: '',
   is_active: false,
+
 }
 const intialvariantform = {
   product: "",
@@ -57,7 +58,7 @@ treatment:"",
 
 const Vendorproduct = () => {
   const [productVendorSearch, setProductVendorSearch] = useState("");
-  const [VendorEmail, setVendorEmail] = useState("");
+ 
   const [Stockvendorfilter, setStockVendorFilter] = useState("All");
   const [ProductData, setProductData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,9 +83,7 @@ const Vendorproduct = () => {
   const [variantErrors, setVariantErrors] = useState({});
   const [productAddErrors, setProductAddErrors] = useState({});
   const [categoryErrors, setCategoryErrors] = useState({
-
   });
-
   const [galleryImages, setGalleryImages] = useState([]);
   const [BankDetailModal, setBankDetailModal] = useState(false)
   const [error, setError] = useState(null);
@@ -95,14 +94,11 @@ const Vendorproduct = () => {
   const [viewProductModal, setViewProductModal] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [mainImage, setMainImage] = useState("");
+
   const[HealthCategoryForm,setHealthCategoryForm]=useState(false);
   const[healthcategoryname,setHealthcategory]=useState();
   const[healthcategoryImage,setHealthCategoryImage]=useState(null);
   const[Slug,setSlug]=useState("")
-  
-  
-
   const [filter, setFilter] = useState("all");
   const params = useParams();
   const[HealthCategoryOption,setHealthCategoryOption]=useState([]);
@@ -114,8 +110,8 @@ const Vendorproduct = () => {
   const { vendorId } = params;
 
    const selectedHealthConcernNames = HealthCategoryOption
-    .filter((hc) => selectedHealthConcerns.includes(hc.id))
-    .map((hc) => hc.name);
+    ?.filter((hc) => selectedHealthConcerns?.includes(hc.id))
+    ?.map((hc) => hc.name);
 
 
   const handleDeleteProduct = async (id) => {
@@ -196,7 +192,7 @@ const Vendorproduct = () => {
       errors.image = "Category image is required";
     }
     setCategoryErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors)?.length === 0;
   };
 
   const validateVendorForm = () => {
@@ -208,12 +204,9 @@ const Vendorproduct = () => {
 
     if (!formData.stock) newErrors.stock = "Stock is required";
     else if (isNaN(formData.stock)) newErrors.stock = "Stock must be a number";
-    if (!formData.sin_number) newErrors.stock = "SIN Number is required";
-    else if (isNaN(formData.sin_number)) newErrors.stock = "SIN must be a number";
+    
 
-
-    if (!formData.model_number) newErrors.stock = "Model Number is required";
-    else if (isNaN(formData.sin_number)) newErrors.stock = "Model must be a number";
+  
 
 
     if (!formData.discount_percentage) newErrors.discount_percentage = "Discount % is required";
@@ -221,7 +214,7 @@ const Vendorproduct = () => {
       newErrors.discount_percentage = "Discount % must be a number";
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors)?.length === 0;
   };
 
   const validateProductAddForm = () => {
@@ -257,7 +250,7 @@ const Vendorproduct = () => {
     }
 
     setProductAddErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors) ?.length === 0;
   };
   const handleEditView = (product) => {
     if (!product || !product.id) return;
@@ -283,14 +276,13 @@ const Vendorproduct = () => {
       short_description: product.short_description || "",
       meta_description: product.meta_description || "",
       meta_title: product.meta_title || "",
-      gallery_images: product.gallery_images ||"",
       benefits:product.benefits ||"",
       ayush_license_number:product.ayush_license_number||"",
-
+      gallery_images: product.gallery_images || [],
 
 
     });
-
+  setGalleryImages(product.gallery_images || []);
     setISEditing(product.id);
     setShowform(true);
     setViewProductModal(false);
@@ -314,7 +306,7 @@ const Vendorproduct = () => {
     if (!formvariant.weight) newErrors.weight = "Weight is required";
 
     setVariantErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors)?.length === 0;
   };
 
   const handleGalleryImages = (e) => {
@@ -491,9 +483,9 @@ const Vendorproduct = () => {
       how_to_use: product.how_to_use || "",
       benefits: product.benefits || "",
       meta_title:product.meta_title || "",
-      meta_description:product.meta.description || "",
+      meta_description:product.meta_description || "",
     });
-
+     
     setISEditing(product.id);
     setShowform(true);
   };
@@ -534,107 +526,88 @@ const Vendorproduct = () => {
 
 
 
-  const handleVendorProductSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateVendorForm()) return;
+ const handleVendorProductSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateVendorForm()) return;
 
+  const token = sessionStorage.getItem("superadmin_token");
 
-    let payload;
+  
+  const formDataPayload = new FormData();
 
-    if (isEditing) {
-      payload = {
-        vendor: vendorId,
-        product: formData.product,
-        category: formData.category,
-        variant: formData.variant,
-        form: formData.form,
-        discount_percentage: formData.discount_percentage,
-        is_low_stock: formData.is_low_stock || false,
-        stock: formData.stock,
-        sin_number: formData.sin_number,
-        model_number: formData.model_number,
-        selling_price: formData.selling_price,
-        benefits: formData.benefits,
-        how_to_use: formData.how_to_use,
+  formDataPayload.append("vendor", vendorId);
+  formDataPayload.append("product", formData.product);
+  formDataPayload.append("category", formData.category);
+  formDataPayload.append("variant", formData.variant);
+  formDataPayload.append("form", formData.form);
+  formDataPayload.append("stock", formData.stock);
+  formDataPayload.append("discount_percentage", formData.discount_percentage);
+  formDataPayload.append("selling_price", formData.selling_price);
+  formDataPayload.append("sin_number", formData.sin_number);
+  formDataPayload.append("model_number", formData.model_number);
+  formDataPayload.append("benefits", formData.benefits || "");
+  formDataPayload.append("how_to_use", formData.how_to_use || "");
+  formDataPayload.append("is_low_stock", formData.is_low_stock || false);
 
+  if (!isEditing) {
+    formDataPayload.append("is_variant", false);
+  }
 
-      };
-    } else {
-      payload = {
-        vendor: vendorId,
-        product: formData.product,
-        category: formData.category,
-        variant: formData.variant,
-        is_variant: false,
-        form: formData.form,
-        selling_price: formData.selling_price,
-        is_low_stock: formData.is_low_stock || false,
-        stock: formData.stock,
-        discount_percentage: formData.discount_percentage,
-        benefits: formData.benefits,
-        how_to_use: formData.how_to_use,
-        model_number: formData.model_number,
-        sin_number: formData.sin_number,
+ galleryImages.forEach((image) => {
+  if (image instanceof File) {
+    formDataPayload.append("upload_gallery_images", image);
+  }
+});
 
+    
 
-      };
+  let url = `${BASE_URL}/catalogs/vendorproduct/`;
+  let method = "POST";
+
+  if (isEditing) {
+    url = `${BASE_URL}/catalogs/vendorproduct/${isEditing}/`;
+    method = "PUT";
+  }
+
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`, 
+      },
+      body: formDataPayload,
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      toast.error("Session expired. Please login again");
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
     }
 
-
-    console.log("Vendorpoduct", payload);
-    const token = sessionStorage.getItem("superadmin_token")
-
-    try {
-
-
-      let url = `${BASE_URL}/catalogs/vendorproduct/`;
-      let method = "POST";
-
-      if (isEditing) {
-        url = `${BASE_URL}/catalogs/vendorproduct/${isEditing}/`;
-        method = "PUT";
-      }
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: ` Bearer ${token}`,
-
-        },
-        body: JSON.stringify(payload),
-      });
-
-
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error(errorData.error);
-        toast.error(errorData.non_field_errors[0])
-
-        return;
-      }
-
-
-      toast.success(isEditing ? "Vendor product updated successfully!" : "Vendor product added successfully!");
-      fetchVendorProducts();
-      setformData(intialvendorProductform);
-      setISEditing(null);
-      setShowform(false);
-
-
-    } catch (error) {
-      console.error("Error saving vendor product:", error);
-      toast.error("Error saving vendor product.");
-
+    if (!response.ok) {
+      const errorData = await response.json();
+      toast.error(errorData?.error || "Something went wrong");
+      return;
     }
-  };
+
+    toast.success(
+      isEditing
+        ? "Vendor product updated successfully!"
+        : "Vendor product added successfully!"
+    );
+
+    fetchVendorProducts();
+    setformData(intialvendorProductform);
+    setISEditing(null);
+    setShowform(false);
+    setGalleryImages([]);
+
+  } catch (error) {
+    console.error("Error saving vendor product:", error);
+    toast.error("Error saving vendor product.");
+  }
+};
 
   const fetchCategoryOptions = async () => {
     const token = sessionStorage.getItem("superadmin_token")
@@ -665,7 +638,7 @@ const Vendorproduct = () => {
     }
   };
 
-  const filteredProducts = ProductData.filter((product) => {
+  const filteredProducts = ProductData?.filter((product) => {
     const matchesSearch =
       product.title.toLowerCase().includes(productVendorSearch.toLowerCase());
 
@@ -762,9 +735,7 @@ formData.append("return_days",productAddForm.return_days)
   formData.append("health_concerns", id);
 });
 
-    galleryImages.forEach((image) => {
-      formData.append("gallery_images", image);
-    });
+    
 
     if (productAddForm.image instanceof File) {
       formData.append("image", productAddForm.image);
@@ -1013,7 +984,7 @@ const handleAddHealthCategory = async (e) => {
 const handleHealthConcernChange = (id) => {
     setSelectedHealthConcerns((prev) =>
       prev.includes(id)
-        ? prev.filter((item) => item !== id)
+        ? prev?.filter((item) => item !== id)
         : [...prev, id]
     );
   };
@@ -1486,8 +1457,8 @@ const handleHealthConcernChange = (id) => {
                       + Upload Images
                     </label>
                   </div>
-
-                  {galleryImages.length > 0 && (
+{/* 
+                  {galleryImages?.length > 0 && (
                     <div className="gallery-preview-grid">
                       {galleryImages?.map((file, index) => (
                         <div className="gallery-card" key={index}>
@@ -1520,7 +1491,54 @@ const handleHealthConcernChange = (id) => {
                         </div>
                       ))}
                     </div>
-                  )}
+                  )} */}
+{Array.isArray(galleryImages) && galleryImages.length > 0 && (
+  <div className="gallery-preview-grid">
+    {galleryImages.map((file, index) => {
+      if (!file) return null;
+
+      let src = "";
+
+      if (file instanceof File || file instanceof Blob) {
+        src = URL.createObjectURL(file);
+      } else if (typeof file === "string") {
+        src = file;
+      } else {
+        return null; // unknown type
+      }
+
+      return (
+        <div className="gallery-card" key={index}>
+          <img src={src} alt={file.name || "gallery"} />
+
+          <div className="gallery-actions">
+            <button
+              type="button"
+              className="remove-btn"
+              onClick={() => removeImage(index)}
+            >
+              ✕
+            </button>
+
+            <label className="replace-btn">
+              Replace
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => replaceImage(index, e)}
+              />
+            </label>
+          </div>
+
+          <p className="image-name">
+            {file.name || (typeof file === "string" ? file.split("/").pop() : "")}
+          </p>
+        </div>
+      );
+    })}
+  </div>
+)}
 
 
                 </div>
@@ -1949,7 +1967,7 @@ const handleHealthConcernChange = (id) => {
                     className='form-input1'
                   />
                   <div className="error-msg">
-                    {productAddErrors.model_number}
+                  
                   </div>
 
                   <label className='form-label1'>SIN Number <span className="required">*</span></label>
@@ -2032,7 +2050,7 @@ const handleHealthConcernChange = (id) => {
                         className="form-select1"
                         onClick={() => setShowDropdown(!showDropdown)}
                       >
-                        {selectedHealthConcernNames.length > 0
+                        {selectedHealthConcernNames?.length > 0
                           ? selectedHealthConcernNames.join(", ")
                           : "Select Health Concern"}
                       </div>
@@ -2248,7 +2266,7 @@ const handleHealthConcernChange = (id) => {
             alt="gallery"
             onClick={() => {
               const currentMainImage = selectedProduct.image
-              const newGalleryImages = [...selectedProduct.gallery_images]
+              const newGalleryImages = [...selectedProduct?.gallery_images]
               newGalleryImages[index] = currentMainImage
               setSelectedProduct((prev) => ({
                 ...prev,

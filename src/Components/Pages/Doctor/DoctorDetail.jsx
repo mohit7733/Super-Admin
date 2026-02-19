@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import consultnow from '../Assests/consultnow.png';
+import consultnow from '../../Assests/consultnow.png';
 import { useParams } from 'react-router-dom';
-import BASE_URL from "../../Base";
+import BASE_URL from "../../../Base";
 import { ToastContainer, toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
+
+import Calendar from "./Calendar";
 
 const DoctorDetail = () => {
   const { DoctorId } = useParams();
@@ -18,8 +20,11 @@ const DoctorDetail = () => {
   const [ConsultationLoading, setConsultationLoading] = useState(true);
   const[Currentpage,setCurrentPage]=useState(1);
   const[ConsultaionDetailperpage,setConsultationDetailperpage]=useState(5);
+  const [selectedDate, setSelectedDate] = useState(null);
+
   const navigate = useNavigate();
   
+
   const getdoctordetaillist = async () => {
     const token = sessionStorage.getItem("superadmin_token")
     try {
@@ -53,7 +58,7 @@ const DoctorDetail = () => {
   const getcounsultationlist = async () => {
     const token = sessionStorage.getItem("superadmin_token")
     try {
-      const response = await fetch(`${BASE_URL}/healthcare/PatientsByDoctor/${DoctorId}/`, {
+      const response = await fetch(`${BASE_URL}/healthcare/patientsbydoctor/${DoctorId}/`, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -104,6 +109,7 @@ const DoctorDetail = () => {
   return (
     <>
       <div className="page-header">
+        
         <h1>Doctor Detail Page</h1>
       </div>
 
@@ -142,6 +148,7 @@ const DoctorDetail = () => {
           <div className="stat-value">{ConsultationData.filter((c) => c.status?.toLowerCase() === "rejected").length}</div>
         </div>
       </div>
+<Calendar onDateSelect={(date) => setSelectedDate(date)} />
 
 <div className="filter-buttons">
   <button 
@@ -183,7 +190,6 @@ const DoctorDetail = () => {
             <th>Gender</th>
             <th>Age</th>
             <th>Relation</th>
-            <th>Description</th>
             <th>Slot Date</th>
             <th>Slot Time</th>
             <th>Status</th>
@@ -211,7 +217,7 @@ const DoctorDetail = () => {
       <td>{c.patient?.gender}</td>
       <td>{c.patient?.age}</td>
       <td>{c.patient?.relation}</td>
-      <td>{c.patient?.description}</td>
+   
       <td>{c.slot?.date}</td>
       <td>{c.slot?.time}</td>
       <td>{c?.status}</td>

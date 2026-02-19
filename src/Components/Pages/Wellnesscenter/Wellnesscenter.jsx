@@ -1,6 +1,7 @@
 import React from 'react'
+
 import { useState,useEffect } from 'react';
-import BASE_URL from '../../Base';
+import BASE_URL from '../../../Base';
 import StarRating from "./StarRating";
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -17,8 +18,8 @@ const intialcenterform={
     main_image:"",
   }
 
-const Center = () => {
-   const [filterType, setFilterType] = useState('all'); 
+const Wellnesscenter = () => {
+  const [filterType, setFilterType] = useState('all'); 
   const [searchTerm, setSearchTerm] = useState("");
   const[Showcenterform,setShowcenterform]=useState(false);
   const[ShowEditform,setShowEditform]=useState(false);
@@ -29,7 +30,7 @@ const Center = () => {
   const[Selectedcenter,setSelectedcenter]=useState(null)
   const[AddCenterform,setAddCenterform]=useState(intialcenterform)
   const[EditCenterform,setEditCenterform]=useState(intialcenterform)
-  const [centerPreviewImage, setCenterPreviewImage] = useState(null);
+  // const [centerPreviewImage, setCenterPreviewImage] = useState(null);
   const [AddCenterErrors, setAddCenterErrors] = useState({});
   const [EditCenterErrors, setEditCenterErrors] = useState({});
  const  navigate =useNavigate();
@@ -91,7 +92,7 @@ const handleDeleteCenter = async (id) => {
   }
 
   try {
-    const response = await fetch(`${BASE_URL}/ecom/wellness-centres/${id}/`, {
+    const response = await fetch(`${BASE_URL}/wellness/wellness-centres/${id}/`, {
       method: "DELETE",
       headers: {
         "Accept": "application/json",
@@ -134,7 +135,7 @@ const  handleStatusChange = async(id,newStatus)=>{
 
 const formData = new FormData();
 formData.append("status",newStatus)
-const response = await fetch (`${BASE_URL}/ecom/wellness-centres-status/${id}/`,{
+const response = await fetch (`${BASE_URL}/wellness/wellness-centres-status/${id}/`,{
    method:"PUT",
    headers:{
 Authorization:`Bearer ${token}`,
@@ -250,7 +251,7 @@ const handleEditCenterSubmit = async (e) => {
       setShowEditform(false);
       setSelectedcenter(null);
       setEditCenterform(intialcenterform);
-      setCenterPreviewImage(null);
+      // setCenterPreviewImage(null);
     } else {
       const errorData = await response.json();
       console.error("Error response:", errorData);
@@ -461,8 +462,8 @@ const handleNavigate=(id) =>{
             src={`${center.main_image}`}
             alt="Center"
             style={{
-              width: "80px",
-              height: "80px",
+              width: "30px",
+              height: "30px",
               borderRadius: "8px",
               objectFit: "cover",
             }}
@@ -502,7 +503,7 @@ const handleNavigate=(id) =>{
                 setShowEditform(true);
                 setSelectedcenter(center.id);
                 setEditCenterform(center);
-                setCenterPreviewImage(center.main_image);
+                
               }}
             >
               ✏️
@@ -708,12 +709,12 @@ onClick={handleInputChange}
       {EditCenterErrors.main_image && <p className="error-msg">{EditCenterErrors.main_image}</p>}
 
       </div>
-      {centerPreviewImage && !AddCenterform.main_image && (
+      {/* {centerPreviewImage && !AddCenterform.main_image && (
           <div className="image-preview">
             <p>Current Image:</p>
             <img src={centerPreviewImage} alt="Current" width="100" />
           </div>
-        )}
+        )} */}
 
       </div>
       </div>
@@ -770,10 +771,4 @@ onClick={handleInputChange}
   )
 }
 
-export default Center
-
-
-
-
-
-
+export default Wellnesscenter

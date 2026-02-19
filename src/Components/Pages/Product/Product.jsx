@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import BASE_URL from "../../Base";
-import { apiFetch } from "../../fetchapi";
+import BASE_URL from "../../../Base";
+import { apiFetch } from "../../../fetchapi";
 
 
 const initialProductForm = {
@@ -34,9 +34,7 @@ const initialProductForm = {
   is_returnable: true,
   price: "",
   origin: "",
-
-
-
+  safety_information:"",
 }
 
 const Product = () => {
@@ -48,7 +46,7 @@ const Product = () => {
   const [productForm, setProductForm] = useState(initialProductForm);
   const [showProductModal, setShowProductModal] = useState(false);
   const [productEditing, setProductEditing] = useState(null);
-  const [viewProduct, setViewProduct] = useState(null);
+  
   const [categoryOption, setCategoryOptions] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -249,6 +247,8 @@ const Product = () => {
       errors.meta_title = "Meta Title is required"
     }
 
+
+
     if (!productForm.form.trim()) {
       errors.form = "Form is required";
     } else if (!alphaNumRegex.test(productForm.form.trim())) {
@@ -317,10 +317,10 @@ const Product = () => {
     formData.append("benefits", productForm.benefits)
     formData.append("composition", productForm.composition)
     formData.append("manufacturer", productForm.manufacturer);
-   selectedHealthConcerns.forEach((id) => {
-  formData.append("health_concerns", id);
+  selectedHealthConcerns.forEach((id) => {
+  formData.append("health_concern", id);
 });
-
+   formData.append("safety_information", productForm.safety_information);
     formData.append("treatment", productForm.treatment);
     formData.append("dosage", productForm.dosage);
     formData.append("side_effect", productForm.side_effects);
@@ -375,9 +375,7 @@ const Product = () => {
     setValidationErrors({});
   };
 
-  const handleViewProduct = (product) => {
-    setViewProduct(product);
-  };
+ 
 
   const selectedHealthConcernNames = HealthCategoryOption
     .filter((hc) => selectedHealthConcerns.includes(hc.id))
@@ -484,6 +482,7 @@ const Product = () => {
     setProductForm(initialProductForm); 
     setValidationErrors({});
     setShowProductModal(true);
+      setSelectedHealthConcerns([]); 
   }}
 >
   + Add Product
@@ -534,8 +533,8 @@ const Product = () => {
                 <td>{product?.form}</td>
                 <td>{product?.treatment}</td>
               <td>
-  {product?.health_concerns_detail && product.health_concerns_detail.length > 0
-    ? product.health_concerns_detail.map(hc => hc.name).join(", ")
+  {product?.healthconcerncategory_detail && product.healthconcerncategory_detail.length > 0
+    ? product.healthconcerncategory_detail.map(hc => hc.name).join(", ")
     : "—"}
 </td>
 
@@ -560,7 +559,7 @@ const Product = () => {
                 <td>{product?.category_detail?.name ?? ""}</td>
                 <td>
                   <div className="action-buttons">
-                    <button className="action-btn view" title="View Product Details" onClick={() => handleViewProduct(product)}>👁</button>
+             
                     <button
                       className="action-btn edit"
                       onClick={() => {
@@ -592,6 +591,11 @@ const Product = () => {
                           is_returnable: product.is_returnable ?? false,
                           image: null,
                         });
+                         setSelectedHealthConcerns(
+      product.healthconcerncategory_detail
+        ? product.healthconcerncategory_detail.map(hc => hc.id)
+        : []
+    );
 
                         setPreviewImage(product.image);
                         setShowProductModal(true);
@@ -807,11 +811,6 @@ const Product = () => {
                     className='form-input1'
                   />
 
-
-
-
-
-
                 </div>
                 <div className="form-column-1">
 
@@ -836,7 +835,7 @@ const Product = () => {
                   />
                   {validationErrors.model_number && <span className="error-msg">{validationErrors.model_number}</span>}
 
-                  <label className="form-label1">Return Days<span className="required"></span> </label>
+                  <label className="form-label1">Return Days<span className="required">* </span> </label>
                   <input
                     type="number"
                     name="return_days"
@@ -949,7 +948,15 @@ const Product = () => {
                     onChange={handleInputChange}
                     className='form-input1'
                   />
-
+  <label className='form-label1'>Benefits </label>
+                  <textarea
+                    type="text"
+                    name="a"
+                    placeholder="write Benefits of Product"
+                    value={productForm.benefits}
+                    onChange={handleInputChange}
+                    classsName="form-input1"
+                  />
 
 
 
@@ -1055,26 +1062,7 @@ const Product = () => {
       }
 
 
-      {viewProduct && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Product Details</h3>
-            <p><strong>Title:</strong> {viewProduct?.title}</p>
-            <p><strong>Brand :</strong> {viewProduct?.brand}</p>
-            <p><strong>Short Description:</strong> {viewProduct?.short_description}</p>
-            <p><strong>Form:</strong> {viewProduct?.form}</p>
-            <p><strong>Image:</strong></p>
-            {viewProduct.image ? (
-              <img src={viewProduct?.image} alt={viewProduct?.title} width="120" />
-            ) : (
-              <span>No Image</span>
-            )}
-            <div className="form-buttons">
-              <button className="close-btn" onClick={() => setViewProduct(null)}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
+     
 
       {showPreviewModal && (
         <div className="image-preview-overlay" onClick={() => setShowPreviewModal(false)}>

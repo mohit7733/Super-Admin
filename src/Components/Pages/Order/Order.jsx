@@ -3,9 +3,9 @@ import * as XLSX from "xlsx";
 import { useRef } from "react";
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import BASE_URL from "../../Base";
+import BASE_URL from "../../../Base";
 import "react-toastify/dist/ReactToastify.css";
-import { apiFetch } from "../../fetchapi";
+import { apiFetch } from "../../../fetchapi";
 import OrderModal from "./OrderModal";
 
 
@@ -27,7 +27,6 @@ const Order = () => {
   const[consultationCurrentpage,setconsultationCurrentpage]= useState(1);
   const[consultationOrderperpage,setConsultationOrderperpage]=useState(5);
   const [activeType, setActiveType] = useState("product")
-  
 const[OpenConfirmModal,SetOpenConfirmModal]=useState(false);
 const [refundFormData, setRefundFormData] = useState({ first_name: "", reason: "" });
 
@@ -476,7 +475,6 @@ const totalPage = Math.ceil(filteredOrder.length / consultationOrderperpage);
                 currentOrders.map((order, index) => (
                 <tr key={order.id}>
                   <td>{indexOfFirstOrder + index+ 1}</td>
-
                   <td>{order?.customer_name}</td>
                   <td>{order?.created_at ? new Date(order?.created_at).toISOString().split("T")[0] : ""}</td>
                   <td>{order?.delivery_address_details?.house_details}, {order.delivery_address_details?.city}, {order?.delivery_address_details?.pincode}</td>

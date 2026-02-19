@@ -1,24 +1,30 @@
-
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import logo1 from '../../Assests/logo1.png';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import logo1 from "../../Assests/logo1.png";
 import BASE_URL from "../../../Base";
 
 const Login = () => {
   const navigate = useNavigate();
 
-  const [phone_number, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone_number, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loginLoading, setLoading] = useState(false);
 
- 
+
   useEffect(() => {
     const token = sessionStorage.getItem("superadmin_token");
-    if (token) {
+    const role = sessionStorage.getItem("role");
+
+    if (token && role === "SUPERADMIN") {
       navigate("/dashboard");
+    } else if (
+      token &&
+      (role === "ADMIN" || role === "VERIFIER" || role === "FOLLOWER")
+    ) {
+      navigate("/vendor");
     }
 
     const savedRememberMe = localStorage.getItem("rememberMe") === "true";
@@ -30,7 +36,7 @@ const Login = () => {
       if (savedPhone) setPhone(savedPhone);
       if (savedPassword) setPassword(savedPassword);
     }
-  }, []);
+  }, [navigate]);
 
   const handleRememberMeChange = (e) => {
     const checked = e.target.checked;
@@ -43,55 +49,54 @@ const Login = () => {
     }
   };
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+    try {
+      const formattedPhone = phone_number.startsWith("+91")
+        ? phone_number
+        : `+91${phone_number}`;
 
-  try {
-   
-    const formattedPhone = phone_number.startsWith("+91")
-      ? phone_number
-      : `+91${phone_number}`;
+      const response = await fetch(`${BASE_URL}/user/admin-login/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone_number: formattedPhone, password }),
+      });
 
-    const response = await fetch(`${BASE_URL}/user/superadmin/login/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        phone_number: formattedPhone,
-        password,
-      }),
-    });
+      const data = await response.json();
 
-    const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.message || "Invalid login");
+        return;
+      }
 
-    if (!response.ok) {
+ 
+      sessionStorage.setItem("superadmin_token", data.access);
+      sessionStorage.setItem("role", data.role);
+      sessionStorage.setItem("permissions", JSON.stringify(data.permissions || []));
+
+      toast.success("Login Successful!");
+
+      const role = data.role;
+
+      if (role === "SUPERADMIN") {
+        navigate("/dashboard");
+      } else if (
+        role === "ADMIN" ||
+        role === "VERIFIER" ||
+        role === "FOLLOWUP"
+      ) {
+        navigate("/vendor");
+      } else {
+        navigate("/login");
+      }
+    } catch (err) {
+      toast.error("Something went wrong!");
+    } finally {
       setLoading(false);
-      toast.error(data.message || "Invalid phone or password");
-      return;
     }
-
-    sessionStorage.setItem("superadmin_token", data.access);
-
-    if (rememberMe) {
-      localStorage.setItem("phone_number", formattedPhone);
-      localStorage.setItem("password", password);
-      localStorage.setItem("rememberMe", "true");
-    }
-
-    toast.success("Login Successful!");
-    navigate("/dashboard");
-
-  } catch (error) {
-    setLoading(false);
-    toast.error("Something went wrong!");
-  }
-};
-
-
-
+  };
 
   return (
     <>
@@ -102,8 +107,8 @@ const handleLogin = async (e) => {
               <span className="logo-icon">
                 <img
                   src={logo1}
-                  alt="Sidebar Icon"
-                  style={{ width: "124px", height: "74px",marginBottom:"20px" }}
+                  alt="Logo"
+                  style={{ width: "124px", height: "74px", marginBottom: "20px" }}
                 />
               </span>
             </div>
@@ -112,7 +117,7 @@ const handleLogin = async (e) => {
             </p>
           </div>
 
-          <form className="login-form">
+          <form className="login-form" onSubmit={handleLogin}>
             <div className="form-group">
               <label className="form-label">Phone Number</label>
               <input
@@ -144,12 +149,34 @@ const handleLogin = async (e) => {
                   className="checkbox-input"
                 />
                 <span> Remember me </span>
+                <span
+                  className="forgot-password"
+                  onClick={() => navigate("/ForgotPassword")}
+                  style={{
+                    color: "#71a33f",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    marginLeft: "184px",
+                  }}
+                >
+                  forgot password?
+                </span>
               </label>
             </div>
 
-            <button className="login-btn" onClick={handleLogin}>
-              Login
+            <button className="login-btn" type="submit" disabled={loginLoading}>
+              {loginLoading ? "Logging in..." : "Login"}
             </button>
+
+            <p style={{ marginTop: "12px", textAlign: "center" }}>
+              Don’t have an account?{" "}
+              <span
+                onClick={() => navigate("/register")}
+                style={{ color: "#71a33f", cursor: "pointer", fontWeight: "500" }}
+              >
+                Register here
+              </span>
+            </p>
           </form>
         </div>
       </div>

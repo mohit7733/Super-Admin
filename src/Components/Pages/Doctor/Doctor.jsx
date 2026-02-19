@@ -4,10 +4,12 @@ import { ToastContainer, toast } from "react-toastify"
 
 import "react-toastify/dist/ReactToastify.css"
 import { useNavigate } from "react-router-dom"
-import BASE_URL from "../../Base";
+import BASE_URL from "../../../Base";
 import { FiFileText } from "react-icons/fi";
-import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
-import { FaAvianex } from "react-icons/fa";
+import {  BsThreeDotsVertical } from "react-icons/bs";
+
+
+
 
 
 const userId = localStorage.getItem("USER_ID")
@@ -21,14 +23,13 @@ const intialDoctorform = {
   assured_muni: false,
   verified_phone_number: "",
   experience_years: "",
-  address_line: "",
   specialization_ids: [],
   user: "",
   treatment_type_id: "",
   consultation_fee: "",
   available_from: "",
   available_to: "",
-  ayush_registration_number: "",
+practice_license_number: "",
   qualification: "",
   documentType: "",
   documentFile: null,
@@ -78,14 +79,15 @@ const Doctor = () => {
   const[OpenthreedotId,setOpenthreedotId] =useState(null);
   const[previewImage,setPreviewImage]=useState("");
   const[ImageModal,setImageModal]=useState(false);
-  const [selectedSpecialities, setSelectedSpecialities] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+
+ 
 
   
   const documentOptions = [
-    { value: "marksheet", label: "Qualification Marksheet" },
+    { value: "highest_qualification_certificate", label: "Highest Qualification Marksheet" },
     { value: "registration_certificate", label: "Ayush Registration Certificate" },
-    { value: "id_proof", label: "Government ID Proof" },
+    { value: "other_certificate", label: "Government ID Proof" },
   ];
 
   
@@ -156,13 +158,6 @@ if (!formData?.last_name?.trim()) {
       errors.email = "Please enter a valid email address"
     }
 
-    if (!formData?.address_line?.trim()) {
-      errors.address_line = "Address is required"
-    } else if (formData.address_line?.trim().length < 10) {
-      errors.address_line = "Address should be at least 10 characters"
-    } else if (formData.address_line?.trim().length > 200) {
-      errors.address_line = "Address should not exceed 200 characters"
-    }
 
 
     if (!formData?.consultation_fee) {
@@ -190,10 +185,10 @@ if (!formData?.last_name?.trim()) {
     if (!formData?.specialization_ids) {
       errors.specialization_ids = "Please select a specialization"
     }
-    if (!formData.ayush_registration_number?.trim()) {
-      errors.ayush_registration_number = "Ayurveda registration number is required";
-    } else if (!/^\d+$/.test(formData.ayush_registration_number.trim())) {
-      errors.ayush_registration_number = "Registration number must contain only numbers";
+    if (!formData.practice_license_number?.trim()) {
+      errors.practice_license_number = "pratice License Number is Required";
+    } else if (!/^\d+$/.test(formData?.practice_license_number?.trim())) {
+      errors.practice_license_number = "Registration number must contain only numbers";
     }
 
 
@@ -220,12 +215,7 @@ if (!formData?.last_name?.trim()) {
     }
 
 
-    if (!EditingDoctorId && phoneNum) {
-      const phoneValidation = validatePhoneNumber(phoneNum)
-      if (phoneValidation?.phone) {
-        errors.verified_phone_number = phoneValidation.phone
-      }
-    }
+    
 
     return errors
   }
@@ -324,8 +314,7 @@ const filteredDoctors = Doctordata.filter((doctor) => {
 
   const matchesStatus =
     statusFilter === "All" ||
-    (statusFilter === "verified" && doctor.assured_muni) ||
-    (statusFilter === "unverified" && !doctor.assured_muni);
+    doctor?.status === statusFilter;
 
   const matchesSpecialization =
     specializationfilter === "All" || 
@@ -411,7 +400,6 @@ const method = EditingDoctorId ? "PUT" : "POST";
   newFormData.append("first_name", Doctorform.first_name.trim());
   newFormData.append("last_name", Doctorform.last_name.trim());
   newFormData.append("email", Doctorform.email.trim());
-  newFormData.append("address_line", Doctorform.address_line.trim());
   newFormData.append("assured_muni", Doctorform.assured_muni);
   newFormData.append("verified_phone_number", `+91${phonenumber}`);
   newFormData.append("experience_years", Number.parseInt(Doctorform.experience_years));
@@ -419,7 +407,7 @@ const method = EditingDoctorId ? "PUT" : "POST";
   newFormData.append("available_from", Doctorform.available_from);
   newFormData.append("available_to", Doctorform.available_to);
   newFormData.append("treatment_type_ids", Doctorform.treatment_type_id);
-  newFormData.append("ayush_registration_number", Doctorform.ayush_registration_number);
+  newFormData.append("practice_license_number", Doctorform.practice_license_number);
   newFormData.append("qualification", Doctorform.qualification);
  
 if (Doctorform.profile_image instanceof File) {
@@ -558,9 +546,6 @@ const handleAddSpecialization = async (e) => {
     }
 
     const data = await response.json();
-  
-
-
 
 if (!response.ok) {
   const errorMsg =
@@ -570,8 +555,6 @@ if (!response.ok) {
   toast.error(errorMsg);
   return;
 }
-
-
 
     toast.success("Specialization added successfully!");
     setNewSpecilization("");
@@ -620,10 +603,9 @@ if (!response.ok) {
 
 
 const handledoctorSubmit = async (e) => {
-
-
   e.preventDefault();
 
+ 
   const phoneValidation = validatePhoneNumber(phonenumber);
   if (Object.keys(phoneValidation).length > 0) {
     setPhoneErrors(phoneValidation);
@@ -633,25 +615,24 @@ const handledoctorSubmit = async (e) => {
   const token = sessionStorage.getItem("superadmin_token");
 
   try {
+  
     const payload = {
       phone_number: `+91${phonenumber}`,
       role: "doctor",
     };
 
-    const response = await fetch(
-      `${BASE_URL}/user/super-admin/create-user/`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      }
-    );
 
-    
+    const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+ 
     if (response.status === 401 || response.status === 403) {
       toast.error("Session expired. Please login again");
       sessionStorage.removeItem("superadmin_token");
@@ -659,43 +640,32 @@ const handledoctorSubmit = async (e) => {
       return;
     }
 
+
     const data = await response.json();
 
-    if (response.ok) {
-      const existingRoles = data?.user?.roles || [];
-      const isNewUser = data?.is_new_user;
-      const uid = data?.user?.id;
-
-      
-      if (!isNewUser && existingRoles.includes("doctor")) {
-        toast.error("Doctor already exists with this phone number");
-        return;
-      }
-
-     
-      if (isNewUser) {
-        toast.success("User created. Please complete doctor registration");
-      }
-
-      
-      if (!isNewUser && !existingRoles.includes("doctor")) {
-        toast.info("User exists. Please complete doctor registration");
-      }
-
-      
-      if (uid) {
-        setUserId(uid);
-        localStorage.setItem("USER_ID", uid);
-      }
-
-      setDoctorModal(false);
-      setDoctorformModal(true);
+   
+    if (!response.ok) {
+      toast.error(data?.error );
+      return;
     }
-  } catch (err) {
+
+ 
+   const uid = data?.user?.id;
+    toast.success("Doctor ready. Please complete doctor registration");
+
+    if (uid) {
+      setUserId(uid);
+      localStorage.setItem("USER_ID", uid);
+  setDoctorModal(false);
+   setDoctorformModal(true);
+
+  } 
+ } catch(err) {
     console.error("Doctor create error:", err);
     toast.error("Something went wrong. Please try again");
   }
 };
+
 
 
  
@@ -901,8 +871,11 @@ const getInitials = (firstName, lastName) => {
         <div className="filter-controls">
           <select className="status-filter" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="All">All Status</option>
-            <option value="verified">Verified</option>
-            <option value="unverified">Unverified</option>
+            <option value="pending">pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected"> Rejected</option>
+              <option value="suspended"> Suspended</option>
+
           </select>
 
           <select
@@ -927,6 +900,8 @@ const getInitials = (firstName, lastName) => {
 
         </div>
       </div>
+      
+     
 
       <div className="customers-stats">
         <div className="stat-card">
@@ -934,11 +909,11 @@ const getInitials = (firstName, lastName) => {
           <div className="stat-value">{Doctordata.length}</div>
         </div>
         <div className="stat-card">
-          <h3>Verified Doctors</h3>
+          <h3> Approved  Doctors</h3>
           <div className="stat-value">{Doctordata.filter((d) => d.status ==="approved").length}</div>
         </div>
         <div className="stat-card">
-          <h3>Unverified Doctors</h3>
+          <h3>Pending Doctors</h3>
           <div className="stat-value">{Doctordata.filter((d) => d.status ==="pending").length}</div>
         </div>
       </div>
@@ -951,7 +926,7 @@ const getInitials = (firstName, lastName) => {
               <th>Name</th>
               <th>Email</th>
               <th>Phone</th>
-              <th>Address</th>
+            
               <th>Status</th>
               <th> Fees </th>
               <th>Availability</th>
@@ -959,11 +934,12 @@ const getInitials = (firstName, lastName) => {
               <th>Qualification </th>
               <th>Specialization</th>
               <th>Type</th>
+              
               <th>Experience</th>
+             
                <th>Documents </th>
                <th>Actions</th>
-            
-              
+
             </tr>
           </thead>
           <tbody>
@@ -1015,7 +991,7 @@ const getInitials = (firstName, lastName) => {
   
                   <td>{item?.email}</td>
                   <td>{item?.verified_phone_number}</td>
-                  <td>{item?.address_line}</td>
+                 
                     <td>
                 <select
   value={item?.status}
@@ -1029,8 +1005,9 @@ const getInitials = (firstName, lastName) => {
   }}
   className="status-dropdown"
 >
+
+ <option value="pending">Pending</option>
   <option value="approved">Approved</option>
-  <option value="pending">Pending</option>
   <option value="rejected">Rejected</option>
   <option value="suspended">Suspended</option>
 </select>
@@ -1041,13 +1018,14 @@ const getInitials = (firstName, lastName) => {
                     {item?.available_from} - {item?.available_to}
                   </td>
 
-                  <td>{item?.ayush_registration_number}</td>
+                  <td>{item?.practice_license_number}</td>
                   <td>{item?.qualification}</td>
 
                   <td>{item?.specializations?.map((s) => s.name).join(", ")}</td>
 
                   <td>{item?.treatment_type.map((item) => item.treatment_type)}</td>
-                  <td>{item?.experience_years} years</td>
+                 
+                      <td>{item?.experience_years} years</td>
 
 
                   <td style={{ textAlign: "center" }}>
@@ -1081,6 +1059,9 @@ const getInitials = (firstName, lastName) => {
       className="action-buttons-modal"
       
     >
+       
+       
+       {item.status ==="approved" &&(
         <button
                         className="action-btn1"
                         title=" Detail Page"
@@ -1089,7 +1070,7 @@ const getInitials = (firstName, lastName) => {
     <span className="icon">👁</span> 
   <span>Detail Page</span>
   </button>
-
+       )} 
 
    <button
   className="action-btn1"
@@ -1112,7 +1093,7 @@ const getInitials = (firstName, lastName) => {
          first_name:item.first_name,
          last_name:item.last_name,
       email: item.email,
-      address_line: item.address_line,
+     
       assured_muni: item.assured_muni,
       verified_phone_number: item.verified_phone_number,
       experience_years: item.experience_years,
@@ -1123,7 +1104,7 @@ const getInitials = (firstName, lastName) => {
       available_from: item.available_from || "",
       available_to: item.available_to || "",
       treatment_type_id: item.treatment_type?.[0]?.id || "",
-      ayush_registration_number: item.ayush_registration_number,
+     practice_license_number: item.practice_license_number,
       qualification: item.qualification,
       documentType: "",
       documentFile: null,
@@ -1269,7 +1250,6 @@ const getInitials = (firstName, lastName) => {
                     name="last_name"
                     value={Doctorform.last_name}
                     onChange={handleDoctorinputchange}
-
                     style={{ borderColor: doctorFormErrors.last_name ? "red" : "" }}
                   />
                   {doctorFormErrors.last_name&& (
@@ -1291,18 +1271,7 @@ const getInitials = (firstName, lastName) => {
                   )}
                 </div>
 
-                <div className="form-field">
-                  <label>Address: *</label>
-                  <input
-                    name="address_line"
-                    value={Doctorform.address_line}
-                    onChange={handleDoctorinputchange}
-                    style={{ borderColor: doctorFormErrors.address_line ? "red" : "" }}
-                  />
-                  {doctorFormErrors.address_line && (
-                    <span className="error-text">{doctorFormErrors.address_line}</span>
-                  )}
-                </div>
+              
 
                 <div className="form-field">
                   <label>Consultation Fee (₹): *</label>
@@ -1498,18 +1467,18 @@ const getInitials = (firstName, lastName) => {
               <div className="form-column-3">
 
                 <div className="form-field">
-                  <label>Ayurveda Registration Number:</label>
+                  <label>License Number:</label>
                   <input
                     type="text"
-                    name="ayush_registration_number"
-                    placeholder="Enter Ayurveda Registration Number"
-                    value={Doctorform.ayush_registration_number || ""}
+                    name="practice_license_number"
+                    placeholder="Enter your  License Number"
+                    value={Doctorform.practice_license_number || ""}
                     onChange={handleDoctorinputchange}
                   
                   />
-                  {doctorFormErrors.ayush_registration_number && (
+                  {doctorFormErrors.practice_license_number && (
                     <span className="error-text">
-                      {doctorFormErrors.ayush_registration_number}
+                      {doctorFormErrors.practice_license_number}
                     </span>
                   )}
                 </div>
@@ -1804,8 +1773,10 @@ value={rejectReason}
 placeholder =  " Enter the reason for the Rejection....."
 onChange={(e)=>setRejectReason(e.target.value)}
 />
+<div className="form-buttons">
 <button onClick ={submitRejection}> Submit</button>
-<button onClick = {()=> setSelectedDoctor(false)}>Cancel</button>
+<button onClick = {()=> setShowReasonModal(false)}>Cancel</button>
+</div>
     </div>
      </div>
 )}

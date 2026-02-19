@@ -3,19 +3,17 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import BASE_URL from "../../Base";
+import BASE_URL from "../../../Base";
 
 
-
-const Orderlist = () => {
-  const params = useParams();
+const CustomerDetailPage = () => { const params = useParams();
   const { customerId } = params;
 
   const [SearchOrderlistTerm, setSearchOrderlistTerm] = useState("");
   const [OrderlistData, setOrderlistData] = useState([]);
   const [error, setError] = useState(null);
   const [orderlistloading, setOrderlistloading] = useState(true);
-  const [CustomerData, setCustomerData] = useState([]);
+ 
   const [Customererror, setCustomererror] = useState(null);
   const [Customerloading, setCustomerloading] = useState(true);
   const[ActiveOrderType,setActiveOrderType]=useState("product")
@@ -25,15 +23,18 @@ const Orderlist = () => {
   const[currentConsultationpage,setCurrentconsultationpage]=useState(1)
   const [previewImage, setPreviewImage] = useState(null);
 const [showPreviewModal, setShowPreviewModal] = useState(false);
+const[showCustomerDetail,setShowCustomerDetail] = useState([])
 const navigate = useNavigate();
 
+
+const handleNavigate = (id) => {
+    navigate(`/Items/${id}`);
+  };
 
     const searchPlaceholder =
     ActiveOrderType === "product"
       ? "Search by product name..."
       : "Search by doctor name or specialization...";
-
-
 
   const fetchOrderlist = async () => {
     const token = sessionStorage.getItem("superadmin_token")
@@ -53,7 +54,9 @@ const navigate = useNavigate();
       return;
     }
       const data = await response.json();
-      setOrderlistData(data.data);
+      setOrderlistData(data.orders);
+      setShowCustomerDetail(data.customer)
+      
     }
     catch (err) {
       console.error(err.message);
@@ -112,7 +115,7 @@ const navigate = useNavigate();
 
   console.log(OrderlistData,"orderlist");
   
-const filteredOrders = OrderlistData.filter(order => {
+const filteredOrders = OrderlistData?.filter(order => {
   const matchesType = order.order_type === ActiveOrderType;
 
 
@@ -122,7 +125,7 @@ const filteredOrders = OrderlistData.filter(order => {
 
   const searchTerm = SearchOrderlistTerm.toLowerCase().trim();
 
-  if (order.order_type === "product" && Array.isArray(order.items) && order.items.length > 0) {
+  if (order.order_type === "product" && Array.isArray(order.items) && order?.items?.length > 0) {
     return (
       matchesType &&
       order.items.some(item =>
@@ -148,48 +151,6 @@ const filteredOrders = OrderlistData.filter(order => {
 });
 
 
-
-  const getcustomerdetail = async () => {
- const token = sessionStorage.getItem("superadmin_token")
-    try {
-      const response = await fetch(`${BASE_URL}/customers/customer/${customerId}/`, {
-        method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-         Authorization: `Bearer ${token}`,
-
-        }
-      })
-       if (response.status === 401 || response.status === 403) {
-      toast.error("Session expired. Please login again");
-      sessionStorage.removeItem("superadmin_token");
-      navigate("/login");
-      return;
-    }
-
-      console.log("ddddd", response)
-      const data = await response.json();
-      setCustomerData(data)
-      
-
-    }
-    catch (err) {
-      console.error(err.message);
-      setCustomererror('Something went wrong while fetching data.');
-    }
-    finally {
-      setCustomerloading(false);
-    }
-
-  }
-
-
-  useEffect(() => {
-    getcustomerdetail();
-  }, [])
-
-
   const showOrders = SearchOrderlistTerm.trim()
     ? filteredOrders
     : OrderlistData;
@@ -199,15 +160,15 @@ const filteredOrders = OrderlistData.filter(order => {
 
 const indexoflastorder =CurrentProductOrder*ProductOrderperpage;
 const indexoffirstorder =indexoflastorder -ProductOrderperpage;
- const totalPages = Math.ceil(showOrders.length /ProductOrderperpage);
- const  currentOrder=showOrders.slice(indexoffirstorder,indexoflastorder);
+ const totalPages = Math.ceil(showOrders?.length /ProductOrderperpage);
+ const  currentOrder=showOrders?.slice(indexoffirstorder,indexoflastorder);
  const handlePageChange=(pagenumber)=>setCurrentProductOrder(pagenumber);
 
  const indexoflastconsultationorder=currentConsultationpage*consultationperpage;
  const indexoffirstconsultationorder= indexoflastconsultationorder - consultationperpage;
- const currentConsultation =showOrders.slice(indexoffirstconsultationorder,indexoflastconsultationorder);
+ const currentConsultation =showOrders?.slice(indexoffirstconsultationorder,indexoflastconsultationorder);
  
- const totalpage=Math.ceil(showOrders.length/consultationperpage);
+ const totalpage=Math.ceil(showOrders ?.length/consultationperpage);
  const handlePagechanges=(pageNumber)=>setCurrentconsultationpage(pageNumber);
 
 
@@ -242,13 +203,13 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
 <div className="customer-detail-card">
   <div className="customer-header">
     <img
-      src={CustomerData?.profile_picture || "https://via.placeholder.com/100"}
+      src={showCustomerDetail?.profile_picture || "https://via.placeholder.com/100"}
       alt="Profile"
       className="customer-profile-img"
     />
     <div>
       <h3 className="customer-name">
-        {CustomerData?.first_name || "N/A"} {CustomerData?.last_name || ""}
+        {showCustomerDetail?.first_name || "N/A"} {showCustomerDetail?.last_name || ""}
       </h3>
       <p className="customer-role">Customer</p>
     </div>
@@ -259,22 +220,22 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
 
     <div className="info-item">
       <label>Verified Phone Number:</label>
-      <span>{CustomerData?.verified_phone_number || "N/A"}</span>
+      <span>{showCustomerDetail?.verified_phone_number || "N/A"}</span>
     </div>
 
     <div className="info-item">
       <label>Email:</label>
-      <span>{CustomerData?.email || "N/A"}</span>
+      <span>{showCustomerDetail?.email || "N/A"}</span>
     </div>
 
     <div className="info-item">
       <label>Gender:</label>
-      <span>{CustomerData?.gender || "N/A"}</span>
+      <span>{showCustomerDetail?.gender || "N/A"}</span>
     </div>
 
     <div className="info-item">
       <label>Date Of Birth:</label>
-      <span>{CustomerData?.date_of_birth || "N/A"}</span>
+      <span>{showCustomerDetail?.date_of_birth || "N/A"}</span>
     </div>
 
     
@@ -298,23 +259,23 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
       <div className="stat-card">
         <h3>Total Product Orders</h3>
         <div className="stat-value">
-          {OrderlistData.filter((v) => v.order_type === "product").length}
+          {OrderlistData?.filter((v) => v.order_type === "product")?.length}
         </div>
       </div>
       <div className="stat-card">
         <h3>Active Orders</h3>
         <div className="stat-value">
-          {OrderlistData.filter(
+          {OrderlistData?.filter(
             (v) => v.order_type === "product" && v.order_status === "placed"
-          ).length}
+          )?.length}
         </div>
       </div>
       <div className="stat-card">
         <h3>Delivered Orders</h3>
         <div className="stat-value">
-          {OrderlistData.filter(
+          {OrderlistData?.filter(
             (v) => v.order_type === "product" && v.order_status === "delivered"
-          ).length}
+          )?.length}
         </div>
       </div>
       
@@ -325,27 +286,27 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
       <div className="stat-card">
         <h3>Total Consultation Orders</h3>
         <div className="stat-value">
-          {OrderlistData.filter((v) => v.order_type === "consultation").length}
+          {OrderlistData?.filter((v) => v.order_type === "consultation")?.length}
         </div>
       </div>
       <div className="stat-card">
         <h3>Confirmed Bookings</h3>
         <div className="stat-value">
-          {OrderlistData.filter(
+          {OrderlistData?.filter(
             (v) =>
               v.order_type === "consultation" &&
               v.booking_status?.toLowerCase() === "approved"
-          ).length}
+          )?.length}
         </div>
       </div>
       <div className="stat-card">
         <h3>Pending Bookings</h3>
         <div className="stat-value">
-          {OrderlistData.filter(
+          {OrderlistData?.filter(
             (v) =>
               v.order_type === "consultation" &&
               v.booking_status?.toLowerCase() === "pending"
-          ).length}
+          )?.length}
         </div>
       </div>
       
@@ -382,6 +343,7 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
           <th>Order Id</th>
           <th>Product Name</th>
           <th>Product Image</th>
+          <th> Price</th>
           <th>Quantity</th>
           <th>Total Amount</th>
           <th>Address</th>
@@ -390,49 +352,93 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
           <th>Action</th>
         </tr>
       </thead>
+     
+
+
       <tbody>
-        {orderlistloading ? (
-            <tr>
-            <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
-              <div className="circular-loader"></div>
-            </td>
-          </tr>
-        ) : filteredOrders.length > 0 ? (
-          filteredOrders
-            .filter((order) => order.order_type === "product")
-            .map((order, index) => (
-              <tr key={order.id}>
-                <td>{indexoffirstorder + index + 1}</td>
-                <td>{order?.items[0]?.product_name}</td>
-                <td>
-                  <img
-                    src={order?.items[0]?.vendor_product?.image}
-                    alt={order ?.items[0]?.vendor_product?.title}
-                    style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                  />
-                </td>
-                <td>{order?.items[0]?.quantity}</td>
-                <td>₹{order?.items[0]?.total}</td>
-                <td>
-                  {order?.delivery_address_details?.house_details},{" "}
-                  {order?.delivery_address_details?.city},{" "}
-                  {order?.delivery_address_details?.pincode}
-                </td>
-                <td>
-                  {order?.created_at
-                    ? new Date(order?.created_at).toISOString().split("T")[0]
-                    : ""}
-                </td>
-                <td>{order?.order_status}</td>
-                <td>
-                  <button onClick={() => handlecancelorder(order?.id)}>Cancel</button>
-                </td>
-              </tr>
-            ))
-        ) : (
-          <tr><td colSpan="9" style={{ textAlign: "center" }}>No Product Orders Found</td></tr>
-        )}
-      </tbody>
+  {orderlistloading ? (
+    <tr>
+      <td colSpan="9" style={{ textAlign: "center" }}>
+        <div className="circular-loader"></div>
+      </td>
+    </tr>
+  ) : currentOrder?.length > 0 ? (
+    currentOrder
+      .filter((order) => order.order_type === "product")
+      .map((order, index) => (
+        <tr key={order.id}>
+          <td>{indexoffirstorder + index + 1}</td>
+
+          <td>
+            {order?.items?.map((item) => item.product_name).join(", ") || "N/A"}
+          </td>
+
+         <td>
+  <img
+    src={order?.product_image}
+    alt={order?.product_name}
+    style={{
+      width: "50px",
+      height: "50px",
+      objectFit: "cover",
+      borderRadius: "6px",
+    }}
+    onError={(e) => {
+      e.target.src = "https://via.placeholder.com/50";
+    }}
+  />
+</td>
+
+   
+          <td>
+            {order?.items?.reduce((sum, item) => sum + item.quantity, 0)}
+          </td>
+
+          <td>₹{order?.total_amount}</td>
+
+          <td>
+            {order?.delivery_address_details?.house_details},{" "}
+            {order?.delivery_address_details?.city},{" "}
+            {order?.delivery_address_details?.pincode}
+          </td>
+
+          <td>
+            {new Date(order?.created_at).toLocaleDateString()}
+          </td>
+
+          <td>
+            <span className={`status ${order?.order_status}`}>
+              {order?.order_status}
+            </span>
+          </td>
+
+          <td>
+            {order?.order_status !== "cancelled" && (
+              <button
+                className="cancel-btn"
+                onClick={() => handlecancelorder(order.id)}
+              >
+                Cancel
+              </button>
+            )}
+          </td>
+            <td>
+          <button className="action-btn view"onClick={()=>handleNavigate(order?.id)} >
+                      👁
+                    </button>        
+                 </td>
+          
+        </tr>
+      ))
+  ) : (
+    <tr>
+      <td colSpan="9" style={{ textAlign: "center" }}>
+        No Product Orders Found
+      </td>
+    </tr>
+  )}
+</tbody>
+
        { showOrders?.length >ProductOrderperpage &&(
     <div className="pagination">
        <button onClick={()=>handlePageChange(CurrentProductOrder-1)} disabled={CurrentProductOrder === 1}> Prev</button>
@@ -468,6 +474,7 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
           <th> Time</th>
           <th>Booking Status</th>
           <th>Payment Status</th>
+          <th>Action</th>
         
         </tr>
       </thead>
@@ -476,7 +483,7 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
            orderlistloading ? (
   <tr><td colSpan="9">Loading Consultation Orders...</td></tr>
 ) 
-: currentConsultation.length > 0 ? (
+: currentConsultation?.length > 0 ? (
   currentConsultation
     .filter((order) => order?.order_type === "consultation")
     .map((order, index) => (
@@ -489,7 +496,12 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
         <td>{order?.consultation_time || "N/A"}</td>
         <td>{order?.booking_status || "N/A"}</td>
         <td>{order?.payment_status || "N/A"}</td>
-        
+          <td>
+          <button className="action-btn view"onClick={()=>handleNavigate(order?.id)} >
+                      👁
+                    </button>        
+                 </td>
+
       </tr>
     ))
 ) : (
@@ -537,10 +549,6 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
       />
     </>
   );
+ 
 };
-
-export default Orderlist;
-
-
-
-
+export default CustomerDetailPage

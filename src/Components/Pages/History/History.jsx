@@ -1,8 +1,8 @@
 import * as XLSX from "xlsx";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import BASE_URL from "../../Base";
-import Order from "./Order";
+import BASE_URL from "../../../Base";
+
 import { toast, ToastContainer } from "react-toastify"
 
 const History = () => {

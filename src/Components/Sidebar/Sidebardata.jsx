@@ -1,3 +1,5 @@
+
+
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
@@ -6,84 +8,81 @@ import ReorderIcon from '@mui/icons-material/Reorder';
 import HistoryIcon from '@mui/icons-material/History';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import HealingIcon from '@mui/icons-material/FitnessCenter';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
-import { FiClock, FiList } from "react-icons/fi";
-
-import { FaTicketAlt } from "react-icons/fa";
-
-<FaTicketAlt />
-
+import { FiClock } from "react-icons/fi";
+import { FaTicketAlt, FaUsers } from "react-icons/fa";
 
 export const SidebarData = () => [
   {
     title: "Dashboard",
     icon: <HomeIcon sx={{ fontSize: 20 }} />,
     path: "/Dashboard",
+    permission: "view_dashboard",
   },
-
   {
-    title: "Customer ",
-    icon: <PersonIcon sx={{ fontSize: 20 }}/>,
+    title: "Customer",
+    icon: <PersonIcon sx={{ fontSize: 20 }} />,
     path: "/Customer",
-  },
- 
-  {
-    title:"Product",
-    icon:<Inventory2Icon sx={{ fontSize: 20 }}/>,
-    path:"/Product",
-
+    permission: "view_customers",
   },
   {
-    title:"Vendors",
-    icon:<StorefrontIcon sx={{ fontSize: 20 }}/>,
-    path:"/Vendors",
-
+    title: "Product",
+    icon: <Inventory2Icon sx={{ fontSize: 20 }} />,
+    path: "/Product",
+    permission: "view_products",
   },
   {
-    title:"Order",
-    icon:<ReorderIcon sx={{ fontSize: 20 }}/>,
-    path:"/Order",
-
-  },
-   {
-    title:"Doctor",
-    icon:<MedicalServicesIcon sx={{ fontSize: 20 }}/>,
-    path:"/Doctor",
-
-  },
-   
-   {
-    title:"History",
-    icon:<HistoryIcon sx={{ fontSize:20}}/>,
-    path:"/History",
-
-  },
-   {
-    title:" Wellnesscenter",
-    icon:<HealingIcon sx={{ fontSize:20}}/>,
-    path:"/Center",
-
-  },
-  
-  {
-    title:" Patient",
-    icon: <PersonIcon sx={{ fontSize: 20 }}/>,
-    path:"/Allpatient",
-
+    title: "Vendor",
+    icon: <StorefrontIcon sx={{ fontSize: 20 }} />,
+    path: "/Vendor",
+    permission: "view_vendors",
   },
   {
-    title:" Support",
-    icon: < FaTicketAlt sx={{ fontSize: 20 }}/>,
-    path:"/Support",
-
+    title: "Team",
+    icon: <FaUsers size={20} />,
+    path: "/Admin",
+    permission: "manage_admin",
   },
   {
-    title:"Audit Logs",
-    icon:<FiClock  sx={{fontSize:20}}/>,
-    path:"/Auditlogs"
-      
-  }
-
+    title: "Order",
+    icon: <ReorderIcon sx={{ fontSize: 20 }} />,
+    path: "/Order",
+    permission: "view_orders",
+  },
+  {
+    title: "Doctor",
+    icon: <MedicalServicesIcon sx={{ fontSize: 20 }} />,
+    path: "/Doctor",
+    permission: "view_doctors",
+  },
+  {
+    title: "History",
+    icon: <HistoryIcon sx={{ fontSize: 20 }} />,
+    path: "/History",
+    permission: "view_order_history",
+  },
+  {
+    title: "Wellness Center",
+    icon: <HealingIcon sx={{ fontSize: 20 }} />,
+    path: "/Wellnesscenter",
+    permission: "view_wellness_center",
+  },
+  {
+    title: "Patient",
+    icon: <PersonIcon sx={{ fontSize: 20 }} />,
+    path: "/Patient",
+    permission: "view_patients",
+  },
+  {
+    title: "Support",
+    icon: <FaTicketAlt size={20} />,
+    path: "/Support",
+    permission: "access_support",
+  },
+  {
+    title: "Audit Logs",
+    icon: <FiClock size={20} />,
+    path: "/Auditlogs",
+    permission: "view_audit_logs",
+  },
 ];
-
 

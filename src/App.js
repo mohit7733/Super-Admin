@@ -6,28 +6,48 @@ import { useState } from 'react';
 
 
 import Sidebar from './Components/Sidebar/Sidebar';
-import Header from './Components/Sidebar/Header';
+
+import Header from './Components/Pages/Header/Header'
 
 
 import Login from './Components/Pages/Auth/login';
-import Dashboard from './Components/Pages/Dashboard';
-import Product from './Components/Pages/Product';
-import Order from './Components/Pages/Order';
-import Customer from './Components/Pages/Customer';
-import Vendors from './Components/Pages/Vendors';
-import History from './Components/Pages/History';
-import Doctor from './Components/Pages/Doctor';
-import Vendorproduct from './Components/Pages/Vendorproduct';
-import Orderlist from './Components/Pages/Orderlist';
-import Center from './Components/Pages/Center';
-import DoctorDetail from './Components/Pages/DoctorDetail';
-import Allpatient from './Components/Pages/Allpatient';
-import Items from './Components/Pages/Items';
-import Support from './Components/Pages/Support';
-import Auditlogs from './Components/Pages/Auditlogs';
-import StarRating from './Components/Pages/StarRating';
-import Wellnessdetail from './Components/Pages/Wellnessdetail';
-import ProtectedRoute from "./Components/Pages/ProtectedRoute";
+import ProtectedRoute from './Components/Pages/Auth/ProtectedRoute';
+ import Register from './Components/Pages/Auth/Register';
+ import Admin from './Components/Pages/Admin/Admin'
+
+
+import Product from './Components/Pages/Product/Product';
+
+
+import Customer from'./Components/Pages/Customer/Customer'
+ import CustomerDetailPage from './Components/Pages/Customer/CustomerDetailPage';
+
+import Vendor from './Components/Pages/Vendor/Vendor';
+import Vendorproduct from './Components/Pages/Vendor/Vendorproduct';
+
+import Doctor from './Components/Pages/Doctor/Doctor';
+import DoctorDetail from './Components/Pages/Doctor/DoctorDetail';
+
+
+import Patient from './Components/Pages/Patient/Patient';
+
+import Order from './Components/Pages/Order/Order';
+
+import History from './Components/Pages/History/History';
+import Items from './Components/Pages/History/Items';
+
+import Wellnesscenter from './Components/Pages/Wellnesscenter/Wellnesscenter';
+import StarRating from './Components/Pages/Wellnesscenter/StarRating';
+
+import Dashboard from './Components/Pages/Dashboard/Dashboard'
+import Support from './Components/Pages/Support/Support';
+import Auditlogs from './Components/Pages/AuditLogs/Auditlogs';
+import ForgotPassword from './Components/Pages/Auth/ForgotPassword';
+import VerifyOtp from './Components/Pages/Auth/VerifyOtp';
+import ResetPassword from './Components/Pages/Auth/ResetPassword';
+
+
+
 
 
 const Layout = ({ children }) => {
@@ -60,11 +80,13 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
 
+      <Route path="/register" element={<Register />} /> 
+
         
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute permission="view_dashboard">
               <Layout>
                 <Dashboard />
               </Layout>
@@ -84,11 +106,21 @@ function App() {
           }
         />
 
-      
-        <Route
-          path="/order"
+ <Route
+          path="/Admin"
           element={
              <ProtectedRoute>
+              <Layout>
+             <Admin/>
+              </Layout>
+             </ProtectedRoute>
+          }
+        />
+    
+           <Route
+          path="/order"
+          element={
+             <ProtectedRoute >
               <Layout>
                 <Order />
               </Layout>
@@ -100,7 +132,7 @@ function App() {
         <Route
           path="/Doctor"
           element={
-             <ProtectedRoute>
+             <ProtectedRoute permission="view_doctors">
               <Layout>
                 <Doctor />
               </Layout>
@@ -111,7 +143,7 @@ function App() {
          <Route
           path="/customer"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  permission="view_customers" >
               <Layout>
                 <Customer />
               </Layout>
@@ -119,17 +151,33 @@ function App() {
           }
         />
 <Route
-          path="/vendors"
-          element={
-             <ProtectedRoute>
-              <Layout>
-                <Vendors />
-              </Layout>
-             </ProtectedRoute>
-          }
-        />
+  path="/vendor"
+  element={
+    <ProtectedRoute permission="view_vendors">
+      <Layout>
+        <Vendor />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
 
-      
+<Route
+  path="/ForgotPassword"
+  element={
+   
+      <ForgotPassword />
+   
+  }
+/>
+<Route
+  path="/ResetPassword"
+  element={
+   
+      <ResetPassword />
+   
+  }
+/>
+
         <Route
           path="/history"
           element={
@@ -141,37 +189,28 @@ function App() {
           }
         />
 
-       
-        <Route
-          path="/Allpatient"
+         <Route
+          path="/Patient"
           element={
             <ProtectedRoute>
               <Layout>
-                <Allpatient />
+                <Patient/>
               </Layout>
-           </ProtectedRoute>
+          </ProtectedRoute>
           }
         />
+      
+
+       
+      
 
        
         <Route
-          path="/Wellnessdetail"
+          path="/Wellnesscenter"
           element={
             <ProtectedRoute>
               <Layout>
-                <Wellnessdetail />
-              </Layout>
-             </ProtectedRoute>
-          }
-        />
-
-       
-        <Route
-          path="/Center"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Center />
+                < Wellnesscenter/>
               </Layout>
              </ProtectedRoute>
           }
@@ -194,7 +233,7 @@ function App() {
 
         
         <Route
-          path="/Vendorproduct/:vendorId"
+          path="/vendorproduct/:vendorId"
           element={
             <ProtectedRoute>
               <Layout>
@@ -203,12 +242,13 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
  <Route
-          path="/Orderlist/:customerId"
+          path="/CustomerDetailPage/:customerId"
           element={
             <ProtectedRoute>
               <Layout>
-                <Orderlist />
+                <CustomerDetailPage />
               </Layout>
              </ProtectedRoute>
           }
@@ -253,6 +293,17 @@ function App() {
           }
         />
 
+   <Route
+          path="VerifyOtp"
+          element={
+           
+                <VerifyOtp />
+           
+          }
+        />
+
+         
+
       
         <Route
           path="/Auditlogs"
@@ -271,4 +322,5 @@ function App() {
 }
 
 export default App;
+
 

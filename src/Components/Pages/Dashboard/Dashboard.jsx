@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import WeeklyOrdersChart from "../Charts/WeeklyOrdersChart";
+
 import { FaUsers, FaStore, FaBox, FaUserMd } from "react-icons/fa";
-import BASE_URL from "../../Base";
+import BASE_URL from "../../../Base";
 import { useNavigate } from "react-router-dom";
 
 import { ToastContainer, toast } from "react-toastify"
 import { useRef } from "react";
+import WeeklyOrdersChart from "./WeeklyOrdersChart";
 
 
 

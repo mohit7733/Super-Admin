@@ -3,10 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import BASE_URL from "../../Base";
-import { apiFetch } from "../../fetchapi";
-import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
-
+import BASE_URL from "../../../Base";
+import { apiFetch } from "../../../fetchapi";
+import {  BsThreeDotsVertical } from "react-icons/bs";
 
 
 const userId = localStorage.getItem("USER_ID")
@@ -14,7 +13,6 @@ const userId = localStorage.getItem("USER_ID")
 console.log("USER_ID", userId)
 
 const initialCustomerFormState = {
-
  profile_picture:"" ,
   first_name: "",
   email: "",
@@ -40,16 +38,10 @@ const Customers = () => {
   const [CustomerForm, setCustomerForm] = useState(initialCustomerFormState)
   const [editingCustomerId, setEditingCustomerId] = useState(null)
   const [customermodalOpen, setCustomerModalOpen] = useState(false)
- 
-  const [ISUserID, setISUserID] = useState(false)
   const [otpVerified, setOtpVerified] = useState(false)
-  const navigate = useNavigate()
-  const [otpDigits, setOtpDigits] = useState(["", "", "", ""])
-  const otpRefs = useRef([])
-
+  const navigate = useNavigate();
   const [formErrors, setFormErrors] = useState(initialFormErrors)
   const [phoneFormErrors, setPhoneFormErrors] = useState({ verified_phone_number: "" })
-  const [otpFormErrors, setOtpFormErrors] = useState({ otp: "" })
   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const bulktableRef = useRef(null);
@@ -59,7 +51,8 @@ const Customers = () => {
   const[customerperpage,setcustomerperpage]=useState(5);
   const[ImageCustomerModal,setImageCustomerModal]=useState(false);
   const[ImageCustomerPreview,setImageCustomerPreview]=useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null);
+ const [openMenuId, setOpenMenuId] = useState(null);
+ 
   
  
   
@@ -101,22 +94,7 @@ const Customers = () => {
     return Object.keys(errors)?.length === 0
   }
 
-  const validateOtpForm = () => {
-    const errors = {}
-    const otpValue = getOtpValue()
-
-    if (!otpValue || otpValue?.length !== 4) {
-      errors.otp = "Please enter complete 4-digit OTP"
-    } else if (!/^\d{4}$/.test(otpValue)) {
-      errors.otp = "OTP should contain only numbers"
-    }
-
-    setOtpFormErrors(errors)
-    return Object.keys(errors)?.length === 0
-  }
-
-
-
+ 
   const handleCloseCustomerModal = () => {
     setCustomerModalOpen(false)
     setEditingCustomerId(null)
@@ -139,89 +117,10 @@ const Customers = () => {
   };
 
   const handleNavigate = (id) => {
-    navigate(`/Orderlist/${id}`)
+    navigate(`/CustomerDetailPage/${id}`)
   }
 
-  const handleOtpChange = (e, index) => {
-    const value = e.target.value.replace(/\D/, "")
-    if (!value) return
 
-    const newOtpDigits = [...otpDigits]
-    newOtpDigits[index] = value
-    setOtpDigits(newOtpDigits)
-
-    if (otpFormErrors.otp) {
-      setOtpFormErrors({ otp: "" })
-    }
-
-    if (index < 3 && value) {
-      otpRefs.current[index + 1].focus()
-    }
-  }
-
-  const handleOtpKeyDown = (e, index) => {
-    if (e.key === "Backspace") {
-      const newOtpDigits = [...otpDigits]
-
-      if (otpDigits[index]) {
-        newOtpDigits[index] = ""
-        setOtpDigits(newOtpDigits)
-      } else if (index > 0) {
-        otpRefs.current[index - 1].focus()
-        newOtpDigits[index - 1] = ""
-        setOtpDigits(newOtpDigits)
-      }
-    }
-  }
-
-  const getOtpValue = () => otpDigits.join("")
-
-//   const handleCreateCustomer = async (e) => {
-//     e.preventDefault()
-
-//     if (!validatePhoneForm()) {
-//       return
-//     }
-// const token = sessionStorage.getItem("superadmin_token")
-  
-//     try {
-//       const payload = {
-//         phone_number:`+91${CustomerForm.verified_phone_number}`,
-//         role :"customer",
-//       }
-//       const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`,{
-//         method: "POST",
-//         headers: {
-//           Accept: "application/json",
-//           "Content-Type": "application/json",
-//           Authorization : `Bearer ${token}`
-//         },
-//         body: JSON.stringify(payload),
-//       })
-
-//       console.log("server response", response)
-//       const data = await response.json()
-
-//        if (response.ok) {
-//       const uid = data?.user?.id;
-
-//       if (uid) {
-        
-//         setUserId(uid);
-//         localStorage.setItem("USER_ID", uid);
-//       }
-
-//       toast.success("User created! Please complete Customer registration");
-
-//        setOtpVerified(false);
-//       setCustomerModalOpen(true);
-//     }
-//   } catch (err) {
-//       toast.error("Failed to send OTP, please try again", {
-//         position: "top-center",
-//       })
-//     }
-//   }
 const handleCreateCustomer = async (e) => {
   e.preventDefault();
 
@@ -231,24 +130,22 @@ const handleCreateCustomer = async (e) => {
 
   const token = sessionStorage.getItem("superadmin_token");
 
+  
   try {
     const payload = {
       phone_number: `+91${CustomerForm.verified_phone_number}`,
       role: "customer",
     };
 
-    const response = await fetch(
-      `${BASE_URL}/user/super-admin/create-user/`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      }
-    );
+    const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
     
     if (response.status === 401 || response.status === 403) {
@@ -259,37 +156,27 @@ const handleCreateCustomer = async (e) => {
     }
 
     const data = await response.json();
-
-    if (response.ok) {
-      const existingRoles = data?.user?.roles || [];
-      const isNewUser = data?.is_new_user;
-      const uid = data?.user?.id;
-
-
-      if (!isNewUser && existingRoles.includes("customer")) {
-        toast.error("Customer already exists with this phone number");
-        return;
-      }
-
+    console.log("data",data)
    
-      if (isNewUser) {
-        toast.success("User created. Please complete customer registration");
-      }
+    if (!response.ok) {
+      toast.error( data?.error);
+      return;
+    }
 
-      
-      if (!isNewUser && !existingRoles.includes("customer")) {
-        toast.info("User exists with another role. Please complete customer registration");
-      }
+    
+    const uid = data?.user?.id;
 
-      if (uid) {
-        setUserId(uid);
-        localStorage.setItem("USER_ID", uid);
-      }
+    toast.success("Customer created. Please complete your registration");
 
+    if (uid) {
+      setUserId(uid);
+      localStorage.setItem("USER_ID", uid);
       setOtpVerified(false);
       setCustomerModalOpen(true);
     }
+
   } catch (err) {
+    console.error("Customer create error:", err);
     toast.error("Something went wrong. Please try again", {
       position: "top-center",
     });
@@ -508,7 +395,7 @@ const handleCustomerFileChange = (e) => {
   const indexoffirstcustomer=indexoflastcustomer - customerperpage;
   const  currentCustomer=filteredCustomers?.slice(indexoffirstcustomer,indexoflastcustomer)
  const totalPages = Math.ceil(filteredCustomers?.length /customerperpage);
-const handlePageChange =(pagenumber)=>setCurrentpage(pagenumber);
+ const handlePageChange =(pagenumber)=>setCurrentpage(pagenumber);
 useEffect(() => {
   setCurrentpage(1);
 }, [searchcustomerTerm]);
@@ -650,7 +537,7 @@ useEffect(() => {
   {openMenuId === customer.id && (
     <div
       className="action-buttons-modal"
-      
+       
     >
 
         <button className="action-btn1" title=" View Customer Order " onClick={() => handleNavigate(customer.id)}>
@@ -839,7 +726,6 @@ useEffect(() => {
                 type="button"
                 onClick={() => {
                   setOtpVerified(false)
-                  setCustomerForm(initialCustomerFormState)
                   setPhoneFormErrors({ verified_phone_number: "" })
                 }}
               >

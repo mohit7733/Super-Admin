@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { ToastContainer, toast } from "react-toastify";
-import BASE_URL from "../../Base";
+import BASE_URL from "../../../Base";
 
 
 import "react-toastify/dist/ReactToastify.css";
@@ -17,6 +17,7 @@ const[ItemsError,setItemsError]=useState(null);
     
     const getItemsList= async () => {
       const token = sessionStorage.getItem("superadmin_token")
+      
     try {
        const response = await fetch( `${BASE_URL}/payments/payment/${PaymentId}/`, {
         method: 'GET',
