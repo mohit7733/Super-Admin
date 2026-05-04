@@ -22,6 +22,7 @@ const VerifyOtp = () => {
       }
     }
   };
+  
 
   const handleVerify = async (e) => {
     e.preventDefault();

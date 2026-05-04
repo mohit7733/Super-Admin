@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 
 
+
 const CustomerDetailPage = () => { const params = useParams();
   const { customerId } = params;
 
@@ -13,7 +14,6 @@ const CustomerDetailPage = () => { const params = useParams();
   const [OrderlistData, setOrderlistData] = useState([]);
   const [error, setError] = useState(null);
   const [orderlistloading, setOrderlistloading] = useState(true);
- 
   const [Customererror, setCustomererror] = useState(null);
   const [Customerloading, setCustomerloading] = useState(true);
   const[ActiveOrderType,setActiveOrderType]=useState("product")

@@ -6,6 +6,13 @@ import "react-toastify/dist/ReactToastify.css"
 import BASE_URL from "../../../Base";
 import { apiFetch } from "../../../fetchapi";
 import {  BsThreeDotsVertical } from "react-icons/bs";
+import { FaUsers } from "react-icons/fa";
+import { FiUserPlus } from "react-icons/fi";
+import { MdCalendarMonth } from "react-icons/md";
+
+
+
+
 
 
 const userId = localStorage.getItem("USER_ID")
@@ -45,22 +52,24 @@ const Customers = () => {
   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const bulktableRef = useRef(null);
-  const fetchedOnce = useRef(false);
   const [userId, setUserId] = useState(null);
   
-  const [thisMonthCount, setThisMonthCount] = useState(0);
+const [thisMonthCount, setThisMonthCount] = useState(0);
 const [thisYearCount, setThisYearCount] = useState(0);
 
   const[ImageCustomerModal,setImageCustomerModal]=useState(false);
   const[ImageCustomerPreview,setImageCustomerPreview]=useState(null);
  const [openMenuId, setOpenMenuId] = useState(null);
  const [currentPage, setCurrentPage] = useState(1);
+ const pageSize = 5;
+ 
 const [totalCount, setTotalCount] = useState(0);
+const totalPages = Math.ceil(totalCount / pageSize);
 const [nextPage, setNextPage] = useState(null);
 const [previousPage, setPreviousPage] = useState(null);
 
   
- 
+ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   
     
   const validateCustomerForm = () => {
@@ -134,10 +143,10 @@ const handleCreateCustomer = async (e) => {
     return;
   }
 
-  const token = sessionStorage.getItem("superadmin_token");
 
   
   try {
+    const token = sessionStorage.getItem("superadmin_token");
     const payload = {
       phone_number: `+91${CustomerForm.verified_phone_number}`,
       role: "customer",
@@ -162,7 +171,7 @@ const handleCreateCustomer = async (e) => {
     }
 
     const data = await response.json();
-    console.log("data",data)
+   
    
     if (!response.ok) {
       toast.error( data?.error);
@@ -291,7 +300,6 @@ const getInitials = (firstName = "", lastName = "") => {
 
 
  
-
  
 const handleCustomerFileChange = (e) => {
   const file = e.target.files[0];
@@ -394,24 +402,19 @@ const getCustomerList = async (page = 1, searchTerm = "") => {
 useEffect(() => {
   const delay = setTimeout(() => {
     getCustomerList(1, searchcustomerTerm);
-  }, 500);
+  }, 100);
 
   return () => clearTimeout(delay);
 }, [searchcustomerTerm]);
 
- 
-  
 
  
-
-
-  
-
 
   return (
     <>
       <div className="page-header">
         <h1>Customers</h1>
+        <p className="page-paragraph"> Manage Customers and their details</p>
       </div>
 
       <div className="customers-controls">
@@ -427,16 +430,28 @@ useEffect(() => {
 
         <div className="filter-controls">
           <button
+          
             className="add-customer-btn"
             onClick={() => {
               setOtpVerified(true);
               setCustomerForm(initialCustomerFormState);
             }}
           >
-            + Add Customer
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="10" cy="7" r="4"/>
+  <path d="M4 21v-2a6 6 0 0 1 12 0v2"/>
+  <line x1="19" y1="8" x2="19" y2="14"/>
+  <line x1="22" y1="11" x2="16" y2="11"/>
+</svg>
+            Add Customer
           </button>
 
           <button className="export-btn" onClick={handleDownload}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+  <polyline points="7 10 12 15 17 10"/>
+  <line x1="12" y1="15" x2="12" y2="3"/>
+</svg>
             Export Details
           </button>
         </div>
@@ -474,7 +489,6 @@ useEffect(() => {
               <th>Email</th>
               <th>Gender</th>
               <th>Phone Number</th>
-             
               <th>Action</th>
             </tr>
           </thead>
@@ -606,27 +620,42 @@ useEffect(() => {
             )}
           </tbody>
         </table>
-      {(previousPage || nextPage) && (
+    {totalPages > 1 && (
   <div className="pagination">
-  <button
-    onClick={() => getCustomerList(currentPage - 1, searchcustomerTerm)}
-    disabled={!previousPage}
-  >
-    Prev
-  </button>
 
-  <span style={{ margin: "0 10px" }}>
-    Page {currentPage}
-  </span>
+   
+    <button
+      onClick={() => getCustomerList(currentPage - 1, searchcustomerTerm)}
+      disabled={!previousPage}
+    >
+      Prev
+    </button>
 
-  <button
-    onClick={() => getCustomerList(currentPage + 1, searchcustomerTerm)}
-    disabled={!nextPage}
-  >
-    Next
-  </button>
-</div>
+   
+    {pages.map((page) => (
+      <button
+        key={page}
+        onClick={() => getCustomerList(page, searchcustomerTerm)}
+        style={{
+         
+          fontWeight: currentPage === page ? "bold" : "normal",
+          background: currentPage === page ? "#71a33f" : "#fff",
+          color: currentPage === page ? "#fff" : "#71a33f",
+        }}
+      >
+        {page}
+      </button>
+    ))}
 
+    
+    <button
+      onClick={() => getCustomerList(currentPage + 1, searchcustomerTerm)}
+      disabled={!nextPage}
+    >
+      Next
+    </button>
+
+  </div>
 )}
 
       </div>

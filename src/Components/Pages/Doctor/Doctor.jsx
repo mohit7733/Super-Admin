@@ -19,7 +19,7 @@ const intialDoctorform = {
   profile_image:"",
  first_name:"",
  last_name:"",
-  email: "",
+ email: "",
   assured_muni: false,
   verified_phone_number: "",
   experience_years: "",
@@ -29,15 +29,13 @@ const intialDoctorform = {
   consultation_fee: "",
   available_from: "",
   available_to: "",
-practice_license_number: "",
+  practice_license_number: "",
   qualification: "",
   documentType: "",
   documentFile: null,
   documents: [],
 
 }
-
-
 
 const Doctor = () => {
   const [doctorsearch, setDoctorsearch] = useState("")
@@ -60,7 +58,6 @@ const Doctor = () => {
   const [specialities, setSpecialities] = useState([])
   const [EditingDoctorId, setEditingDoctorId] = useState(null)
   const [spec, setSpecs] = useState([])
- 
   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false)
   const [selectedDoctorId, setSelectedDoctorId] = useState(null)
   const [AddSpeciality, setAddspecialityform] = useState(false);
@@ -70,8 +67,7 @@ const Doctor = () => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [uploadedDocs, setUploadedDocs] = useState([]);
-  const [doctorperpage,setDoctorperpage]=useState(5);
-  const [currentpage,setCurrentpage]=useState(1);
+  
   const [showReasonModal, setShowReasonModal] = useState(false);
  
   const [rejectReason, setRejectReason] = useState("");
@@ -80,7 +76,16 @@ const Doctor = () => {
   const[previewImage,setPreviewImage]=useState("");
   const[ImageModal,setImageModal]=useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const pagesize = 5;
+  const[totalCount,setTotalCount]=useState(0);
+ const totalPages = Math.ceil(totalCount / pagesize);
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
+  const[currentpage,setCurrentPage]=useState(1);
+  const[Nextpage,setNextpage]=useState(null);
+
+  const[previousPage,setPreviousPage]=useState(null);
+ const [doctorStats, setDoctorStats] = useState(null);
  
 
   
@@ -115,21 +120,11 @@ const Doctor = () => {
   }
 
 
-  const validateOTP = (otp) => {
-    const errors = {}
-    if (!otp || otp.length !== 4) {
-      errors.otp = "Please enter the complete 4-digit OTP"
-    } else if (!/^\d{4}$/.test(otp)) {
-      errors.otp = "OTP must contain only numbers"
-    }
-
-    return errors
-  }
-
+ 
 
 
   const validateDoctorForm = (formData, phoneNum) => {
-    const errors = {}
+    const errors = {};
     
 if (!formData?.first_name?.trim()) {
   errors.first_name = "First name is required";
@@ -232,10 +227,12 @@ if (!formData?.last_name?.trim()) {
     console.log(id)
     navigate(`/DoctorDetail/${id}`)
   }
+
   const handleRemoveDocument = (type) => {
     setUploadedDocs((prev) => prev.filter((doc) => doc.type !== type));
     toast.info("Document removed successfully");
   };
+
 
   const clearDoctorForm = () => {
     setDoctorform(intialDoctorform)
@@ -264,71 +261,57 @@ const handleRejectClick = (doctorId, statusType) => {
  setShowReasonModal(true);
 };
 
-  const getdoctorlist = async () => {
-    const token= sessionStorage.getItem("superadmin_token")
-    try {
-      const response = await fetch(`${BASE_URL}/healthcare/doctor/`, {
-        method:'GET',
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-           Authorization: `Bearer ${token}`,
+const getdoctorlist = async (page = 1) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-        },
-      })
-      if (response.status === 401 || response.status === 403) {
+  try {
+   const url = `${BASE_URL}/healthcare/doctors/search/?name=${doctorsearch || ""}&specialization=${
+  specializationfilter === "All" ? "" : specializationfilter
+}&status=${statusFilter === "All" ? "" : statusFilter}&page=${page}`;
+
+    console.log("API URL:", url);
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 401 || response.status === 403) {
       toast.error("Session expired. Please login again");
       sessionStorage.removeItem("superadmin_token");
       navigate("/login");
       return;
     }
-      const data = await response.json()
-      setDoctorData(data.data)
-    } catch (err) {
-      console.error(err.message)
-      setError("Something went wrong while fetching data.")
-      toast.error("Failed to fetch Doctor Data")
-    } finally {
-      setLoading(false)
-    }
+
+    const data = await response.json();
+
+    setDoctorData(data.data);
+    setTotalCount(data.count);
+    setCurrentPage(page);
+    setNextpage(data.next);
+    setPreviousPage(data.previous);
+
+  } catch (err) {
+    console.error(err.message);
+    setError("Something went wrong while fetching data.");
+    toast.error("Failed to fetch Doctor Data");
+  } finally {
+    setLoading(false);
   }
-
+};
   useEffect(() => {
-    if (!fetchedOnce.current) {
-      getdoctorlist();
-      fetchedOnce.current = true;
-    }
-  }, []);
+  const delay = setTimeout(() => {
+    getdoctorlist(1);
+  }, 100);
 
+  return () => clearTimeout(delay);
+}, [doctorsearch, statusFilter, specializationfilter]);
   
-const filteredDoctors = Doctordata.filter((doctor) => {
-  const searchLower = doctorsearch?.toLowerCase() || "";
 
-  const matchesSearch =
-  
-    !searchLower ||
-    (doctor?.first_name?.toLowerCase()?.includes(searchLower)) ||
-    (doctor?.specializations?.some((s) =>
-      s?.name?.toLowerCase()?.includes(searchLower)
-    ));
-
-  const matchesStatus =
-    statusFilter === "All" ||
-    doctor?.status === statusFilter;
-
-  const matchesSpecialization =
-    specializationfilter === "All" || 
-    doctor.specializations?.some((s) => s.name === specializationfilter);
-
-  return matchesSearch && matchesStatus && matchesSpecialization;
-})
-.sort((a, b) => {
-  const nameA = a.first_name || ""; 
-  const nameB = b.first_name || "";
-  return nameA.localeCompare(nameB);
-});
-
-console.log(filteredDoctors, "filterdoc");
 
   const openDocumentModal = (i) => {
     setOpenModal(true);
@@ -479,8 +462,6 @@ if (response.status === 401 || response.status === 403) {
   }
 };
 
-
-
   const handleAddDocument = (e) => {
     e.preventDefault();
 
@@ -567,6 +548,35 @@ if (!response.ok) {
   }
 };
 
+const getDoctorStats = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  try {
+    const res = await fetch(`${BASE_URL}/healthcare/doctorstats/`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+    setDoctorStats(data);
+    
+  } catch (error) {
+    console.error("Error fetching doctor stats:", error);
+  }
+};
+
+const hasFetched = useRef(false);
+
+useEffect(() => {
+  if (!hasFetched.current) {
+    getDoctorStats();
+    hasFetched.current = true;
+  }
+}, []);
+
 
   const fetchTreatmentTypes = async () => {
      const token = sessionStorage.getItem("superadmin_token");
@@ -594,10 +604,14 @@ if (!response.ok) {
     }
   };
 
-  useEffect(() => {
-    fetchTreatmentTypes();
-  }, []);
+ const hasFetchedTreatment = useRef(false);
 
+useEffect(() => {
+  if (!hasFetchedTreatment.current) {
+    fetchTreatmentTypes();
+    hasFetchedTreatment.current = true;
+  }
+}, []);
 
 
 
@@ -723,7 +737,7 @@ const handledoctorSubmit = async (e) => {
       "Consultation Fee (₹)": d.consultation_fee,
       Specialization: d.specializations?.map((s) => s.name).join(", "),
       Experience : d.experience_years,
-      "Ayush Register Number" : d.ayush_registration_number,
+      "Ayush Register Number" : d.practice_license_number,
       Qualtification : d.qualification,
       Status : d.status,
     "Available To":d.available_from,
@@ -742,11 +756,7 @@ const handledoctorSubmit = async (e) => {
     XLSX.writeFile(wb, "doctor_data.xlsx");
   };
 
-  const handleverifiedDoctor = () => {
-    setVerifiedDoctorModal(false)
-    setOtpErrors({})
-    setOtpDigits(["", "", "", ""])
-  }
+  
 
  const fetchSpecialization = async () => {
   const token = sessionStorage.getItem("superadmin_token");
@@ -774,22 +784,22 @@ const handledoctorSubmit = async (e) => {
 
   } catch (error) {
     console.error("Error fetching specialities:", error);
-    toast.error("Failed to fetch specialities");
+    // toast.error("Failed to fetch specialities");
   }
 };
 
-  useEffect(() => {
-    fetchSpecialization();
-  }, [])
+ const hasFetchedSpecialization = useRef(false);
 
+useEffect(() => {
+  if (!hasFetchedSpecialization.current) {
+    fetchSpecialization();
+    hasFetchedSpecialization.current = true;
+  }
+}, []);
 
  
-  const indexoflastdoctor =currentpage*doctorperpage;
-  const indexoffirstdoctor= indexoflastdoctor - doctorperpage;
-  const currentDoctor= filteredDoctors.slice(indexoffirstdoctor,indexoflastdoctor)
-  const totalpages=Math.ceil(filteredDoctors.length/doctorperpage);
 
-const handlePageChange=(pageNumber)=>setCurrentpage(pageNumber)
+
   const handleSelection = () => {
     setDropdownOpen(!dropdownOpen);
   }
@@ -832,17 +842,22 @@ const getInitials = (firstName, lastName) => {
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
-    }
+        }
 
       if (!response.ok) {
         throw new Error("Failed to update status")
       }
 
-      setDoctorData((prev) =>
+      if(response.status === 200 || response.status === 201){
+       await getDoctorStats();
+        setDoctorData((prev) =>
         prev.map((doctor) =>
           doctor.id === doctorId ? { ...doctor, status : newStatus } : doctor,
         ),
       )
+      }
+      
+      
     } catch (err) {
       console.error(err)
       toast.error("Error updating vendor status")
@@ -854,6 +869,7 @@ const getInitials = (firstName, lastName) => {
     <>
       <div className="page-header">
         <h1>Doctor</h1>
+        <p className="page-paragraph"> Manage Doctor ,details and their  Approvals</p>
       </div>
 
       <div className="doctor-controls">
@@ -892,9 +908,20 @@ const getInitials = (firstName, lastName) => {
           </select>
 
           <button className="add-customer-btn" onClick={() => setDoctorModal(true)}>
-            + Add Doctor
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="10" cy="7" r="4"/>
+  <path d="M4 21v-2a6 6 0 0 1 12 0v2"/>
+  <line x1="19" y1="8" x2="19" y2="14"/>
+  <line x1="22" y1="11" x2="16" y2="11"/>
+</svg>
+            Add Doctor
           </button>
-          <button className="add-customer-btn" onClick={handleDoctorDownload}>
+          <button className="export-btn" onClick={handleDoctorDownload}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+  <polyline points="7 10 12 15 17 10"/>
+  <line x1="12" y1="15" x2="12" y2="3"/>
+</svg>
             Export Details
           </button>
 
@@ -903,20 +930,27 @@ const getInitials = (firstName, lastName) => {
       
      
 
-      <div className="customers-stats">
-        <div className="stat-card">
-          <h3>Total Doctors</h3>
-          <div className="stat-value">{Doctordata.length}</div>
-        </div>
-        <div className="stat-card">
-          <h3> Approved  Doctors</h3>
-          <div className="stat-value">{Doctordata.filter((d) => d.status ==="approved").length}</div>
-        </div>
-        <div className="stat-card">
-          <h3>Pending Doctors</h3>
-          <div className="stat-value">{Doctordata.filter((d) => d.status ==="pending").length}</div>
-        </div>
-      </div>
+     <div className="vendors-stats">
+  <div className="stat-card">
+    <h3>Total Doctors</h3>
+    <div className="stat-value">{doctorStats?.total_doctors || 0}</div>
+  </div>
+
+  <div className="stat-card">
+    <h3>Approved Doctors</h3>
+    <div className="stat-value">{doctorStats?.approved_doctors || 0}</div>
+  </div>
+
+  <div className="stat-card">
+    <h3>Pending Approval</h3>
+    <div className="stat-value">{doctorStats?.pending_doctors || 0}</div>
+  </div>
+
+  <div className="stat-card">
+    <h3>Rejected Doctors</h3>
+    <div className="stat-value">{doctorStats?.rejected_doctors || 0}</div>
+  </div>
+</div>
       <div className="table-container">
         <table className="customers-table" ref={doctortableRef}>
           <thead>
@@ -924,9 +958,9 @@ const getInitials = (firstName, lastName) => {
               <th>ID</th>
               <th>profile</th>
               <th>Name</th>
+              
               <th>Email</th>
               <th>Phone</th>
-            
               <th>Status</th>
               <th> Fees </th>
               <th>Availability</th>
@@ -956,10 +990,10 @@ const getInitials = (firstName, lastName) => {
                   {error}
                 </td>
               </tr>
-            ) : currentDoctor.length > 0 ? (
-              currentDoctor.map((item, index) => (
+            ) : Doctordata.length > 0 ? (
+             Doctordata.map((item, index) => (
                 <tr key={item.id}>
-                  <td>{indexoffirstdoctor + index+1}</td>
+                  <td>{index+1}</td>
                
                  <td>
   <div className="customer-avatar-wrapper">
@@ -1155,25 +1189,45 @@ const getInitials = (firstName, lastName) => {
           </tbody>
         </table>
 
-  {filteredDoctors.length> doctorperpage &&(
-          < div className="pagination"> 
+  
+  {totalPages > 1 && (
+  <div className="pagination">
 
- <button onClick={()=>handlePageChange(currentpage-1)} disabled={currentpage === 1}> Prev</button>
- 
-{Array.from({ length: totalpages}, (_, i) => i + 1).map(number => (
-  <button
-    key={number} 
-    className={currentpage === number ? "active" : ""} 
-    onClick={() => handlePageChange(number)}
-  >
-    {number}
-  </button>
-))}
+   
+    <button
+      onClick={() => getdoctorlist(currentpage - 1, doctorsearch)}
+      disabled={!previousPage}
+    >
+      Prev
+    </button>
 
-<button onClick={()=>handlePageChange(currentpage +1)} disabled={currentpage === totalpages}> Next</button>
+   
+    {pages.map((page) => (
+      <button
+        key={page}
+        onClick={() => getdoctorlist(page, doctorsearch)}
+        style={{
+         
+          fontWeight: currentpage === page ? "bold" : "normal",
+          background: currentpage === page ? "#71a33f" : "#fff",
+          color: currentpage === page ? "#fff" : "#71a33f",
+        }}
+      >
+        {page}
+      </button>
+    ))}
 
-          </div>
-        )}
+    
+    <button
+      onClick={() => getdoctorlist(currentpage+ 1, doctorsearch)}
+      disabled={!Nextpage}
+    >
+      Next
+    </button>
+
+  </div>
+)}
+
       </div>
 
 
@@ -1764,21 +1818,34 @@ const getInitials = (firstName, lastName) => {
      )}
  
 
+
+
 {showReasonModal &&(
-  <div className="modal">
-    <div className="modal-content">
-<h2> Enter Rejection Reason</h2>
-<textarea
-value={rejectReason}
-placeholder =  " Enter the reason for the Rejection....."
-onChange={(e)=>setRejectReason(e.target.value)}
-/>
-<div className="form-buttons">
-<button onClick ={submitRejection}> Submit</button>
-<button onClick = {()=> setShowReasonModal(false)}>Cancel</button>
-</div>
+  <div className=" modal">
+   
+    <form className="customer-form">
+      <h3>
+          {selectedStatus === "rejected"
+            ? "Enter Rejected Reason"
+            : "Enter Suspended Reason"}
+        </h3>
+      <textarea
+      value={rejectReason}
+      placeholder={
+    selectedStatus === "rejected"
+      ? "Enter the reason for rejection..."
+      : "Enter the reason for suspension..."
+  }
+   onChange={(e)=>setRejectReason(e.target.value)}
+      />
+      <div className="form-buttons">
+        <button onClick={submitRejection} type = "submit">   Submit  </button>
+        <button type="button" onClick ={()=>setShowReasonModal(false)}> Cancel </button>
+      </div>
+
+    </form>
     </div>
-     </div>
+   
 )}
       <ToastContainer
         position="top-center"

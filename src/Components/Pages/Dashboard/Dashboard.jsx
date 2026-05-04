@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify"
 import { useRef } from "react";
 import WeeklyOrdersChart from "./WeeklyOrdersChart";
+import { apiFetch } from "../../../fetchapi";
 
 
 
@@ -45,12 +46,7 @@ const Dashboard = () => {
 const [statsLoading, setStatsLoading] = useState(true);
 const [statsError, setStatsError] = useState(null);
 const navigate = useNavigate();
-
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orderData.slice(indexOfFirstOrder, indexOfLastOrder);
-  const totalPages = Math.ceil(orderData.length / ordersPerPage);
-
+const[activeType,setActiveType]=useState("product")
     const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
   const metrics = [
   { 
@@ -93,33 +89,79 @@ const statusLabelMap = {
 
 };
 
-  const getOrderList = async () => {
-  const token = sessionStorage.getItem("superadmin_token");
 
- 
+const paymentstatusLabel ={
+pending : "Pending",
+success : "Success",
+failed : " Failed",
+processing :"Processing",
+refund :"Refund"
+
+}
+
+const paymentMethodLabel = {
+  cash_on_delivery: "Cash on Delivery",
+  online: "Online",
+  net_banking: "Net Banking",
+  upi: "UPI",
+  card: "Card",
+  wallet: "Wallet",
+};
+
+const [productPage, setProductPage] = useState(1);
+const [consultationPage, setConsultationPage] = useState(1);
+
+const [nextPage, setNextPage] = useState(null);
+const [previousPage, setPreviousPage] = useState(null);
+const pagesize = 5;
+  const[totalCount,setTotalCount]=useState(0);
+const totalPages = Math.ceil(totalCount / pagesize);
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+ const getOrderList = async (page = 1, type = activeType, search = "") => {
+  setOrderLoading(true);
+  setOrderError("");
 
   try {
-    const response = await fetch(`${BASE_URL}/orders/order/`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-if (response.status === 401 || response.status === 403) {
-      toast.error("Session expired. Please login again");
-      sessionStorage.removeItem("superadmin_token");
-      navigate("/login");
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired! Please login again");
       return;
     }
-   
 
-    const data = await response.json();
-    setOrderData(data.data || []);
+    
+let searchParam = "";
+
+if (search) {
+  if (type === "product") {
+    searchParam = `&product_name=${search}`;
+  } else {
+    
+    searchParam = `&doctor_name=${search}&specialization=${search}`;
+  }
+}
+    const url = `${BASE_URL}/orders/order/?page=${page}&order_type=${type}${searchParam}`;
+
+    const response = await apiFetch(url, {
+      method: "GET",
+      headers: { Accept: "application/json" }
+    });
+
+    setOrderData(response?.data || []);
+    setNextPage(response?.next);
+    setPreviousPage(response?.previous);
+    setTotalCount(response?.count)
+
+    if (type === "product") {
+      setProductPage(page);
+    } else {
+      setConsultationPage(page);
+    }
+
   } catch (err) {
     console.error(err);
-    setOrderError("Something went wrong while fetching orders.");
+    setOrderError("Something went wrong while fetching data.");
   } finally {
     setOrderLoading(false);
   }
@@ -163,10 +205,17 @@ useEffect(() => {
   if (apiCalled.current) return;
 
   apiCalled.current = true;
-  getOrderList();
+
   getDashboardStats();
 }, []);
 
+useEffect(() => {
+  if (activeType === "product") {
+    getOrderList(productPage, "product");
+  } else {
+    getOrderList(consultationPage, "consultation");
+  }
+}, [activeType, productPage, consultationPage]);
 
   return (
     <div className="dashboard">
@@ -217,73 +266,215 @@ useEffect(() => {
         <WeeklyOrdersChart orders={orderData} height={200} weekStart={weekStart} showRevenue={showRevenue} title="Orders by Weekday" />
       </div>
 
+
       <div className="recent-orders">
         <div className="section-header">
           <h2>Recent Orders</h2>
         </div>
+        <div className="filter-buttons">
+          <button
+          className={activeType === "product"?"active":""}
+          onClick={() =>{
+            setActiveType("product");
+            setProductPage(1);
+          }}
+          >
+Product Orders
+          </button>
 
-        <div className="table-container">
-          <table className="orders-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Customer</th>
-                <th>Order Date</th>
-                <th>Status</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orderLoading ? (
-                  <tr>
+           <button
+    className={activeType === "consultation" ? "active" : ""}
+    onClick={() => {
+      setActiveType("consultation");
+     setConsultationPage(1);
+    }}
+  >
+    Consultation Orders
+  </button>
+</div>
+         
+        
+         <div className="table-container">
+  
+  {activeType==="product"&&(
+    <table className="order-table">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Customer</th>
+          <th>Product Name</th>
+          <th>Date</th>
+          <th>Address</th>
+          <th>Amount</th>
+          <th>Payment Method</th>
+          <th>Payment Status</th>
+          <th>Status</th>
+        
+        </tr>
+      </thead>
+      <tbody>
+        {orderLoading ? (
+          <tr>
             <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
               <div className="circular-loader"></div>
             </td>
           </tr>
-              ) : orderError ? (
-                <tr>
-                  <td colSpan="5" style={{ color: "red" }}>
-                    {orderError}
-                  </td>
-                </tr>
-              ) : currentOrders.length > 0 ? (
-                currentOrders.map((order, index) => (
-                  <tr key={order.id}>
-                    <td>{indexOfFirstOrder + index + 1}</td>
-                    <td>{order.customer_name}</td>
-                    <td>{order.created_at ? new Date(order.created_at).toISOString().split("T")[0] : ""}</td>
-                    <td>
-                    {statusLabelMap[order?.order_status] || order?.order_status}
-                    </td>
-                    <td>₹{order.total_amount}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" style={{ textAlign: "center" }}>
-                    No Orders Found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        ) : orderError ? (
+          <tr><td colSpan="9" style={{ color: "red" }}>{orderError}</td></tr>
+        ) : orderData.length > 0 ? (
+          orderData.map((order, index) => (
+            <tr key={order.id}>
+              <td>{  index + 1}</td>
+              <td>{order?.customer_name}</td>
+             
+              <td>{order?.items?.map(item=>item.product_name).join(",")}</td>
+              <td>{order?.created_at ? new Date(order?.created_at).toISOString().split("T")[0] : ""}</td>
+              <td>
+                {order?.delivery_address_details?.house_details}, 
+                {order?.delivery_address_details?.city}, 
+                {order?.delivery_address_details?.pincode}
+              </td>
+              <td>₹{order?.total_amount}</td>
+              <td>{paymentMethodLabel[order?.payment_method] || order?.payment_method}</td>
+              <td>{paymentstatusLabel[order?.payment_status] || order?.payment_status}</td>
+              <td
+                style={{ color: "blue", cursor: "pointer" }}
+                
+              >
+                {statusLabelMap[order?.order_status] || order?.order_status}
+              </td>
+            
+              
+            </tr>
+          ))
+        ) : (
+          <tr><td colSpan="9" style={{ textAlign: "center" }}>No Data Found</td></tr>
+        )}
+      </tbody>
+    </table>
+  )}
 
-          {orderData.length > ordersPerPage && (
-            <div className="pagination">
-              <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-                Prev
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                <button key={number} className={currentPage === number ? "active" : ""} onClick={() => handlePageChange(number)}>
-                  {number}
-                </button>
-              ))}
-              <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
-                Next
-              </button>
-            </div>
-          )}
-        </div>
+  {activeType==="consultation"&&(
+    <table  className="order-table">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Doctor</th>
+          <th> Specilization</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Fee</th>
+          <th>Payment Method</th>
+          <th>Payment Status</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {orderLoading ? (
+          <tr>
+            <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
+              <div className="circular-loader"></div>
+            </td>
+          </tr>
+        ) : orderError? (
+          <tr><td colSpan="9" style={{ color: "red" }}>{orderError}</td></tr>
+        ) : orderData?.length > 0 ? (
+          orderData.map((order, index) => (
+            <tr key={order.id}>
+              <td>{ index + 1}</td>
+              <td>{order?.doctor_name}</td>
+              <td> {order?.doctor_specializations?.join(", ")}</td>
+              <td>{order?.consultation_date}</td>
+              <td>{order?.consultation_time}</td>
+              <td>₹{order?.consultation_fee}</td>
+              <td>{order?.payment_method}</td>
+              <td>{order?.payment_status}</td>
+              <td
+                style={{ color: "blue", cursor: "pointer" }}
+               
+              >
+                {order.booking_status}
+              </td>
+              <td>
+                <div className="action-buttons">
+    
+                  {order.order_status }
+                </div>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr><td colSpan="9" style={{ textAlign: "center" }}>No Data Found</td></tr>
+        )}
+      </tbody>
+    </table>
+  )}
+
+</div>
+{totalPages > 1 && (
+  <div className="pagination">
+
+    
+    <button
+      onClick={() =>
+        getOrderList(
+          (activeType === "product" ? productPage : consultationPage) - 1,
+          activeType,
+         
+        )
+      }
+      disabled={!previousPage}
+    >
+      Prev
+    </button>
+
+  
+    {pages.map((page) => (
+      <button
+        key={page}
+        onClick={() =>
+          getOrderList(
+            page,
+            activeType,
+           
+          )
+        }
+        style={{
+          fontWeight:
+            (activeType === "product" ? productPage : consultationPage) === page
+              ? "bold"
+              : "normal",
+          background:
+            (activeType === "product" ? productPage : consultationPage) === page
+              ? "#71a33f"
+              : "#fff",
+          color:
+            (activeType === "product" ? productPage : consultationPage) === page
+              ? "#fff"
+              : "#71a33f",
+        }}
+      >
+        {page}
+      </button>
+    ))}
+
+    
+    <button
+      onClick={() =>
+        getOrderList(
+          (activeType === "product" ? productPage : consultationPage) + 1,
+          activeType,
+        
+        )
+      }
+      disabled={!nextPage}
+    >
+      Next
+    </button>
+
+  </div>
+)}
       </div>
         <ToastContainer
               position="top-center"

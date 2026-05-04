@@ -22,14 +22,20 @@ const Order = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [currentProductPage, setCurrentProductPage] = useState(1);
-  const [ordersPerPage, setOrdersPerPage] = useState(5);
-  const[consultationCurrentpage,setconsultationCurrentpage]= useState(1);
-  const[consultationOrderperpage,setConsultationOrderperpage]=useState(5);
+ 
+ 
   const [activeType, setActiveType] = useState("product")
 const[OpenConfirmModal,SetOpenConfirmModal]=useState(false);
 const [refundFormData, setRefundFormData] = useState({ first_name: "", reason: "" });
+ const [productPage, setProductPage] = useState(1);
+const [consultationPage, setConsultationPage] = useState(1);
 
+const [nextPage, setNextPage] = useState(null);
+const [previousPage, setPreviousPage] = useState(null);
+const pagesize = 5;
+  const[totalCount,setTotalCount]=useState(0);
+ const totalPages = Math.ceil(totalCount / pagesize);
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
 const searchPlaceholder =
     activeType === "product"
@@ -40,20 +46,47 @@ const searchPlaceholder =
   const tableRef = useRef();
 
 
- const getOrderList = async () => {
+const getOrderList = async (page = 1, type = activeType, search = "") => {
   setOrderloading(true);
+  setOrderError("");
 
   try {
-    const response = await apiFetch(`${BASE_URL}/orders/order/`, {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired! Please login again");
+      return;
+    }
+
+    
+let searchParam = "";
+
+if (search) {
+  if (type === "product") {
+    searchParam = `&product_name=${search}`;
+  } else {
+    
+    searchParam = `&doctor_name=${search}&specialization=${search}`;
+  }
+}
+    const url = `${BASE_URL}/orders/order/?page=${page}&order_type=${type}${searchParam}`;
+
+    const response = await apiFetch(url, {
       method: "GET",
       headers: { Accept: "application/json" }
     });
 
-    if (response && response.data) {
-      setOrderData(response.data);
+    setOrderData(response?.data || []);
+    setNextPage(response?.next);
+    setPreviousPage(response?.previous);
+    setTotalCount(response?.count)
+
+    if (type === "product") {
+      setProductPage(page);
     } else {
-      setOrderError("No data found.");
+      setConsultationPage(page);
     }
+
   } catch (err) {
     console.error(err);
     setOrderError("Something went wrong while fetching data.");
@@ -62,22 +95,24 @@ const searchPlaceholder =
   }
 };
 
+ 
 
-  useEffect(() => {
-    getOrderList();
-  }, []);
+
+
 useEffect(() => {
-  setCurrentProductPage(1);
-  setconsultationCurrentpage(1); 
-}, [searchOrderTerm, statusOrderFilter, SelectedDate, activeType]);
-
-
+  if (activeType === "product") {
+    getOrderList(productPage, "product", searchOrderTerm);
+  } else {
+    getOrderList(consultationPage, "consultation", searchOrderTerm);
+  }
+}, [activeType, productPage, consultationPage, searchOrderTerm]);
 
   const handleRefundInputChange = (e) => {
     const { name, value } = e.target;
     setRefundFormData((prev) => ({ ...prev, [name]: value }));
 
   };
+
 
   const exportToXLSX = (orders) => {
     const exportData = orders.map((order) => ({
@@ -126,7 +161,19 @@ const paymentMethodLabel = {
 };
 
 
+const handleSearch = (e) => {
 
+  const value = e.target.value;
+  console.log("valueee....",value)
+  setSearchOrderTerm(value);
+console.log("searchorderterm",searchOrderTerm)
+
+  if (activeType === "product") {
+    setProductPage(1);
+  } else {
+    setConsultationPage(1);
+  }
+};
 
   const statusOptions = {
 
@@ -154,6 +201,8 @@ const paymentMethodLabel = {
     shipped: [
       { value: "out_for_delivery", label: "Out for Delivery" },
       { value: "delivered", label: "Delivered" },
+
+
       { value: "returned", label: "Returned" },
       { value: "refunded", label: "Refunded" },
     ],
@@ -226,96 +275,7 @@ const paymentMethodLabel = {
 const handleConfirmModal=()=>{
 SetOpenConfirmModal(true);
 }
-
-
- 
-
-const filteredOrder = orderData.filter(order => {
-  const matchesType = order.order_type === activeType;
-
-
-  const matchesStatus =
-    statusOrderFilter === "all" ||
-    (activeType === "product"
-      ? order.order_status === statusOrderFilter
-      : order.booking_status === statusOrderFilter);
-
   
-  const matchesDate = (() => {
-    if (!SelectedDate) return true;
-
-    const selected = new Date(SelectedDate);
-
-    if (activeType === "product") {
-      if (!order.created_at) return false;
-      const orderDate = new Date(order.created_at);
-
-      return (
-        orderDate.getFullYear() === selected.getFullYear() &&
-        orderDate.getMonth() === selected.getMonth() &&
-        orderDate.getDate() === selected.getDate()
-      );
-    }
-
-    if (activeType === "consultation") {
-      if (!order.consultation_date) return false;
-      const consultDate = new Date(order.consultation_date);
-
-      return (
-        consultDate.getFullYear() === selected.getFullYear() &&
-        consultDate.getMonth() === selected.getMonth() &&
-        consultDate.getDate() === selected.getDate()
-      );
-    }
-
-    return true;
-  })();
-
-  
-  let matchesSearch = true;
-  if (searchOrderTerm) {
-    const term = searchOrderTerm.toLowerCase();
-
-    if (activeType === "product") {
-      matchesSearch =
-        (order.items?.[0]?.vendor_product?.title &&
-          order.items[0].vendor_product.title.toLowerCase().includes(term)) ||
-        (order.customer_name &&
-          order.customer_name.toLowerCase().includes(term));
-    } else if (activeType === "consultation") {
-      matchesSearch =
-        (order.doctor_name &&
-          order.doctor_name.toLowerCase().includes(term)) ||
-        (order.specialization &&
-          order.specialization.toLowerCase().includes(term));
-    }
-  }
-
-  return matchesType && matchesStatus && matchesDate && matchesSearch;
-});
-
-
-
-  
-  const indexOfLastOrder = currentProductPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = filteredOrder.slice(indexOfFirstOrder, indexOfLastOrder);
-  const totalPages = Math.ceil(filteredOrder.length / ordersPerPage);
-
-
-
-const indexOfLastConsultation = consultationCurrentpage * consultationOrderperpage;
-const indexOfFirstConsultation = indexOfLastConsultation - consultationOrderperpage;
-
-const currentConsultation = filteredOrder.slice(
-  indexOfFirstConsultation,
-  indexOfLastConsultation
-);
-
-const totalPage = Math.ceil(filteredOrder.length / consultationOrderperpage);
-
-  const handlePageChange = (pageNumber) => setCurrentProductPage(pageNumber)
-  const handlePageChanges=(pageNumber)=>setconsultationCurrentpage(pageNumber)
   const handleStatusClick = (order) => { setSelectedOrder(order); setSelectedStatus(order.order_status); setIsModal(true); };
   const handleModalClose = () => { setIsModal(false); setSelectedOrder(null); };
 
@@ -333,16 +293,16 @@ const totalPage = Math.ceil(filteredOrder.length / consultationOrderperpage);
       : "Search by doctor or specialization..."
   }
   value={searchOrderTerm}
-  onChange={(e) => setSearchOrderTerm(e.target.value)}
+  onChange={handleSearch}
   className="search-input1"
 />
-
         <div className="filter-controls">
           <input type="date" value={SelectedDate} onChange={e => SetSelectedDate(e.target.value)} className="status-filter" />
           <select value={statusOrderFilter} onChange={e => setStatusOrderFilter(e.target.value)} className="status-filter">
             {activeType==="product" ?(
               <>
-                          <option value="all">All Status</option>
+          
+           <option value="all">All Status</option>
             <option value="placed">placed</option>
             <option value="confirmed">Confirmed</option>
             <option value="shipped">Shipped</option>
@@ -365,7 +325,7 @@ const totalPage = Math.ceil(filteredOrder.length / consultationOrderperpage);
             }
        
           </select>
-          <button className="export-btn" onClick={() => exportToXLSX(filteredOrder)}>Export Details</button>
+          <button className="export-btn" onClick={() => exportToXLSX(orderData)}>Export Details</button>
         </div>
       </div>
       
@@ -373,6 +333,11 @@ const totalPage = Math.ceil(filteredOrder.length / consultationOrderperpage);
   {activeType === "product" ? (
     <>
       <div className="stat-card">
+
+
+
+
+
         <h3>Total Product Orders</h3>
         <div className="stat-value">
           {orderData.filter((v) => v.order_type === "product").length}
@@ -431,14 +396,20 @@ const totalPage = Math.ceil(filteredOrder.length / consultationOrderperpage);
 <div className="filter-buttons">
   <button
     className={activeType === "product" ? "active" : ""}
-    onClick={() => setActiveType("product")}
+    onClick={() => {
+      setActiveType("product");
+      setProductPage(1);
+    }}
   >
     Product Orders
   </button>
 
   <button
     className={activeType === "consultation" ? "active" : ""}
-    onClick={() => setActiveType("consultation")}
+    onClick={() => {
+      setActiveType("consultation");
+      setConsultationPage(1);
+    }}
   >
     Consultation Orders
   </button>
@@ -446,168 +417,199 @@ const totalPage = Math.ceil(filteredOrder.length / consultationOrderperpage);
 
 
 
-      <div className="table-container">
-        {activeType==="product"&&(
-        <table ref={tableRef} className="order-table">
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Customer</th>
-              <th>Date</th>
-              <th>Address</th>
-              <th>Amount</th>
-              <th>Payment Method</th>
-              <th>Payment Status</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orderloading ? (
- <tr>
+  <div className="table-container">
+  
+  {activeType==="product"&&(
+    <table ref={tableRef} className="order-table">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Customer</th>
+          <th>Product Name</th>
+          <th>Date</th>
+          <th>Address</th>
+          <th>Amount</th>
+          <th>Payment Method</th>
+          <th>Payment Status</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {orderloading ? (
+          <tr>
             <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
               <div className="circular-loader"></div>
             </td>
           </tr>
-            ) : ordererror ? (
-              <tr><td colSpan="9" style={{ color: "red" }}>{ordererror}</td></tr>
-            ) : currentOrders.length > 0 ? (
-                currentOrders.map((order, index) => (
-                <tr key={order.id}>
-                  <td>{indexOfFirstOrder + index+ 1}</td>
-                  <td>{order?.customer_name}</td>
-                  <td>{order?.created_at ? new Date(order?.created_at).toISOString().split("T")[0] : ""}</td>
-                  <td>{order?.delivery_address_details?.house_details}, {order.delivery_address_details?.city}, {order?.delivery_address_details?.pincode}</td>
-      
-                  <td>₹{order?.total_amount}</td>
-                  <td>
-  {paymentMethodLabel[order?.payment_method] || order?.payment_method}
-</td>
-
-                    <td>  {paymentstatusLabel[order?.payment_status] || order?.payment_status}</td>
+        ) : ordererror ? (
+          <tr><td colSpan="9" style={{ color: "red" }}>{ordererror}</td></tr>
+        ) : orderData.length > 0 ? (
+          orderData.map((order, index) => (
+            <tr key={order.id}>
+              <td>{  index + 1}</td>
+              <td>{order?.customer_name}</td>
+             
+              <td>{order?.items?.map(item=>item.product_name).join(",")}</td>
+              <td>{order?.created_at ? new Date(order?.created_at).toISOString().split("T")[0] : ""}</td>
+              <td>
+                {order?.delivery_address_details?.house_details}, 
+                {order?.delivery_address_details?.city}, 
+                {order?.delivery_address_details?.pincode}
+              </td>
+              <td>₹{order?.total_amount}</td>
+              <td>{paymentMethodLabel[order?.payment_method] || order?.payment_method}</td>
+              <td>{paymentstatusLabel[order?.payment_status] || order?.payment_status}</td>
               <td
-  style={{ color: "blue", cursor: "pointer" }}
-  onClick={() => handleStatusClick(order)}
->
-  {statusLabelMap[order?.order_status] || order?.order_status}
-</td>
-
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn delete" title="Delete" onClick={() => { setOrderToDelete(order); setDeleteModal(true); }}>🗑</button>
-                     <button className="action-btn view" title="View" onClick={() => { setSelectedOrder(order); setShowModal(true); }}>👁</button>
-                      {order.order_status === "cancelled" && <button className="action-btn view" title="Approve Refund" onClick={handleConfirmModal}>✅</button>}
-                      
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr><td colSpan="9" style={{ textAlign: "center" }}>No Data Found</td></tr>
-            )}
-          </tbody>
-        </table>
-
-         ) }
-       
-        {activeType==="consultation"&&(
-        <table ref={tableRef} className="order-table">
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Doctor</th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Fee</th>            
-              <th>Payment Method</th>
-              <th>Payment Status</th>
-              <th>Status</th>
-              <th>Action</th>
+                style={{ color: "blue", cursor: "pointer" }}
+                onClick={() => handleStatusClick(order)}
+              >
+                {statusLabelMap[order?.order_status] || order?.order_status}
+              </td>
+            
+              <td>
+                <div className="action-buttons">
+                  <button className="action-btn delete" onClick={() => { setOrderToDelete(order); setDeleteModal(true); }}>🗑</button>
+                  <button className="action-btn view" onClick={() => { setSelectedOrder(order); setShowModal(true); }}>👁</button>
+                  {order.order_status === "cancelled" && (
+                    <button className="action-btn view" onClick={handleConfirmModal}>✅</button>
+                  )}
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {orderloading ? (
-             <tr>
+          ))
+        ) : (
+          <tr><td colSpan="9" style={{ textAlign: "center" }}>No Data Found</td></tr>
+        )}
+      </tbody>
+    </table>
+  )}
+
+  {activeType==="consultation"&&(
+    <table ref={tableRef} className="order-table">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Doctor</th>
+          <th> Specilization</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Fee</th>
+          <th>Payment Method</th>
+          <th>Payment Status</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {orderloading ? (
+          <tr>
             <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
               <div className="circular-loader"></div>
             </td>
           </tr>
-            ) : ordererror ? (
-              <tr><td colSpan="9" style={{ color: "red" }}>{ordererror}</td></tr>
-            ) : currentConsultation?.length > 0 ? (
-              currentConsultation?.map((order, index) => (
-                <tr key={order.id}>
-                  <td>{indexOfFirstConsultation + index + 1}</td>
-                  <td>{order?.doctor_name}</td>
-                  <td>{order?.consultation_date}</td>
-                  <td>{order?.consultation_time}</td>
-                 <td>₹{order?.consultation_fee}</td>
-                  <td>{order?.payment_method}</td>
-                  <td>{order?.payment_status}</td>
-                  <td style={{ color: "blue", cursor: "pointer" }} onClick={() => handleStatusClick(order)}>{order.booking_status}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn delete" title="Delete" onClick={() => { setOrderToDelete(order); setDeleteModal(true); }}>🗑</button>
-                     
-                      {order.order_status === "cancelled" && <button className="action-btn view" title="Approve Refund" onClick={handleConfirmModal}>✅</button>}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr><td colSpan="9" style={{ textAlign: "center" }}>No Data Found</td></tr>
-            )}
-          </tbody>
-        </table>
+        ) : ordererror ? (
+          <tr><td colSpan="9" style={{ color: "red" }}>{ordererror}</td></tr>
+        ) : orderData?.length > 0 ? (
+          orderData.map((order, index) => (
+            <tr key={order.id}>
+              <td>{ index + 1}</td>
+              <td>{order?.doctor_name}</td>
+              <td> {order?.doctor_specializations?.join(", ")}</td>
+              <td>{order?.consultation_date}</td>
+              <td>{order?.consultation_time}</td>
+              <td>₹{order?.consultation_fee}</td>
+              <td>{order?.payment_method}</td>
+              <td>{order?.payment_status}</td>
+              <td
+                style={{ color: "blue", cursor: "pointer" }}
+                onClick={() => handleStatusClick(order)}
+              >
+                {order.booking_status}
+              </td>
+              <td>
+                <div className="action-buttons">
+                  <button className="action-btn delete" onClick={() => { setOrderToDelete(order); setDeleteModal(true); }}>🗑</button>
+                  {order.order_status === "cancelled" && (
+                    <button className="action-btn view" onClick={handleConfirmModal}>✅</button>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr><td colSpan="9" style={{ textAlign: "center" }}>No Data Found</td></tr>
+        )}
+      </tbody>
+    </table>
+  )}
 
-         ) }
+</div>
 
-{activeType === "product" && filteredOrder.length > ordersPerPage && (
-            < div className="pagination"> 
+{totalPages > 1 && (
+  <div className="pagination">
 
-<button onClick={()=>handlePageChange(currentProductPage-1)} disabled={currentProductPage === 1}> Prev</button>
- 
-{Array.from({ length: totalPages}, (_, i) => i + 1).map(number => (
-  <button
-    key={number} 
-    className={currentProductPage === number ? "active" : ""} 
-    onClick={() => handlePageChange(number)}
-  >
-    {number}
-  </button>
-))}
-
-<button onClick={()=>handlePageChange(currentProductPage+1)} disabled={currentProductPage === totalPages}> Next</button>
-
-          </div>
-
-)}
-
-         {activeType === "consultation" && filteredOrder?.length > consultationOrderperpage && (
-                    < div className="pagination"> 
-
-<button onClick={()=>handlePageChanges(consultationCurrentpage-1)} disabled={consultationCurrentpage === 1}> Prev</button>
- 
-{Array.from({ length: totalPage}, (_, i) => i + 1).map(number => (
-  <button
-    key={number} 
-    className={consultationCurrentpage === number ? "active" : ""} 
-    onClick={() => handlePageChanges(number)}
-  >
-    {number}
-  </button>
-))}
-
-<button onClick={()=>handlePageChanges(consultationCurrentpage +1)} disabled={consultationCurrentpage === totalPage}> Next</button>
-
-          </div>
+    
+    <button
+      onClick={() =>
+        getOrderList(
+          (activeType === "product" ? productPage : consultationPage) - 1,
+          activeType,
+          searchOrderTerm
+        )
+      }
+      disabled={!previousPage}
+    >
+      Prev
+    </button>
 
   
-)}
-  
+    {pages.map((page) => (
+      <button
+        key={page}
+        onClick={() =>
+          getOrderList(
+            page,
+            activeType,
+            searchOrderTerm
+          )
+        }
+        style={{
+          fontWeight:
+            (activeType === "product" ? productPage : consultationPage) === page
+              ? "bold"
+              : "normal",
+          background:
+            (activeType === "product" ? productPage : consultationPage) === page
+              ? "#71a33f"
+              : "#fff",
+          color:
+            (activeType === "product" ? productPage : consultationPage) === page
+              ? "#fff"
+              : "#71a33f",
+        }}
+      >
+        {page}
+      </button>
+    ))}
 
-      </div>
-      
+    
+    <button
+      onClick={() =>
+        getOrderList(
+          (activeType === "product" ? productPage : consultationPage) + 1,
+          activeType,
+          searchOrderTerm
+        )
+      }
+      disabled={!nextPage}
+    >
+      Next
+    </button>
+
+  </div>
+)}
+
       {showModal1 && <OrderModal order={selectedOrder} onClose={() => { setShowModal(false); setSelectedOrder(null); }} />}
       {isModal && selectedOrder && (
         <div className="modal-overlay">

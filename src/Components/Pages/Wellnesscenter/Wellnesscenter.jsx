@@ -30,24 +30,27 @@ const Wellnesscenter = () => {
   const[Selectedcenter,setSelectedcenter]=useState(null)
   const[AddCenterform,setAddCenterform]=useState(intialcenterform)
   const[EditCenterform,setEditCenterform]=useState(intialcenterform)
-  // const [centerPreviewImage, setCenterPreviewImage] = useState(null);
+ 
   const [AddCenterErrors, setAddCenterErrors] = useState({});
   const [EditCenterErrors, setEditCenterErrors] = useState({});
  const  navigate =useNavigate();
+ const[previousPage,setPreviousPage]=useState(null);
+ const[Nextpage,setNextPage]=useState(null);
+ const[CurrentPage,setCurrentPage]=useState(1)
 
 const filteredData =WellnessCenterData
-  .filter(center =>
+  ?.filter(center =>
     filterType === "all" ? true : center.type === filterType
   )
-  .filter(center =>
+  ?.filter(center =>
     center.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-const getcenterData = async()=>{
+const getcenterData = async( page = 1)=>{
   const token = sessionStorage.getItem("superadmin_token")
 
   try{
-const response = await fetch( `${BASE_URL}/wellness/wellness-centres/`,{
+const response = await fetch( `${BASE_URL}/wellness/wellness-centres/?page${page}`,{
  method: "GET",
         headers: {
           Accept: "application/json",
@@ -63,7 +66,10 @@ const response = await fetch( `${BASE_URL}/wellness/wellness-centres/`,{
             return;
         }
 const data = await response.json();
-setWellnessCenterData(data);
+setWellnessCenterData(data.data);
+setCurrentPage(data.page);
+setNextPage(data.next);
+setCurrentPage(page)
 
   }
   catch(err){
@@ -251,7 +257,7 @@ const handleEditCenterSubmit = async (e) => {
       setShowEditform(false);
       setSelectedcenter(null);
       setEditCenterform(intialcenterform);
-      // setCenterPreviewImage(null);
+    
     } else {
       const errorData = await response.json();
       console.error("Error response:", errorData);
@@ -341,12 +347,13 @@ const token = sessionStorage.getItem("superadmin_token")
 
 
 const handleDownload = () => {
-  if (!WellnessCenterData || WellnessCenterData.length === 0) {
+  if (!WellnessCenterData || WellnessCenterData?.length === 0) 
+    {
     toast.error("No data available to export!");
     return;
   }
 
-  const exportData = WellnessCenterData.map((center, index) => ({
+  const exportData = WellnessCenterData?.map((center, index) => ({
     ID: index + 1,
     Name: center.name,
     Location: center.location,
@@ -400,28 +407,28 @@ const handleNavigate=(id) =>{
         <div className="stat-card">
            
           <h3>All Center</h3>
-           <div className="stat-value">{WellnessCenterData.length}</div> 
+           <div className="stat-value">{WellnessCenterData?.length}</div> 
         </div>
        
        <div className="stat-card">
        
           <h3>Top Center</h3>
-          <div className="stat-value">{WellnessCenterData.filter((c)=> c.type==="top").length}</div>
+          <div className="stat-value">{WellnessCenterData?.filter((c)=> c.type==="top").length}</div>
         </div>
 
         <div className="stat-card">
             
           <h3>Trending Detox Center</h3>
-           <div className="stat-value">{WellnessCenterData.filter((c)=>c.type==="trending").length}</div> 
+           <div className="stat-value">{WellnessCenterData?.filter((c)=>c.type==="trending").length}</div> 
         </div>
       </div>
 
-      <div className="filter-buttons">
+      {/* <div className="filter-buttons">
                 <button onClick={() => setFilterType('all')}>All</button>
           <button onClick={() => setFilterType('top')}>Top</button>
         <button onClick={() => setFilterType('trending')}>Trending</button>
         
-      </div>
+      </div> */}
 
 <div className="table-container">
       <table className="customers-table" >
@@ -533,6 +540,28 @@ const handleNavigate=(id) =>{
 
 
       </table>
+       {(previousPage || Nextpage) && (
+  <div className="pagination">
+  <button
+    onClick={() => getcenterData(CurrentPage - 1)}
+    disabled={!previousPage}
+  >
+    Prev
+  </button>
+
+  <span style={{ margin: "0 10px" }}>
+    Page {CurrentPage }
+  </span>
+
+  <button
+    onClick={() => getcenterData(CurrentPage + 1)}
+    disabled={!Nextpage}
+  >
+    Next
+  </button>
+</div>
+
+)}
       </div>
 {Showcenterform &&(
   <div className='modal'>
