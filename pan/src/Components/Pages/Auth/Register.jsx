@@ -9,6 +9,8 @@ const Register = () => {
 const[phoneNumber,setPhoneNumber]=useState("");
 const[password,setPassword]=useState("");
 const[role,setRole]= useState("");
+const[AddError,setError]=useState({})
+
 
   const navigate = useNavigate();
 
@@ -98,7 +100,7 @@ const[role,setRole]= useState("");
     onChange={(e) => setRole(e.target.value)}
   >
     <option value="">-- Select Role --</option>
-       <option value="SUPERADMIN">Super Admin</option>
+   
     <option value="ADMIN">Admin</option>
     <option value="VERIFIER">Verifier</option>
     <option value="FOLLOWUP">Followup</option>

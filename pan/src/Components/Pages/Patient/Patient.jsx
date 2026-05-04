@@ -6,7 +6,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { apiFetch } from "../../../fetchapi";
 import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
 
-
 const   Patient = () => {
 const [patientdata,setPatientData]=useState([]);
 const[patientError,setPatientError]=useState(null);
@@ -16,49 +15,48 @@ const [editForm, setEditForm] = useState(false);
 const [selectedPatient, setSelectedPatient] = useState(null);
 const [deleteConfirmModal, setDeleteConfirmModal] = useState(false);
 const [selectedPatientId, setSelectedPatientId] = useState(null);
-const [addErrors, setAddErrors] = useState({});
-const [editErrors, setEditErrors] = useState({});
 const[searchTerm,setSearchTerm]=useState("");
   const patienttableRef = useRef(null);
   const[Currentpage,setCurrentpage]=useState(1);
-  const[patientperpage,setpatientperpage]=useState(5);
+  const[previousPage,setPreviousPage]=useState(null);
+  const[Nextpage,setNextPage]=useState(null);
+  const pagesize= 5;
+  const[Count,setCount]=useState(0);
+  const totalPages = Math.ceil(Count / pagesize);
+  const[AddError,setAddError]=useState({});
   
-
 const [newPatient, setNewPatient] = useState({
     name: '',
     gender: '',
     age: '',
-    description: ''
+    description: '',
+    relation:''
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPatient((prev) => ({ ...prev, [name]: value }));
   };
+  const fetchOnce = useRef();
 
-  const filteredData = patientdata?.filter((patient) => {
-    const matchesSearch =
-      patient?.name === null || patient?.name?.toLowerCase().includes(searchTerm?.toLowerCase())
-    return matchesSearch
-   
-  })
+ 
+ const pages = Array.from({ length: totalPages }, (_, i) => i + 1); 
 
-  .sort((a, b) => {
-    if (!a.name) return 1;  
-    if (!b.name) return -1;
-    return a.name.localeCompare(b.name);
-  })
-
-const getAllpatientList = async () => {
+const getAllpatientList = async (page = 1) => {
   try {
-    const data = await apiFetch(`${BASE_URL}/healthcare/patient/`, {
+    const data = await apiFetch(`${BASE_URL}/healthcare/patient/?page=${page} `, {
       method: "GET",
     });
 
    
-    if (!data) return;
 
-    setPatientData(data);
+
+    if (!data) return;
+    setPatientData(data.data);
+    setCurrentpage(page);
+    setNextPage(data.next);
+    setPreviousPage(data.previous);
+    setCount(data.count)
 
   } catch (err) {
     console.error("Patient Fetch Error:", err);
@@ -75,7 +73,11 @@ const getAllpatientList = async () => {
 };
 
 useEffect(()=>{
-getAllpatientList();
+  if(!fetchOnce.current){
+    getAllpatientList();
+    fetchOnce.current = false;
+  }
+
 },[])
 
 
@@ -90,7 +92,7 @@ const handleAddPatient = async (e) => {
     });
 
     setPatientData((prev) => [...prev, addedPatient]);
-    setNewPatient({ name: "", gender: "", age: "", description: "" });
+    setNewPatient({ name: "", gender: "", age: "", description: "",relation:"" });
     setAddform(false);
 
     toast.success("Patient added successfully!", {
@@ -115,7 +117,9 @@ const handleDownload = () => {
     Gender: p.gender,
     Age: p.age,
     Description: p.description,
+    Relation:p.relation,
   }));
+
 
 
   const ws = XLSX.utils.json_to_sheet(exportData);
@@ -195,12 +199,6 @@ const handleEditPatient = async (e) => {
 };
 
 
-const indexoflastpatient = Currentpage * patientperpage;
-const indexooffirstpatient = indexoflastpatient - patientperpage;
-const Currentpatient = filteredData?.slice(indexooffirstpatient, indexoflastpatient);
-
-const totalpages = Math.ceil(filteredData?.length/patientperpage);
-const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
 
 
 
@@ -233,16 +231,17 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
             Export Details
           </button>
         </div>
+        
 
         </div>
-
-      <table className="customers-table" ref={patienttableRef }>
+            <table className="customers-table" ref={patienttableRef }>
         <thead>
           <tr>
             <th> Id</th>
             <th>Patient Name</th>
             <th>Gender</th>
             <th>Age</th>
+            <th> Relation</th>
             <th>Descripition</th>
           <th> Actions</th>
           </tr>
@@ -260,21 +259,19 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
                 {patientError}
               </td>
             </tr>
-          ) : Currentpatient?.length > 0 ? (
-            Currentpatient?.map((patient,index) => 
+          ) : patientdata?.length > 0 ? (
+            patientdata?.map((patient,index) => 
               (           
                 <tr key={patient?.id}>
-                <td>{indexooffirstpatient + index + 1}</td>
+                <td>{ index + 1}</td>
                 <td>{patient?.name}</td>
                 <td>{patient?.gender}</td>
                 <td>{patient?.age}Years</td>
+                <td>{patient.relation}</td>
                 <td>{patient?.description}</td>
                 <td>
                   <div className="action-buttons">
-                    <button className="action-btn view" >
-                      👁
-                    </button>
-                 
+                   
                  <button
   className="action-btn edit"
   onClick={() => handleEditClick(patient)}
@@ -292,6 +289,9 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
 >
   🗑
 </button>
+
+
+
                   </div>
                 </td>
               </tr>
@@ -305,17 +305,47 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
             </tr>
           )}
         </tbody>
-        {filteredData?.length> patientperpage &&(
-          <div className="pagination">
-            <button onClick={()=>handlepagechange(Currentpage - 1)} disabled={Currentpage===1}>Prev </button>
-            {Array.from({ length: totalpages }, (_, i) => i + 1).map(number => (
-              <button key={number} className={Currentpage === number ? "active" : ""} onClick={() => handlepagechange(number)}>{number}</button>
-            ))}
-            <button onClick={()=>handlepagechange(Currentpage + 1)} disaabled={Currentpage===totalpages}>Next</button>
+        
 
-          </div>
-        )}
       </table>
+       {totalPages > 1 && (
+  <div className="pagination">
+
+   
+    <button
+      onClick={() => getAllpatientList(Currentpage - 1)}
+      disabled={!previousPage}
+    >
+      Prev
+    </button>
+
+   
+    {pages.map((page) => (
+      <button
+        key={page}
+        onClick={() => getAllpatientList(page)}
+        style={{
+         
+          fontWeight: Currentpage === page ? "bold" : "normal",
+          background: Currentpage === page ? "#71a33f" : "#fff",
+          color:Currentpage === page ? "#fff" : "#71a33f",
+        }}
+      >
+        {page}
+      </button>
+    ))}
+
+    
+    <button
+      onClick={() => getAllpatientList(Currentpage + 1)}
+      disabled={!Nextpage}
+    >
+      Next
+    </button>
+
+  </div>
+)}
+
          <ToastContainer
           position="top-center"
           autoClose={3000}
@@ -342,6 +372,7 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
                 onChange={handleInputChange}
               
               />
+              {AddError?.name && <p className="error">{AddError.name}</p>}
      
               <label>Age:</label>
               <input
@@ -351,8 +382,7 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
                 onChange={handleInputChange}
                 required
               />
-        
-            
+       {AddError?.age && <p className="error">{AddError.age}</p>}
              
                   <label>Gender:</label>
               <select
@@ -366,14 +396,31 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
                 <option value="female">Female</option>
               
               </select>
-
+              {AddError?.gender && <p className="error">{AddError.gender} </p>}
+                
+                
+                 <label> Relation</label>
+            <select
+            name="relation"
+            value={newPatient.relation}
+            onChange={handleInputChange}
+            >
+              <option value=""> Select Relation from given Option</option>
+              <option value ="self"> Self</option>
+              <option value ="father"> Father</option>
+              <option value ="mother"> Mother</option>
+              <option value ="other">Other</option>
+            </select>
                <label>Description:</label>
               <textarea
                 name="description"
                 value={newPatient.description}
                 onChange={handleInputChange}
               />
+
+
            
+           {AddError?.description && <p className="error">{AddError.description}</p>}
               <div className="form-buttons">
 
             <button type="submit">Add Patient</button>
@@ -422,7 +469,19 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
           required
         />
     
-
+ <label>Relation:</label>
+   <label> Relation</label>
+            <select
+            name="relation"
+            value={newPatient.relation}
+            onChange={handleEditInputChange}
+            >
+              <option value=""> Select Relation from given Option</option>
+              <option value ="self"> Self</option>
+              <option value ="father"> Father</option>
+              <option value ="mother"> Mother</option>
+              <option value ="other">Other</option>
+            </select>      
     
         <label>Description:</label>
         <textarea
@@ -430,6 +489,8 @@ const handlepagechange=(pagenumber)=>setCurrentpage(pagenumber);
           value={selectedPatient.description}
           onChange={handleEditInputChange}
         />
+       
+        
      <div className="form-buttons">
 
       <button type="submit">Save Changes</button>

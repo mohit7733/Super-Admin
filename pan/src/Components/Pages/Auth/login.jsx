@@ -4,6 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import logo1 from "../../Assests/logo1.png";
 import BASE_URL from "../../../Base";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [loginLoading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
 
   useEffect(() => {
@@ -67,11 +69,12 @@ const Login = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || "Invalid login");
+        toast.error(data.error);
         return;
       }
 
  
+      
       sessionStorage.setItem("superadmin_token", data.access);
       sessionStorage.setItem("role", data.role);
       sessionStorage.setItem("permissions", JSON.stringify(data.permissions || []));
@@ -121,23 +124,45 @@ const Login = () => {
             <div className="form-group">
               <label className="form-label">Phone Number</label>
               <input
-                type="number"
+                type="text"
                 placeholder="Enter your phone number"
                 value={phone_number}
                 onChange={(e) => setPhone(e.target.value)}
                 className="form-input"
+                 maxLength={10}
+           
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Password</label>
-              <input
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="form-input"
-              />
+              <label> Password</label>
+             <div style={{ position: "relative" }}>
+
+              
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Enter your password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    className="form-input"
+    style={{ paddingRight: "40px" }} 
+  />
+
+  <span
+    onClick={() => setShowPassword(!showPassword)}
+    style={{
+      position: "absolute",
+      right: "12px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      cursor: "pointer",
+      color: "#666",
+      fontSize: "18px"
+    }}
+  >
+    {showPassword ? <FaEye/> : <FaEyeSlash />}
+  </span>
+</div>
             </div>
 
             <div className="form-options">
@@ -168,15 +193,6 @@ const Login = () => {
               {loginLoading ? "Logging in..." : "Login"}
             </button>
 
-            <p style={{ marginTop: "12px", textAlign: "center" }}>
-              Don’t have an account?{" "}
-              <span
-                onClick={() => navigate("/register")}
-                style={{ color: "#71a33f", cursor: "pointer", fontWeight: "500" }}
-              >
-                Register here
-              </span>
-            </p>
           </form>
         </div>
       </div>

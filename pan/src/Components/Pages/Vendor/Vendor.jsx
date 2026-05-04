@@ -9,7 +9,7 @@ import BASE_URL from "../../../Base";
 import { FiFileText } from "react-icons/fi";
 import {  BsThreeDotsVertical } from "react-icons/bs";
 
-
+import { MdEditLocationAlt } from "react-icons/md";
 
 const userId = localStorage.getItem("USER_ID")
 const initialFormState = {
@@ -48,31 +48,36 @@ const Vendor = () => {
   const [Addform, setAddform] = useState(intialAddressform)
   const [addressVendorId, setAddressVendorId] = useState(null)
   const [addressEditingId, setAddressEditingId] = useState(null)
-  const [ISUserID, setISUserID] = useState(false)
-  const [otpDigits, setOtpDigits] = useState(["", "", "", ""])
-  const otpRefs = useRef([])
   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false)
   const [selectedVendorId, setSelectedVendorId] = useState(null)
   const [addressErrors, setAddressErrors] = useState({})
   const [formErrors, setFormErrors] = useState({})
   const [phoneErrors, setPhoneErrors] = useState({})
-  const [otpErrors, setOtpErrors] = useState({})
+  
   const bulktableRef = useRef(null)
-  const [selectedVendors, setSelectedVendors] = useState([]);
+ 
   const fetchedOnce = useRef(false);
    const [userId, setUserId] = useState(null);
    const [currentpage,setcurentpage]=useState(1);
-   const[Vendorperpage,setVendorperpage]=useState(5);
+  const[previousPage,setPreviousPage]=useState(null);
+  const[Nextpage,setNextPage]=useState(null);
+
   const [previewImage, setPreviewImage] = useState(null);
-const [imageModal, setimageModal] = useState(false);
+ const [imageModal, setimageModal] = useState(false);
  const [uploadedDocs, setUploadedDocs] = useState([]);
  const[VendoropenModal,setVendorModal] = useState(false);
  const[SelectedVendorId,setSelectedIdVendor] = useState(null);
  const [RejectionVendorModal,setRejectionModal] = useState(false);
  const[Reason,setReason]=useState("");
  const [selectedStatus, setSelectedStatus] = useState("");
- const[ActionButtonModal,setActionModal] = useState(false);
+ 
  const [openMenuId, setOpenMenuId] = useState(null);
+ const [vendorStats, setVendorStats] = useState(null);
+ const pageSize = 5;
+ 
+const [totalCount, setTotalCount] = useState(0);
+const totalPages = Math.ceil(totalCount / pageSize);
+
 
 
  
@@ -85,23 +90,12 @@ const documentOptions = [
  
   
   
-  const handleOtpKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus()
-    }
-  }
 
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (!fetchedOnce.current) {
-      getVendorList();
-      fetchedOnce.current = true; 
-    }
-  }, []);
+ 
 
-
-  const getVendorList = async () => {
+  const getVendorList = async (page = 1) => {
   const token = sessionStorage.getItem("superadmin_token");
 
   if (!token) {
@@ -111,7 +105,7 @@ const documentOptions = [
   }
 
   try {
-    const response = await fetch(`${BASE_URL}/vendors/vendor/`, {
+    const response = await fetch(`${BASE_URL}/vendors/vendor/?page=${page}&store_name=${searchTerm}`, {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -126,11 +120,17 @@ const documentOptions = [
       navigate("/login");
       return;
     }
+    
 
     const data = await response.json();
-    const sortedData = data.data;
-    setVendorData(sortedData);
-    console.log("vendordata---->", sortedData);
+   
+    setVendorData(data.data);
+   setTotalCount(data.count);
+    setPreviousPage(data.previous);
+    setNextPage(data.next);
+    setcurentpage(page)
+    
+    
 
   } catch (err) {
     console.error(err.message);
@@ -140,13 +140,44 @@ const documentOptions = [
     setLoading(false);
   }
 };
+
+useEffect(() => {
+  const delayDebounce = setTimeout(() => {
+    getVendorList(1);
+  }, 100); 
+  return () => clearTimeout(delayDebounce);
+}, [searchTerm]);
+
 const handleDocumentUpload = (e) => {
   const file = e.target.files[0];
   setForm({ ...form, documentFile: file }); 
 };
 
+const getVendorStats = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
 
+  try {
+    const res = await fetch(`${BASE_URL}/vendors/vendorstats/`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
 
+    const data = await res.json();
+    setVendorStats(data);
+  } catch (error) {
+    console.error("Error fetching doctor stats:", error);
+  }
+};
+
+useEffect(() => {
+  if (!fetchedOnce.current) {
+    getVendorStats();
+    fetchedOnce.current = true;
+  }
+}, []);
  const openDocumentModal = (i) => {
  
   setVendorModal(true);
@@ -189,11 +220,18 @@ const handleDocumentUpload = (e) => {
   const validateVendorForm = () => {
   const errors = {};
 
-  
-  if (!form.store_name || form.store_name.trim()?.length < 2) {
-    errors.store_name = "Store name must be at least 2 characters long";
+  if(!form.first_name.trim()){
+    errors.first_name ="First Name is Required"
   }
 
+  
+  if (! form.store_name.trim()?.length < 2) {
+    errors.store_name = "Store name must be required";
+  }
+
+  if (!form.profile_picture) {
+  errors.profile_picture = "Profile picture is required";
+}
   
   if (!form.gst_number || form.gst_number.trim() === "") {
     errors.gst_number = "GST number is required";
@@ -217,46 +255,61 @@ const handleDocumentUpload = (e) => {
   return Object.keys(errors)?.length === 0;
 };
 
+const handleStatusChange = async (vendorId, newStatus, Reason = "") => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-  
-
- const handleStatusChange = async (vendorId, newStatus) => {
+  try {
     
-    const token = sessionStorage.getItem("superadmin_token")
-    try {
-      const response = await fetch(`${BASE_URL}/vendors/approvevendor/${vendorId}/`, {
+    const bodyData = {
+      status: newStatus,
+      ...(newStatus === "rejected" && { rejection_reason: Reason })
+    };
+
+    const response = await fetch(
+      `${BASE_URL}/vendors/approvevendor/${vendorId}/`,
+      {
         method: "PUT",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          Authorization:`bearer${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-      status: newStatus
-        }),
-      })
-      if (response.status === 401 || response.status === 403) {
+        body: JSON.stringify(bodyData),
+      }
+    );
+
+   
+    if (response.status === 401 || response.status === 403) {
       sessionStorage.removeItem("superadmin_token");
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
     }
 
-      if (!response.ok) {
-        throw new Error("Failed to update status")
-      }
-
-      setVendorData((prev) =>
-        prev.map((vendor) =>
-          vendor.id === vendorId ? { ...vendor,status :newStatus } : vendor,
-        ),
-      )
-    } catch (err) {
-      console.error(err)
-      toast.error("Error updating vendor status")
+ 
+    if (!response.ok) {
+      toast.error("Failed to update status");
+      return; 
     }
-  }
 
+
+    setVendorData((prev) =>
+      prev.map((vendor) =>
+        vendor.id === vendorId
+          ? { ...vendor, status: newStatus }
+          : vendor
+      )
+    );
+
+    await getVendorStats();
+
+    toast.success("Status updated successfully ✅");
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Error updating vendor status");
+  }
+};
 const updateVendor = (updatedVendor) => {
   setVendorData((prevVendors) =>
     prevVendors.map((v) => (v.id === updatedVendor.id ? updatedVendor : v))
@@ -296,8 +349,6 @@ const handleDelete = async (id) => {
       toast.error("Failed to delete vendor");
       return;
     }
-
-    
     setVendorData((prev) => prev.filter((v) => v.id !== id));
     toast.success("Vendor deleted successfully");
 
@@ -317,6 +368,7 @@ const handleDelete = async (id) => {
   setSelectedStatus("");
 };
 const handleRejectClick = (VendorId, statusType) => {
+
   setSelectedVendorId(VendorId);
   setSelectedStatus(statusType);  
   setRejectionModal(true);
@@ -344,6 +396,7 @@ const handleAddaddress = (e) => {
 
   if (name === "country" && !value) {
     errorMsg = "Please select a country";
+    
   }
 
   if (name === "state" && !value) {
@@ -458,7 +511,8 @@ const url = addressEditingId
 
 const handleFormSubmit = async (e) => {
   e.preventDefault();
-
+  const isValid = validateVendorForm();   
+  if (!isValid) return;
   const token = sessionStorage.getItem("superadmin_token");
 
   const formData = new FormData();
@@ -638,6 +692,7 @@ const handlevendorverifiedSubmit = async (e) => {
   }
 };
 
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
 
 const exportToCSV = () => {
@@ -676,13 +731,7 @@ const exportToCSV = () => {
   }
 
 
-const handleCheckboxChange = (vendorId) => {
-  setSelectedVendors(prev =>
-    prev.includes(vendorId)
-      ? prev.filter(id => id !== vendorId)
-      : [...prev, vendorId]                 
-  );
-};
+
 
 
 const getInitials = (firstName = "", lastName = "") => {
@@ -693,32 +742,20 @@ const getInitials = (firstName = "", lastName = "") => {
 };
 
 
-  const filteredVendors = vendorData?.filter((vendor) => {
-    const matchesSearch =
-      vendor?.store_name === null || vendor?.store_name?.toLowerCase().includes(searchTerm?.toLowerCase())
-    return matchesSearch
-   
-  })
 
-  .sort((a, b) => {
-    if (!a.store_name) return 1;  
-    if (!b.store_name) return -1;
-    return a.store_name.localeCompare(b.store_name);
-  })
+
   const availableStates = statesByCountry[Addform.country] || []
   
-const indexoflastvendor = currentpage*Vendorperpage;
-const indexoffirstvendor= indexoflastvendor - Vendorperpage;
-const totalPages = Math.ceil(filteredVendors?.length/Vendorperpage);
-const CurrentVendorpage =filteredVendors.slice(indexoffirstvendor,indexoflastvendor)
-const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
 
 
   return (
     <>
         <div className="page-header">
         <h2>Vendors List</h2>
-
+        <p className="page-paragraph">
+          Manage Vendor ,Vendor Detalis and their Approvals
+        </p>
+      
         <div className="vendors-controls">
           <div className="search-bar">
             <input
@@ -732,39 +769,55 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
 
           <div className="filter-controls">
           <button
-  className="add-vendor-btn"
+  className="add-customer-btn"
   onClick={() => {
     setVendorverifiedModal(true);
-
-    
     setUploadedDocs([]);     
     setEditingId(null);      
     setForm(initialFormState);
   }}
 >
-  + Add Vendor
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="10" cy="7" r="4"/>
+  <path d="M4 21v-2a6 6 0 0 1 12 0v2"/>
+  <line x1="19" y1="8" x2="19" y2="14"/>
+  <line x1="22" y1="11" x2="16" y2="11"/>
+</svg>
+   Add Vendor
 </button>
 
            <button className="export-btn" onClick={exportToCSV}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+  <polyline points="7 10 12 15 17 10"/>
+  <line x1="12" y1="15" x2="12" y2="3"/>
+</svg>
   Export Details
 </button>
 
           </div>
         </div>
-        <div className="vendors-stats">
-          <div className="stat-card">
-            <h3>Total Vendors</h3>
-            <div className="stat-value">{vendorData?.length}</div>
-          </div>
-          <div className="stat-card">
-            <h3>Active Vendors</h3>
-            <div className="stat-value">{vendorData?.filter((v) => v.is_approved === true)?.length}</div>
-          </div>
-          <div className="stat-card">
-            <h3>Pending Approval</h3>
-            <div className="stat-value">{vendorData?.filter((v) => v.is_approved === false)?.length}</div>
-          </div>
-        </div>
+       <div className="vendors-stats">
+  <div className="stat-card">
+    <h3>Total Vendors</h3>
+    <div className="stat-value">{vendorStats?.total_vendors || 0}</div>
+  </div>
+
+  <div className="stat-card">
+    <h3>Approved Vendors</h3>
+    <div className="stat-value">{vendorStats?.approved_vendors || 0}</div>
+  </div>
+
+  <div className="stat-card">
+    <h3>Pending Vendors</h3>
+    <div className="stat-value">{vendorStats?.pending_vendors || 0}</div>
+  </div>
+
+  <div className="stat-card">
+    <h3>Rejected Vendors</h3>
+    <div className="stat-value">{vendorStats?.rejected_vendors || 0}</div>
+  </div>
+</div>
         <div classsName="table-container">
         <table className="customers-table" ref={bulktableRef}>
           <thead>
@@ -791,240 +844,265 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
             </td>
           </tr>
           ) : error ? (
-            <p style={{ color: "red" }}>{error}</p>
+            <p colSpan="6" style={{ color: "red" }}>{error}</p>
           ) : (
-            <tbody>
-              {CurrentVendorpage.map((vendor,index) => (
-                <tr key={vendor.id}>
-                
-                  <td className="id1">{indexoffirstvendor+index+1}</td>
- <td>
-  <div className="customer-avatar-wrapper">
-    {vendor.profile_picture ? (
-      <img
-        src={vendor.profile_picture}
-        alt="profile"
-        className="customer-avatar-img"
-        onClick={() => {
-          setPreviewImage(vendor.profile_picture);
-        setimageModal(true);
-        }}
-      />
-    ) : (
-      <div className="customer-avatar">
-        {getInitials(vendor.first_name, vendor.last_name)}
-      </div>
-    )}
-  </div>
-</td>
-<td>{vendor.first_name && vendor.last_name ?`${vendor.first_name} ${vendor.last_name}`:"NA"}</td>
-  
+           <tbody>
+  {vendorData && vendorData.length > 0 ? (
+    vendorData.map((vendor, index) => (
+      <tr key={vendor.id}>
+        <td className="id1">{index + 1}</td>
 
- 
-<td>{vendor.store_name ?? "NA"}</td>
-                  <td>
-                    {vendor.pickup_locations?.map(
-                      (loc) =>
-                        `${loc.pincode + "," + loc.country + " ," + loc.state + "," + loc.city + "" + loc.address_line1 + "," + loc.address_line2}`,
-                    )}
-                  </td>
-                                    <td>{vendor.gst_number}</td>
-                                     
-                                    <td>{vendor.verified_phone_number}</td>
-                                  <td>
-                                  <select
-  value={vendor.status}
-  onChange={(e) => {
-   const newStatus = e.target.value;
-    if (newStatus === "rejected" || newStatus === "suspended") {
-      handleRejectClick(vendor.id, newStatus);  
-    } else {
-      handleStatusChange(vendor.id, newStatus);
-    }
-  }}
-  className="status-dropdown"
->
-  <option value="pending">Pending</option>
-  <option value="approved">Approved</option>
-  <option value="rejected">Rejected</option>
-  <option value="suspended">Suspended</option>
-</select>
-                  </td>
+        <td>
+          <div className="customer-avatar-wrapper">
+            {vendor.profile_picture ? (
+              <img
+                src={vendor.profile_picture}
+                alt="profile"
+                className="customer-avatar-img"
+                onClick={() => {
+                  setPreviewImage(vendor.profile_picture);
+                  setimageModal(true);
+                }}
+              />
+            ) : (
+              <div className="customer-avatar">
+                {getInitials(vendor.first_name, vendor.last_name)}
+              </div>
+            )}
+          </div>
+        </td>
 
-    <td style={{ textAlign: "center" }}>
-                                    <FiFileText size={20} color="#71a33f"
-                                      onClick={() => openDocumentModal(vendor)}
-                                    />
-                                  </td>                            
-               
- <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+        <td>
+          {vendor.first_name && vendor.last_name
+            ? `${vendor.first_name} ${vendor.last_name}`
+            : "NA"}
+        </td>
 
-  <button
-    className="action-menu-toggle"
-    onClick={() =>
-      setOpenMenuId(openMenuId === vendor.id ? null : vendor.id)
-    }
-    style={{
-      background: "transparent",
-      border: "none",
-      cursor: "pointer",
-      fontSize: "20px",
-    }}
-  >
-    <BsThreeDotsVertical />
-  </button>
+        <td>{vendor.store_name ?? "NA"}</td>
 
+        <td>
+          {vendor.pickup_locations?.map(
+            (loc) =>
+              `${loc.pincode}, ${loc.country}, ${loc.state}, ${loc.city}, ${loc.address_line1}, ${loc.address_line2}`
+          )}
+        </td>
 
+        <td>{vendor.gst_number}</td>
 
- 
-  {openMenuId === vendor.id && (
-    <div
-      className="action-buttons-modal"
+        <td>{vendor.verified_phone_number}</td>
+
+        <td>
+          <select
+            value={vendor.status}
+            onChange={(e) => {
+              const newStatus = e.target.value;
+              if (newStatus === "rejected" || newStatus === "suspended") {
+                handleRejectClick(vendor.id, newStatus);
+              } else {
+                handleStatusChange(vendor.id, newStatus);
+
+              }
+            }}
+            className="status-dropdown"
+          >
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </td>
+
+        <td style={{ textAlign: "center" }}>
+          <FiFileText
+            size={20}
+            color="#71a33f"
+            onClick={() => openDocumentModal(vendor)}
+          />
+        </td>
+
       
-    >
-      {vendor.status === "approved" && (
-        <button
-          className="action-btn1"
-          title="View vendor product"
-          onClick={() => handleNavigate(vendor.id)}
-        >
-         <span className="icon">👁</span> 
-  <span>Detail Page</span>
-        </button>
-      )}
+        <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+          <button
+            className="action-menu-toggle"
+            onClick={() =>
+              setOpenMenuId(openMenuId === vendor.id ? null : vendor.id)
+            }
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "20px",
+            }}
+          >
+            <BsThreeDotsVertical />
+          </button>
 
-      <button
-        title="Edit Vendor Details"
-        className="action-btn1 "
-        onClick={() => {
-          const existingDocs = [];
-          if (vendor?.documents?.length > 0) {
-            vendor?.documents?.forEach((doc) => {
-              existingDocs.push({
-                type: doc.document_type,
-                file: null,
-                existingUrl: doc.file_url,
-              });
-            });
-          }
+          {openMenuId === vendor.id && (
+            <div className="action-buttons-modal">
 
-          setForm({
-            first_name: vendor.first_name || "",
-            last_name: vendor.last_name || "",
-            store_name: vendor.store_name || "",
-            gst_number: vendor.gst_number || "",
-            verified_phone_number: vendor.verified_phone_number
-              ? vendor.verified_phone_number.startsWith("+91")
-                ? vendor.verified_phone_number.slice(3)
-                : vendor.verified_phone_number
-              : "",
-            profile_picture: vendor.profile_picture || null,
-            documentType: "",
-            documentFile: null,
+              {vendor.status === "approved" && (
+                <button
+                  className="action-btn1"
+                  title="View vendor product"
+                  onClick={() => handleNavigate(vendor.id)}
+                >
+                  <span className="icon">👁</span>
+                  <span>Detail Page</span>
+                </button>
+              )}
+
+              <button
+                title="Edit Vendor Details"
+                className="action-btn1"
+                onClick={() => {
+                  setForm({
+                    first_name: vendor.first_name || "",
+                    last_name: vendor.last_name || "",
+                    store_name: vendor.store_name || "",
+                    gst_number: vendor.gst_number || "",
+                    verified_phone_number: vendor.verified_phone_number
+                      ? vendor.verified_phone_number.startsWith("+91")
+                        ? vendor.verified_phone_number.slice(3)
+                        : vendor.verified_phone_number
+                      : "",
+                    profile_picture: vendor.profile_picture || null,
+                    documentType: "",
+                    documentFile: null,
+                  });
+
+                  setUploadedDocs(
+                    vendor.documents?.map((doc) => ({
+                      type: doc.document_type,
+                      file: null,
+                      existingUrl: doc.file_url,
+                    })) || []
+                  );
+
+                  setEditingId(vendor.id);
+                  setModalOpen(true);
+                }}
+              >
+                <span className="icon">✏️</span>
+                <span>Edit Detail</span>
+              </button>
+
+              <button
+                className="action-btn1"
+                title="Delete vendor"
+                onClick={() => {
+                  setSelectedVendorId(vendor.id);
+                  setDeleteConfirmModal(true);
+                }}
+              >
+                <span className="icon">🗑</span>
+                <span>Delete</span>
+              </button>
+               {vendor.pickup_locations.length === 0 && (
+                        <button
+                          className="action-btn1"
+                          title="Add Address"
+                          onClick={() => {
+                            setAddModal(true)
+                            setAddressVendorId(vendor.id)
+                            setAddform(intialAddressform)
+                            setAddressEditingId(null)
+                          }}
+                        >
+                           <span className="icon"> ➕</span>
+                  <span>Add Address</span>
+                          
+                        </button>
+                      )}
+                      
+                      
+                   {vendor?.pickup_locations?.length > 0 && (
+    <button
+      title="Edit Address Details"
+      className="action-btn1"
+      onClick={() => {
+        const addr = vendor.pickup_locations?.[0];
+
+        setAddModal(true);
+        setAddressVendorId(vendor.id);
+
+        if (addr) {
+          setAddressEditingId(addr.id);
+          setAddform({
+            pincode: addr.pincode ?? "",
+            country: addr.country ?? "",
+            state: addr.state ?? "",
+            city: addr.city ?? "",
+            address_line1: addr.address_line1 ?? "",
+            address_line2: addr.address_line2 ?? "",
           });
-
-          setUploadedDocs(
-            vendor.documents?.map((doc) => ({
-              type: doc.document_type,
-              file: null,
-              existingUrl: doc.file_url,
-            })) || []
-          );
-
-          setEditingId(vendor.id);
-          setModalOpen(true);
-        }}
-      >
- <span className="icon">✏️</span>
-  <span>Edit Detail</span>
-      </button>
-
-      <button
-        className="action-btn1"
-        title="Delete vendor"
-        onClick={() => {
-          setSelectedVendorId(vendor.id);
-          setDeleteConfirmModal(true);
-        }}
-      >
-  <span className="icon">🗑</span>
-  <span>Delete</span>
-      </button>
-
-      {vendor.pickup_locations?.length === 0 && (
-        <button
-          className="action-btn1"
-          title="Add Address"
-          onClick={() => {
-            setAddModal(true);
-            setAddressVendorId(vendor.id);
-            setAddform(intialAddressform);
-            setAddressEditingId(null);
-          }}
-        >
-  <span className="icon">➕</span>
-  <span>Add Address</span>
-        </button>
-      )}
-{vendor.pickup_locations?.length > 0 &&(
-   <button
-        title="Edit Address "
-        className="action-btn1"
-        onClick={() => {
-          const addr = vendor.pickup_locations?.[0];
-          setAddModal(true);
-          setAddressVendorId(vendor.id);
-
-          if (addr) {
-            setAddressEditingId(addr.id);
-            setAddform({
-              pincode: addr.pincode ?? "",
-              country: addr.country ?? "",
-              state: addr.state ?? "",
-              city: addr.city ?? "",
-              address_line1: addr.address_line1 ?? "",
-              address_line2: addr.address_line2 ?? "",
-            });
-          } else {
-            setAddressEditingId(null);
-            setAddform(intialAddressform);
-            setAddressErrors({});
-          }
-        }}
-      >
-   <span className="icon">📍</span>
-  <span>Edit Address</span>
-
-      </button>
-)}
-      
-    </div>
+        } else {
+          setAddressEditingId(null);
+          setAddform(intialAddressform);
+          setAddressErrors({});
+        }
+      }}
+    >
+      <span className="icon">
+        <MdEditLocationAlt />
+      </span>
+      <span>Edit Address</span>
+    </button>
   )}
-</td>    
-                </tr>
-              ))}
-            </tbody>
+
+            </div>
+          )}
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="10" style={{ textAlign: "center" }}>
+        No Data Found
+      </td>
+    </tr>
+  )}
+</tbody>
           )}
         </table>
-          {filteredVendors?.length> Vendorperpage &&(
-          < div className="pagination"> 
+       
+    {totalPages > 1 && (
+  <div className="pagination">
 
-<button onClick={()=>handlePageChange(currentpage-1)} disabled={currentpage === 1}> Prev</button>
- 
-{Array.from({ length: totalPages}, (_, i) => i + 1).map(number => (
-  <button
-    key={number} 
-    className={currentpage === number ? "active" : ""} 
-    onClick={() => handlePageChange(number)}
-  >
-    {number}
-  </button>
-))}
+   
+    <button
+      onClick={() => getVendorList(currentpage - 1, searchTerm)}
+      disabled={!previousPage}
+    >
+      Prev
+    </button>
 
-<button onClick={()=>handlePageChange(currentpage +1)} disabled={currentpage === totalPages}> Next</button>
+   
+    {pages.map((page) => (
+      <button
+        key={page}
+        onClick={() => getVendorList(page, searchTerm)}
+        style={{
+         
+          fontWeight: currentpage === page ? "bold" : "normal",
+          background: currentpage === page ? "#71a33f" : "#fff",
+          color: currentpage === page ? "#fff" : "#71a33f",
+        }}
+      >
+        {page}
+      </button>
+    ))}
 
-          </div>
-        )}
+    
+    <button
+      onClick={() => getVendorList(currentpage + 1, searchTerm)}
+      disabled={!Nextpage}
+    >
+      Next
+    </button>
+
+  </div>
+)}
+
 
         </div>
 
@@ -1043,8 +1121,9 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
         name = "first_name"
         value ={form.first_name}
         onChange={handleInputChange}
-        
+     
         />
+           {formErrors.first_name && <span className="error-msg">{formErrors.first_name}</span>}
         </div>
         <div className="form-field">
           <label> Last Name :</label>
@@ -1062,7 +1141,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
             name="store_name"
             value={form.store_name}
             onChange={handleInputChange}
-            style={{ borderColor: formErrors.store_name ? "red" : "" }}
+            
           />
           {formErrors.store_name && <span className="error-msg">{formErrors.store_name}</span>}
         </div>
@@ -1083,6 +1162,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
         <div className="form-field">
           <label>Profile Picture:</label>
           <input type="file" onChange={handleImageUpload} accept="image/*" />
+             {formErrors.profile_picture && <span className="error-msg">{formErrors.profile_picture}</span>}
         </div>
                 <div className="form-field">
           <label>GST Number:</label>
@@ -1132,8 +1212,6 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
   onChange={handleDocumentUpload}
 />
 
-
- 
 
   <button
     type="button"
@@ -1298,7 +1376,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
                   "No Image"
                 )}
               </p>
-              <button className="close-btn" onClick={() => setViewVendor(null)}>
+              <button className="close1-btn1" onClick={() => setViewVendor(null)}>
                 Close
               </button>
             </div>
@@ -1314,7 +1392,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
                 placeholder="Enter your phone Number"
                 value={form.verified_phone_number}
                 onChange={handleInputChange}
-                style={{ borderColor: phoneErrors.verified_phone_number ? "red" : "" }}
+                // style={{ borderColor: phoneErrors.verified_phone_number ? "red" : "" }}
                
               />
               {phoneErrors.verified_phone_number && (
@@ -1459,7 +1537,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
     </form>
   </div>
 )}
-{}
+
 
  {VendoropenModal && (
         <div className="modal-overlay" onClick={() => setVendorData(false)}>
@@ -1483,7 +1561,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
             ) : (
               <p className="no-docs">No documents uploaded.</p>
             )}
-            <button className="close-btn" onClick={() => setVendorModal(false)}>
+            <button className="close1-btn1" onClick={() => setVendorModal(false)}>
               Close
             </button>
           </div>
@@ -1491,12 +1569,20 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
       )}
 {RejectionVendorModal &&(
   <div className=" modal">
-    <div className="modal-content">
-    <form classsName="customer-form">
-      <h3> Enter Rejection Reason </h3>
+  
+    <form className="customer-form">
+      <h3>
+          {selectedStatus === "rejected"
+            ? "Enter Rejected Reason"
+            : "Enter Suspended Reason"}
+        </h3>
       <textarea
       value={Reason}
-      placeholder ="enter the reason "
+    placeholder={
+    selectedStatus === "rejected"
+      ? "Enter the reason for rejection..."
+      : "Enter the reason for suspension..."
+  }
       onChange={(e)=>setReason(e.target.value)}
       />
       <div className="form-buttons">
@@ -1506,7 +1592,7 @@ const handlePageChange =(pageNumber)=>setcurentpage(pageNumber);
 
     </form>
     </div>
-    </div>
+   
 )}
 
 

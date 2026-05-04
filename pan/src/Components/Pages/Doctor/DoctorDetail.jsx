@@ -58,12 +58,16 @@ const DoctorDetail = () => {
   const getcounsultationlist = async () => {
     const token = sessionStorage.getItem("superadmin_token")
     try {
-      const response = await fetch(`${BASE_URL}/healthcare/patientsbydoctor/${DoctorId}/`, {
+      const response = await fetch(`${BASE_URL}/healthcare/appointments/slots/available/?doctor_id=${DoctorId}`, {
         method: "GET",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+
+
+
+            
         },
       });
         if (response.status === 401 || response.status === 403) {
@@ -73,7 +77,8 @@ const DoctorDetail = () => {
             return;
         }
       const data = await response.json();
-      setConsultationdata(data)
+      
+      setConsultationdata(data.data)
       console.log("Consultation Data -->", data.data);
     } catch (err) {
       console.error(err.message);
@@ -88,7 +93,7 @@ const DoctorDetail = () => {
     getcounsultationlist();
   }, []);
 
-   const filteredConsultations = ConsultationData.filter((c) => {
+   const filteredConsultations = ConsultationData?.filter((c) => {
     if (filter === "all") return true;
     if (filter === "approved") return c.status?.toLowerCase() === "approved";
     if (filter === "pending") return c.status?.toLowerCase() === "pending";
@@ -98,8 +103,8 @@ const DoctorDetail = () => {
 
   const indexoflastconsulationDetail = Currentpage*ConsultaionDetailperpage;
   const indexoffirstconsulationDetail=indexoflastconsulationDetail - ConsultaionDetailperpage;
-  const totalPages=Math.ceil(filteredConsultations.length/ConsultaionDetailperpage);
-  const Currentconsultation=filteredConsultations.slice(indexoffirstconsulationDetail,indexoflastconsulationDetail);
+  const totalPages=Math.ceil(filteredConsultations?.length/ConsultaionDetailperpage);
+  const Currentconsultation=filteredConsultations?.slice(indexoffirstconsulationDetail,indexoflastconsulationDetail);
   const handlePageChange=(pagenumber)=>setCurrentPage(pagenumber)
 
   useEffect(() => {
@@ -130,22 +135,22 @@ const DoctorDetail = () => {
       <div className="customers-stats">
         <div className="stat-card">
           <h3>Total Consultation</h3>
-          <div className="stat-value">{ConsultationData.length}</div>
+          <div className="stat-value">{ConsultationData?.length}</div>
         </div>
         <div className="stat-card">
           <h3>Approved Consultation</h3>
         <div className="stat-value">
-  {ConsultationData.filter((c) => c.status?.toLowerCase() === "approved").length}
+  {ConsultationData?.filter((c) => c.status?.toLowerCase() === "approved")?.length}
 </div>
 
         </div>
         <div className="stat-card">
           <h3>Pending Consultation</h3>
-          <div className="stat-value">{ConsultationData.filter((c) => c.status?.toLowerCase() === "pending").length}</div>
+          <div className="stat-value">{ConsultationData?.filter((c) => c.status?.toLowerCase() === "pending")?.length}</div>
         </div>
         <div className="stat-card">
           <h3>Rejected Consultation</h3>
-          <div className="stat-value">{ConsultationData.filter((c) => c.status?.toLowerCase() === "rejected").length}</div>
+          <div className="stat-value">{ConsultationData?.filter((c) => c.status?.toLowerCase() === "rejected")?.length}</div>
         </div>
       </div>
 <Calendar onDateSelect={(date) => setSelectedDate(date)} />
@@ -209,7 +214,7 @@ const DoctorDetail = () => {
       {ConsultationError}
     </td>
   </tr>
-) : Currentconsultation && Currentconsultation.length > 0 ? (
+) : Currentconsultation && Currentconsultation?.length > 0 ? (
   Currentconsultation.map((c, index) => (
     <tr key={c.id}>
       <td>{indexoffirstconsulationDetail + index + 1}</td>
@@ -232,7 +237,7 @@ const DoctorDetail = () => {
 </tbody>
 </table>
 
-           {filteredConsultations.length> ConsultaionDetailperpage &&(
+           {filteredConsultations?.length> ConsultaionDetailperpage &&(
           < div className="pagination"> 
 
 <button onClick={()=>handlePageChange(Currentpage-1)} disabled={Currentpage === 1}> Prev</button>

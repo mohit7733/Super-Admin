@@ -10,11 +10,11 @@ const initalAdminform ={
    
 }
 const Admin = () => {
-  const [loading, setLoading] = useState(true);
-  const [Error, setError] = useState("");
-  const [verifiersearch, setVerifiersearch] = useState("");
-  const [AdminData, setAdminData] = useState([]);
-
+  
+const [loading, setLoading] = useState(true);
+const [Error, setError] = useState("");
+const [verifiersearch, setVerifiersearch] = useState("");
+const [AdminData, setAdminData] = useState([]);
 const[DeleteModal,setDeleteModal] =useState(false);
 const [rejectModalOpen, setRejectModalOpen] = useState(false);
 const [rejectReason, setRejectReason] = useState("");
@@ -26,14 +26,31 @@ const [allPermissions, setAllPermissions] = useState([]);
 const[AddAdminModal,setAdminModal]=useState(false);
 const [AddAdminForm,setAddAdminForm]= useState(initalAdminform)
 const [selectedAdmin, setSelectedAdmin] = useState(null);
+const[actionType,setActionType]=useState("");
+const[AddError,setAddError]=useState({});
+const[EditError,setEditError]=useState({});
 
 
-
-   const fetchedOnce = useRef(false);
+const fetchedOnce = useRef(false);
  const filteredVerifiers = AdminData.filter(v =>
   v.phone_number?.toLowerCase().includes(verifiersearch.toLowerCase())
 );
 
+
+const role ={
+  SUPERADMIN :"Super Admin",
+  ADMIN : "Admin",
+  FOLLOWUP:"Followup",
+  VERIFIER:"Verifier"
+}
+
+const Status = {
+  APPROVED :"Approved",
+  REJECTED:"Rejected",
+  PENDING:"Pending",
+  REJECTED:"Rejected",
+  SUSPENDED:"Suspended"
+}
   const getAdminlist = async()=>{
       const token = sessionStorage.getItem("superadmin_token");
 try{
@@ -75,10 +92,46 @@ const handleinputchange = (e) => {
     ...prev,
     [name]: value,
   }));
+ setAddError(prev => ({
+    ...prev,
+    [name]: ""
+  }));
 };
+
+
 
 const handleAddAdminSubmit = async (e) => {
   e.preventDefault();
+  let errors ={};
+
+  if(!AddAdminForm.phone_number.trim()){
+    errors.phone_number = " please Enter Valid Phone Number"
+  } else if(!/[0-9]{10}$/.test(AddAdminForm.phone_number)){
+    errors.phone_number ="Phone Number Must be Exactly10 digits"
+  }
+
+  const password = AddAdminForm.password;
+  if(!password.trim()){
+    errors.password ="please Enter a Password";
+  
+  }else if(password.length < 12){
+    errors.password ="password must be at least 12 characters"
+  }else if(!/[0-9]/.test(password)){
+    errors.password = "passwordmust contain at least one number"
+  }else if(!/[!@#$%^&*(),.?\":{}|<>]/.test(password)){
+    errors.password ="password must contain atleast one special character"
+  }else if (!/[A-Za-z]/.test(password)) {
+  errors.password = "Password must contain at least one letter";
+}
+
+  if(!AddAdminForm.admin_role.trim()){
+    errors.admin_role ="please select any role"
+  }
+
+  if(Object.keys(errors).length > 0){
+    setAddError(errors);
+    return;
+  }
 
   const token = sessionStorage.getItem("superadmin_token");
 
@@ -94,7 +147,8 @@ const handleAddAdminSubmit = async (e) => {
 
     const data = await res.json();
     toast.success("Admin created successfully 🎉");
-    setAddAdminForm(false);
+    setAddAdminForm(initalAdminform);
+    setAdminModal(false);
     getAdminlist();
   } catch (err) {
     toast.error("Failed to create admin");
@@ -128,7 +182,7 @@ const handleAddAdminSubmit = async (e) => {
   const updateStatus = async(id, status,reason="")=>{
     const token = sessionStorage.getItem("superadmin_token");
     try{
-const response = await fetch(`${BASE_URL}/user/admin-approval/`,{
+const response = await fetch(`${BASE_URL}/user/super-admin/pending-requests/`,{
     method:'PUT',
     headers:{
          "Content-Type": "application/json",
@@ -137,7 +191,7 @@ const response = await fetch(`${BASE_URL}/user/admin-approval/`,{
     body:JSON.stringify({
         user_id:id,
         action:status,
-        reject_reason:reason,
+      reason:reason,
     })
 });
 const data = await response.json();
@@ -152,11 +206,17 @@ const data = await response.json();
 
   
 
+
   const handleEditClick = (verifier) => {
+  
   setEditingUser(verifier);
+ setSelectedPermissions(
+  verifier.permissions?.map((perm) => perm.uid) || []
+);
+
   setPermissionModalOpen(true);
- 
 };
+
 
 const handleSavePermissions = async () => {
   const token = sessionStorage.getItem("superadmin_token");
@@ -175,9 +235,9 @@ const handleSavePermissions = async () => {
       },
       body: JSON.stringify({
         user_id: editingUser.id,
-        action: editingUser.admin_approval_status || "APPROVE",
+        action: editingUser.admin_approval_status ,
         permission_ids: selectedPermissions,   
-        group_ids: [],                         
+                               
       }),
     });
 
@@ -199,7 +259,7 @@ const handleSavePermissions = async () => {
  useEffect(() => {
     
        getAllPermissions ();
-     
+
   }, []);
 
 
@@ -238,18 +298,21 @@ const handleSavePermissions = async () => {
   return (
     <>
       <div className="page-header">
-        <h1>Team</h1>
+        <h1>Team Management</h1>
+        <p className="page-paragraph"> Manage Admin ,Given Permission and their details & Approvals</p>
+
       </div>
 
       <div className="customers-controls">
         <div className="search-bar">
           <input
             type="text"
+          
             placeholder="Search Admin by their phone number"
             value={verifiersearch}
             onChange={(e) => setVerifiersearch(e.target.value)}
             className="search-input"
-            disabled={loading}
+           
           />
         </div>
 
@@ -262,7 +325,13 @@ const handleSavePermissions = async () => {
     setAdminModal(true);             
   }}
 >
-  + Add Admin
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="10" cy="7" r="4"/>
+  <path d="M4 21v-2a6 6 0 0 1 12 0v2"/>
+  <line x1="19" y1="8" x2="19" y2="14"/>
+  <line x1="22" y1="11" x2="16" y2="11"/>
+</svg>
+   Add Admin
 </button>
 
 
@@ -298,13 +367,13 @@ const handleSavePermissions = async () => {
             filteredVerifiers.map((verifier,index) => (
               <tr key={verifier.id}>
                 <td>{index+1}</td>
-             <td>{verifier?.role_name}</td>
+           <td>{role[verifier.role_name] || verifier.role_name}</td>
                 <td>{verifier?.phone_number}</td>
           
 <td>
   
      
-{verifier.admin_approval_status}
+{Status[verifier.admin_approval_status]}
 </td>
              
                    <td>
@@ -346,25 +415,32 @@ const handleSavePermissions = async () => {
  {rejectModalOpen && (
   <div className="modal">
     <div className="modal-content">
-      <h3>Reject Reason</h3>
+      <h3>{actionType==="REJECTED"? " Enter Rejected Reason ":" Entr Suspended Reason"}</h3>
       <textarea
-        placeholder="Enter reason for rejection"
+        placeholder={
+    actionType === "SUSPENDED"
+      ? "Enter reason for suspension"
+      : "Enter reason for rejection"
+  }
+        name="reason"
+        type="text"
         value={rejectReason}
         onChange={(e) => setRejectReason(e.target.value)}
       />
 
       <div className="form-buttons">
-        <button
+        <button type="submit"
           onClick={() => {
             if (!rejectReason) {
               toast.error("Please enter a reason");
               return;
 
             }
-            updateStatus(selectedVerifier.id, "REJECTED", rejectReason);
+            updateStatus(selectedVerifier.id, "REJECTED","reason");
             setRejectModalOpen(false);
             setRejectReason("");
           }}
+
         >
           Submit
         </button>
@@ -412,9 +488,11 @@ const handleSavePermissions = async () => {
           onChange={(e) => {
             const newStatus = e.target.value;
 
-            if (newStatus === "REJECTED") {
+            if (newStatus === "REJECTED"|| newStatus==="SUSPENDED") {
               setSelectedVerifier(editingUser);
               setRejectModalOpen(true);
+               setPermissionModalOpen(false);
+               setActionType(newStatus)
             } else {
               setEditingUser(prev => ({
                 ...prev,
@@ -426,13 +504,14 @@ const handleSavePermissions = async () => {
           <option value="PENDING">Pending</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
+          <option value="SUSPENDED"> Suspended</option>
         </select>
       </div>
 
      
       <div className="form-buttons">
-        <button onClick={handleSavePermissions}>Save</button>
-        <button onClick={() => setPermissionModalOpen(false)}>Cancel</button>
+        <button type="submit" onClick={handleSavePermissions}>Save</button>
+        <button  type="button"onClick={() => setPermissionModalOpen(false)}>Cancel</button>
       </div>
     </div>
   </div>
@@ -453,7 +532,7 @@ const handleSavePermissions = async () => {
           onChange={handleinputchange}
           maxLength="10"
         />
-
+{AddError.phone_number && <p className="error">{AddError.phone_number}</p>}
         <label>Password</label>
         <input
           type="password"
@@ -462,23 +541,32 @@ const handleSavePermissions = async () => {
           value={AddAdminForm.password}
           onChange={handleinputchange}
         />
-
+{AddError.password &&<p className="error">{AddError.password}</p> }
         <label>Role</label>
         <select
           name="admin_role"
           value={AddAdminForm.admin_role}
           onChange={handleinputchange}
+          
         >
           <option value="">Select Role</option>
           <option value="ADMIN">Admin</option>
           <option value="VERIFIER">Verifier</option>
           <option value="FOLLOWUP">Followup</option>
+          <option value="SUPERADMIN"> SuperAdmin </option>
         </select>
+        {AddError.admin_role && <p className ="error">{AddError.admin_role}</p>}
 
         <div className="form-buttons">
           <button type="submit">Add Admin</button>
-         <button type="button" onClick={() => setAdminModal(false)}>
+         <button type="button" onClick={() => {
+  setAdminModal(false);
+  setAddAdminForm(initalAdminform );
+  setAddError({})
+}}>
+  
   Cancel
+  
 </button>
 
         </div>

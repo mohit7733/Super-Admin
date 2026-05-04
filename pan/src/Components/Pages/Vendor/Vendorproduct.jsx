@@ -325,8 +325,9 @@ const Vendorproduct = () => {
     const { name, value, type, checked } = e.target;
 
     if (name === "product") {
+      
       fetchVariantOptions(value);
-
+ 
       const selectedProduct = productOptions.find((p) => p.id === value);
 
       setformData({
@@ -621,7 +622,7 @@ const Vendorproduct = () => {
         },
       });
 
-
+  
       if (response.status === 401 || response.status === 403) {
         toast.error("Session expired. Please login again");
         sessionStorage.removeItem("superadmin_token");
@@ -629,9 +630,12 @@ const Vendorproduct = () => {
         return;
       }
       const data = await response.json();
-      setCategoryOptions(data);
+        console.log("API data category:", data);
+      setCategoryOptions(data.data);
 
 
+
+      
     } catch (error) {
       console.error('Failed to fetch categories:', error);
       toast.error("Something went wrong!");
@@ -787,6 +791,7 @@ formData.append("return_days",productAddForm.return_days)
 
 
   const fetchVariantOptions = async (productID) => {
+     console.log("👉 fetchVariantOptions called with:", productID);
     const token = sessionStorage.getItem("superadmin_token")
     try {
       const response = await fetch(`${BASE_URL}/catalogs/variantbyproduct/${productID}/`, {
@@ -919,7 +924,6 @@ formData.append("return_days",productAddForm.return_days)
   useEffect(() => {
     fetchVendorProducts();
     fetchCategoryOptions();
-    fetchVariantOptions();
     fetchhealthconcerncategory();
   }, []);
 

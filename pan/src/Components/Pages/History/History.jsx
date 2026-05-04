@@ -13,17 +13,21 @@ const History = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [historyPerPage] = useState(5);
-  const [refundForm, setRefundForm] = useState(false);
-  const[ImagePaymentModal,setImagepaymentModal]=useState(false)
-  const[previewpaymentImage,setPrviewImage]=useState(null)
-  const navigate = useNavigate();
+  const[previousPage,setPreviousPage] = useState(null);
+  const[Nextpage,setNextpage] = useState(null)
+ const navigate = useNavigate();
   const tableRef = useRef(null);
+  const pagesize = 5;
+  const[totalCount,setTotalCount]=useState(0);
+ const totalPages = Math.ceil(totalCount /  pagesize);  
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  
 
-  const getPaymentList = async () => {
+
+  const getPaymentList = async (page = 1) => {
     const token= sessionStorage.getItem("superadmin_token")
   try {
-    const response = await fetch(`${BASE_URL}/payments/payment/`, {
+    const response = await fetch(`${BASE_URL}/payments/payment/?page=${page}`, {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -42,7 +46,11 @@ const History = () => {
                       }
          
     const data =await response.json();
-    setPaymentData(data)
+    setPaymentData(data.data);
+    setNextpage(data.next);
+    setPreviousPage(data.previous);
+    setCurrentPage(page);
+    setTotalCount(data.count);
   }
     catch (err) {
       console.error(err.message);
@@ -70,10 +78,7 @@ const History = () => {
     return matchesSearch && matchesDate;
   });
 
-  const indexOfLastHistory = currentPage * historyPerPage;
-  const indexOfFirstHistory = indexOfLastHistory - historyPerPage;
-  const currentHistory = filteredData.slice(indexOfFirstHistory, indexOfLastHistory);
-  const totalPages = Math.ceil(filteredData?.length / historyPerPage);
+ 
   const totalAmount = filteredData.reduce(
     (sum, item) => sum + parseFloat(item.amount || 0),
     0
@@ -91,10 +96,7 @@ const History = () => {
 
 
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
+ 
   
   const exportToExcel = () => {
     if (!filteredData || filteredData.length === 0) {
@@ -191,12 +193,12 @@ const History = () => {
           </tr>
           ) : paymentError ? (
             <tr><td colSpan="10" style={{ color: "red" }}>{paymentError}</td></tr>
-          ) : currentHistory.length === 0 ? (
+          ) : paymentData.length === 0 ? (
             <tr><td colSpan="10">No payment records found.</td></tr>
           ) : (
-            currentHistory.map((item, index) => (
+            paymentData.map((item, index) => (
               <tr key={item.id}>
-                <td>{indexOfFirstHistory + index + 1}</td>
+                <td>{ index + 1}</td>
                 <td>{item.customer_name || "N/A"}</td>
                 <td>
                   {item.order?.items?.length > 1
@@ -252,65 +254,44 @@ const History = () => {
           )}
         </tbody>
       </table>
+ {totalPages > 1 && (
+  <div className="pagination">
 
-      {filteredData.length > historyPerPage && (
-        <div className="pagination">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            Prev
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-            <button
-              key={number}
-              className={currentPage === number ? "active" : ""}
-              onClick={() => handlePageChange(number)}
-            >
-              {number}
-            </button>
-          ))}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
-        </div>
-      )}
+   
+    <button
+      onClick={() => getPaymentList(currentPage - 1,)}
+      disabled={!previousPage}
+    >
+      Prev
+    </button>
 
-      {/* {refundForm && (
-        <div className="modal">
-          <form className="customer-form">
-            <h3>Refund Form</h3>
-            <label>Customer Name:</label>
-            <input
-              type="text"
-              name="first_name"
-              placeholder="Enter customer name"
-              value={refundFormData.first_name}
-              onChange={handleRefundInputChange}
-              required
-            />
-            {refundFormErrors.first_name && <p className="error">{refundFormErrors.first_name}</p>}
+   
+    {pages.map((page) => (
+      <button
+        key={page}
+        onClick={() => getPaymentList(page,)}
+        style={{
+         
+          fontWeight: currentPage === page ? "bold" : "normal",
+          background: currentPage === page ? "#71a33f" : "#fff",
+          color: currentPage === page ? "#fff" : "#71a33f",
+        }}
+      >
+        {page}
+      </button>
+    ))}
 
-            <label>Reason for Refund:</label>
-            <textarea
-              name="reason"
-              placeholder="Enter refund reason"
-              value={refundFormData.reason}
-              onChange={handleRefundInputChange}
-              required
-            />
-            {refundFormErrors.reason && <p className="error">{refundFormErrors.reason}</p>}
+    
+    <button
+      onClick={() => getPaymentList(currentPage + 1,)}
+      disabled={!Nextpage}
+    >
+      Next
+    </button>
 
-            <div className="form-buttons">
-              <button type="submit">Save</button>
-              <button type="button" onClick={() => setRefundForm(false)}>Cancel</button>
-            </div>
-          </form>
-        </div>
-      )} */}
+  </div>
+)}
+   
     </>
   );
 };

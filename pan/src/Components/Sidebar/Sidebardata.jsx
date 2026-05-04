@@ -10,13 +10,43 @@ import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import HealingIcon from '@mui/icons-material/FitnessCenter';
 import { FiClock } from "react-icons/fi";
 import { FaTicketAlt, FaUsers } from "react-icons/fa";
+import { MdQuiz } from "react-icons/md";
+import { FaAppleAlt } from "react-icons/fa";
 
 export const SidebarData = () => [
   {
+
+
     title: "Dashboard",
     icon: <HomeIcon sx={{ fontSize: 20 }} />,
     path: "/Dashboard",
     permission: "view_dashboard",
+  },
+  
+  {
+    title: "Question",
+    icon: <MdQuiz sx={{ fontSize: 20 }} />,
+    path: "/question",
+    permission: "view_questions",
+    children: [
+    {
+      title: "Prakriti Question",
+      path: "/question/prakriti",
+      permission: "view_prakriti_questions"
+    },
+    {
+      title: "Medical Question",
+      path: "/question/medical",
+      permission: "view_medical_questions"
+    }
+  ]
+  },
+  {
+    title:"Diet Plans",
+    icon:<FaAppleAlt sx={{fontSize:20}}/>,
+    path:"/Dietplans",
+    permission:"view_dietplans"
+   
   },
   {
     title: "Customer",
@@ -58,8 +88,9 @@ export const SidebarData = () => [
     title: "History",
     icon: <HistoryIcon sx={{ fontSize: 20 }} />,
     path: "/History",
-    permission: "view_order_history",
-  },
+    permission:"view_order_history"
+  }
+  ,
   {
     title: "Wellness Center",
     icon: <HealingIcon sx={{ fontSize: 20 }} />,
@@ -84,5 +115,7 @@ export const SidebarData = () => [
     path: "/Auditlogs",
     permission: "view_audit_logs",
   },
+
+
 ];
 

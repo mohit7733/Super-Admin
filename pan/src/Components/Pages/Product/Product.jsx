@@ -70,57 +70,73 @@ const Product = () => {
   const [selectedHealthConcerns, setSelectedHealthConcerns] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
-
+const [currentPage, setCurrentPage] = useState(1);
+const pageSize = 5;
+const [totalCount, setTotalCount] = useState(0);
+const totalPages = Math.ceil(totalCount / pageSize);
+const [Nextpage, setNextPage] = useState(null);
+const [previousPage, setPreviousPage] = useState(null);
 
 
   const fetchedOnce = useRef(false);
 
-  const fetchProducts = async () => {
-    try {
-      const response = await apiFetch(`${BASE_URL}/catalogs/product/`);
-      console.log("productdata", response)
-      if (Array.isArray(response)) {
-        setProducts(response);
-      } else if (Array.isArray(response.results)) {
-        setProducts(response.results);
-      } else {
-        setProducts([]);
-      }
-    } catch {
-      setError("Something went wrong while fetching data.");
-      toast.error(" Failed to fetch Product list", {
-        position: "top-center",
-        autoClose: 2000,
-      })
-    } finally {
-      setLoadingProduct(false);
+  const fetchProducts = async (page = 1) => {
+  try {
+    setLoadingProduct(true);
+
+    const response = await apiFetch(
+      `${BASE_URL}/catalogs/product/?page=${page}`
+    );
+
+    if (response?.status === "success") {
+      setProducts(response.data || []);
+      setTotalCount(response.count);
+      setCurrentPage(page);        
+      setNextPage(response.next);
+      setPreviousPage(response.previous);
+      setTotalCount(response.count)
+    } else {
+      setProducts([]);
     }
-  };
+
+  } catch (error) {
+    setProducts([]);
+    toast.error("Failed to fetch Product list", {
+      position: "top-center",
+      autoClose: 2000,
+    });
+  } finally {
+    setLoadingProduct(false);
+  }
+};
 
 
   const fetchCategoryOptions = async () => {
     try {
       const response = await apiFetch(`${BASE_URL}/catalogs/productcategory/`);
 
-      setCategoryOptions(Array.isArray(response) ? response : []);
+      setCategoryOptions(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Failed to fetch categories:", error);
     }
   };
 
   const fetchhealthconcerncategory = async () => {
-    try {
-      const response = await apiFetch(`${BASE_URL}/catalogs/healthconcernscategory/`);
-      setHealthCategoryOption(Array.isArray(response) ? response : []);
-    }
-    catch (error) {
-      console.error("Failed to fetch Health Concern Category:", error)
-    }
-  };
+  try {
+    const response = await apiFetch(`${BASE_URL}/catalogs/healthconcernscategory/`);
+
+    setHealthCategoryOption(
+      Array.isArray(response.data) ? response.data : []
+    );
+
+  } catch (error) {
+    console.error("Error fetching health categories:", error);
+  }
+};
 
   useEffect(() => {
     if (!fetchedOnce.current) {
-      fetchProducts();
+      fetchProducts(1);
       fetchCategoryOptions();
       fetchhealthconcerncategory();
       fetchedOnce.current = true;
@@ -201,7 +217,7 @@ const Product = () => {
 
 
       if (!response || response?.success === false || response?.detail) {
-        throw new Error("Unauthorized or failed");
+        toast.error("Unauthorized or failed");
       }
 
 
@@ -294,7 +310,7 @@ const Product = () => {
     return Object.keys(errors).length === 0;
   };
 
-
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   const handleProductSubmit = async (e) => {
     e.preventDefault();
     console.log('clicked')
@@ -482,7 +498,7 @@ const Product = () => {
     setProductForm(initialProductForm); 
     setValidationErrors({});
     setShowProductModal(true);
-      setSelectedHealthConcerns([]); 
+    setSelectedHealthConcerns([]); 
   }}
 >
   + Add Product
@@ -518,6 +534,7 @@ const Product = () => {
               </td>
             </tr>
           ) : error ? (
+            
             <tr>
               <td colSpan="9" style={{ color: "red" }}>
                 {error}
@@ -612,6 +629,44 @@ const Product = () => {
           )}
         </tbody>
       </table>
+    
+{totalPages > 1 && (
+  <div className="pagination">
+
+   
+    <button
+      onClick={() => fetchProducts(currentPage - 1)}
+      disabled={!previousPage}
+    >
+      Prev
+    </button>
+
+   
+    {pages.map((page) => (
+      <button
+        key={page}
+        onClick={() => fetchProducts(page)}
+        style={{
+         
+          fontWeight: Currentpage === page ? "bold" : "normal",
+          background: Currentpage === page ? "#71a33f" : "#fff",
+          color: Currentpage === page ? "#fff" : "#71a33f",
+        }}
+      >
+        {page}
+      </button>
+    ))}
+
+    
+    <button
+      onClick={() => fetchProducts(Currentpage+ 1)}
+      disabled={!Nextpage}
+    >
+      Next
+    </button>
+
+  </div>
+)}
 
 
 
