@@ -5,8 +5,8 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import BASE_URL from "../../../Base";
 import { apiFetch } from "../../../fetchapi";
-import {  BsThreeDotsVertical } from "react-icons/bs";
-import { FaUsers } from "react-icons/fa";
+import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
+import { FaCalendarAlt, FaChartLine, FaUsers } from "react-icons/fa";
 import { FiUserPlus } from "react-icons/fi";
 import { MdCalendarMonth } from "react-icons/md";
 
@@ -20,11 +20,11 @@ const userId = localStorage.getItem("USER_ID")
 console.log("USER_ID", userId)
 
 const initialCustomerFormState = {
- profile_picture:"" ,
+  profile_picture: "",
   first_name: "",
   email: "",
   verified_phone_number: "",
-  gender:"",
+  gender: "",
 }
 
 const initialFormErrors = {
@@ -32,7 +32,7 @@ const initialFormErrors = {
   email: "",
   verified_phone_number: "",
   otp: "",
-  gender:"",
+  gender: "",
 }
 
 
@@ -53,33 +53,33 @@ const Customers = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const bulktableRef = useRef(null);
   const [userId, setUserId] = useState(null);
-  
-const [thisMonthCount, setThisMonthCount] = useState(0);
-const [thisYearCount, setThisYearCount] = useState(0);
 
-  const[ImageCustomerModal,setImageCustomerModal]=useState(false);
-  const[ImageCustomerPreview,setImageCustomerPreview]=useState(null);
- const [openMenuId, setOpenMenuId] = useState(null);
- const [currentPage, setCurrentPage] = useState(1);
- const pageSize = 5;
- 
-const [totalCount, setTotalCount] = useState(0);
-const totalPages = Math.ceil(totalCount / pageSize);
-const [nextPage, setNextPage] = useState(null);
-const [previousPage, setPreviousPage] = useState(null);
+  const [thisMonthCount, setThisMonthCount] = useState(0);
+  const [thisYearCount, setThisYearCount] = useState(0);
 
-  
- const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  
-    
+  const [ImageCustomerModal, setImageCustomerModal] = useState(false);
+  const [ImageCustomerPreview, setImageCustomerPreview] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+
+  const [totalCount, setTotalCount] = useState(0);
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const [nextPage, setNextPage] = useState(null);
+  const [previousPage, setPreviousPage] = useState(null);
+
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+
   const validateCustomerForm = () => {
     const errors = {};
 
     if (!CustomerForm.first_name.trim()) {
-  errors.first_name = "First name is required";
-} else if (!/^[A-Z][a-zA-Z\s]*$/.test(CustomerForm.first_name)) {
-  errors.first_name = "First name should start with a capital letter and contain only letters and spaces";
-}
+      errors.first_name = "First name is required";
+    } else if (!/^[A-Z][a-zA-Z\s]*$/.test(CustomerForm.first_name)) {
+      errors.first_name = "First name should start with a capital letter and contain only letters and spaces";
+    }
 
 
     if (!CustomerForm.email.trim()) {
@@ -95,7 +95,7 @@ const [previousPage, setPreviousPage] = useState(null);
   };
 
 
-  
+
   const validatePhoneForm = () => {
     const errors = {}
 
@@ -109,7 +109,7 @@ const [previousPage, setPreviousPage] = useState(null);
     return Object.keys(errors)?.length === 0
   }
 
- 
+
   const handleCloseCustomerModal = () => {
     setCustomerModalOpen(false)
     setEditingCustomerId(null)
@@ -136,179 +136,179 @@ const [previousPage, setPreviousPage] = useState(null);
   }
 
 
-const handleCreateCustomer = async (e) => {
-  e.preventDefault();
+  const handleCreateCustomer = async (e) => {
+    e.preventDefault();
 
-  if (!validatePhoneForm()) {
-    return;
-  }
-
-
-  
-  try {
-    const token = sessionStorage.getItem("superadmin_token");
-    const payload = {
-      phone_number: `+91${CustomerForm.verified_phone_number}`,
-      role: "customer",
-    };
-
-    const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    
-    if (response.status === 401 || response.status === 403) {
-      toast.error("Session expired. Please login again");
-      sessionStorage.removeItem("superadmin_token");
-      navigate("/login");
+    if (!validatePhoneForm()) {
       return;
     }
 
-    const data = await response.json();
-   
-   
-    if (!response.ok) {
-      toast.error( data?.error);
-      return;
+
+
+    try {
+      const token = sessionStorage.getItem("superadmin_token");
+      const payload = {
+        phone_number: `+91${CustomerForm.verified_phone_number}`,
+        role: "customer",
+      };
+
+      const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+
+      if (response.status === 401 || response.status === 403) {
+        toast.error("Session expired. Please login again");
+        sessionStorage.removeItem("superadmin_token");
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+
+      if (!response.ok) {
+        toast.error(data?.error);
+        return;
+      }
+
+
+      const uid = data?.user?.id;
+
+      toast.success("Customer created. Please complete your registration");
+
+      if (uid) {
+        setUserId(uid);
+        localStorage.setItem("USER_ID", uid);
+        setOtpVerified(false);
+        setCustomerModalOpen(true);
+      }
+
+    } catch (err) {
+      console.error("Customer create error:", err);
+      toast.error("Something went wrong. Please try again", {
+        position: "top-center",
+      });
     }
+  };
 
-    
-    const uid = data?.user?.id;
 
-    toast.success("Customer created. Please complete your registration");
-
-    if (uid) {
-      setUserId(uid);
-      localStorage.setItem("USER_ID", uid);
-      setOtpVerified(false);
-      setCustomerModalOpen(true);
-    }
-
-  } catch (err) {
-    console.error("Customer create error:", err);
-    toast.error("Something went wrong. Please try again", {
-      position: "top-center",
-    });
-  }
-};
-
- 
 
   const handleCustomerDelete = async (id) => {
-  try {
-    const response = await apiFetch(`${BASE_URL}/customers/customer/${id}/`, {
-      method: "DELETE",
-    });
-
-    
-    if (!response) return;
-
-    
-    toast.success("Customer deleted successfully", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-
-    setCustomerData((prev) => prev.filter((c) => c.id !== id));
-
-  } catch (err) {
-    console.error("Delete Error:", err);
-
-    toast.error("Failed to delete customer", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  }
-};
+    try {
+      const response = await apiFetch(`${BASE_URL}/customers/customer/${id}/`, {
+        method: "DELETE",
+      });
 
 
-  
+      if (!response) return;
 
-  const handleCustomerFormSubmit = async (e) => {
-  e.preventDefault();
 
-  if (!validateCustomerForm()) return;
-
-  const method = editingCustomerId ? "PUT" : "POST";
-  const url = editingCustomerId
-    ? `${BASE_URL}/customers/customer/${editingCustomerId}/`
-    : `${BASE_URL}/customers/customer/`;
-
-  const formData = new FormData();
-
-  if (method === "POST") {
-    const uid = userId || localStorage.getItem("USER_ID");
-    if (uid) formData.append("user", uid);
-  }
-
-  Object.entries(CustomerForm).forEach(([key, value]) => {
-    formData.append(key, value);
-  });
-
-  try {
-    const data = await apiFetch(url, {
-      method,
-      body: formData,
-
-      headers: {},
-    });
-
-    
-    if (!data) return;
-
-    if (method === "POST") {
-      setCustomerData((prev) => [...prev, data]);
-      toast.success("Customer added successfully", {
+      toast.success("Customer deleted successfully", {
         position: "top-center",
         autoClose: 2000,
       });
-    } else {
-      setCustomerData((prev) =>
-        prev.map((cust) =>
-          cust.id === editingCustomerId ? { ...cust, ...CustomerForm } : cust
-        )
-      );
-      toast.success("Customer updated successfully", {
+
+      setCustomerData((prev) => prev.filter((c) => c.id !== id));
+
+    } catch (err) {
+      console.error("Delete Error:", err);
+
+      toast.error("Failed to delete customer", {
         position: "top-center",
         autoClose: 2000,
       });
     }
+  };
 
-    handleCloseCustomerModal();
-    getCustomerList();
 
-  } catch (err) {
-    console.error("Customer save error:", err);
-    toast.error("Failed to save customer", {
-      position: "top-center",
-      autoClose: 2000,
+
+
+  const handleCustomerFormSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateCustomerForm()) return;
+
+    const method = editingCustomerId ? "PUT" : "POST";
+    const url = editingCustomerId
+      ? `${BASE_URL}/customers/customer/${editingCustomerId}/`
+      : `${BASE_URL}/customers/customer/`;
+
+    const formData = new FormData();
+
+    if (method === "POST") {
+      const uid = userId || localStorage.getItem("USER_ID");
+      if (uid) formData.append("user", uid);
+    }
+
+    Object.entries(CustomerForm).forEach(([key, value]) => {
+      formData.append(key, value);
     });
-  }
-};
-const getInitials = (firstName = "", lastName = "") => {
-  return (
-    (firstName?.[0] || "").toUpperCase() +
-    (lastName?.[0] || "").toUpperCase()
-  );
-};
+
+    try {
+      const data = await apiFetch(url, {
+        method,
+        body: formData,
+
+        headers: {},
+      });
 
 
- 
- 
-const handleCustomerFileChange = (e) => {
-  const file = e.target.files[0];
+      if (!data) return;
 
-  setCustomerForm((prev) => ({
-    ...prev,
-    profile_picture: file,
-  }));
-};
+      if (method === "POST") {
+        setCustomerData((prev) => [...prev, data]);
+        toast.success("Customer added successfully", {
+          position: "top-center",
+          autoClose: 2000,
+        });
+      } else {
+        setCustomerData((prev) =>
+          prev.map((cust) =>
+            cust.id === editingCustomerId ? { ...cust, ...CustomerForm } : cust
+          )
+        );
+        toast.success("Customer updated successfully", {
+          position: "top-center",
+          autoClose: 2000,
+        });
+      }
+
+      handleCloseCustomerModal();
+      getCustomerList();
+
+    } catch (err) {
+      console.error("Customer save error:", err);
+      toast.error("Failed to save customer", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+    }
+  };
+  const getInitials = (firstName = "", lastName = "") => {
+    return (
+      (firstName?.[0] || "").toUpperCase() +
+      (lastName?.[0] || "").toUpperCase()
+    );
+  };
+
+
+
+
+  const handleCustomerFileChange = (e) => {
+    const file = e.target.files[0];
+
+    setCustomerForm((prev) => ({
+      ...prev,
+      profile_picture: file,
+    }));
+  };
 
 
   const handleCustomerInputChange = (e) => {
@@ -328,7 +328,7 @@ const handleCustomerFileChange = (e) => {
       [name]: updatedValue,
     }));
 
-  
+
 
     if (formErrors[name]) {
       setFormErrors((prev) => ({
@@ -347,68 +347,68 @@ const handleCustomerFileChange = (e) => {
 
 
 
-const getCustomerList = async (page = 1, searchTerm = "") => {
-  const token = sessionStorage.getItem("superadmin_token");
+  const getCustomerList = async (page = 1, searchTerm = "") => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-  if (!token) {
-    toast.error("Session expired. Please login again");
-    navigate("/login");
-    return;
-  }
-
-  setCustomerLoading(true);
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/customers/customer/?page=${page}&search=${searchTerm}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
+    if (!token) {
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
     }
 
-    const data = await response.json();
+    setCustomerLoading(true);
 
-    console.log("Customer API Response:", data);
+    try {
+      const response = await fetch(
+        `${BASE_URL}/customers/customer/?page=${page}&search=${searchTerm}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    setCustomerData(data.data || []);
-    setTotalCount(data.count || 0);
-    setNextPage(data.next);
-    setPreviousPage(data.previous);
-    setCurrentPage(page);
-    setThisMonthCount(data.this_month_count || 0);
-    setThisYearCount(data.this_year_count || 0);
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
 
-  } catch (err) {
-    console.error("Customer Fetch Error:", err);
-    setCustomerError("Something went wrong while fetching data.");
-    toast.error("Failed to fetch customer data");
-  } finally {
-    setCustomerLoading(false);
-  }
-};
+      const data = await response.json();
 
-useEffect(() => {
-  const delay = setTimeout(() => {
-    getCustomerList(1, searchcustomerTerm);
-  }, 100);
+      console.log("Customer API Response:", data);
 
-  return () => clearTimeout(delay);
-}, [searchcustomerTerm]);
+      setCustomerData(data.data || []);
+      setTotalCount(data.count || 0);
+      setNextPage(data.next);
+      setPreviousPage(data.previous);
+      setCurrentPage(page);
+      setThisMonthCount(data.this_month_count || 0);
+      setThisYearCount(data.this_year_count || 0);
+
+    } catch (err) {
+      console.error("Customer Fetch Error:", err);
+      setCustomerError("Something went wrong while fetching data.");
+      toast.error("Failed to fetch customer data");
+    } finally {
+      setCustomerLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      getCustomerList(1, searchcustomerTerm);
+    }, 100);
+
+    return () => clearTimeout(delay);
+  }, [searchcustomerTerm]);
 
 
- 
+
 
   return (
     <>
@@ -417,71 +417,68 @@ useEffect(() => {
         <p className="page-paragraph"> Manage Customers and their details</p>
       </div>
 
-      <div className="customers-controls">
-        <div className="search-bar">
+
+      <div className="stats2-grid">
+        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+            <FaUsers size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Total Customers</h3>
+            <div className="stat2-value">{totalCount.toLocaleString()}</div>
+          </div>
+        </div>
+        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+            <FaChartLine size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>This Year</h3>
+            <div className="stat2-value">{thisYearCount.toLocaleString()}</div>
+          </div>
+        </div>
+        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+            <FaCalendarAlt size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>This Month</h3>
+            <div className="stat2-value">{thisMonthCount.toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="controls-section">
+        <div className="search-wrapper">
+          <BsSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Search customers by name..."
+            placeholder="Search customers by name, email, or phone..."
             value={searchcustomerTerm}
             onChange={(e) => setSearchcustomerTerm(e.target.value)}
             className="search-input"
           />
         </div>
-
-        <div className="filter-controls">
+        <div className="action-buttons">
           <button
-          
-            className="add-customer-btn"
+            className="btn-primary"
             onClick={() => {
               setOtpVerified(true);
               setCustomerForm(initialCustomerFormState);
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="10" cy="7" r="4"/>
-  <path d="M4 21v-2a6 6 0 0 1 12 0v2"/>
-  <line x1="19" y1="8" x2="19" y2="14"/>
-  <line x1="22" y1="11" x2="16" y2="11"/>
-</svg>
+            <BsPlus size={18} />
             Add Customer
           </button>
-
-          <button className="export-btn" onClick={handleDownload}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-  <polyline points="7 10 12 15 17 10"/>
-  <line x1="12" y1="15" x2="12" y2="3"/>
-</svg>
-            Export Details
+          <button className="btn-secondary" onClick={handleDownload}>
+            <BsDownload size={16} />
+            Export
           </button>
         </div>
       </div>
 
-      <div className="customers-stats">
-        <div className="stat-card">
-
-          <h3>Total Customers</h3>
-         <div className="stat-value">{totalCount}</div>
-
-        </div>
-
-        <div className="stat-card">
-
-          <h3>New This Year</h3>
-
-          <div className="stat-value">{thisYearCount}</div>
-        </div>
-
-
-
-        <div className="stat-card">
-
-          <h3>New This Month</h3>
-          <div className="stat-value">{thisMonthCount}</div>
-        </div>
-      </div>
-      <div className="table-container">
-        <table className="customers-table" ref={bulktableRef}>
+      <div className="table-wrapper">
+        <table className="data-table" ref={bulktableRef}>
           <thead>
             <tr>
               <th>Profile</th>
@@ -494,11 +491,11 @@ useEffect(() => {
           </thead>
           <tbody>
             {Loading ? (
-             <tr>
-            <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
-              <div className="circular-loader"></div>
-            </td>
-          </tr>
+              Array(3).fill(0).map((_, i) => (
+                <tr key={i}>
+                  <td colSpan="10"><div className="skeleton-row"></div></td>
+                </tr>
+              ))
             ) : error ? (
               <tr>
                 <td colSpan="6" style={{ color: "red" }}>
@@ -509,103 +506,103 @@ useEffect(() => {
               customerData.map((customer) =>
               (
                 <tr key={customer.id}>
-   <td>
-  <div className="customer-avatar-wrapper">
-    {customer.profile_picture ? (
-      <img
-        src={customer.profile_picture}
-        alt="profile"
-        className="customer-avatar-img"
-        onClick={() => {
-          setImageCustomerPreview(customer.profile_picture);
-          setImageCustomerModal(true);
-        }}
-      />
-    ) : (
-      <div className="customer-avatar">
-        {getInitials(customer.first_name, customer.last_name)}
-      </div>
-    )}
-  </div>
-</td>
+                  <td>
+                    <div className="customer-avatar-wrapper">
+                      {customer.profile_picture ? (
+                        <img
+                          src={customer.profile_picture}
+                          alt="profile"
+                          className="customer-avatar-img"
+                          onClick={() => {
+                            setImageCustomerPreview(customer.profile_picture);
+                            setImageCustomerModal(true);
+                          }}
+                        />
+                      ) : (
+                        <div className="customer-avatar">
+                          {getInitials(customer.first_name, customer.last_name)}
+                        </div>
+                      )}
+                    </div>
+                  </td>
 
 
                   <td>{customer.first_name} </td>
                   <td>{customer.email}</td>
-                   <td>{customer.gender}</td>
+                  <td>{customer.gender}</td>
                   <td>{customer.verified_phone_number}</td>
-                 
-                
-
-<td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
-
-  <button
-    className="action-menu-toggle"
-    onClick={() =>
-      setOpenMenuId(openMenuId ===customer.id ? null : customer.id)
-    }
-    style={{
-      background: "transparent",
-      border: "none",
-      cursor: "pointer",
-      fontSize: "20px",
-    }}
-  >
-    <BsThreeDotsVertical />
-  </button>
 
 
 
- 
-  {openMenuId === customer.id && (
-    <div
-      className="action-buttons-modal"
-       
-    >
+                  <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
 
-        <button className="action-btn1" title=" View Customer Order " onClick={() => handleNavigate(customer.id)}>
-                        
-                        <span className="icon">  👁</span>
-  <span>Detail page</span>
-                      </button>
-     
- <button
-                        className="action-btn1"
-                        title="Edit Customer Details"
-                        onClick={() => {
-                          setCustomerModalOpen(true)
-                          setEditingCustomerId(customer.id)
-                          setCustomerForm({
-                            id: customer.id,
-                            first_name: customer.first_name,
-                            email: customer.email,
-                            verified_phone_number: customer?.verified_phone_number,
-                            gender:customer?.gender
-                          })
-                        }}
+                    <button
+                      className="action-menu-toggle"
+                      onClick={() =>
+                        setOpenMenuId(openMenuId === customer.id ? null : customer.id)
+                      }
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "20px",
+                      }}
+                    >
+                      <BsThreeDotsVertical />
+                    </button>
+
+
+
+
+                    {openMenuId === customer.id && (
+                      <div
+                        className="action-buttons-modal"
+
                       >
- <span className="icon">✏️</span>
-  <span>Edit Detail</span>
-      </button>
 
-        <button
-                        className="action-btn1"
-                        title="Delete Customer"
-                        onClick={() => {
-                          setSelectedCustomerId(customer.id);
-                          setDeleteConfirmModal(true);
-                        }}
+                        <button className="action-btn1" title=" View Customer Order " onClick={() => handleNavigate(customer.id)}>
+
+                          <span className="icon">  👁</span>
+                          <span>Detail page</span>
+                        </button>
+
+                        <button
+                          className="action-btn1"
+                          title="Edit Customer Details"
+                          onClick={() => {
+                            setCustomerModalOpen(true)
+                            setEditingCustomerId(customer.id)
+                            setCustomerForm({
+                              id: customer.id,
+                              first_name: customer.first_name,
+                              email: customer.email,
+                              verified_phone_number: customer?.verified_phone_number,
+                              gender: customer?.gender
+                            })
+                          }}
                         >
-  <span className="icon">🗑</span>
-  <span>Delete</span>
-      </button>
+                          <span className="icon">✏️</span>
+                          <span>Edit Detail</span>
+                        </button>
 
-     
+                        <button
+                          className="action-btn1"
+                          title="Delete Customer"
+                          onClick={() => {
+                            setSelectedCustomerId(customer.id);
+                            setDeleteConfirmModal(true);
+                          }}
+                        >
+                          <span className="icon">🗑</span>
+                          <span>Delete</span>
+                        </button>
 
-      
-    </div>
-  )}
-</td>
+
+
+
+                      </div>
+                    )}
+                  </td>
 
 
                 </tr>
@@ -620,43 +617,37 @@ useEffect(() => {
             )}
           </tbody>
         </table>
-    {totalPages > 1 && (
-  <div className="pagination">
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button
+              onClick={() => getCustomerList(currentPage - 1, searchcustomerTerm)}
+              disabled={!previousPage}
+            >
+              Prev
+            </button>
+            {pages.map((page) => (
+              <button
+                key={page}
+                onClick={() => getCustomerList(page, searchcustomerTerm)}
+                style={{
 
-   
-    <button
-      onClick={() => getCustomerList(currentPage - 1, searchcustomerTerm)}
-      disabled={!previousPage}
-    >
-      Prev
-    </button>
+                  fontWeight: currentPage === page ? "bold" : "normal",
+                  background: currentPage === page ? "#0D614E" : "#fff",
+                  color: currentPage === page ? "#fff" : "#0D614E",
+                }}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => getCustomerList(currentPage + 1, searchcustomerTerm)}
+              disabled={!nextPage}
+            >
+              Next
+            </button>
 
-   
-    {pages.map((page) => (
-      <button
-        key={page}
-        onClick={() => getCustomerList(page, searchcustomerTerm)}
-        style={{
-         
-          fontWeight: currentPage === page ? "bold" : "normal",
-          background: currentPage === page ? "#71a33f" : "#fff",
-          color: currentPage === page ? "#fff" : "#71a33f",
-        }}
-      >
-        {page}
-      </button>
-    ))}
-
-    
-    <button
-      onClick={() => getCustomerList(currentPage + 1, searchcustomerTerm)}
-      disabled={!nextPage}
-    >
-      Next
-    </button>
-
-  </div>
-)}
+          </div>
+        )}
 
       </div>
 
@@ -664,15 +655,15 @@ useEffect(() => {
         <div className="modal">
           <form className="customer-form" onSubmit={handleCustomerFormSubmit}>
             <h3>{editingCustomerId ? "Edit Customer" : "Add Customer"}</h3>
-             
-             <label>Profile</label>
+
+            <label>Profile</label>
             <input
 
-            name="profile_picture"
-            type="file"
-            placeholder="Upload your profile"
-           
-           onChange={handleCustomerFileChange}
+              name="profile_picture"
+              type="file"
+              placeholder="Upload your profile"
+
+              onChange={handleCustomerFileChange}
             />
 
 
@@ -691,7 +682,7 @@ useEffect(() => {
               <div style={{ color: "red", fontSize: "17px", marginTop: "4px" }}>{formErrors.first_name}</div>
             )}
 
-          
+
 
 
             <label htmlFor="email">Email:</label>
@@ -707,16 +698,16 @@ useEffect(() => {
             )}
 
             <label htmlFor="gender">Gender</label>
-           <select 
-          
-           name="gender"
-           value={CustomerForm.gender}
-            onChange={handleCustomerInputChange}
-           >
+            <select
+
+              name="gender"
+              value={CustomerForm.gender}
+              onChange={handleCustomerInputChange}
+            >
               <option value="">Select Gender</option>
-            <option value="male"> Male</option>
-            <option value="female"> Female</option>
-           </select>
+              <option value="male"> Male</option>
+              <option value="female"> Female</option>
+            </select>
 
             <label htmlFor="phone_number">Mobile Number:</label>
             <input
@@ -727,9 +718,9 @@ useEffect(() => {
               placeholder="Enter your phone number"
               value={CustomerForm.verified_phone_number}
               onChange={handleCustomerInputChange}
-              
+
             />
-            
+
 
 
             <div className="form-buttons">
@@ -800,17 +791,17 @@ useEffect(() => {
 
 
 
-     
-{
-  ImageCustomerModal && (
-     <div className="image-preview-overlay" onClick={() => setImageCustomerModal(false)}>
-    <div className="image-preview-modal" onClick={(e) => e.stopPropagation()}>
-      <img src={ImageCustomerPreview} alt="Preview" />
-      
-    </div>
-  </div>
-  )
-}
+
+      {
+        ImageCustomerModal && (
+          <div className="image-preview-overlay" onClick={() => setImageCustomerModal(false)}>
+            <div className="image-preview-modal" onClick={(e) => e.stopPropagation()}>
+              <img src={ImageCustomerPreview} alt="Preview" />
+
+            </div>
+          </div>
+        )
+      }
 
 
       <ToastContainer position="top-center" autoClose={1000} />

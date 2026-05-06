@@ -48,7 +48,8 @@ import ResetPassword from './Components/Pages/Auth/ResetPassword';
 import Question from './Components/Question/Question';
 import Prakriti from './Components/Question/Prakirti';
 import Medical from './Components/Question/Medical';
-import Diet from'./Components/Pages/Diet/Diet'
+import Diet from './Components/Pages/Diet/Diet'
+import Testing from './Components/Pages/Customer/testing';
 
 
 
@@ -83,7 +84,7 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
-
+        <Route path="/testing" element={<Testing />} />
 
         <Route
           path="/dashboard"
@@ -105,7 +106,7 @@ function App() {
             </ProtectedRoute>
           }
         />
- <Route
+        <Route
           path="/dietplans"
           element={
             <ProtectedRoute permission="view_dietplans">
@@ -117,26 +118,26 @@ function App() {
         />
 
         <Route
-  path="/question/prakriti"
-  element={
-    <ProtectedRoute permission="view_question">
-      <Layout>
-        <Prakriti />
-      </Layout>
-    </ProtectedRoute>
-  }
-/>
+          path="/question/prakriti"
+          element={
+            <ProtectedRoute permission="view_question">
+              <Layout>
+                <Prakriti />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-  path="/question/medical"
-  element={
-    <ProtectedRoute permission="view_question">
-      <Layout>
-        <Medical />
-      </Layout>
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/question/medical"
+          element={
+            <ProtectedRoute permission="view_question">
+              <Layout>
+                <Medical />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
 
         <Route

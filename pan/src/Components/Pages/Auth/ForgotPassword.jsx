@@ -92,7 +92,7 @@ const ForgotPassword = () => {
               Remember your password?{" "}
               <span
                 onClick={() => navigate("/login")}
-                style={{ color: "#71a33f", cursor: "pointer", fontWeight: "500" }}
+                style={{ color: "#0D614E", cursor: "pointer", fontWeight: "500" }}
               >
                 Back to Login
               </span>

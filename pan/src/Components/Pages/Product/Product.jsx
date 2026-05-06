@@ -649,8 +649,8 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
         style={{
          
           fontWeight: Currentpage === page ? "bold" : "normal",
-          background: Currentpage === page ? "#71a33f" : "#fff",
-          color: Currentpage === page ? "#fff" : "#71a33f",
+          background: Currentpage === page ? "#0D614E" : "#fff",
+          color: Currentpage === page ? "#fff" : "#0D614E",
         }}
       >
         {page}

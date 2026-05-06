@@ -122,7 +122,7 @@ const VerifyOtp = () => {
             <span
               onClick={!resendLoading ? handleResend : undefined}
               style={{
-                color: "#71a33f",
+                color: "#0D614E",
                 cursor: resendLoading ? "not-allowed" : "pointer",
                 fontWeight: "500",
               }}

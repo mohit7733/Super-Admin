@@ -108,14 +108,14 @@ export default function WeeklyOrdersChart({
             />
             
             <Legend />
-            <Bar yAxisId="left" dataKey="orders" name="Orders" barSize={26} radius={[6, 6, 0, 0]} fill="#28a745" />
+            <Bar yAxisId="left" dataKey="orders" name="Orders" barSize={26} radius={[6, 6, 0, 0]} fill="#0D614E " />
             {showRevenue && (
               <Line
                 yAxisId="right"
                 type="monotone"
                 dataKey="revenue"
                 name="Revenue"
-                stroke="#38a169"
+                stroke="#0D614E "
                 strokeWidth={2}
                 dot={{ r: 3 }}
                 activeDot={{ r: 5 }}
