@@ -999,7 +999,8 @@ const handleHealthConcernChange = (id) => {
   return (
     <div>
       <div className="page-header">
-        <h1>Vendor Product</h1>
+        <h1>Vendor Product Mangement</h1>
+        <p className='page-paragraph'> Manage Vendor Product and product Details</p>
       </div>
 
 

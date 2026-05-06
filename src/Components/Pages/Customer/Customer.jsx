@@ -413,7 +413,7 @@ useEffect(() => {
   return (
     <>
       <div className="page-header">
-        <h1>Customers</h1>
+        <h1>Customer Management</h1>
         <p className="page-paragraph"> Manage Customers and their details</p>
       </div>
 
@@ -431,7 +431,7 @@ useEffect(() => {
         <div className="filter-controls">
           <button
           
-            className="add-customer-btn"
+            className="add-customer-btn"m 
             onClick={() => {
               setOtpVerified(true);
               setCustomerForm(initialCustomerFormState);
@@ -482,7 +482,7 @@ useEffect(() => {
       </div>
       <div className="table-container">
         <table className="customers-table" ref={bulktableRef}>
-          <thead>
+          <thead>git fetch
             <tr>
               <th>Profile</th>
               <th>Name</th>

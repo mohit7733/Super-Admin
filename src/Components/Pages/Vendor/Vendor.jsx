@@ -522,7 +522,6 @@ const handleFormSubmit = async (e) => {
   formData.append("secondary_number", `+91${form.verified_phone_number}`);
   formData.append("gst_number", form.gst_number);
   
- 
   if (form.profile_picture && typeof form.profile_picture !== "string") {
     formData.append("profile_picture", form.profile_picture);
   }
@@ -751,7 +750,7 @@ const getInitials = (firstName = "", lastName = "") => {
   return (
     <>
         <div className="page-header">
-        <h2>Vendors List</h2>
+        <h2>Vendors Management</h2>
         <p className="page-paragraph">
           Manage Vendor ,Vendor Detalis and their Approvals
         </p>
@@ -831,7 +830,6 @@ const getInitials = (firstName = "", lastName = "") => {
               <th>Phone Number</th>
                 <th>Status</th>
                  <th> Documents </th>
-
               <th>Action</th>
              
               

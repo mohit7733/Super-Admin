@@ -868,7 +868,7 @@ const getInitials = (firstName, lastName) => {
   return (
     <>
       <div className="page-header">
-        <h1>Doctor</h1>
+        <h1>Doctor Management </h1>
         <p className="page-paragraph"> Manage Doctor ,details and their  Approvals</p>
       </div>
 

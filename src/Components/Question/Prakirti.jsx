@@ -233,7 +233,8 @@ useEffect(() => {
         : [],
     });
   }
-}, [editingQuestion]);
+}
+, [editingQuestion]);
 const handleAddChoiceChange = (index, field, value) => {
   const updated = [...Addform.choices];
   updated[index][field] = value;
