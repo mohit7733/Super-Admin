@@ -7,7 +7,10 @@ import { useNavigate } from "react-router-dom"
 import BASE_URL from "../../../Base";
 import { FiFileText } from "react-icons/fi";
 import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
-import { FaUsers } from "react-icons/fa";
+import { FaTrash, FaUsers } from "react-icons/fa";
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
 
 
 
@@ -868,7 +871,7 @@ const Doctor = () => {
   return (
     <>
       <div className="page-header">
-        <h1>Doctor</h1>
+        <h1>Doctor Management</h1>
         <p className="page-paragraph"> Manage Doctor ,details and their  Approvals</p>
       </div>
 
@@ -1096,7 +1099,7 @@ const Doctor = () => {
                         fontSize: "20px",
                       }}
                     >
-                      <BsThreeDotsVertical />
+                  <span className="icon">  <BsThreeDotsVertical /></span>   
                     </button>
 
 
@@ -1115,7 +1118,7 @@ const Doctor = () => {
                             title=" Detail Page"
                             onClick={() => handleNavigateDoctor(item.id)}
                           >
-                            <span className="icon">👁</span>
+                            <span className="icon"><FaEye/></span>
                             <span>Detail Page</span>
                           </button>
                         )}
@@ -1168,7 +1171,7 @@ const Doctor = () => {
                             setDoctorformModal(true);
                           }}
                         >
-                          <span className="icon">✏️</span>
+                          <span className="icon"><FaEdit/></span>
                           <span>Edit Detail</span>
                         </button>
 
@@ -1182,8 +1185,8 @@ const Doctor = () => {
                             setDeleteConfirmModal(true)
                           }}
                         >
-                          <span className="icon">🗑</span>
-                          <span>Delete </span>
+                          <span className="icon-delete">< FiTrash2/></span>
+                          <span className="delete-text">Delete </span>
                         </button>
                       </div>
                     )}

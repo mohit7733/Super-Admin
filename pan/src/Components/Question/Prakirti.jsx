@@ -5,6 +5,9 @@ import BASE_URL from '../../Base';
 import { useNavigate } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify"
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
 const initialAddForm = {
   text: "",
   category: "",
@@ -436,7 +439,9 @@ const Prakriti = () => {
                         fontSize: "20px",
                       }}
                     >
-                      <BsThreeDotsVertical />
+                  <span className='icon'>
+                    <BsThreeDotsVertical />
+                    </span>    
                     </button>
 
 
@@ -457,7 +462,7 @@ const Prakriti = () => {
                             setEditModalOpen(true);
                           }}
                         >
-                          <span className="icon">✏️</span>
+                          <span className="icon"><FaEdit/></span>
                           <span>Edit Detail</span>
                         </button>
 
@@ -473,9 +478,9 @@ const Prakriti = () => {
 
 
                         >
-                          <span className="icon"
-                          >🗑</span>
-                          <span>Delete</span>
+                          <span className="icon-delete"
+                          ><FiTrash2/></span>
+                          <span className='delete-text'>Delete</span>
                         </button>
 
 

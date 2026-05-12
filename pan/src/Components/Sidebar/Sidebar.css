@@ -174,17 +174,28 @@
   box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
 }
 
-/* Nav Icon */
 .nav-icon {
   font-size: 20px;
   min-width: 24px;
-  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+}
+.nav-icon svg,
+.submenu-icon svg {
+  width: 20px;
+  height: 20px;
+  color: white;  
 }
 
+
+
+.submenu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+}
 /* Nav Text */
 .nav-text {
   flex: 1;
@@ -319,7 +330,7 @@
 }
 
 .submenu-link.active::before {
-  content: "🌿";
+
   font-size: 10px;
   margin-right: 4px;
 }

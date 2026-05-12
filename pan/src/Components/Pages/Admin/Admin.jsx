@@ -3,6 +3,9 @@ import BASE_URL from "../../../Base";
 
 import { ToastContainer, toast } from "react-toastify"
 import { BsSearch } from "react-icons/bs";
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
 const initalAdminform = {
   phone_number: '',
   admin_role: '',
@@ -381,7 +384,7 @@ const Admin = () => {
 
 
                     <button className="action-btn edit" onClick={() => handleEditClick(verifier)}>
-                      ✏️
+                      <FaEdit/>
                     </button>
 
 
@@ -392,7 +395,7 @@ const Admin = () => {
                         setDeleteModal(true);
                       }}
                     >
-                      🗑
+                    <span className="icon-delete"> <FiTrash2/></span>
                     </button>
                   </div>
                 </td>

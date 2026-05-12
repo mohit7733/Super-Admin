@@ -4,7 +4,8 @@ import { ToastContainer, toast } from "react-toastify";
 import BASE_URL from "../../../Base";
 import "react-toastify/dist/ReactToastify.css";
 import { apiFetch } from "../../../fetchapi";
-import { BsSearch, BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
+import { BsSearch, BsThreeDots, BsThreeDotsVertical,BsDownload } from "react-icons/bs";
+
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 
@@ -230,9 +231,15 @@ const Patient = () => {
           </button>
 
 
-          <button className="btn-secondary" onClick={handleDownload}>
+          {/* <button className="btn-secondary" onClick={handleDownload}>
             Export Details
-          </button>
+          </button> */}
+
+                    <button className="btn-secondary" onClick={handleDownload}>
+                      <BsDownload size={16} />
+                      Export Details
+                    </button>
+          
         </div>
 
 

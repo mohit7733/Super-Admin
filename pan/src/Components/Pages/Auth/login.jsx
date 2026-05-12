@@ -3,16 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import logo1 from "../../Assests/logo1.png";
-import BASE_URL from "../../../Base";
 
-// Constants
+import BASE_URL from "../../../Base";
+import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
+import Ayurmuniimages from "../../Assests/Ayurvedicimages.jpg"
+
+
 const PHONE_PREFIX = "+91";
 const MAX_PHONE_LENGTH = 10;
 const TOAST_AUTO_CLOSE = 1000;
 const TOAST_POSITION = "top-center";
 
-// Role constants
+
 const ROLES = {
   SUPERADMIN: "SUPERADMIN",
   ADMIN: "ADMIN",
@@ -20,7 +22,7 @@ const ROLES = {
   FOLLOWUP: "FOLLOWUP",
 };
 
-// Storage keys
+
 const STORAGE_KEYS = {
   TOKEN: "superadmin_token",
   ROLE: "role",
@@ -43,7 +45,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Helper functions
+ 
   const formatPhoneNumber = (phone) => {
     const cleaned = phone.replace(/\D/g, "");
     return cleaned.startsWith("+91") ? cleaned : `${PHONE_PREFIX}${cleaned}`;
@@ -72,14 +74,14 @@ const Login = () => {
     const { name, value } = e.target;
 
     if (name === "phone_number") {
-      // Only allow numbers and limit to 10 digits
+     
       const numericValue = value.replace(/\D/g, "").slice(0, MAX_PHONE_LENGTH);
       setFormData(prev => ({ ...prev, [name]: numericValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
 
-    // Clear error for this field when user starts typing
+    
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
     }
@@ -90,7 +92,7 @@ const Login = () => {
     setRememberMe(checked);
 
     if (!checked) {
-      // Clear stored credentials
+      
       Object.values(STORAGE_KEYS).forEach(key => {
         localStorage.removeItem(key);
       });
@@ -127,21 +129,22 @@ const Login = () => {
         throw new Error(data.error || data.message || "Login failed");
       }
 
-      // Store authentication data
       sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
       sessionStorage.setItem(STORAGE_KEYS.ROLE, data.role);
       sessionStorage.setItem(STORAGE_KEYS.PERMISSIONS, JSON.stringify(data.permissions || []));
 
-      // Handle "Remember Me" functionality
+     
       if (rememberMe) {
         localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, "true");
         localStorage.setItem(STORAGE_KEYS.PHONE, formData.phone_number);
         localStorage.setItem(STORAGE_KEYS.PASSWORD, formData.password);
       }
 
-      toast.success(`Welcome back, ${data.role?.toLowerCase() || "User"}!`);
+    toast.success(`Welcome back, ${data.role?.toLowerCase() || "User"}!`, {
+ 
+});
 
-      // Navigate based on role
+    
       const route = getRouteByRole(data.role);
       setTimeout(() => navigate(route), TOAST_AUTO_CLOSE);
 
@@ -191,7 +194,7 @@ const Login = () => {
     }
   }, []);
 
-  // Effects
+  
   useEffect(() => {
     checkExistingSession();
     loadSavedCredentials();
@@ -199,15 +202,29 @@ const Login = () => {
 
   return (
     <>
-      <div className="login-content">
+      <div
+  className="login-content"
+  style={{
+    backgroundImage: `linear-gradient(
+      rgba(114, 123, 121, 0.55),
+      rgba(141, 207, 192, 0.55)
+    ), url(${Ayurmuniimages})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    minHeight: "100vh",
+    width: "100%",
+  }}
+>
         <div className="login-card">
           <div className="login-header">
             <div className="logo1">
               <img
-                src={logo1}
+                src={Ayurmunilogo}
                 alt="Company Logo"
-                style={{ width: "124px", height: "74px", marginBottom: "20px" }}
+                style={{ width: "102px", height: "81px", marginBottom: "20px" }}
               />
+              <h1 className="icon"> Ayurmuni</h1>
             </div>
             <p className="login-subtitle">
               Welcome back! Please sign in to your account.
@@ -334,16 +351,22 @@ const Login = () => {
         </div>
       </div>
 
-      <ToastContainer
-        position={TOAST_POSITION}
-        autoClose={TOAST_AUTO_CLOSE}
-        newestOnTop={false}
-        closeOnClick
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+   <ToastContainer
+  position={TOAST_POSITION}
+  autoClose={TOAST_AUTO_CLOSE}
+  newestOnTop={false}
+  closeOnClick
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+  theme="light"
+  toastStyle={{
+    borderRadius: "10px",
+  }}
+  progressStyle={{
+    background: "#0D614E", 
+  }}
+/>
     </>
   );
 };

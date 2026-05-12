@@ -1,0 +1,588 @@
+/* CustomerDetailsCard.css */
+
+.customer-details-wrapper {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: #f7f7f7;
+  flex-wrap: wrap;
+}
+
+
+
+.customer-profile-card {
+  flex: 2;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.04);
+}
+.customer-profile-card1 {
+  flex: 2;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.04);
+  border: 3px solid #0D614E;
+  
+}
+.customer-left {
+  display: flex;
+  gap: 20px;
+}
+
+.customer-avatar1 {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-circle {
+  width: 45px;
+  height: 45px;
+  background: #7b8f7c;
+  border-radius: 50%;
+  position: relative;
+}
+
+.avatar-circle::after {
+  content: "";
+  position: absolute;
+  width: 65px;
+  height: 32px;
+  background: #7b8f7c;
+  border-radius: 40px 40px 0 0;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -38px;
+}
+
+.customer-info h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+}
+
+.customer-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.verified-badge {
+  background: #e7f7ea;
+  color: #2e9d4d;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.customer-contact,
+.customer-meta,
+.registered-date {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  color: #777;
+  font-size: 12px;
+ 
+  flex-wrap: wrap;
+}
+
+.patient-btn {
+  margin-top: 16px;
+  border: none;
+  background: #c5e4dd;
+  color: #0D614E;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.customer-id {
+  text-align: right;
+}
+
+.customer-id p {
+  margin: 0;
+  color: #888;
+  font-size: 12px;
+}
+
+.customer-id h4 {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #222;
+}
+
+.tabs-section button.active {
+ 
+  color: #0D614E;
+  font-weight: 600;
+}
+
+.customer-stats-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.customer-stats-card1 {
+  flex: 1;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.04);
+  border: 3px solid #0D614E;
+}
+.stat-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-box p {
+  margin: 0;
+  color: #888;
+  font-size: 12px;
+}
+
+.stat-box h3 {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #222;
+}
+
+.stat-icon1 {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.top-section{
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.left-card{
+  flex: 2;
+}
+
+.right-card{
+  flex: 1;
+}
+
+/* TABS */
+.tabs-section{
+  width: 100%;
+  margin-top: 20px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0 20px;
+
+  display: flex;
+  align-items: center;
+  gap: 30px;
+
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.tabs-section button{
+  border: none;
+  background: transparent;
+  padding: 18px 0;
+  font-size: 14px;
+  color: #777;
+  cursor: pointer;
+  position: relative;
+}
+
+.tabs-section button:hover{
+  color: #0D614E;
+  font-weight: 600;
+}
+
+.tabs-section button:hover::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background:#0D614E ;
+  border-radius: 10px;
+}
+.tabs-section button:active::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background:#0D614E ;
+  border-radius: 10px;
+}
+.table-wrapper1{
+  margin-top: 20px;
+}
+.green {
+  background: #c5e4dd;
+  color: #0D614E;
+}
+
+
+.customer-content-wrapper{
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.customer-left-content{
+  flex: 2;
+  padding: 20px;
+  background:  #f7f7f7;;
+}
+
+.customer-right-content{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+   background:  #f7f7f7;;
+
+}
+
+.info-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.info-card{
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid #ececec;
+  border-top: 3px solid #0D614E;
+}
+
+.info-card h3{
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.info-row{
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 15px;
+  margin-bottom: 16px;
+}
+
+.info-row span{
+  color: #777;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.info-row p{
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.health-row{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 20px;
+}
+
+.health-row span{
+  font-size: 12px;
+  color: #666;
+}
+
+.health-row p{
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+.health-row span{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.health-icon{
+  color: #0D614E;
+  font-size: 14px;
+}
+.medical-btn{
+  margin-top: 10px;
+  border: none;
+ background: #c5e4dd;
+  color: #0D614E;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.orders-history-card{
+  margin-top: 20px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+   border-top: 3px solid #0D614E;
+}
+
+.orders-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.orders-head button{
+  border: none;
+  background: #c5e4dd;
+  color: #0D614E;
+  padding: 10px 15px;
+  border-radius: 8px;
+ 
+  font-size: 12px;
+}
+
+.orders-table{
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table th{
+  background: #fafafa;
+  text-align: centert;
+  padding: 14px;
+  font-size: 14px;
+}
+
+.orders-table td{
+  padding: 14px;
+  border-top: 1px solid #f1f1f1;
+  font-size: 12px;
+}
+
+.status{
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.delivered{
+  background: #c5e4dd;
+  color: #0D614E;
+}
+
+
+.pending{
+  background: #fff4d6;
+  color: #b78103;
+}
+
+
+.shipped{
+  background: #e3f2ff;
+  color: #0066cc;
+}
+
+
+.packing{
+  background: #f3e8ff;
+  color: #7b2cbf;
+}
+
+
+.cancelled{
+  background: #ffecec;
+  color: #d93f3f;
+}
+
+
+.processing{
+  background: #fff0e1;
+  color: #e67e22;
+}
+
+/* Returned */
+.returned{
+  background: #ececec;
+  color: #555555;
+}
+
+/* RIGHT */
+
+.side-card{
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  border-top: 3px solid #0D614E;
+}
+
+.side-card-top{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+
+
+
+.prescription-box,
+.recent-order-box{
+  border: 1px solid #0D614E;
+  border-radius: 12px;
+  padding: 16px;
+
+}
+
+.prescription-row,
+.recent-order-row{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.prescription-row span,
+.recent-order-row span{
+  color: #777;
+  font-size: 12px;
+}
+
+.prescription-row p,
+.recent-order-row p{
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.doctor-name{
+  color: #2f8d46;
+}
+
+.prescription-footer{
+  display: flex;
+  gap: 10px;
+}
+
+.view-btn{
+  flex: 1;
+  border: none;
+  background: #eef8ef;
+  color: #2f8d46;
+  padding: 11px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.download-btn{
+  width: 45px;
+  border: none;
+  background: #f4f4f4;
+  border-radius: 8px;
+}
+.customer-content-wrapper{
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  align-items: flex-start;
+}
+
+.customer-left-content{
+  flex: 0 0 70%;
+  max-width: 70%;
+}
+
+.customer-right-content{
+  flex: 0 0 30%;
+  max-width: 30%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+@media(max-width: 992px){
+
+  .customer-content-wrapper{
+    flex-direction: column;
+  }
+
+  .info-grid{
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+
+@media (max-width: 992px) {
+  .customer-details-wrapper {
+    flex-direction: column;
+  }
+
+  .customer-profile-card {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .customer-id {
+    text-align: left;
+  }
+}
+
+@media (max-width: 600px) {
+  .customer-left {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .customer-top {
+    justify-content: center;
+  }
+
+  .customer-contact,
+  .customer-meta,
+  .registered-date {
+    justify-content: center;
+  }
+
+  .customer-stats-card {
+    grid-template-columns: 1fr;
+  }
+}

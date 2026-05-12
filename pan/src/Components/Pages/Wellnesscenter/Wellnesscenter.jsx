@@ -7,6 +7,13 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import * as XLSX from "xlsx";
 import { useNavigate } from 'react-router-dom';
+import { BsThreeDotsVertical } from "react-icons/bs";
+
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
+
+
 
 
 const intialcenterform = {
@@ -37,6 +44,7 @@ const Wellnesscenter = () => {
   const [previousPage, setPreviousPage] = useState(null);
   const [Nextpage, setNextPage] = useState(null);
   const [CurrentPage, setCurrentPage] = useState(1)
+  const [OpenthreedotId, setOpenthreedotId] = useState(null);
 
   const filteredData = WellnessCenterData
     ?.filter(center =>
@@ -493,39 +501,76 @@ const Wellnesscenter = () => {
 
                   <td><StarRating rating={center.average_rating} /></td>
 
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        title="View Details"
-                        className="action-btn view"
-                        onClick={() => handleNavigate(center.id)}
-                      >
-                        👁
-                      </button>
-                      <button
-                        title="Edit Details"
-                        className="action-btn edit"
-                        onClick={() => {
+                    <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+                  
+                                      <button
+                                        className="action-menu-toggle"
+                                        onClick={() =>
+                                          setOpenthreedotId(OpenthreedotId === center.id ? null : center.id)
+                                        }
+                                        style={{
+                                          background: "transparent",
+                                          border: "none",
+                                          cursor: "pointer",
+                                          fontSize: "20px",
+                                        }}
+                                      >
+                                    <span className="icon">  <BsThreeDotsVertical /></span>   
+                                      </button>
+                  
+                  
+                  
+                  
+                                      {OpenthreedotId === center.id && (
+                                        <div
+                                          className="action-buttons-modal"
+                  
+                                        >
+                  
+                  
+                                       
+                                            <button
+                                              className="action-btn1"
+                                              title=" Detail Page"
+                                             onClick={() => handleNavigate(center.id)}
+                                            >
+                                              <span className="icon"><FaEye/></span>
+                                              <span>Detail Page</span>
+                                            </button>
+                                         
+                  
+                                          <button
+                                            className="action-btn1"
+                                            title="Edit "
+                                            onClick={() => {
                           setShowEditform(true);
                           setSelectedcenter(center.id);
                           setEditCenterform(center);
 
                         }}
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        title="Delete Center"
-                        className="action-btn delete"
-                        onClick={() => {
+                  
+                                              
+                                          >
+                                            <span className="icon"><FaEdit/></span>
+                                            <span>Edit Detail</span>
+                                          </button>
+                  
+                  
+                  
+                                          <button
+                                            className="action-btn1"
+                                            title="Delete"
+                                            onClick={() => {
                           setDeleteform(true);
                           setSelectedcenter(center.id);
                         }}
-                      >
-                        🗑
-                      </button>
-                    </div>
-                  </td>
+                                          >
+                                            <span className="icon-delete">< FiTrash2/></span>
+                                            <span className="delete-text">Delete </span>
+                                          </button>
+                                        </div>
+                                      )}
+                                    </td>
                 </tr>
               ))
             ) : (
