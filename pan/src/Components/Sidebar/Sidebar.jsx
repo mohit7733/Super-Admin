@@ -4,6 +4,9 @@ import "./Sidebar.css";
 import logo1 from "../Assests/logo1.png";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { FaChevronDown, FaChevronRight, FaBars } from "react-icons/fa";
+import { FaUsers } from "react-icons/fa";
+
+console.log("ICON TEST:", <FaUsers />);
 
 const Sidebar = ({ collapsed, onToggleCollapse }) => {
   const location = useLocation();
@@ -23,7 +26,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     setUserPermissions(permissions);
   }, []);
 
-  // Auto-expand menu items that match current path
+
   useEffect(() => {
     const newOpenMenus = { ...openMenus };
     let hasChanges = false;
@@ -46,26 +49,47 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     }
   }, [location.pathname]);
 
-  // Check if user has required permission
+  
   const hasPermission = useCallback((code) => {
     if (!code) return true;
     if (userRole === "SUPERADMIN") return true;
     return userPermissions.includes(code);
   }, [userRole, userPermissions]);
 
-  // Get all sidebar items with filtering
-  const filteredSidebarItems = useMemo(() => {
-    return SidebarData()
-      .filter(item => !item.permission || hasPermission(item.permission))
-      .map(item => ({
-        ...item,
-        children: item.children?.filter(
-          child => !child.permission || hasPermission(child.permission)
-        )
-      }))
-      .filter(item => !item.children || item.children.length > 0);
-  }, [hasPermission]);
+  
+ const filteredSidebarItems = useMemo(() => {
+  const filterRecursive = (items) => {
+    return items
+      .map(item => {
+       
+        if (item.children) {
+          const filteredChildren = filterRecursive(item.children);
+          if (
+            filteredChildren.length > 0 ||
+            !item.permission ||
+            hasPermission(item.permission)
+          ) {
+            return {
+              ...item,
+              children: filteredChildren
+            };
+          }
 
+          return null;
+        }
+
+       
+        if (!item.permission || hasPermission(item.permission)) {
+          return item;
+        }
+
+        return null;
+      })
+      .filter(Boolean);
+  };
+
+  return filterRecursive(SidebarData());
+}, [hasPermission]);
   const handleToggleMenu = (index) => {
     setOpenMenus(prev => ({
       ...prev,
@@ -84,132 +108,191 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
 
   // Render submenu items
   // Recursive function to render submenu items with nested children support
-  const renderSubmenu = (children, parentIndex, level = 1) => {
-    if (!children || children.length === 0) return null;
+  // const renderSubmenu = (children, parentIndex, level = 1) => {
+  //   if (!children || children.length === 0) return null;
 
-    return (
-      <ul
-        className={`submenu submenu-level-${level} ${collapsed ? 'submenu-hidden' : ''}`}
-        role="menu"
-        aria-label="Submenu"
-      >
-        {children.map((subItem, subIndex) => {
-          const hasChildren = subItem.children && subItem.children.length > 0;
-          const itemKey = `${parentIndex}-${subIndex}`;
+  //   return (
+  //     <ul
+  //       className={`submenu submenu-level-${level} ${collapsed ? 'submenu-hidden' : ''}`}
+  //       role="menu"
+  //       aria-label="Submenu"
+  //     >
+  //       {children.map((subItem, subIndex) => {
+  //         const hasChildren = subItem.children && subItem.children.length > 0;
+  //         const itemKey = `${parentIndex}-${subIndex}`;
 
-          return (
-            <li key={itemKey} role="none" className="submenu-item">
-              {hasChildren ? (
-                // Render parent item with nested children
-                <>
-                  <div
-                    className={`submenu-link submenu-parent ${openMenus[itemKey] ? 'open' : ''}`}
-                    onClick={() => handleToggleMenu(itemKey)}
-                    role="button"
-                    tabIndex={0}
-                    aria-expanded={handleToggleMenu[itemKey]}
-                    aria-haspopup="true"
-                  >
-                    {subItem.icon && <span className="submenu-icon">{subItem.icon}</span>}
-                    <span className="submenu-text">{subItem.title}</span>
-                    <span className="submenu-dropdown-icon">
-                      {openMenus[itemKey] ? <FaChevronDown size={10} /> : <FaChevronRight size={10} />}
-                    </span>
-                    {subItem.badge && <span className="submenu-badge">{subItem.badge}</span>}
-                  </div>
+  //         return (
+  //           <li key={itemKey} role="none" className="submenu-item">
+  //             {hasChildren ? (
+  //               // Render parent item with nested children
+  //               <>
+  //                 <div
+  //                   className={`submenu-link submenu-parent ${openMenus[itemKey] ? 'open' : ''}`}
+  //                   onClick={() => handleToggleMenu(itemKey)}
+  //                   role="button"
+  //                   tabIndex={0}
+  //                 aria-expanded={openMenus[itemKey]}
+  //                   aria-haspopup="true"
+  //                 >
+  //                   {subItem.icon && <span className="submenu-icon">{subItem.icon}</span>}
+  //                   <span className="submenu-text">{subItem.title}</span>
+  //                   <span className="submenu-dropdown-icon">
+  //                     {openMenus[itemKey] ? <FaChevronDown size={10} /> : <FaChevronRight size={10} />}
+  //                   </span>
+  //                   {subItem.badge && <span className="submenu-badge">{subItem.badge}</span>}
+  //                 </div>
 
-                  {/* Recursively render nested children */}
-                  {openMenus[itemKey] && renderSubmenu(subItem.children, itemKey, level + 1)}
-                </>
-              ) : (
-                // Render leaf link item
-                <Link
-                  to={subItem.path}
-                  className={`submenu-link ${location.pathname === subItem.path ? "active" : ""}`}
-                  role="menuitem"
-                  tabIndex={0}
-                  aria-current={location.pathname === subItem.path ? "page" : undefined}
+  //                 {/* Recursively render nested children */}
+  //                 {openMenus[itemKey] && renderSubmenu(subItem.children, itemKey, level + 1)}
+  //               </>
+  //             ) : (
+  //               // Render leaf link item
+  //               <Link
+  //                 to={subItem.path}
+  //                 className={`submenu-link ${location.pathname === subItem.path ? "active" : ""}`}
+  //                 role="menuitem"
+  //                 tabIndex={0}
+  //                 aria-current={location.pathname === subItem.path ? "page" : undefined}
+  //               >
+  //                 {subItem.icon && <span className="submenu-icon">{subItem.icon}</span>}
+  //                 <span className="submenu-text">{subItem.title}</span>
+  //                 {subItem.badge && <span className="submenu-badge">{subItem.badge}</span>}
+  //               </Link>
+  //             )}
+  //           </li>
+  //         );
+  //       })}
+  //     </ul>
+  //   );
+  // };
+  const renderSubmenu = (children, parentIndex) => {
+  return (
+    <ul className="submenu">
+      {children.map((subItem, subIndex) => {
+        const hasChildren = subItem.children?.length > 0;
+        const key = `${parentIndex}-${subIndex}`;
+
+        return (
+          <li key={key}>
+            {hasChildren ? (
+              <>
+                <div
+                  className="submenu-link"
+                  onClick={() => handleToggleMenu(key)}
                 >
-                  {subItem.icon && <span className="submenu-icon">{subItem.icon}</span>}
+                  <span className="submenu-icon">
+                    {subItem.icon || "📄"}
+                  </span>
+
                   <span className="submenu-text">{subItem.title}</span>
-                  {subItem.badge && <span className="submenu-badge">{subItem.badge}</span>}
-                </Link>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    );
-  };
+                </div>
+
+                {openMenus[key] &&
+                  renderSubmenu(subItem.children, key)}
+              </>
+            ) : (
+              <Link to={subItem.path} className="submenu-link">
+                <span className="submenu-icon">
+                  {subItem.icon || "📄"}
+                </span>
+
+                <span className="submenu-text">{subItem.title}</span>
+              </Link>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
 
   // Render parent menu item (with children)
   // Render parent menu item (with children)
-  const renderParentMenuItem = (item, index) => {
-    const isOpen = openMenus[index];
-    const hasValidChildren = item.children && item.children.length > 0;
+  // const renderParentMenuItem = (item, index) => {
+  //   const isOpen = openMenus[index];
+  //   const hasValidChildren = item.children && item.children.length > 0;
 
-    if (!hasValidChildren) return null;
+  //   if (!hasValidChildren) return null;
 
-    return (
-      <li key={index} role="none" className="menu-item has-children">
-        <div
-          className={`nav-link nav-link-parent ${isOpen ? "open" : ""} ${hoveredItem === index ? "hovered" : ""
-            } ${collapsed ? "collapsed" : ""}`}
-          onClick={() => !collapsed && handleToggleMenu(index)}
-          onKeyPress={(e) => handleKeyPress(e, () => handleToggleMenu(index))}
-          onMouseEnter={() => setHoveredItem(index)}
-          onMouseLeave={() => setHoveredItem(null)}
-          role="button"
-          tabIndex={0}
-          aria-expanded={isOpen}
-          aria-haspopup="true"
-          data-tooltip={!collapsed ? undefined : item.title}
-        >
-          <span className="nav-icon">{item.icon}</span>
+  //   return (
+  //     <li key={index} role="none" className="menu-item has-children">
+  //       <div
+  //         className={`nav-link nav-link-parent ${isOpen ? "open" : ""} ${hoveredItem === index ? "hovered" : ""
+  //           } ${collapsed ? "collapsed" : ""}`}
+  //         onClick={() => !collapsed && handleToggleMenu(index)}
+  //         onKeyPress={(e) => handleKeyPress(e, () => handleToggleMenu(index))}
+  //         onMouseEnter={() => setHoveredItem(index)}
+  //         onMouseLeave={() => setHoveredItem(null)}
+  //         role="button"
+  //         tabIndex={0}
+  //         aria-expanded={isOpen}
+  //         aria-haspopup="true"
+  //         data-tooltip={!collapsed ? undefined : item.title}
+  //       >
+  //         <span className="nav-icon">{item.icon}</span>
 
-          {!collapsed && (
-            <>
-              <span className="nav-text">{item.title}</span>
-              <span className="dropdown-icon">
-                {isOpen ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
-              </span>
-            </>
-          )}
-        </div>
+  //         {!collapsed && (
+  //           <>
+  //             <span className="nav-text">{item.title}</span>
+  //             <span className="dropdown-icon">
+  //               {isOpen ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
+  //             </span>
+  //           </>
+  //         )}
+  //       </div>
 
-        {!collapsed && isOpen && renderSubmenu(item.children, index)}
-      </li>
-    );
-  };
+  //       {!collapsed && isOpen && renderSubmenu(item.children, index)}
+  //     </li>
+  //   );
+  // };
+const renderParentMenuItem = (item, index) => {
+  const isOpen = openMenus[index];
+  const hasValidChildren = item.children && item.children.length > 0;
 
-  // Render single menu item (no children)
-  const renderSingleMenuItem = (item, index) => {
-    return (
-      <li key={index} role="none">
-        <Link
-          to={item.path}
-          className={`nav-link ${location.pathname === item.path ? "active" : ""
-            } ${hoveredItem === index ? "hovered" : ""}`}
-          onMouseEnter={() => setHoveredItem(index)}
-          onMouseLeave={() => setHoveredItem(null)}
-          role="menuitem"
-          tabIndex={0}
-          aria-current={location.pathname === item.path ? "page" : undefined}
-          data-tooltip={!collapsed ? undefined : item.title}
-        >
-          <span className="nav-icon">{item.icon}</span>
+  if (!hasValidChildren) return null;
 
-          {!collapsed && (
+  return (
+    <li key={index} className="menu-item has-children">
+      <div
+        className={`nav-link nav-link-parent ${isOpen ? "open" : ""}`}
+        onClick={() => !collapsed && handleToggleMenu(index)}
+      >
+       
+        <span className="nav-icon">
+          {item.icon || "📁"}
+        </span>
+
+        {!collapsed && (
+          <>
             <span className="nav-text">{item.title}</span>
-          )}
+            <span className="dropdown-icon">
+              {isOpen ? <FaChevronDown /> : <FaChevronRight />}
+            </span>
+          </>
+        )}
+      </div>
 
-          {item.badge && !collapsed && (
-            <span className="nav-badge">{item.badge}</span>
-          )}
-        </Link>
-      </li>
-    );
-  };
+      {!collapsed && isOpen && renderSubmenu(item.children, index)}
+    </li>
+  );
+};
+  
+ const renderSingleMenuItem = (item, index) => {
+  return (
+    <li key={index}>
+      <Link to={item.path} className="nav-link">
+        
+        <span className="nav-icon">
+          {item.icon || "📌"}
+        </span>
+
+        {!collapsed && (
+          <span className="nav-text">{item.title}</span>
+        )}
+      </Link>
+    </li>
+  );
+};
   const handleLogout = (e) => {
     e.preventDefault();
     console.log("User logged out")
@@ -252,7 +335,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
         )}
       </div>
 
-      {/* Navigation Menu */}
+      
       <nav className="nav-menu" role="navigation" aria-label="Main menu">
         <ul role="menubar" aria-orientation="vertical">
           {filteredSidebarItems.map((item, index) => {
@@ -278,9 +361,9 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
               <span className="user-status">Online</span>
             </div>
             <div>
-              <spna onClick={handleLogout} className="logout">
+              <span onClick={handleLogout} className="logout">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32" id="exit"><circle cx="12.5" cy="8.5" r="2.5" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"></circle><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="M10 27v-4l-3.573-3.136a1.18 1.18 0 0 1-.337-1.361l2.052-4.924"></path><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="M3 16c1.134-2.739 4.875-4.031 9-2 1.792 2.896 3.938 2.146 5 1M10 19l2-5M2 24h3l2.758-2.758M25 17h-5M23 14l3 3-3 3"></path><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="M20 12V3h9v26h-9v-7"></path></svg>
-              </spna>
+              </span>
             </div>
           </div>
         </div>

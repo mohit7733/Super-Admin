@@ -194,7 +194,7 @@
     color: rgba(46, 204, 113, 0.5);
 }
 
-/* Chart Card */
+
 .chart-card,
 .orders-card {
     background: white;
@@ -352,7 +352,7 @@
 
 .data-table th {
     padding: 14px 12px;
-    text-align: left;
+    text-align: center;
     font-size: 13px;
     font-weight: 600;
     color: #495057;
@@ -364,6 +364,7 @@
     border-bottom: 1px solid #e9ecef;
     font-size: 13px;
     color: #666;
+    text-align: center;
 }
 
 .data-table tbody tr:hover {
@@ -423,12 +424,7 @@
     color: #0D614E;
 }
 
-.status-badge.secondary {
-    background: rgba(108, 117, 125, 0.1);
-    color: #6c757d;
-}
 
-/* Action Buttons */
 .view-btn {
     background: none;
     border: none;

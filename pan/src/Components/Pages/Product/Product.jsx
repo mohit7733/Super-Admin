@@ -4,6 +4,13 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { apiFetch } from "../../../fetchapi";
+import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
+
+import { MdEditLocationAlt } from "react-icons/md";
+import { FaUsers } from "react-icons/fa";
+import { FaEdit}from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
 
 
 const initialProductForm = {
@@ -70,13 +77,13 @@ const Product = () => {
   const [selectedHealthConcerns, setSelectedHealthConcerns] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
-const [currentPage, setCurrentPage] = useState(1);
-const pageSize = 5;
+ const [currentPage, setCurrentPage] = useState(1);
+ const pageSize = 5;
 const [totalCount, setTotalCount] = useState(0);
 const totalPages = Math.ceil(totalCount / pageSize);
 const [Nextpage, setNextPage] = useState(null);
 const [previousPage, setPreviousPage] = useState(null);
-
+ const [openMenuId, setOpenMenuId] = useState(null);
 
   const fetchedOnce = useRef(false);
 
@@ -480,10 +487,12 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
 
       <div className="customers-controls">
-        <div className="search-bar">
+       
+         <div className="search-wrapper">
+          <BsSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Search product by product name..."
+            placeholder="Search product by product name ..."
             value={productSearch}
             onChange={(e) => setProductSearch(e.target.value)}
             className="search-input"
@@ -527,106 +536,197 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
           </tr>
         </thead>
         <tbody>
-          {loadingProduct ? (
-            <tr>
-              <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
-                <div className="circular-loader"></div>
-              </td>
-            </tr>
-          ) : error ? (
-            
-            <tr>
-              <td colSpan="9" style={{ color: "red" }}>
-                {error}
-              </td>
-            </tr>
-          ) : (
-            filteredProducts().map((product, index) => (
-              <tr key={product.id}>
-                <td>{index + 1}</td>
-                <td>{product?.title}</td>
-                <td>{product?.brand}</td>
-                <td>{product?.short_description}</td>
-                <td>{product?.form}</td>
-                <td>{product?.treatment}</td>
-              <td>
-  {product?.healthconcerncategory_detail && product.healthconcerncategory_detail.length > 0
-    ? product.healthconcerncategory_detail.map(hc => hc.name).join(", ")
-    : "—"}
-</td>
+{loadingProduct ? (
+  Array(3)
+    .fill(0)
+    .map((_, i) => (
+      <tr key={i}>
+        <td colSpan="10">
+          <div className="skeleton-row"></div>
+        </td>
+      </tr>
+    ))
+) : error ? (
+  <tr>
+    <td colSpan="10" style={{ color: "red" }}>
+      {error}
+    </td>
+  </tr>
+) : filteredProducts()?.length > 0 ? (
+  filteredProducts().map((product, index) => (
+    <tr key={product.id}>
+      <td>{index + 1}</td>
+      <td>{product?.title}</td>
+      <td>{product?.brand}</td>
+      <td>{product?.short_description}</td>
+      <td>{product?.form}</td>
+      <td>{product?.treatment}</td>
 
+      <td>
+        {product?.healthconcerncategory_detail &&
+        product.healthconcerncategory_detail.length > 0
+          ? product.healthconcerncategory_detail
+              .map((hc) => hc.name)
+              .join(", ")
+          : "—"}
+      </td>
 
-                <td>
-                  {product?.image ? (
-                    <img
-                      src={product?.image}
-                      alt={product?.title}
-                      width="50"
-                      style={{ cursor: "pointer", borderRadius: "4px" }}
-                      onClick={() => {
-                        setPreviewimage(product.image);
-                        setShowPreviewModal(true);
-                      }}
-                    />
-                  ) : (
-                    "No image"
-                  )}
-                </td>
+      <td>
+        {product?.image ? (
+          <img
+            src={product?.image}
+            alt={product?.title}
+            width="50"
+            style={{
+              cursor: "pointer",
+              borderRadius: "4px",
+            }}
+            onClick={() => {
+              setPreviewimage(product.image);
+              setShowPreviewModal(true);
+            }}
+          />
+        ) : (
+          "No image"
+        )}
+      </td>
 
-                <td>{product?.category_detail?.name ?? ""}</td>
-                <td>
-                  <div className="action-buttons">
-             
-                    <button
-                      className="action-btn edit"
-                      onClick={() => {
-                        setProductEditing(product.id);
+      <td>{product?.category_detail?.name ?? ""}</td>
 
-                        setProductForm({
-                          title: product.title || "",
-                          brand: product.brand || "",
-                          treatment: product.treatment || "",
-                          form: product.form || "",
-                          manufacturer: product.manufacturer || "",
-                          ayush_license_number: product.ayush_license_number || "",
-                          health_concern: product.health_concern || "",
-                          side_effects: product.side_effects || "",
-                          benefits: product.benefits || "",
-                          how_to_use: product.how_to_use || "",
-                          meta_description: product.meta_description || "",
-                          price: product.price || "",
-                          model_number: product.model_number || "",
-                          return_days: product.return_days || "",
-                          dosage: product.dosage || "",
-                          sin_number: product.sin_number || "",
-                          meta_title: product.meta_title || "",
-                          origin: product.origin || "India",
-                          category: product.category || product?.category_detail?.id || "",
-                          short_description: product.short_description || "",
-                          full_description: product.full_description || "",
-                          composition: product.composition || "",
-                          is_returnable: product.is_returnable ?? false,
-                          image: null,
-                        });
-                         setSelectedHealthConcerns(
-      product.healthconcerncategory_detail
-        ? product.healthconcerncategory_detail.map(hc => hc.id)
-        : []
-    );
+      <td
+        style={{ position: "relative" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className="action-menu-toggle"
+          title="Edit Details"
+          onClick={() =>
+            setOpenMenuId(
+              openMenuId === product.id
+                ? null
+                : product.id
+            )
+          }
+          style={{
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "20px",
+          }}
+        >
+          <span className="icon">
+            <BsThreeDotsVertical />
+          </span>
+        </button>
 
-                        setPreviewImage(product.image);
-                        setShowProductModal(true);
-                      }}
-                    >
-                      ✏️
-                    </button>
+        {openMenuId === product.id && (
+          <div className="action-buttons-modal">
+            <button
+              className="action-btn1"
+              title="Edit Detail"
+              onClick={() => {
+                setProductEditing(product.id);
 
-                    <button title="Delete Product" className="action-btn delete" tittle="Delete Product" onClick={() => confirmDelete(product.id)}>🗑</button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
+                setProductForm({
+                  title: product.title || "",
+                  brand: product.brand || "",
+                  treatment:
+                    product.treatment || "",
+                  form: product.form || "",
+                  manufacturer:
+                    product.manufacturer || "",
+                  ayush_license_number:
+                    product.ayush_license_number ||
+                    "",
+                  health_concern:
+                    product.health_concern || "",
+                  side_effects:
+                    product.side_effects || "",
+                  benefits:
+                    product.benefits || "",
+                  how_to_use:
+                    product.how_to_use || "",
+                  meta_description:
+                    product.meta_description ||
+                    "",
+                  price: product.price || "",
+                  model_number:
+                    product.model_number || "",
+                  return_days:
+                    product.return_days || "",
+                  dosage:
+                    product.dosage || "",
+                  sin_number:
+                    product.sin_number || "",
+                  meta_title:
+                    product.meta_title || "",
+                  origin:
+                    product.origin || "India",
+                  category:
+                    product.category ||
+                    product?.category_detail
+                      ?.id ||
+                    "",
+                  short_description:
+                    product.short_description ||
+                    "",
+                  full_description:
+                    product.full_description ||
+                    "",
+                  composition:
+                    product.composition || "",
+                  is_returnable:
+                    product.is_returnable ??
+                    false,
+                  image: null,
+                });
+
+                setSelectedHealthConcerns(
+                  product.healthconcerncategory_detail
+                    ? product.healthconcerncategory_detail.map(
+                        (hc) => hc.id
+                      )
+                    : []
+                );
+
+                setPreviewImage(product.image);
+                setShowProductModal(true);
+              }}
+            >
+              <span className="icon">
+                <FaEdit />
+              </span>
+
+              <span>Edit Detail</span>
+            </button>
+
+            <button
+              title="Delete Product"
+              className="action-btn1"
+              onClick={() =>
+                confirmDelete(product.id)
+              }
+            >
+              <span className="icon-delete">
+                <FiTrash2 />
+              </span>
+
+              <span className="delete-text">
+                Delete Product
+              </span>
+            </button>
+          </div>
+        )}
+      </td>
+    </tr>
+  ))
+) : (
+  <tr>
+    <td colSpan="10" style={{ textAlign: "center" }}>
+      No Data Found
+    </td>
+  </tr>
+)}
         </tbody>
       </table>
     

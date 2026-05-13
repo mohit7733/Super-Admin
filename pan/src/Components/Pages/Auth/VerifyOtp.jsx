@@ -4,6 +4,7 @@ import logo1 from "../../Assests/logo1.png";
 import BASE_URL from "../../../Base";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
 
 const VerifyOtp = () => {
   const navigate = useNavigate();
@@ -93,7 +94,8 @@ const VerifyOtp = () => {
       <ToastContainer position="top-right" />
       <div className="verify-card">
         <div className="verify-header">
-          <img src={logo1} alt="Logo" className="verify-logo" />
+          <img src={Ayurmunilogo} alt="Logo" className="verify-logo" />
+    
           <h2>Verify Phone Number</h2>
           <p>Enter the 4-digit OTP sent to your phone number</p>
         </div>

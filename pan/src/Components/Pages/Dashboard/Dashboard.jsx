@@ -296,9 +296,9 @@ const Dashboard = () => {
           <button className="refresh-btn" onClick={handleRefresh}>
             <MdRefresh /> Refresh
           </button>
-          <button className="export-btn" onClick={handleExport}>
+          {/* <button className="export-btn" onClick={handleExport}>
             <FaDownload /> Export
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -367,7 +367,7 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Recent Orders Section */}
+    
       <div className="orders-card">
         <div className="card-header">
           <div className="header-left-section">
@@ -378,18 +378,18 @@ const Dashboard = () => {
                 onClick={() => handleTypeChange("product")}
               >
                 Product Orders
-                {activeType === "product" && totalCount > 0 && (
+                {/* {activeType === "product" && totalCount > 0 && (
                   <span className="badge">{totalCount}</span>
-                )}
+                )} */}
               </button>
               <button
                 className={`type-btn ${activeType === "consultation" ? "active" : ""}`}
                 onClick={() => handleTypeChange("consultation")}
               >
                 Consultation Orders
-                {activeType === "consultation" && totalCount > 0 && (
+                {/* {activeType === "consultation" && totalCount > 0 && (
                   <span className="badge">{totalCount}</span>
-                )}
+                )} */}
               </button>
             </div>
           </div>
@@ -405,7 +405,7 @@ const Dashboard = () => {
         </div>
 
         <div className="table-wrapper">
-          {/* Product Orders Table */}
+         
           {activeType === "product" && (
             <table className="data-table">
               <thead>
@@ -419,7 +419,7 @@ const Dashboard = () => {
                   <th>Payment Method</th>
                   <th>Payment Status</th>
                   <th>Order Status</th>
-                  <th>Action</th>
+                
                 </tr>
               </thead>
               <tbody>
@@ -456,9 +456,9 @@ const Dashboard = () => {
                         </span>
                       </td>
                       <td>
-                        <button className="view-btn" onClick={() => navigate(`/order/${order.id}`)}>
+                        {/* <button className="view-btn" onClick={() => navigate(`/order/${order.id}`)}>
                           <FaEye /> View
-                        </button>
+                        </button> */}
                       </td>
                     </tr>
                   ))
@@ -474,7 +474,7 @@ const Dashboard = () => {
             </table>
           )}
 
-          {/* Consultation Orders Table */}
+          
           {activeType === "consultation" && (
             <table className="data-table">
               <thead>
@@ -542,7 +542,7 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Pagination */}
+        
         {totalPages > 1 && (
           <div className="pagination-wrapper">
             <div className="pagination-info">

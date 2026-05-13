@@ -4,6 +4,9 @@ import BASE_URL from '../../Base';
 import { toast, ToastContainer } from 'react-toastify';
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
 const intialAddform = {
   text: "",
   section: "",
@@ -373,7 +376,8 @@ const Medical = () => {
                             });
                           }}
                         >
-                          ✏️ Edit Detail
+                          <span className='icon'> <FaEdit/> </span> 
+                          <span> Edit</span>
                         </button>
                         <button
                           className="action-btn1"
@@ -386,9 +390,9 @@ const Medical = () => {
 
 
                         >
-                          <span className="icon"
-                          >🗑</span>
-                          <span>Delete</span>
+                          <span className="icon-delete">
+                          <FiTrash2/> </span>
+                          <span className='delete-text'>Delete</span>
                         </button>
 
 

@@ -243,6 +243,17 @@
   margin-bottom: 30px;
 
 }
+.icon{
+  font-size: 20px;
+  color:#0D614E;
+}
+.icon-delete{
+  font-size: 20px;
+  color:rgb(216, 84, 84);
+}
+.delete-text{
+   color:rgb(216, 84, 84);
+}
 
 .stat-card {
   background: white;
@@ -457,12 +468,13 @@
   border-radius: 6px;
   font-size: 14px;
   background: white;
+  border:1px solid #0D614E;
 }
 
 .status-filter:focus {
   outline: none;
-  border-color: #69c140;
-  box-shadow: 0 0 0 2px rgba(105, 193, 64, 0.2);
+  border-color: #0D614E;
+  box-shadow: 0 0 0 2px rgba(13, 25, 7, 0.2);
 }
 
 .status-filter {
@@ -553,17 +565,11 @@
 }
 
 .login-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  height: 100vh;
-  position: relative;
-  z-index: 1;
-}
 
+  display: flex;
+  justify-content:center ;
+  align-items: center;
+}
 
 .login-card {
   background: white;
@@ -598,13 +604,19 @@
   color: #2d3748;
   margin: 0;
 }
-
+.logo1{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .login-subtitle {
   color: #718096;
   font-size: 16px;
   margin: 0;
 }
-
+.status-dropdown{
+  border:1px solid 
+}
 .form-group {
   margin: 16px 0;
   width: 100%;
@@ -762,7 +774,8 @@
 }
 
 input[type="checkbox"] {
-  accent-color: green;
+  accent-color:#0D614E;
+
 }
 
 .login-header {
@@ -1113,7 +1126,7 @@ textarea:focus {
 }
 
 .form-buttons button[type="submit"]:hover {
-  background-color: #5ba636;
+  background-color:#0D614E;
 }
 
 .form-buttons button[type="button"] {
@@ -1204,7 +1217,7 @@ textarea:focus {
 
 .action-buttons {
   display: flex;
-  /* justify-content: center; */
+  justify-content: center;
   gap: 5px;
 }
 
@@ -1345,7 +1358,12 @@ textarea:focus {
   border-radius: 8px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
+.consultationOrder{
+  display: flex;
+  gap:20px;
+  margin-bottom: 40px;
 
+}
 .form-title {
   text-align: center;
   margin-bottom: 20px;
@@ -1420,15 +1438,23 @@ textarea:focus {
 .status-dropdown {
   padding: 5px;
   border-radius: 5px;
+  border: 1px solid  #0D614E;
 
 }
 
 .status-dropdown:focus {
   outline: none;
-  border-color: #69c140;
-  box-shadow: 0 0 0 2px rgba(105, 193, 64, 0.2);
+  border-color:  #0D614E;
+  box-shadow: 0 0 0 2px rgba(36, 51, 29, 0.2);
 }
 
+.login-content1{
+    min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
 
 
 .address-form {
@@ -2205,7 +2231,7 @@ textarea:focus {
 
 .circular-loader {
   border: 4px solid #e3e3e3;
-  border-top: 4px solid #4CAF50;
+  border-top: 4px solid #0D614E;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -2630,7 +2656,9 @@ textarea {
 }
 
 .btn-secondary1:hover {
-  background: #e2e8f0;
+  background: white;
+    color: #495057;
+    border: 1px solid #dee2e6;
 }
 
 
@@ -3015,7 +3043,7 @@ textarea {
 
 .verify-wrapper {
   min-height: 100vh;
-  background: linear-gradient(120deg, #eef3f7, #f9fbfd);
+  /* background: linear-gradient(120deg, #eef3f7, #f9fbfd); */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -3083,7 +3111,7 @@ textarea {
 }
 
 .verify-btn:hover {
-  background: #5f8e34;
+  background:#0D614E;
 }
 
 .resend-text {
@@ -3192,7 +3220,8 @@ textarea {
 }
 
 .reset-btn:hover {
-  background: #5f8e34;
+  background:#0D614E
+;
 }
 
 modal-content1 select {

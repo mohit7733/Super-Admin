@@ -1,5 +1,5 @@
 
-const BASE_URL = "https://jb56c8mh-8002.inc1.devtunnels.ms";  
+const BASE_URL = "https://ksncfd6v-8002.inc1.devtunnels.ms/";  
 
 export default BASE_URL;
 

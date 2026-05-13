@@ -9,10 +9,9 @@ import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/b
 import { FaCalendarAlt, FaChartLine, FaUsers } from "react-icons/fa";
 import { FiUserPlus } from "react-icons/fi";
 import { MdCalendarMonth } from "react-icons/md";
-
-
-
-
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
 
 
 const userId = localStorage.getItem("USER_ID")
@@ -413,7 +412,7 @@ const Customers = () => {
   return (
     <>
       <div className="page-header">
-        <h1>Customers</h1>
+        <h1>Customer Management</h1>
         <p className="page-paragraph"> Manage Customers and their details</p>
       </div>
 
@@ -548,7 +547,7 @@ const Customers = () => {
                         fontSize: "20px",
                       }}
                     >
-                      <BsThreeDotsVertical />
+                   <span className="icon"> <BsThreeDotsVertical /></span>   
                     </button>
 
 
@@ -562,7 +561,7 @@ const Customers = () => {
 
                         <button className="action-btn1" title=" View Customer Order " onClick={() => handleNavigate(customer.id)}>
 
-                          <span className="icon">  👁</span>
+                          <span className="icon"> <FaEye/> </span>
                           <span>Detail page</span>
                         </button>
 
@@ -581,7 +580,9 @@ const Customers = () => {
                             })
                           }}
                         >
-                          <span className="icon">✏️</span>
+                       <span className="icon">
+  <FaEdit  />
+</span>
                           <span>Edit Detail</span>
                         </button>
 
@@ -593,8 +594,9 @@ const Customers = () => {
                             setDeleteConfirmModal(true);
                           }}
                         >
-                          <span className="icon">🗑</span>
-                          <span>Delete</span>
+
+                          <span className="icon-delete">< FiTrash2/></span>
+                          <span className="delete-text" >Delete</span>
                         </button>
 
 

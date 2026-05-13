@@ -170,9 +170,18 @@ import { FaAppleAlt } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
+import {  FaUserInjured, FaStore, FaUserMd, FaUserShield } from "react-icons/fa";
+
+import {  MdRestaurantMenu, MdSpa, MdCategory } from "react-icons/md";
+import { FaBoxOpen, FaTags } from "react-icons/fa";
+import { MdInventory } from "react-icons/md";
+import { FaChartLine,  FaHeadset } from "react-icons/fa";
+import { FaClipboardList, FaHistory } from "react-icons/fa";
+import {  FaCogs,  FaDatabase } from "react-icons/fa";
+
 
 export const SidebarData = () => [
-  // 1. MAIN DASHBOARD - Primary Overview
+  
   {
     title: "Dashboard",
     icon: <HomeIcon sx={{ fontSize: 20 }} />,
@@ -180,80 +189,87 @@ export const SidebarData = () => [
     permission: "view_dashboard",
   },
 
-  // 2. USER MANAGEMENT - Manage all users
+ 
   {
     title: "User Management",
     icon: <HiUsers size={20} />,
     path: "#",
-    permission: "manage_users",
+    // permission: "manage_users",
     children: [
       {
-        title: "Customers",
-        path: "/Customer",
-        permission: "view_customers",
-      },
-      {
-        title: "Patients",
-        path: "/Patient",
-        permission: "view_patients",
-      },
-      {
-        title: "Vendors",
-        path: "/Vendor",
-        permission: "view_vendors",
-      },
-      {
-        title: "Doctors",
-        path: "/Doctor",
-        permission: "view_doctors",
-      },
-      {
-        title: "Team Members",
-        path: "/Admin",
-        permission: "manage_admin",
-      },
-    ],
+    title: "Customers",
+    path: "/Customer",
+    permission: "view_customers",
+    icon: <FaUsers />
   },
-
-  // 3. CONTENT MANAGEMENT - Manage platform content
   {
-    title: "Content Management",
-    icon: <MdQuiz sx={{ fontSize: 20 }} />,
-    path: "#",
-    permission: "manage_content",
-    children: [
-      {
-        title: "Questions",
-        icon: <MdQuiz sx={{ fontSize: 20 }} />,
-        path: "#",
-        permission: "view_questions",
-        children: [
-          {
-            title: "Prakriti Questions",
-            path: "/question/prakriti",
-            permission: "view_prakriti_questions",
-          },
-          {
-            title: "Medical Questions",
-            path: "/question/medical",
-            permission: "view_medical_questions",
-          },
-        ],
-      },
-      {
-        title: "Diet Plans",
-        path: "/Dietplans",
-        permission: "view_dietplans",
-      },
-      {
-        title: "Wellness Centers",
-        path: "/Wellnesscenter",
-        permission: "view_wellness_center",
-      },
+    title: "Patients",
+    path: "/Patient",
+    permission: "view_patients",
+    icon: <FaUserInjured />
+  },
+  {
+    title: "Vendors",
+    path: "/Vendor",
+    permission: "view_vendors",
+    icon: <FaStore />
+  },
+  {
+    title: "Doctors",
+    path: "/Doctor",
+    permission: "view_doctors",
+    icon: <FaUserMd />
+  },
+  {
+    title: "Team Members",
+    path: "/Admin",
+    permission: "manage_admin",
+    icon: <FaUserShield />
+  }
     ],
   },
 
-  // 4. PRODUCT & INVENTORY - Manage products and stock
+  {
+  title: "Content Management",
+  icon: <MdCategory style={{ fontSize: 20 }} />, // main section icon
+  path: "#",
+  permission: "manage_content",
+  children: [
+    {
+      title: "Questions",
+      icon: <MdQuiz style={{ fontSize: 20 }} />,
+      path: "#",
+      permission: "view_questions",
+      children: [
+        {
+          title: "Prakriti Questions",
+          icon: <MdQuiz style={{ fontSize: 18 }} />,
+          path: "/question/prakriti",
+          permission: "view_prakriti_questions",
+        },
+        {
+          title: "Medical Questions",
+          icon: <MdQuiz style={{ fontSize: 18 }} />,
+          path: "/question/medical",
+          permission: "view_medical_questions",
+        },
+      ],
+    },
+    {
+      title: "Diet Plans",
+      icon: <MdRestaurantMenu style={{ fontSize: 20 }} />,
+      path: "/Dietplans",
+      permission: "view_dietplans",
+    },
+    {
+      title: "Wellness Centers",
+      icon: <MdSpa style={{ fontSize: 20 }} />,
+      path: "/Wellnesscenter",
+      permission: "view_wellness_center",
+    },
+  ],
+},
+ 
   {
     title: "Products & Inventory",
     icon: <Inventory2Icon sx={{ fontSize: 20 }} />,
@@ -261,44 +277,49 @@ export const SidebarData = () => [
     permission: "manage_inventory",
     children: [
       {
-        title: "All Products",
-        path: "/Product",
-        permission: "view_products",
-      },
-      {
-        title: "Categories",
-        path: "/Product/Categories",
-        permission: "view_categories",
-      },
-      {
-        title: "Stock Management",
-        path: "/Product/Stock",
-        permission: "manage_stock",
-      },
+      title: "All Products",
+      path: "/Product",
+      permission: "view_products",
+      icon: <FaBoxOpen size={18} />
+    },
+    {
+      title: "Categories",
+      path: "/Product/Categories",
+      permission: "view_categories",
+      icon: <FaTags size={18} />
+    },
+    {
+      title: "Stock Management",
+      path: "/Product/Stock",
+      permission: "manage_stock",
+      icon: <MdInventory size={18} />
+    },
     ],
   },
 
-  // 5. ORDER MANAGEMENT - Track and manage orders
+ 
   {
     title: "Order Management",
     icon: <ReorderIcon sx={{ fontSize: 20 }} />,
     path: "#",
     permission: "manage_orders",
     children: [
-      {
-        title: "Active Orders",
-        path: "/Order",
-        permission: "view_orders",
-      },
-      {
-        title: "Order History",
-        path: "/History",
-        permission: "view_order_history",
-      },
+     {
+      title: "Active Orders",
+      path: "/Order",
+      permission: "view_orders",
+      icon: <FaClipboardList size={18} />
+    },
+    {
+      title: "Order History",
+      path: "/History",
+      permission: "view_order_history",
+      icon: <FaHistory size={18} />
+    },
     ],
   },
 
-  // 6. REPORTS & ANALYTICS - Business insights
+  
   {
     title: "Reports & Analytics",
     icon: <TbReportAnalytics size={20} />,
@@ -306,24 +327,27 @@ export const SidebarData = () => [
     permission: "view_reports",
     children: [
       {
-        title: "Sales Report",
-        path: "/Reports/Sales",
-        permission: "view_sales_report",
-      },
-      {
-        title: "User Analytics",
-        path: "/Reports/Users",
-        permission: "view_user_analytics",
-      },
-      {
-        title: "Product Performance",
-        path: "/Reports/Products",
-        permission: "view_product_performance",
-      },
+      title: "Sales Report",
+      path: "/Reports/Sales",
+      permission: "view_sales_report",
+      icon: <FaChartLine size={18} />
+    },
+    {
+      title: "User Analytics",
+      path: "/Reports/Users",
+      permission: "view_user_analytics",
+      icon: <FaUsers size={18} />
+    },
+    {
+      title: "Product Performance",
+      path: "/Reports/Products",
+      permission: "view_product_performance",
+      icon: <FaBoxOpen size={18} />
+    },
     ],
   },
 
-  // 7. SUPPORT & TICKETS - Customer support
+
   {
     title: "Support Center",
     icon: <FaTicketAlt size={20} />,
@@ -331,33 +355,37 @@ export const SidebarData = () => [
     permission: "access_support",
   },
 
-  // 8. SYSTEM ADMINISTRATION - Platform settings and logs
+
   {
     title: "System Administration",
     icon: <IoSettingsOutline size={20} />,
     path: "#",
     permission: "system_admin",
     children: [
-      {
-        title: "Audit Logs",
-        path: "/Auditlogs",
-        permission: "view_audit_logs",
-      },
-      {
-        title: "System Settings",
-        path: "/Settings",
-        permission: "manage_settings",
-      },
-      {
-        title: "Role Management",
-        path: "/Roles",
-        permission: "manage_roles",
-      },
-      {
-        title: "Backup & Restore",
-        path: "/Backup",
-        permission: "manage_backup",
-      },
+     {
+  title: "Audit Logs",
+  path: "/Auditlogs",
+  permission: "view_audit_logs",
+  icon: <FaClipboardList size={18} />
+},
+{
+  title: "System Settings",
+  path: "/Settings",
+  permission: "manage_settings",
+  icon: <FaCogs size={18} />
+},
+{
+  title: "Role Management",
+  path: "/Roles",
+  permission: "manage_roles",
+  icon: <FaUserShield size={18} />
+},
+{
+  title: "Backup & Restore",
+  path: "/Backup",
+  permission: "manage_backup",
+  icon: <FaDatabase size={18} />
+}
     ],
   },
 ];

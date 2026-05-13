@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo1 from "../../Assests/logo1.png";
+import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
 import BASE_URL from "../../../Base"; 
 
 import "react-toastify/dist/ReactToastify.css";
@@ -56,7 +57,7 @@ const ResetPassword = () => {
     <div className="reset-wrapper">
       <div className="reset-card">
         <div className="reset-header">
-          <img src={logo1} alt="Logo" className="reset-logo" />
+          <img src={Ayurmunilogo} alt="Logo" className="reset-logo" />
           <h2>Reset Password</h2>
           <p>Create a new password for your account</p>
         </div>

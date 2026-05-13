@@ -11,6 +11,11 @@ import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/b
 
 import { MdEditLocationAlt } from "react-icons/md";
 import { FaUsers } from "react-icons/fa";
+import { FaEdit, FaMapMarkerAlt, FaPlusCircle } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
+
+
 
 const userId = localStorage.getItem("USER_ID")
 const initialFormState = {
@@ -71,7 +76,6 @@ const Vendor = () => {
   const [RejectionVendorModal, setRejectionModal] = useState(false);
   const [Reason, setReason] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-
   const [openMenuId, setOpenMenuId] = useState(null);
   const [vendorStats, setVendorStats] = useState(null);
   const pageSize = 5;
@@ -752,8 +756,8 @@ const Vendor = () => {
   return (
     <>
       <div className="page-header">
-        <h1>Vendors List</h1>
-        <p className="page-paragraph">          Manage Vendor ,Vendor Detalis and their Approvals        </p>
+        <h1>Vendors Management</h1>
+        <p className="page-paragraph"> Manage Vendor ,Vendor Detalis and their Approvals   </p>
       </div>
 
       <div className="vendors-stats stats2-grid">
@@ -954,7 +958,7 @@ const Vendor = () => {
                               title="View vendor product"
                               onClick={() => handleNavigate(vendor.id)}
                             >
-                              <span className="icon">👁</span>
+                              <span className="icon"><FaEye/></span>
                               <span>Detail Page</span>
                             </button>
                           )}
@@ -990,21 +994,11 @@ const Vendor = () => {
                               setModalOpen(true);
                             }}
                           >
-                            <span className="icon">✏️</span>
+                            <span className="icon"><FaEdit/></span>
                             <span>Edit Detail</span>
                           </button>
 
-                          <button
-                            className="action-btn1"
-                            title="Delete vendor"
-                            onClick={() => {
-                              setSelectedVendorId(vendor.id);
-                              setDeleteConfirmModal(true);
-                            }}
-                          >
-                            <span className="icon">🗑</span>
-                            <span>Delete</span>
-                          </button>
+                        
                           {vendor.pickup_locations.length === 0 && (
                             <button
                               className="action-btn1"
@@ -1016,7 +1010,7 @@ const Vendor = () => {
                                 setAddressEditingId(null)
                               }}
                             >
-                              <span className="icon"> ➕</span>
+                              <span className="icon"><FaPlusCircle/></span>
                               <span>Add Address</span>
 
                             </button>
@@ -1051,12 +1045,23 @@ const Vendor = () => {
                               }}
                             >
                               <span className="icon">
-                                <MdEditLocationAlt />
+                                <FaMapMarkerAlt />
                               </span>
                               <span>Edit Address</span>
                             </button>
                           )}
 
+  <button
+                            className="action-btn1"
+                            title="Delete vendor"
+                            onClick={() => {
+                              setSelectedVendorId(vendor.id);
+                              setDeleteConfirmModal(true);
+                            }}
+                          >
+                            <span className="icon-delete"><FiTrash2/></span>
+                            <span className="delete-text">Delete</span>
+                          </button>
                         </div>
                       )}
                     </td>
