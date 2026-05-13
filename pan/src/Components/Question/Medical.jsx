@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect, useRef, navigate } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BASE_URL from '../../Base';
 import { toast, ToastContainer } from 'react-toastify';
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -191,7 +191,7 @@ const Medical = () => {
       if (res.status === 401 || res.status === 403) {
         sessionStorage.removeItem("superadmin_token");
         toast.error("Session expired. Please login again");
-        navigate("/login");
+        Navigate("/login");
         return;
       }
 
