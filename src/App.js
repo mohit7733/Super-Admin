@@ -2,7 +2,7 @@
 
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useState } from 'react';
+import { useState,useEffect} from 'react';
 
 
 import Sidebar from './Components/Sidebar/Sidebar';
@@ -48,8 +48,13 @@ import ResetPassword from './Components/Pages/Auth/ResetPassword';
 import Question from './Components/Question/Question';
 import Prakriti from './Components/Question/Prakirti';
 import Medical from './Components/Question/Medical';
-import Diet from'./Components/Pages/Diet/Diet'
-
+import Diet from './Components/Pages/Diet/Diet'
+import Testing from './Components/Pages/Customer/testing';
+import Producthistory from './Components/Pages/Customer/Producthistory';
+import Presceptions from './Components/Pages/Customer/Presceptions';
+import ConsultationOrder from './Components/Pages/Customer/ConsultationOrder'
+import ActivityLog from './Components/Pages/Customer/ActivityLog';
+import Paymenthistory from './Components/Pages/Customer/Paymenthistory';
 
 
 const Layout = ({ children }) => {
@@ -83,7 +88,7 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
-
+        <Route path="/testing" element={<Testing />} />
 
         <Route
           path="/dashboard"
@@ -105,7 +110,7 @@ function App() {
             </ProtectedRoute>
           }
         />
- <Route
+        <Route
           path="/dietplans"
           element={
             <ProtectedRoute permission="view_dietplans">
@@ -117,26 +122,26 @@ function App() {
         />
 
         <Route
-  path="/question/prakriti"
-  element={
-    <ProtectedRoute permission="view_question">
-      <Layout>
-        <Prakriti />
-      </Layout>
-    </ProtectedRoute>
-  }
-/>
+          path="/question/prakriti"
+          element={
+            <ProtectedRoute permission="view_question">
+              <Layout>
+                <Prakriti />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-  path="/question/medical"
-  element={
-    <ProtectedRoute permission="view_question">
-      <Layout>
-        <Medical />
-      </Layout>
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/question/medical"
+          element={
+            <ProtectedRoute permission="view_question">
+              <Layout>
+                <Medical />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
 
         <Route
@@ -261,8 +266,49 @@ function App() {
         />
 
 
+<Route
+  path="/producthistory"
+  element={
+    <ProtectedRoute>
+      <Layout>
+        <Producthistory />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+path = "/Prescription"
+element={
+  <ProtectedRoute>
+    <Layout>
+      <Presceptions/>
+    </Layout>
+  </ProtectedRoute>
+}
+/>
+<Route
+path = "/consultationorder"
+element={
+  <ProtectedRoute>
+    <Layout>
+      <ConsultationOrder/>
+    </Layout>
+  </ProtectedRoute>
+}
+/>
 
 
+<Route
+path = "/Activitylogs"
+element={
+  <ProtectedRoute>
+    <Layout>
+      <ActivityLog/>
+    </Layout>
+  </ProtectedRoute>
+}
+/>
 
         <Route
           path="/Support"
@@ -325,7 +371,16 @@ function App() {
           }
         />
 
-
+<Route
+path="/paymemthistory"
+element={
+<ProtectedRoute>
+  <Layout>
+    <Paymenthistory/>
+  </Layout>
+</ProtectedRoute>
+}
+/>
         <Route
           path="/Items/:PaymentId"
           element={

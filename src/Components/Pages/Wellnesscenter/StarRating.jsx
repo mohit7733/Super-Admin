@@ -10,11 +10,11 @@ const StarRating = ({ rating }) => {
       {[...Array(totalStars)].map((_, index) => {
         const starValue = index + 1;
         if (rating >= starValue) {
-          return <FaStar key={index} color="#FFD700" />; 
+          return <FaStar key={index} color="#fff" />; 
         } else if (rating >= starValue - 0.5) {
-          return <FaStarHalfAlt key={index} color="#FFD700" />; 
+          return <FaStarHalfAlt key={index} color="#fff" />; 
         } else {
-          return <FaRegStar key={index} color="#FFD700" />; 
+          return <FaRegStar key={index} color="#fff" />; 
         }
       })}
     </div>

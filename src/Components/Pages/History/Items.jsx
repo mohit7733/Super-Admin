@@ -7,35 +7,35 @@ import BASE_URL from "../../../Base";
 
 import "react-toastify/dist/ReactToastify.css";
 const Items = () => {
-const[ItemsData,setItemsData]=useState([]);
-const[Itemsloading,setItemsloading]=useState(true);
-const[ItemsError,setItemsError]=useState(null);
-    const params = useParams();
-    const { PaymentId } = params;
-    const navigate = useNavigate();
-    
-    
-    const getItemsList= async () => {
-      const token = sessionStorage.getItem("superadmin_token")
-      
+  const [ItemsData, setItemsData] = useState([]);
+  const [Itemsloading, setItemsloading] = useState(true);
+  const [ItemsError, setItemsError] = useState(null);
+  const params = useParams();
+  const { PaymentId } = params;
+  const navigate = useNavigate();
+
+
+  const getItemsList = async () => {
+    const token = sessionStorage.getItem("superadmin_token")
+
     try {
-       const response = await fetch( `${BASE_URL}/payments/payment/${PaymentId}/`, {
+      const response = await fetch(`${BASE_URL}/payments/payment/${PaymentId}/`, {
         method: 'GET',
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          Authorization:`bearer${token}`
+          Authorization: `bearer${token}`
         },
       })
-       if (response.status === 401 || response.status === 403) {
-                      toast.error("Session expired. Please login again");
-                      sessionStorage.removeItem("superadmin_token");
-                      navigate("/login");
-                      return;
-                  }
-     
+      if (response.status === 401 || response.status === 403) {
+        toast.error("Session expired. Please login again");
+        sessionStorage.removeItem("superadmin_token");
+        navigate("/login");
+        return;
+      }
+
       const data = await response.json()
-   const sortedData = data[0]?.order?.items || [];
+      const sortedData = data[0]?.order?.items || [];
       setItemsData(sortedData)
       console.log("ItemsData---->", sortedData)
     } catch (err) {
@@ -49,15 +49,15 @@ const[ItemsError,setItemsError]=useState(null);
       setItemsloading(false)
     }
   }
-useEffect(()=>{
-getItemsList();
-},[])
+  useEffect(() => {
+    getItemsList();
+  }, [])
 
   return (
 
     <>
-    <h2> Items</h2>
-      <table  className="customers-table">
+      <h2> Items</h2>
+      <table className="data-table">
         <thead>
           <tr>
             <th>Image</th>
@@ -67,45 +67,45 @@ getItemsList();
             <th>Total (₹)</th>
           </tr>
         </thead>
-<tbody>
-  {Itemsloading ? (
-      <tr>
-            <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
-              <div className="circular-loader"></div>
-            </td>
-          </tr>
-  ) : ItemsError ? (
-    <tr>
-      <td colSpan="5" style={{ color: "red" }}>
-        {ItemsError}
-      </td>
-    </tr>
-  ) : ItemsData.length > 0 ? (
-    ItemsData.map((item, index) => (
-      <tr key={item?.product_id || index}>
-        <td>
-          <img
-            src={item?.product_image}
-            alt={item?.product_name}
-            style={{ width: "60px", height: "60px", objectFit: "cover" }}
-          />
-        </td>
-        <td>{item?.product_name}</td>
-        <td>{item?.quantity}</td>
-        <td>{item?.price}</td>
-        <td>{(item?.quantity * item?.price).toFixed(2)}</td>
-      </tr>
-    ))
-  ) : (
+        <tbody>
+          {Itemsloading ? (
+            Array(3).fill(0).map((_, i) => (
+              <tr key={i}>
+                <td colSpan="10"><div className="skeleton-row"></div></td>
+              </tr>
+            ))
+          ) : ItemsError ? (
+            <tr>
+              <td colSpan="5" style={{ color: "red" }}>
+                {ItemsError}
+              </td>
+            </tr>
+          ) : ItemsData.length > 0 ? (
+            ItemsData.map((item, index) => (
+              <tr key={item?.product_id || index}>
+                <td>
+                  <img
+                    src={item?.product_image}
+                    alt={item?.product_name}
+                    style={{ width: "60px", height: "60px", objectFit: "cover" }}
+                  />
+                </td>
+                <td>{item?.product_name}</td>
+                <td>{item?.quantity}</td>
+                <td>{item?.price}</td>
+                <td>{(item?.quantity * item?.price).toFixed(2)}</td>
+              </tr>
+            ))
+          ) : (
 
-    <tr>
-      <td colSpan="5" style={{ textAlign: "center" }}>
-        No Data Found
-      </td>
-    </tr>
-  )}
-</tbody>
-</table>
+            <tr>
+              <td colSpan="5" style={{ textAlign: "center" }}>
+                No Data Found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
 
     </>

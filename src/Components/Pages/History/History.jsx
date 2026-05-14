@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import BASE_URL from "../../../Base";
 
 import { toast, ToastContainer } from "react-toastify"
+import { BsSearch } from "react-icons/bs";
+import { FaRupeeSign } from "react-icons/fa";
+import { FiEye } from "react-icons/fi";
 
 const History = () => {
   const [paymentData, setPaymentData] = useState([]);
@@ -13,45 +16,45 @@ const History = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const[previousPage,setPreviousPage] = useState(null);
-  const[Nextpage,setNextpage] = useState(null)
- const navigate = useNavigate();
+  const [previousPage, setPreviousPage] = useState(null);
+  const [Nextpage, setNextpage] = useState(null)
+  const navigate = useNavigate();
   const tableRef = useRef(null);
   const pagesize = 5;
-  const[totalCount,setTotalCount]=useState(0);
- const totalPages = Math.ceil(totalCount /  pagesize);  
-const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  
+  const [totalCount, setTotalCount] = useState(0);
+  const totalPages = Math.ceil(totalCount / pagesize);
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
 
 
   const getPaymentList = async (page = 1) => {
-    const token= sessionStorage.getItem("superadmin_token")
-  try {
-    const response = await fetch(`${BASE_URL}/payments/payment/?page=${page}`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-     Authorization : `Bearer ${token}`
+    const token = sessionStorage.getItem("superadmin_token")
+    try {
+      const response = await fetch(`${BASE_URL}/payments/payment/?page=${page}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
 
-       
-      },
-    });
 
-     if (response.status === 401 || response.status === 403) {
-                          toast.error("Session expired. Please login again");
-                          sessionStorage.removeItem("superadmin_token");
-                          navigate("/login");
-                          return;
-                      }
-         
-    const data =await response.json();
-    setPaymentData(data.data);
-    setNextpage(data.next);
-    setPreviousPage(data.previous);
-    setCurrentPage(page);
-    setTotalCount(data.count);
-  }
+        },
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        toast.error("Session expired. Please login again");
+        sessionStorage.removeItem("superadmin_token");
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+      setPaymentData(data.data);
+      setNextpage(data.next);
+      setPreviousPage(data.previous);
+      setCurrentPage(page);
+      setTotalCount(data.count);
+    }
     catch (err) {
       console.error(err.message);
       setPaymentError("Something went wrong while fetching data.");
@@ -78,7 +81,7 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
     return matchesSearch && matchesDate;
   });
 
- 
+
   const totalAmount = filteredData.reduce(
     (sum, item) => sum + parseFloat(item.amount || 0),
     0
@@ -95,9 +98,19 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   };
 
 
+  const STATUS_LABEL_MAP = {
+    placed: { label: "Placed", color: "info" },
+    confirmed: { label: "Confirmed", color: "success" },
+    shipped: { label: "Shipped", color: "primary" },
+    out_for_delivery: { label: "Out for Delivery", color: "warning" },
+    delivered: { label: "Delivered", color: "success" },
+    cancelled: { label: "Cancelled", color: "danger" },
+    returned: { label: "Returned", color: "warning" },
+    refunded: { label: "Refunded", color: "info" },
+    packing: { label: "Packing", color: "primary" },
+  };
 
- 
-  
+
   const exportToExcel = () => {
     if (!filteredData || filteredData.length === 0) {
       alert("No payment data to export!");
@@ -124,57 +137,71 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
       <div className="page-header">
         <h2>Payment History</h2>
 
-        <div className="order-controls1">
-          <input
-            type="text"
-            placeholder="Search by customer name..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1); 
-            }}
-            className="search-input1"
-          />
+
+
+        <div className="vendors-stats stats2-grid">
+          <div className="stat2-card">
+            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+              <FaRupeeSign size={24} />
+            </div>
+            <div className="stat2-info">
+              <h3>Total Payment</h3>
+              <div className="stat2-value">₹{totalAmount.toFixed(2)}</div>
+            </div>
+          </div>
+          <div className="stat2-card">
+            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+              <FaRupeeSign size={24} />
+            </div>
+            <div className="stat2-info">
+              <h3>Pending Amount</h3>
+              <div className="stat2-value">₹{pendingAmount.toFixed(2)}</div>
+            </div>
+          </div>
+          <div className="stat2-card">
+            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+              <FaRupeeSign size={24} />
+            </div>
+            <div className="stat2-info">
+              <h3>Refunded</h3>
+              <div className="stat2-value">₹{refundedAmount.toFixed(2)}</div>
+            </div>
+          </div>
+        </div>
+        <div className="controls-section">
+          <div className="search-wrapper">
+            <BsSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by customer name..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="search-input"
+            />
+          </div>
           <div className="filter-controls">
             <input
               type="date"
               value={selectedDate}
               className="status-filter"
               onChange={(e) => {
-  setSelectedDate(e.target.value);
-  setCurrentPage(1);
-}}
+                setSelectedDate(e.target.value);
+                setCurrentPage(1);
+              }}
 
             />
-           
-            <button className="export-btn" onClick={exportToExcel}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-  <polyline points="7 10 12 15 17 10"/>
-  <line x1="12" y1="15" x2="12" y2="3"/>
-</svg>
+
+            <button className="btn-secondary" onClick={exportToExcel}>
               Export Details
             </button>
           </div>
         </div>
-
-        <div className="vendors-stats">
-          <div className="stat-card">
-            <h3>Total Payment</h3>
-            <div className="stat-value">₹{totalAmount.toFixed(2)}</div>
-          </div>
-          <div className="stat-card">
-            <h3>Pending Amount</h3>
-            <div className="stat-value">₹{pendingAmount.toFixed(2)}</div>
-          </div>
-          <div className="stat-card">
-            <h3>Refunded</h3>
-            <div className="stat-value">₹{refundedAmount.toFixed(2)}</div>
-          </div>
-        </div>
       </div>
 
-      <table className="customers-table" ref={tableRef}>
+      <table className="data-table" ref={tableRef}>
         <thead>
           <tr>
             <th>Id</th>
@@ -191,11 +218,11 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
         </thead>
         <tbody>
           {paymentLoading ? (
-               <tr>
-            <td colSpan="10" style={{ textAlign: "center", padding: "20px" }}>
-              <div className="circular-loader"></div>
-            </td>
-          </tr>
+            Array(3).fill(0).map((_, i) => (
+              <tr key={i}>
+                <td colSpan="10"><div className="skeleton-row"></div></td>
+              </tr>
+            ))
           ) : paymentError ? (
             <tr><td colSpan="10" style={{ color: "red" }}>{paymentError}</td></tr>
           ) : paymentData.length === 0 ? (
@@ -203,7 +230,7 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
           ) : (
             paymentData.map((item, index) => (
               <tr key={item.id}>
-                <td>{ index + 1}</td>
+                <td>{index + 1}</td>
                 <td>{item.customer_name || "N/A"}</td>
                 <td>
                   {item.order?.items?.length > 1
@@ -241,7 +268,11 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
                     ? new Date(item.created_at).toISOString().split("T")[0]
                     : ""}
                 </td>
-                <td style={{ color: "blue" }}>{item.payment_status || "N/A"}</td>
+                <td >
+                  <span className={`status-badge ${STATUS_LABEL_MAP[item?.payment_status]?.color || 'secondary'}`}>
+                    {STATUS_LABEL_MAP[item?.payment_status]?.label || item?.payment_status}
+                  </span>
+                </td>
                 <td>
                   <div className="action-buttons">
                     <button
@@ -249,9 +280,9 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
                       title="View Details"
                       onClick={() => handleNavigate(item.id)}
                     >
-                      👁
+                      <FiEye />
                     </button>
-                  
+
                   </div>
                 </td>
               </tr>
@@ -259,44 +290,44 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
           )}
         </tbody>
       </table>
- {totalPages > 1 && (
-  <div className="pagination">
+      {totalPages > 1 && (
+        <div className="pagination">
 
-   
-    <button
-      onClick={() => getPaymentList(currentPage - 1,)}
-      disabled={!previousPage}
-    >
-      Prev
-    </button>
 
-   
-    {pages.map((page) => (
-      <button
-        key={page}
-        onClick={() => getPaymentList(page,)}
-        style={{
-         
-          fontWeight: currentPage === page ? "bold" : "normal",
-          background: currentPage === page ? "#71a33f" : "#fff",
-          color: currentPage === page ? "#fff" : "#71a33f",
-        }}
-      >
-        {page}
-      </button>
-    ))}
+          <button
+            onClick={() => getPaymentList(currentPage - 1,)}
+            disabled={!previousPage}
+          >
+            Prev
+          </button>
 
-    
-    <button
-      onClick={() => getPaymentList(currentPage + 1,)}
-      disabled={!Nextpage}
-    >
-      Next
-    </button>
 
-  </div>
-)}
-   
+          {pages.map((page) => (
+            <button
+              key={page}
+              onClick={() => getPaymentList(page,)}
+              style={{
+
+                fontWeight: currentPage === page ? "bold" : "normal",
+                background: currentPage === page ? "#0D614E" : "#fff",
+                color: currentPage === page ? "#fff" : "#0D614E",
+              }}
+            >
+              {page}
+            </button>
+          ))}
+
+
+          <button
+            onClick={() => getPaymentList(currentPage + 1,)}
+            disabled={!Nextpage}
+          >
+            Next
+          </button>
+
+        </div>
+      )}
+
     </>
   );
 };

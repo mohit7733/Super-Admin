@@ -1,168 +1,307 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import logo1 from "../../Assests/logo1.png";
-import BASE_URL from "../../../Base";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+import BASE_URL from "../../../Base";
+import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
+import Ayurmuniimages from "../../Assests/Ayurvedicimages.jpg"
+
+
+const PHONE_PREFIX = "+91";
+const MAX_PHONE_LENGTH = 10;
+const TOAST_AUTO_CLOSE = 1000;
+const TOAST_POSITION = "top-center";
+
+
+const ROLES = {
+  SUPERADMIN: "SUPERADMIN",
+  ADMIN: "ADMIN",
+  VERIFIER: "VERIFIER",
+  FOLLOWUP: "FOLLOWUP",
+};
+
+
+const STORAGE_KEYS = {
+  TOKEN: "superadmin_token",
+  ROLE: "role",
+  PERMISSIONS: "permissions",
+  REMEMBER_ME: "rememberMe",
+  PHONE: "phone_number",
+  PASSWORD: "password",
+};
 
 const Login = () => {
   const navigate = useNavigate();
 
-  const [phone_number, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  // State management
+  const [formData, setFormData] = useState({
+    phone_number: "",
+    password: "",
+  });
   const [rememberMe, setRememberMe] = useState(false);
-  const [loginLoading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
 
+ 
+  const formatPhoneNumber = (phone) => {
+    const cleaned = phone.replace(/\D/g, "");
+    return cleaned.startsWith("+91") ? cleaned : `${PHONE_PREFIX}${cleaned}`;
+  };
 
-  useEffect(() => {
-    const token = sessionStorage.getItem("superadmin_token");
-    const role = sessionStorage.getItem("role");
+  const validateForm = useCallback(() => {
+    const newErrors = {};
 
-    if (token && role === "SUPERADMIN") {
-      navigate("/dashboard");
-    } else if (
-      token &&
-      (role === "ADMIN" || role === "VERIFIER" || role === "FOLLOWER")
-    ) {
-      navigate("/vendor");
+    if (!formData.phone_number.trim()) {
+      newErrors.phone_number = "Phone number is required";
+    } else if (!/^\d{10}$/.test(formData.phone_number)) {
+      newErrors.phone_number = "Please enter a valid 10-digit phone number";
     }
 
-    const savedRememberMe = localStorage.getItem("rememberMe") === "true";
-    if (savedRememberMe) {
-      setRememberMe(true);
-      const savedPhone = localStorage.getItem("phone_number");
-      const savedPassword = localStorage.getItem("password");
-
-      if (savedPhone) setPhone(savedPhone);
-      if (savedPassword) setPassword(savedPassword);
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
     }
-  }, [navigate]);
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [formData]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "phone_number") {
+     
+      const numericValue = value.replace(/\D/g, "").slice(0, MAX_PHONE_LENGTH);
+      setFormData(prev => ({ ...prev, [name]: numericValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+
+    
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  };
 
   const handleRememberMeChange = (e) => {
     const checked = e.target.checked;
     setRememberMe(checked);
 
     if (!checked) {
-      localStorage.removeItem("phone_number");
-      localStorage.removeItem("password");
-      localStorage.removeItem("rememberMe");
+      
+      Object.values(STORAGE_KEYS).forEach(key => {
+        localStorage.removeItem(key);
+      });
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
+    if (!validateForm()) {
+      toast.error("Please fix the errors before submitting");
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      const formattedPhone = phone_number.startsWith("+91")
-        ? phone_number
-        : `+91${phone_number}`;
+      const formattedPhone = formatPhoneNumber(formData.phone_number);
 
       const response = await fetch(`${BASE_URL}/user/admin-login/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone_number: formattedPhone, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone_number: formattedPhone,
+          password: formData.password
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.error);
-        return;
+        throw new Error(data.error || data.message || "Login failed");
       }
 
+      sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
+      sessionStorage.setItem(STORAGE_KEYS.ROLE, data.role);
+      sessionStorage.setItem(STORAGE_KEYS.PERMISSIONS, JSON.stringify(data.permissions || []));
+
+     
+      if (rememberMe) {
+        localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, "true");
+        localStorage.setItem(STORAGE_KEYS.PHONE, formData.phone_number);
+        localStorage.setItem(STORAGE_KEYS.PASSWORD, formData.password);
+      }
+
+    toast.success(`Welcome back, ${data.role?.toLowerCase() || "User"}!`, {
  
-      
-      sessionStorage.setItem("superadmin_token", data.access);
-      sessionStorage.setItem("role", data.role);
-      sessionStorage.setItem("permissions", JSON.stringify(data.permissions || []));
+});
 
-      toast.success("Login Successful!");
+    
+      const route = getRouteByRole(data.role);
+      setTimeout(() => navigate(route), TOAST_AUTO_CLOSE);
 
-      const role = data.role;
-
-      if (role === "SUPERADMIN") {
-        navigate("/dashboard");
-      } else if (
-        role === "ADMIN" ||
-        role === "VERIFIER" ||
-        role === "FOLLOWUP"
-      ) {
-        navigate("/vendor");
-      } else {
-        navigate("/login");
-      }
     } catch (err) {
-      toast.error("Something went wrong!");
+      console.error("Login error:", err);
+      toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  const getRouteByRole = (role) => {
+    switch (role) {
+      case ROLES.SUPERADMIN:
+        return "/dashboard";
+      case ROLES.ADMIN:
+      case ROLES.VERIFIER:
+      case ROLES.FOLLOWUP:
+        return "/vendor";
+      default:
+        return "/login";
+    }
+  };
+
+  const checkExistingSession = useCallback(() => {
+    const token = sessionStorage.getItem(STORAGE_KEYS.TOKEN);
+    const role = sessionStorage.getItem(STORAGE_KEYS.ROLE);
+
+    if (token && role) {
+      const route = getRouteByRole(role);
+      navigate(route);
+    }
+  }, [navigate]);
+
+  const loadSavedCredentials = useCallback(() => {
+    const shouldRemember = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === "true";
+
+    if (shouldRemember) {
+      const savedPhone = localStorage.getItem(STORAGE_KEYS.PHONE);
+      const savedPassword = localStorage.getItem(STORAGE_KEYS.PASSWORD);
+
+      setRememberMe(true);
+      setFormData({
+        phone_number: savedPhone || "",
+        password: savedPassword || "",
+      });
+    }
+  }, []);
+
+  
+  useEffect(() => {
+    checkExistingSession();
+    loadSavedCredentials();
+  }, [checkExistingSession, loadSavedCredentials]);
+
   return (
     <>
-      <div className="login-content">
+      <div
+  className="login-content"
+  style={{
+    backgroundImage: `linear-gradient(
+      rgba(114, 123, 121, 0.55),
+      rgba(141, 207, 192, 0.55)
+    ), url(${Ayurmuniimages})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    minHeight: "100vh",
+    width: "100%",
+  }}
+>
         <div className="login-card">
           <div className="login-header">
             <div className="logo1">
-              <span className="logo-icon">
-                <img
-                  src={logo1}
-                  alt="Logo"
-                  style={{ width: "124px", height: "74px", marginBottom: "20px" }}
-                />
-              </span>
+              <img
+                src={Ayurmunilogo}
+                alt="Company Logo"
+                style={{ width: "102px", height: "81px", marginBottom: "20px" }}
+              />
+              <h1 className="icon"> Ayurmuni</h1>
             </div>
             <p className="login-subtitle">
               Welcome back! Please sign in to your account.
             </p>
           </div>
 
-          <form className="login-form" onSubmit={handleLogin}>
+          <form className="login-form" onSubmit={handleLogin} noValidate>
             <div className="form-group">
-              <label className="form-label">Phone Number</label>
+              <label htmlFor="phone_number" className="form-label">
+                Phone Number
+              </label>
               <input
-                type="text"
-                placeholder="Enter your phone number"
-                value={phone_number}
-                onChange={(e) => setPhone(e.target.value)}
-                className="form-input"
-                 maxLength={10}
-           
+                id="phone_number"
+                name="phone_number"
+                type="tel"
+                placeholder="Enter your 10-digit phone number"
+                value={formData.phone_number}
+                onChange={handleInputChange}
+                className={`form-input ${errors.phone_number ? "error" : ""}`}
+                maxLength={MAX_PHONE_LENGTH}
+                autoComplete="username"
+                disabled={isLoading}
+                aria-invalid={!!errors.phone_number}
+                aria-describedby={errors.phone_number ? "phone-error" : undefined}
               />
+              {errors.phone_number && (
+                <span className="error-message" id="phone-error" role="alert">
+                  {errors.phone_number}
+                </span>
+              )}
             </div>
 
             <div className="form-group">
-              <label> Password</label>
-             <div style={{ position: "relative" }}>
-
-              
-  <input
-    type={showPassword ? "text" : "password"}
-    placeholder="Enter your password"
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    className="form-input"
-    style={{ paddingRight: "40px" }} 
-  />
-
-  <span
-    onClick={() => setShowPassword(!showPassword)}
-    style={{
-      position: "absolute",
-      right: "12px",
-      top: "50%",
-      transform: "translateY(-50%)",
-      cursor: "pointer",
-      color: "#666",
-      fontSize: "18px"
-    }}
-  >
-    {showPassword ? <FaEye/> : <FaEyeSlash />}
-  </span>
-</div>
+              <label htmlFor="password" className="form-label">
+                Password
+              </label>
+              <div style={{ position: "relative" }}>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className={`form-input ${errors.password ? "error" : ""}`}
+                  style={{ paddingRight: "40px" }}
+                  autoComplete="current-password"
+                  disabled={isLoading}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="password-toggle"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    background: "none",
+                    border: "none",
+                    color: "#666",
+                    fontSize: "18px",
+                    padding: 0,
+                  }}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              {errors.password && (
+                <span className="error-message" id="password-error" role="alert">
+                  {errors.password}
+                </span>
+              )}
             </div>
 
             <div className="form-options">
@@ -172,32 +311,62 @@ const Login = () => {
                   checked={rememberMe}
                   onChange={handleRememberMeChange}
                   className="checkbox-input"
+                  disabled={isLoading}
                 />
-                <span> Remember me </span>
-                <span
-                  className="forgot-password"
-                  onClick={() => navigate("/ForgotPassword")}
-                  style={{
-                    color: "#71a33f",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    marginLeft: "184px",
-                  }}
-                >
-                  forgot password?
-                </span>
+                <span>Remember me</span>
               </label>
+              <button
+                type="button"
+                className="forgot-password"
+                onClick={() => navigate("/ForgotPassword")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#0D614E",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  padding: 0,
+                }}
+              >
+                Forgot password?
+              </button>
             </div>
 
-            <button className="login-btn" type="submit" disabled={loginLoading}>
-              {loginLoading ? "Logging in..." : "Login"}
+            <button
+              className="login-btn"
+              type="submit"
+              disabled={isLoading}
+              aria-busy={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <span className="spinner" aria-hidden="true"></span>
+                  Logging in...
+                </>
+              ) : (
+                "Login"
+              )}
             </button>
-
           </form>
         </div>
       </div>
 
-      <ToastContainer position="top-center" autoClose={1000} />
+   <ToastContainer
+  position={TOAST_POSITION}
+  autoClose={TOAST_AUTO_CLOSE}
+  newestOnTop={false}
+  closeOnClick
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+  theme="light"
+  toastStyle={{
+    borderRadius: "10px",
+  }}
+  progressStyle={{
+    background: "#0D614E", 
+  }}
+/>
     </>
   );
 };

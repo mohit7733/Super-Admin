@@ -4,33 +4,36 @@ import { ToastContainer, toast } from "react-toastify";
 import BASE_URL from "../../../Base";
 import "react-toastify/dist/ReactToastify.css";
 import { apiFetch } from "../../../fetchapi";
-import { BsThreeDots, BsThreeDotsVertical } from "react-icons/bs";
+import { BsSearch, BsThreeDots, BsThreeDotsVertical,BsDownload } from "react-icons/bs";
 
-const   Patient = () => {
-const [patientdata,setPatientData]=useState([]);
-const[patientError,setPatientError]=useState(null);
-const[patientloading,setPatientLoading]=useState(true);
-const[Addform,setAddform]=useState(false);
-const [editForm, setEditForm] = useState(false);
-const [selectedPatient, setSelectedPatient] = useState(null);
-const [deleteConfirmModal, setDeleteConfirmModal] = useState(false);
-const [selectedPatientId, setSelectedPatientId] = useState(null);
-const[searchTerm,setSearchTerm]=useState("");
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+
+const Patient = () => {
+  const [patientdata, setPatientData] = useState([]);
+  const [patientError, setPatientError] = useState(null);
+  const [patientloading, setPatientLoading] = useState(true);
+  const [Addform, setAddform] = useState(false);
+  const [editForm, setEditForm] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState(false);
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const patienttableRef = useRef(null);
-  const[Currentpage,setCurrentpage]=useState(1);
-  const[previousPage,setPreviousPage]=useState(null);
-  const[Nextpage,setNextPage]=useState(null);
-  const pagesize= 5;
-  const[Count,setCount]=useState(0);
+  const [Currentpage, setCurrentpage] = useState(1);
+  const [previousPage, setPreviousPage] = useState(null);
+  const [Nextpage, setNextPage] = useState(null);
+  const pagesize = 5;
+  const [Count, setCount] = useState(0);
   const totalPages = Math.ceil(Count / pagesize);
-  const[AddError,setAddError]=useState({});
-  
-const [newPatient, setNewPatient] = useState({
+  const [AddError, setAddError] = useState({});
+
+  const [newPatient, setNewPatient] = useState({
     name: '',
     gender: '',
     age: '',
     description: '',
-    relation:''
+    relation: ''
   });
 
   const handleInputChange = (e) => {
@@ -39,202 +42,209 @@ const [newPatient, setNewPatient] = useState({
   };
   const fetchOnce = useRef();
 
- 
- const pages = Array.from({ length: totalPages }, (_, i) => i + 1); 
 
-const getAllpatientList = async (page = 1) => {
-  try {
-    const data = await apiFetch(`${BASE_URL}/healthcare/patient/?page=${page} `, {
-      method: "GET",
-    });
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
-   
-
-
-    if (!data) return;
-    setPatientData(data.data);
-    setCurrentpage(page);
-    setNextPage(data.next);
-    setPreviousPage(data.previous);
-    setCount(data.count)
-
-  } catch (err) {
-    console.error("Patient Fetch Error:", err);
-
-    setPatientError("Something went wrong while fetching data.");
-
-    toast.error("Failed to fetch patient data", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  } finally {
-    setPatientLoading(false);
-  }
-};
-
-useEffect(()=>{
-  if(!fetchOnce.current){
-    getAllpatientList();
-    fetchOnce.current = false;
-  }
-
-},[])
-
-
-
-const handleAddPatient = async (e) => {
-  e.preventDefault();
-
-  try {
-    const addedPatient = await apiFetch(`${BASE_URL}/healthcare/patient/`, {
-      method: "POST",
-      body: JSON.stringify(newPatient),
-    });
-
-    setPatientData((prev) => [...prev, addedPatient]);
-    setNewPatient({ name: "", gender: "", age: "", description: "",relation:"" });
-    setAddform(false);
-
-    toast.success("Patient added successfully!", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  } catch (err) {
-    toast.error("Failed to add patient");
-  }
-};
-
-
-const handleEditClick = (patient) => {
-  setSelectedPatient(patient); 
-  setEditForm(true);          
-};
-
-const handleDownload = () => {
-  const exportData = patientdata.map((p, index) => ({
-    ID: index + 1,
-    Name: p.name,
-    Gender: p.gender,
-    Age: p.age,
-    Description: p.description,
-    Relation:p.relation,
-  }));
-
-
-
-  const ws = XLSX.utils.json_to_sheet(exportData);
-  const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
-    wch: key.length + 20,
-  }));
-  ws["!cols"] = colWidths;
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Patients");
-  XLSX.writeFile(wb, "patient_data.xlsx");
-};
-
-
-const handlePatientDelete = async (id) => {
-  try {
-   await apiFetch(`${BASE_URL}/healthcare/patient/${id}/`, {
-      method: "DELETE",
-    });
-
-   
-    setPatientData((prev) => prev.filter((p) => p?.id !== id));
-
-    toast.success("Patient deleted successfully!", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to delete patient", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  }
-};
-
-
-const handleEditInputChange = (e) => {
-  const { name, value } = e.target;
-  setSelectedPatient((prev) => ({ ...prev, [name]: value }));
-};
-
-
-
-const handleEditPatient = async (e) => {
-  e.preventDefault();
-
-  try {
-    
-    const updatedPatient = await apiFetch(
-      `${BASE_URL}/healthcare/patient/${selectedPatient?.id}/`,
-      {
-        method: "PUT",
-        body: JSON.stringify(selectedPatient),
-      }
-    );
-
-
-    setPatientData((prev) =>
-      prev.map((patient) =>
-        patient?.id === updatedPatient?.id ? updatedPatient : patient
-      )
-    );
-
-    setEditForm(false);
-
-    toast.success("Patient updated successfully!", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to update patient", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  }
-};
+  const getAllpatientList = async (page = 1) => {
+    try {
+      const data = await apiFetch(`${BASE_URL}/healthcare/patient/?page=${page} `, {
+        method: "GET",
+      });
 
 
 
 
+      if (!data) return;
+      setPatientData(data.data);
+      setCurrentpage(page);
+      setNextPage(data.next);
+      setPreviousPage(data.previous);
+      setCount(data.count)
 
-  
+    } catch (err) {
+      console.error("Patient Fetch Error:", err);
+
+      setPatientError("Something went wrong while fetching data.");
+
+      toast.error("Failed to fetch patient data", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+    } finally {
+      setPatientLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!fetchOnce.current) {
+      getAllpatientList();
+      fetchOnce.current = false;
+    }
+
+  }, [])
+
+
+
+  const handleAddPatient = async (e) => {
+    e.preventDefault();
+
+    try {
+      const addedPatient = await apiFetch(`${BASE_URL}/healthcare/patient/`, {
+        method: "POST",
+        body: JSON.stringify(newPatient),
+      });
+
+      setPatientData((prev) => [...prev, addedPatient]);
+      setNewPatient({ name: "", gender: "", age: "", description: "", relation: "" });
+      setAddform(false);
+
+      toast.success("Patient added successfully!", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+    } catch (err) {
+      toast.error("Failed to add patient");
+    }
+  };
+
+
+  const handleEditClick = (patient) => {
+    setSelectedPatient(patient);
+    setEditForm(true);
+  };
+
+  const handleDownload = () => {
+    const exportData = patientdata.map((p, index) => ({
+      ID: index + 1,
+      Name: p.name,
+      Gender: p.gender,
+      Age: p.age,
+      Description: p.description,
+      Relation: p.relation,
+    }));
+
+
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
+      wch: key.length + 20,
+    }));
+    ws["!cols"] = colWidths;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Patients");
+    XLSX.writeFile(wb, "patient_data.xlsx");
+  };
+
+
+  const handlePatientDelete = async (id) => {
+    try {
+      await apiFetch(`${BASE_URL}/healthcare/patient/${id}/`, {
+        method: "DELETE",
+      });
+
+
+      setPatientData((prev) => prev.filter((p) => p?.id !== id));
+
+      toast.success("Patient deleted successfully!", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete patient", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+    }
+  };
+
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedPatient((prev) => ({ ...prev, [name]: value }));
+  };
+
+
+
+  const handleEditPatient = async (e) => {
+    e.preventDefault();
+
+    try {
+
+      const updatedPatient = await apiFetch(
+        `${BASE_URL}/healthcare/patient/${selectedPatient?.id}/`,
+        {
+          method: "PUT",
+          body: JSON.stringify(selectedPatient),
+        }
+      );
+
+
+      setPatientData((prev) =>
+        prev.map((patient) =>
+          patient?.id === updatedPatient?.id ? updatedPatient : patient
+        )
+      );
+
+      setEditForm(false);
+
+      toast.success("Patient updated successfully!", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update patient", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+    }
+  };
+
+
+
+
+
+
   return (
     <>
-   <div className="page-header">
+      <div className="page-header">
         <h1>Patient</h1>
       </div>
 
-<div className="customers-controls">
-        <div className="search-bar">
-         <input
-  type="text"
-  placeholder="Search patient by name..."
-  className="search-input"
-  value={searchTerm}
-  onChange={(e)=>setSearchTerm(e.target.value)}
-  
-/>
+      <div className="controls-section">
+        <div className="search-wrapper">
+          <BsSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search patient by name..."
+            className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+
+          />
 
         </div>
-<div className="filter-controls">
-   <button className="add-customer-btn" onClick={() => setAddform(true)}>
+        <div className="action-buttons">
+          <button className="add-customer-btn" onClick={() => setAddform(true)}>
             + Add Patient
           </button>
 
 
-          <button className="export-btn" onClick={handleDownload}>
+          {/* <button className="btn-secondary" onClick={handleDownload}>
             Export Details
-          </button>
-        </div>
-        
+          </button> */}
 
+                    <button className="btn-secondary" onClick={handleDownload}>
+                      <BsDownload size={16} />
+                      Export Details
+                    </button>
+          
         </div>
-            <table className="customers-table" ref={patienttableRef }>
+
+
+      </div>
+      <table className="data-table" ref={patienttableRef}>
         <thead>
           <tr>
             <th> Id</th>
@@ -243,16 +253,16 @@ const handleEditPatient = async (e) => {
             <th>Age</th>
             <th> Relation</th>
             <th>Descripition</th>
-          <th> Actions</th>
+            <th> Actions</th>
           </tr>
         </thead>
         <tbody>
-          {patientloading? (
-            <tr>
-            <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
-              <div className="circular-loader"></div>
-            </td>
-          </tr>
+          {patientloading ? (
+            Array(3).fill(0).map((_, i) => (
+              <tr key={i}>
+                <td colSpan="10"><div className="skeleton-row"></div></td>
+              </tr>
+            ))
           ) : patientError ? (
             <tr>
               <td colSpan="6" style={{ color: "red" }}>
@@ -260,10 +270,10 @@ const handleEditPatient = async (e) => {
               </td>
             </tr>
           ) : patientdata?.length > 0 ? (
-            patientdata?.map((patient,index) => 
-              (           
-                <tr key={patient?.id}>
-                <td>{ index + 1}</td>
+            patientdata?.map((patient, index) =>
+            (
+              <tr key={patient?.id}>
+                <td>{index + 1}</td>
                 <td>{patient?.name}</td>
                 <td>{patient?.gender}</td>
                 <td>{patient?.age}Years</td>
@@ -271,24 +281,24 @@ const handleEditPatient = async (e) => {
                 <td>{patient?.description}</td>
                 <td>
                   <div className="action-buttons">
-                   
-                 <button
-  className="action-btn edit"
-  onClick={() => handleEditClick(patient)}
-  
->
-  ✏️
-</button>
 
-<button
-  className="action-btn delete"
-  onClick={() => {
-    setSelectedPatientId(patient?.id);
-    setDeleteConfirmModal(true);
-  }}
->
-  🗑
-</button>
+                    <button
+                      className="action-btn edit"
+                      onClick={() => handleEditClick(patient)}
+
+                    >
+                      <FaEdit/>
+                    </button>
+
+                    <button
+                      className="action-btn delete"
+                      onClick={() => {
+                        setSelectedPatientId(patient?.id);
+                        setDeleteConfirmModal(true);
+                      }}
+                    >
+                      <FiTrash2/>
+                    </button>
 
 
 
@@ -296,7 +306,7 @@ const handleEditPatient = async (e) => {
                 </td>
               </tr>
             )
-          )
+            )
           ) : (
             <tr>
               <td colSpan="6" style={{ textAlign: "center" }}>
@@ -305,223 +315,223 @@ const handleEditPatient = async (e) => {
             </tr>
           )}
         </tbody>
-        
+
 
       </table>
-       {totalPages > 1 && (
-  <div className="pagination">
+      {totalPages > 1 && (
+        <div className="pagination">
 
-   
-    <button
-      onClick={() => getAllpatientList(Currentpage - 1)}
-      disabled={!previousPage}
-    >
-      Prev
-    </button>
 
-   
-    {pages.map((page) => (
-      <button
-        key={page}
-        onClick={() => getAllpatientList(page)}
-        style={{
-         
-          fontWeight: Currentpage === page ? "bold" : "normal",
-          background: Currentpage === page ? "#71a33f" : "#fff",
-          color:Currentpage === page ? "#fff" : "#71a33f",
-        }}
-      >
-        {page}
-      </button>
-    ))}
+          <button
+            onClick={() => getAllpatientList(Currentpage - 1)}
+            disabled={!previousPage}
+          >
+            Prev
+          </button>
 
-    
-    <button
-      onClick={() => getAllpatientList(Currentpage + 1)}
-      disabled={!Nextpage}
-    >
-      Next
-    </button>
 
-  </div>
-)}
+          {pages.map((page) => (
+            <button
+              key={page}
+              onClick={() => getAllpatientList(page)}
+              style={{
 
-         <ToastContainer
-          position="top-center"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          closeButton
-        />
- {Addform && (
-        
- <div className="modal">
+                fontWeight: Currentpage === page ? "bold" : "normal",
+                background: Currentpage === page ? "#0D614E" : "#fff",
+                color: Currentpage === page ? "#fff" : "#0D614E",
+              }}
+            >
+              {page}
+            </button>
+          ))}
+
+
+          <button
+            onClick={() => getAllpatientList(Currentpage + 1)}
+            disabled={!Nextpage}
+          >
+            Next
+          </button>
+
+        </div>
+      )}
+
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        closeButton
+      />
+      {Addform && (
+
+        <div className="modal">
           <form className="customer-form" onSubmit={handleAddPatient}>
             <h3>Add New Patient</h3>
-       
-              <label>Name:</label>
-              <input
-                type="text"
-                name="name"
-                value={newPatient.name}
-                onChange={handleInputChange}
-              
-              />
-              {AddError?.name && <p className="error">{AddError.name}</p>}
-     
-              <label>Age:</label>
-              <input
-                type="number"
-                name="age"
-                value={newPatient.age}
-                onChange={handleInputChange}
-                required
-              />
-       {AddError?.age && <p className="error">{AddError.age}</p>}
-             
-                  <label>Gender:</label>
-              <select
-                name="gender"
-                value={newPatient.gender}
-                onChange={handleInputChange}
-              
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              
-              </select>
-              {AddError?.gender && <p className="error">{AddError.gender} </p>}
-                
-                
-                 <label> Relation</label>
+
+            <label>Name:</label>
+            <input
+              type="text"
+              name="name"
+              value={newPatient.name}
+              onChange={handleInputChange}
+
+            />
+            {AddError?.name && <p className="error">{AddError.name}</p>}
+
+            <label>Age:</label>
+            <input
+              type="number"
+              name="age"
+              value={newPatient.age}
+              onChange={handleInputChange}
+              required
+            />
+            {AddError?.age && <p className="error">{AddError.age}</p>}
+
+            <label>Gender:</label>
             <select
-            name="relation"
-            value={newPatient.relation}
-            onChange={handleInputChange}
+              name="gender"
+              value={newPatient.gender}
+              onChange={handleInputChange}
+
+            >
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+
+            </select>
+            {AddError?.gender && <p className="error">{AddError.gender} </p>}
+
+
+            <label> Relation</label>
+            <select
+              name="relation"
+              value={newPatient.relation}
+              onChange={handleInputChange}
             >
               <option value=""> Select Relation from given Option</option>
-              <option value ="self"> Self</option>
-              <option value ="father"> Father</option>
-              <option value ="mother"> Mother</option>
-              <option value ="other">Other</option>
+              <option value="self"> Self</option>
+              <option value="father"> Father</option>
+              <option value="mother"> Mother</option>
+              <option value="other">Other</option>
             </select>
-               <label>Description:</label>
-              <textarea
-                name="description"
-                value={newPatient.description}
-                onChange={handleInputChange}
-              />
+            <label>Description:</label>
+            <textarea
+              name="description"
+              value={newPatient.description}
+              onChange={handleInputChange}
+            />
 
 
-           
-           {AddError?.description && <p className="error">{AddError.description}</p>}
-              <div className="form-buttons">
 
-            <button type="submit">Add Patient</button>
-            <button type="button" onClick={() => setAddform(false)}>Cancel</button>
+            {AddError?.description && <p className="error">{AddError.description}</p>}
+            <div className="form-buttons">
+
+              <button type="submit">Add Patient</button>
+              <button type="button" onClick={() => setAddform(false)}>Cancel</button>
             </div>
           </form>
-          
+
         </div>
       )}
 
 
-{editForm && selectedPatient && (
-  <div className="modal">
-    <form className='customer-form' onSubmit={handleEditPatient}>
-        <h2>Edit Patient</h2>
-        <label>Name:</label>
-        <input
-          type="text"
-          name="name"
-          value={selectedPatient.name}
-          onChange={handleEditInputChange}
-          
-        />
-  
+      {editForm && selectedPatient && (
+        <div className="modal">
+          <form className='customer-form' onSubmit={handleEditPatient}>
+            <h2>Edit Patient</h2>
+            <label>Name:</label>
+            <input
+              type="text"
+              name="name"
+              value={selectedPatient.name}
+              onChange={handleEditInputChange}
 
-        <label>Gender:</label>
-        <select
-          name="gender"
-          value={selectedPatient.gender}
-          onChange={handleEditInputChange}
-          required
-        >
-          <option value="">Select Gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-        </select>
-  
+            />
 
-  
-        <label>Age:</label>
-        <input
-          type="number"
-          name="age"
-          value={selectedPatient.age}
-          onChange={handleEditInputChange}
-          required
-        />
-    
- <label>Relation:</label>
-   <label> Relation</label>
+
+            <label>Gender:</label>
             <select
-            name="relation"
-            value={newPatient.relation}
-            onChange={handleEditInputChange}
+              name="gender"
+              value={selectedPatient.gender}
+              onChange={handleEditInputChange}
+              required
+            >
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+
+
+
+            <label>Age:</label>
+            <input
+              type="number"
+              name="age"
+              value={selectedPatient.age}
+              onChange={handleEditInputChange}
+              required
+            />
+
+            <label>Relation:</label>
+            <label> Relation</label>
+            <select
+              name="relation"
+              value={newPatient.relation}
+              onChange={handleEditInputChange}
             >
               <option value=""> Select Relation from given Option</option>
-              <option value ="self"> Self</option>
-              <option value ="father"> Father</option>
-              <option value ="mother"> Mother</option>
-              <option value ="other">Other</option>
-            </select>      
-    
-        <label>Description:</label>
-        <textarea
-          name="description"
-          value={selectedPatient.description}
-          onChange={handleEditInputChange}
-        />
-       
-        
-     <div className="form-buttons">
+              <option value="self"> Self</option>
+              <option value="father"> Father</option>
+              <option value="mother"> Mother</option>
+              <option value="other">Other</option>
+            </select>
 
-      <button type="submit">Save Changes</button>
-      <button type="button" onClick={() => setEditForm(false)}>Cancel</button>
-      </div>
-    </form>
-  
-  </div>
-)}
+            <label>Description:</label>
+            <textarea
+              name="description"
+              value={selectedPatient.description}
+              onChange={handleEditInputChange}
+            />
 
 
+            <div className="form-buttons">
 
-{deleteConfirmModal && (
-  <div className="modal">
-    <div className="modal-content">
-      <h3>Are you sure you want to delete this patient?</h3>
-      <div className="form-buttons">
-        <button
-          className="otp-btn verify-btn"
-          onClick={() => {
-            handlePatientDelete(selectedPatientId);
-            setDeleteConfirmModal(false);
-          }}
-        >
-          Yes
-        </button>
-        <button onClick={() => setDeleteConfirmModal(false)}>No</button>
-      </div>
-    </div>
-  </div>
-)}
+              <button type="submit">Save Changes</button>
+              <button type="button" onClick={() => setEditForm(false)}>Cancel</button>
+            </div>
+          </form>
+
+        </div>
+      )}
+
+
+
+      {deleteConfirmModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Are you sure you want to delete this patient?</h3>
+            <div className="form-buttons">
+              <button
+                className="otp-btn verify-btn"
+                onClick={() => {
+                  handlePatientDelete(selectedPatientId);
+                  setDeleteConfirmModal(false);
+                }}
+              >
+                Yes
+              </button>
+              <button onClick={() => setDeleteConfirmModal(false)}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
 

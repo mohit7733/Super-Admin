@@ -101,7 +101,7 @@ const Support = () => {
         </div>
       </div>
 
-      <div className="table-container">
+      <div className="table-wrapper">
         <table className="order-table">
           <thead>
             <tr>

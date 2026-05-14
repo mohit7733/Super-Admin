@@ -9,6 +9,10 @@ import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import {  BsThreeDotsVertical } from "react-icons/bs";
 import { apiFetch } from "../../../fetchapi";
+import { FaEdit } from "react-icons/fa";
+import { FiTrash2 } from "react-icons/fi";
+import { FaEye } from "react-icons/fa";
+
 
 const intialvendorProductform = {
   product: '',
@@ -999,8 +1003,7 @@ const handleHealthConcernChange = (id) => {
   return (
     <div>
       <div className="page-header">
-        <h1>Vendor Product Mangement</h1>
-        <p className='page-paragraph'> Manage Vendor Product and product Details</p>
+        <h1>Vendor Product</h1>
       </div>
 
 
@@ -1225,7 +1228,7 @@ const handleHealthConcernChange = (id) => {
                             setViewProductModal(true);
                           }}
                         >
-                          <span className="icon">👁</span>
+                          <span className="icon"><FaEye/></span>
                           <span>Detail Page</span>
                         </button>
 
@@ -1234,7 +1237,7 @@ const handleHealthConcernChange = (id) => {
                           tittle="Edit Product Details"
                           onClick={() => handleEditProduct(product)}
                         >
-                          <span className="icon">✏️</span>
+                          <span className="icon"><FaEdit/></span>
                           <span>Edit Product</span>
 
                         </button>
@@ -1250,8 +1253,8 @@ const handleHealthConcernChange = (id) => {
                         >
 
 
-                          <span className="icon" > 🗑</span>
-                          <span> Delete Product</span>
+                          <span className="icon-delete" > <FiTrash2/> </span>
+                          <span className='delete-text'> Delete Product</span>
 
                         </button>
 

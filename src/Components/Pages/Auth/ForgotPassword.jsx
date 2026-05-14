@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import logo1 from '../../Assests/logo1.png';
+import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
 import BASE_URL from "../../../Base";
 
 const ForgotPassword = () => {
@@ -55,17 +56,17 @@ const ForgotPassword = () => {
 
   return (
     <>
-      <div className="login-content">
+      <div className="login-content1">
         <div className="login-card">
           <div className="login-header">
             <div className="logo1">
-              <span className="logo-icon">
+           
                 <img
-                  src={logo1}
+                  src={Ayurmunilogo}
                   alt="Logo"
-                  style={{ width: "124px", height: "74px", marginBottom: "20px" }}
+                  style={{ width: "102px", height: "81px", marginBottom: "20px" }}
                 />
-              </span>
+         <p className='icon'> Ayurmuni</p>
             </div>
             <p className="login-subtitle">
               Forgot your password? Enter your phone number to receive OTP.
@@ -92,7 +93,7 @@ const ForgotPassword = () => {
               Remember your password?{" "}
               <span
                 onClick={() => navigate("/login")}
-                style={{ color: "#71a33f", cursor: "pointer", fontWeight: "500" }}
+                style={{ color: "#0D614E", cursor: "pointer", fontWeight: "500" }}
               >
                 Back to Login
               </span>
