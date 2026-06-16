@@ -389,10 +389,7 @@
     box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.1);
 }
 
-.form-group input:read-only {
-    background: #e9ecef;
-    cursor: not-allowed;
-}
+
 
 .form-row {
     display: grid;
@@ -408,12 +405,15 @@
 }
 
 .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid #e9ecef;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
 }
 
 .btn-danger {

@@ -306,7 +306,7 @@
     color: #fff;
 }
 
-/* Search Bar */
+
 .search-bar {
     position: relative;
     min-width: 250px;
@@ -335,7 +335,7 @@
     box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.1);
 }
 
-/* Table Styles */
+
 .table-wrapper {
     overflow-x: auto;
 }
@@ -353,7 +353,7 @@
 .data-table th {
     padding: 14px 12px;
     text-align: center;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
     color: #495057;
     white-space: nowrap;
@@ -362,7 +362,7 @@
 .data-table td {
     padding: 12px;
     border-bottom: 1px solid #e9ecef;
-    font-size: 13px;
+    font-size: 17px;
     color: #666;
     text-align: center;
 }
@@ -389,7 +389,7 @@
     text-overflow: ellipsis;
 }
 
-/* Status Badges */
+
 .status-badge {
     display: inline-block;
     padding: 4px 10px;
@@ -496,7 +496,7 @@
     cursor: not-allowed;
 }
 
-/* Empty State */
+
 .empty-state {
     text-align: center;
     padding: 48px !important;
@@ -512,14 +512,14 @@
     margin: 0;
 }
 
-/* Error Message */
+
 .error-message {
-    text-align: center;
+    text-align: left;
     color: #e74c3c;
-    padding: 20px !important;
+    
 }
 
-/* Skeleton Loading */
+
 .skeleton-text {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -35,7 +36,7 @@ const STORAGE_KEYS = {
 const Login = () => {
   const navigate = useNavigate();
 
-  // State management
+ 
   const [formData, setFormData] = useState({
     phone_number: "",
     password: "",
@@ -112,7 +113,7 @@ const Login = () => {
     try {
       const formattedPhone = formatPhoneNumber(formData.phone_number);
 
-      const response = await fetch(`${BASE_URL}/user/admin-login/`, {
+      const response = await fetch(`${BASE_URL}/user/admin/login/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,32 +124,52 @@ const Login = () => {
         }),
       });
 
-      const data = await response.json();
+      // const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || data.message || "Login failed");
-      }
+      // if (!response.ok) {
+      //   throw new Error(data.error || data.message || "Login failed");
+      // }
 
-      sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
-      sessionStorage.setItem(STORAGE_KEYS.ROLE, data.role);
-      sessionStorage.setItem(STORAGE_KEYS.PERMISSIONS, JSON.stringify(data.permissions || []));
+      // sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
+      // sessionStorage.setItem(STORAGE_KEYS.ROLE, data.role);
+      // sessionStorage.setItem(STORAGE_KEYS.PERMISSIONS, JSON.stringify(data.permissions || []));
 
-     
-      if (rememberMe) {
-        localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, "true");
-        localStorage.setItem(STORAGE_KEYS.PHONE, formData.phone_number);
-        localStorage.setItem(STORAGE_KEYS.PASSWORD, formData.password);
-      }
+     const result = await response.json();
+     console.log("")
 
-    toast.success(`Welcome back, ${data.role?.toLowerCase() || "User"}!`, {
- 
-});
+if (!response.ok) {
+  throw new Error(result.error || result.message || "Login failed");
+}
 
-    
-      const route = getRouteByRole(data.role);
-      setTimeout(() => navigate(route), TOAST_AUTO_CLOSE);
+const data = result.data;
 
-    } catch (err) {
+const userRole = data.is_super_admin
+  ? "SUPERADMIN"
+  : data.admin_role;
+
+
+sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
+
+sessionStorage.setItem(
+  STORAGE_KEYS.ROLE,
+  userRole
+);
+
+sessionStorage.setItem(
+  STORAGE_KEYS.PERMISSIONS,
+  JSON.stringify(data.permissions || [])
+);
+
+toast.success("Login Successful!");
+
+const route = getRouteByRole(userRole);
+console.log("userRole", userRole);
+console.log("route", route);
+
+setTimeout(() => {
+  navigate(route);
+}, 1000);
+} catch (err) {
       console.error("Login error:", err);
       toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
@@ -156,18 +177,26 @@ const Login = () => {
     }
   };
 
+  // const getRouteByRole = (role) => {
+  //   switch (role) {
+  //     case ROLES.SUPERADMIN:
+  //       return "/dashboard";
+  //     case ROLES.follower:
+  //     case ROLES.VERIFIER:
+  //     case ROLES.FOLLOWUP:
+  //       return "/vendor";
+  //     default:
+  //       return "/login";
+  //   }
+  // };
+
   const getRouteByRole = (role) => {
-    switch (role) {
-      case ROLES.SUPERADMIN:
-        return "/dashboard";
-      case ROLES.ADMIN:
-      case ROLES.VERIFIER:
-      case ROLES.FOLLOWUP:
-        return "/vendor";
-      default:
-        return "/login";
-    }
-  };
+  if (role === "SUPERADMIN") {
+    return "/dashboard";
+  }
+
+  return "/vendor";
+};
 
   const checkExistingSession = useCallback(() => {
     const token = sessionStorage.getItem(STORAGE_KEYS.TOKEN);

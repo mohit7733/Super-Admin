@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { ToastContainer, toast } from "react-toastify"
 
 import "react-toastify/dist/ReactToastify.css"
-import { useNavigate } from "react-router-dom"
+import { data, useNavigate } from "react-router-dom"
 import BASE_URL from "../../../Base";
 import { FiFileText } from "react-icons/fi";
 import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
@@ -11,10 +11,7 @@ import { FaTrash, FaUsers } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
-
-
-
-
+import Calender from "./Calendar"
 
 const userId = localStorage.getItem("USER_ID")
 console.log("userIduserIduserId", userId)
@@ -266,37 +263,45 @@ const Doctor = () => {
   };
 
   const getdoctorlist = async (page = 1) => {
+    
     const token = sessionStorage.getItem("superadmin_token");
-
-    try {
-      const url = `${BASE_URL}/healthcare/doctors/search/?name=${doctorsearch || ""}&specialization=${specializationfilter === "All" ? "" : specializationfilter
-        }&status=${statusFilter === "All" ? "" : statusFilter}&page=${page}`;
-
-      console.log("API URL:", url);
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
+   
+       if (!token) {
+         toast.error("Session expired. Please login again");
+         navigate("/login");
+         return;
+       }
+   
+       setLoading(true);
+   
+       try {
+         const response = await fetch(
+            `${BASE_URL}/doctors/admin/doctors-list/?page=${page}`,
+           {
+             method: "GET",
+             headers: {
+               Accept: "application/json",
+               "Content-Type": "application/json",
+               Authorization: `Bearer ${token}`,
+               "ngrok-skip-browser-warning": "true",
+             },
+           }
+         );
+   
+         if (response.status === 401 || response.status === 403) {
+           sessionStorage.removeItem("superadmin_token");
+           toast.error("Session expired. Please login again");
+           navigate("/login");
+           return;
+         }
 
       const data = await response.json();
 
-      setDoctorData(data.data);
-      setTotalCount(data.count);
+      setDoctorData(data.data.results);
+      setTotalCount(data.data.count);
       setCurrentPage(page);
-      setNextpage(data.next);
-      setPreviousPage(data.previous);
+      setNextpage(data.data.next);
+      setPreviousPage(data.data.previous);
 
     } catch (err) {
       console.error(err.message);
@@ -306,14 +311,12 @@ const Doctor = () => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    const delay = setTimeout(() => {
-      getdoctorlist(1);
-    }, 100);
-
-    return () => clearTimeout(delay);
-  }, [doctorsearch, statusFilter, specializationfilter]);
-
+ useEffect(()=>{
+  getdoctorlist();
+ },
+ []
+)
+   
 
 
   const openDocumentModal = (i) => {
@@ -322,234 +325,236 @@ const Doctor = () => {
   }
   console.log(selectedDoctor, "selected");
 
-  const handleDoctorDelete = async (id) => {
-    const token = sessionStorage.getItem("superadmin_token");
+  
 
-    try {
-      const response = await fetch(`${BASE_URL}/healthcare/doctor/${id}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  // const handleDoctorDelete = async (id) => {
+  //   const token = sessionStorage.getItem("superadmin_token");
 
-
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
-
-      if (!response.ok) {
-        toast.error("Failed to delete");
-        return;
-      }
-
-      setDoctorData(Doctordata.filter((c) => c.id !== id));
-      toast.success("Doctor deleted successfully");
-
-    } catch {
-      toast.error("Failed to delete");
-    }
-  };
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/healthcare/doctor/${id}/`, {
+  //       method: "DELETE",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
 
 
-  const handleCloseDoctorModal = () => {
-    setDoctorModal(false)
-    clearAllErrors()
-    setPhonenumber("")
-  }
+  //     if (response.status === 401 || response.status === 403) {
+  //       toast.error("Session expired. Please login again");
+  //       sessionStorage.removeItem("superadmin_token");
+  //       navigate("/login");
+  //       return;
+  //     }
+
+  //     if (!response.ok) {
+  //       toast.error("Failed to delete");
+  //       return;
+  //     }
+
+  //     setDoctorData(Doctordata.filter((c) => c.id !== id));
+  //     toast.success("Doctor deleted successfully");
+
+  //   } catch {
+  //     toast.error("Failed to delete");
+  //   }
+  // };
 
 
-
-  const handleDoctorformSubmit = async (e) => {
-    e.preventDefault();
-
-    console.log("uploadedDocs", uploadedDocs);
-    const formErrors = validateDoctorForm(Doctorform, phonenumber);
-    console.log(formErrors, "error");
-
-
-    if (Object.keys(formErrors).length > 0) {
-      setDoctorFormErrors(formErrors);
-      toast.error("Please fix the validation errors");
-      return;
-    }
-
-    const method = EditingDoctorId ? "PUT" : "POST";
-    const url = EditingDoctorId
-      ? `${BASE_URL}/healthcare/doctor/${EditingDoctorId}/`
-      : `${BASE_URL}/healthcare/doctor/`;
-
-    const newFormData = new FormData();
-    newFormData.append("first_name", Doctorform.first_name.trim());
-    newFormData.append("last_name", Doctorform.last_name.trim());
-    newFormData.append("email", Doctorform.email.trim());
-    newFormData.append("assured_muni", Doctorform.assured_muni);
-    newFormData.append("verified_phone_number", `+91${phonenumber}`);
-    newFormData.append("experience_years", Number.parseInt(Doctorform.experience_years));
-    newFormData.append("consultation_fee", Number.parseFloat(Doctorform.consultation_fee));
-    newFormData.append("available_from", Doctorform.available_from);
-    newFormData.append("available_to", Doctorform.available_to);
-    newFormData.append("treatment_type_ids", Doctorform.treatment_type_id);
-    newFormData.append("practice_license_number", Doctorform.practice_license_number);
-    newFormData.append("qualification", Doctorform.qualification);
-
-    if (Doctorform.profile_image instanceof File) {
-      newFormData.append("profile_image", Doctorform.profile_image);
-    }
+  // const handleCloseDoctorModal = () => {
+  //   setDoctorModal(false)
+  //   clearAllErrors()
+  //   setPhonenumber("")
+  // }
 
 
 
-    let docIndex = 0;
-    uploadedDocs.forEach((item) => {
-      if (item.file) {
-        newFormData.append(`document_types[${docIndex}]`, item.type);
-        newFormData.append(`documents[${docIndex}]`, item.file);
-        docIndex++;
-      }
-    });
+  // const handleDoctorformSubmit = async (e) => {
+  //   e.preventDefault();
 
-    if (Array.isArray(Doctorform.specialization_ids)) {
-      Doctorform.specialization_ids.forEach((id) =>
-        newFormData.append("specialization_ids", id)
-      );
-    } else {
-      newFormData.append("specialization_ids", Doctorform.specialization_ids);
-    }
-
-    if (!EditingDoctorId) {
-      const user = userId || localStorage.getItem("USER_ID");
-      newFormData.append("user", user);
-    }
-
-    const token = sessionStorage.getItem("superadmin_token");
-    try {
-      const response = await fetch(url, {
-        method,
-        body: newFormData,
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        }
-      });
-
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
+  //   console.log("uploadedDocs", uploadedDocs);
+  //   const formErrors = validateDoctorForm(Doctorform, phonenumber);
+  //   console.log(formErrors, "error");
 
 
-      const result = await response.json();
+  //   if (Object.keys(formErrors).length > 0) {
+  //     setDoctorFormErrors(formErrors);
+  //     toast.error("Please fix the validation errors");
+  //     return;
+  //   }
 
-      if (response.ok) {
-        toast.success(
-          EditingDoctorId
-            ? "Doctor updated successfully"
-            : "Doctor added successfully"
-        );
-        setDoctorformModal(false);
-        clearDoctorForm();
-        clearAllErrors();
-        setUploadedDocs([]);
-        getdoctorlist();
-      } else {
-        toast.error(result.message || "Failed to save doctor");
-      }
-    } catch (err) {
-      console.error("Doctor save error:", err.message);
-      toast.error("Error saving doctor");
-    }
-  };
+  //   const method = EditingDoctorId ? "PUT" : "POST";
+  //   const url = EditingDoctorId
+  //     ? `${BASE_URL}/healthcare/doctor/${EditingDoctorId}/`
+  //     : `${BASE_URL}/healthcare/doctor/`;
 
-  const handleAddDocument = (e) => {
-    e.preventDefault();
+  //   const newFormData = new FormData();
+  //   newFormData.append("first_name", Doctorform.first_name.trim());
+  //   newFormData.append("last_name", Doctorform.last_name.trim());
+  //   newFormData.append("email", Doctorform.email.trim());
+  //   newFormData.append("assured_muni", Doctorform.assured_muni);
+  //   newFormData.append("verified_phone_number", `+91${phonenumber}`);
+  //   newFormData.append("experience_years", Number.parseInt(Doctorform.experience_years));
+  //   newFormData.append("consultation_fee", Number.parseFloat(Doctorform.consultation_fee));
+  //   newFormData.append("available_from", Doctorform.available_from);
+  //   newFormData.append("available_to", Doctorform.available_to);
+  //   newFormData.append("treatment_type_ids", Doctorform.treatment_type_id);
+  //   newFormData.append("practice_license_number", Doctorform.practice_license_number);
+  //   newFormData.append("qualification", Doctorform.qualification);
 
-    if (!Doctorform.documentType || !Doctorform.documentFile) {
-      toast.error("Please select document type and upload file");
-      return;
-    }
-
-    const newDoc = {
-      type: Doctorform.documentType,
-      file: Doctorform.documentFile,
-    };
-
-    setUploadedDocs((prev) => {
-
-      const existing = prev.find((d) => d.type === newDoc.type);
-      if (existing) {
-        return prev.map((d) => (d.type === newDoc.type ? newDoc : d));
-      }
-      return [...prev, newDoc];
-    });
+  //   if (Doctorform.profile_image instanceof File) {
+  //     newFormData.append("profile_image", Doctorform.profile_image);
+  //   }
 
 
-    setDoctorform((prev) => ({
-      ...prev,
-      documentType: "",
-      documentFile: null,
-    }));
 
-    toast.success("Document added!");
-  };
+  //   let docIndex = 0;
+  //   uploadedDocs.forEach((item) => {
+  //     if (item.file) {
+  //       newFormData.append(`document_types[${docIndex}]`, item.type);
+  //       newFormData.append(`documents[${docIndex}]`, item.file);
+  //       docIndex++;
+  //     }
+  //   });
 
-  const handleAddSpecialization = async (e) => {
-    e.preventDefault();
+  //   if (Array.isArray(Doctorform.specialization_ids)) {
+  //     Doctorform.specialization_ids.forEach((id) =>
+  //       newFormData.append("specialization_ids", id)
+  //     );
+  //   } else {
+  //     newFormData.append("specialization_ids", Doctorform.specialization_ids);
+  //   }
 
-    if (!newSpecilization.trim()) {
-      toast.error("Specialization name is required");
-      return;
-    }
+  //   if (!EditingDoctorId) {
+  //     const user = userId || localStorage.getItem("USER_ID");
+  //     newFormData.append("user", user);
+  //   }
 
-    if (!/^[A-Za-z\s]+$/.test(newSpecilization)) {
-      toast.error("Specialization must contain only alphabets");
-      return;
-    }
+  //   const token = sessionStorage.getItem("superadmin_token");
+  //   try {
+  //     const response = await fetch(url, {
+  //       method,
+  //       body: newFormData,
+  //       headers: {
+  //         Accept: "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       }
+  //     });
 
-    const token = sessionStorage.getItem("superadmin_token");
+  //     if (response.status === 401 || response.status === 403) {
+  //       toast.error("Session expired. Please login again");
+  //       sessionStorage.removeItem("superadmin_token");
+  //       navigate("/login");
+  //       return;
+  //     }
 
-    try {
-      const response = await fetch(`${BASE_URL}/healthcare/speciality/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name: newSpecilization }),
-      });
 
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
+  //     const result = await response.json();
 
-      const data = await response.json();
+  //     if (response.ok) {
+  //       toast.success(
+  //         EditingDoctorId
+  //           ? "Doctor updated successfully"
+  //           : "Doctor added successfully"
+  //       );
+  //       setDoctorformModal(false);
+  //       clearDoctorForm();
+  //       clearAllErrors();
+  //       setUploadedDocs([]);
+  //       getdoctorlist();
+  //     } else {
+  //       toast.error(result.message || "Failed to save doctor");
+  //     }
+  //   } catch (err) {
+  //     console.error("Doctor save error:", err.message);
+  //     toast.error("Error saving doctor");
+  //   }
+  // };
 
-      if (!response.ok) {
-        const errorMsg =
-          data?.errors?.name
-          ;
+  // const handleAddDocument = (e) => {
+  //   e.preventDefault();
 
-        toast.error(errorMsg);
-        return;
-      }
+  //   if (!Doctorform.documentType || !Doctorform.documentFile) {
+  //     toast.error("Please select document type and upload file");
+  //     return;
+  //   }
 
-      toast.success("Specialization added successfully!");
-      setNewSpecilization("");
-      fetchSpecialization();
-      setAddspecialityform(false);
+  //   const newDoc = {
+  //     type: Doctorform.documentType,
+  //     file: Doctorform.documentFile,
+  //   };
 
-    } catch (error) {
-      console.error("Error adding specialization:", error);
-      toast.error("Error adding specialization.");
-    }
-  };
+  //   setUploadedDocs((prev) => {
+
+  //     const existing = prev.find((d) => d.type === newDoc.type);
+  //     if (existing) {
+  //       return prev.map((d) => (d.type === newDoc.type ? newDoc : d));
+  //     }
+  //     return [...prev, newDoc];
+  //   });
+
+
+  //   setDoctorform((prev) => ({
+  //     ...prev,
+  //     documentType: "",
+  //     documentFile: null,
+  //   }));
+
+  //   toast.success("Document added!");
+  // };
+
+  // const handleAddSpecialization = async (e) => {
+  //   e.preventDefault();
+
+  //   if (!newSpecilization.trim()) {
+  //     toast.error("Specialization name is required");
+  //     return;
+  //   }
+
+  //   if (!/^[A-Za-z\s]+$/.test(newSpecilization)) {
+  //     toast.error("Specialization must contain only alphabets");
+  //     return;
+  //   }
+
+  //   const token = sessionStorage.getItem("superadmin_token");
+
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/healthcare/speciality/`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({ name: newSpecilization }),
+  //     });
+
+  //     if (response.status === 401 || response.status === 403) {
+  //       toast.error("Session expired. Please login again");
+  //       sessionStorage.removeItem("superadmin_token");
+  //       navigate("/login");
+  //       return;
+  //     }
+
+  //     const data = await response.json();
+
+  //     if (!response.ok) {
+  //       const errorMsg =
+  //         data?.errors?.name
+  //         ;
+
+  //       toast.error(errorMsg);
+  //       return;
+  //     }
+
+  //     toast.success("Specialization added successfully!");
+  //     setNewSpecilization("");
+  //     fetchSpecialization();
+  //     setAddspecialityform(false);
+
+  //   } catch (error) {
+  //     console.error("Error adding specialization:", error);
+  //     toast.error("Error adding specialization.");
+  //   }
+  // };
 
   const getDoctorStats = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -571,241 +576,241 @@ const Doctor = () => {
     }
   };
 
-  const hasFetched = useRef(false);
+  // const hasFetched = useRef(false);
 
-  useEffect(() => {
-    if (!hasFetched.current) {
-      getDoctorStats();
-      hasFetched.current = true;
-    }
-  }, []);
-
-
-  const fetchTreatmentTypes = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
-
-    try {
-      const response = await fetch(`${BASE_URL}/healthcare/treatmenttypes/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
-
-      const data = await response.json();
-      setTreatmentTypes(data);
-    } catch (error) {
-      console.error("Error fetching treatment types:", error);
-    }
-  };
-
-  const hasFetchedTreatment = useRef(false);
-
-  useEffect(() => {
-    if (!hasFetchedTreatment.current) {
-      fetchTreatmentTypes();
-      hasFetchedTreatment.current = true;
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!hasFetched.current) {
+  //     getDoctorStats();
+  //     hasFetched.current = true;
+  //   }
+  // }, []);
 
 
+  // const fetchTreatmentTypes = async () => {
+  //   const token = sessionStorage.getItem("superadmin_token");
 
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/healthcare/treatmenttypes/`, {
+  //       method: "GET",
+  //       headers: {
+  //         Accept: "application/json",
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     if (response.status === 401 || response.status === 403) {
+  //       toast.error("Session expired. Please login again");
+  //       sessionStorage.removeItem("superadmin_token");
+  //       navigate("/login");
+  //       return;
+  //     }
 
-  const handledoctorSubmit = async (e) => {
-    e.preventDefault();
+  //     const data = await response.json();
+  //     setTreatmentTypes(data);
+  //   } catch (error) {
+  //     console.error("Error fetching treatment types:", error);
+  //   }
+  // };
 
+  // const hasFetchedTreatment = useRef(false);
 
-    const phoneValidation = validatePhoneNumber(phonenumber);
-    if (Object.keys(phoneValidation).length > 0) {
-      setPhoneErrors(phoneValidation);
-      return;
-    }
-
-    const token = sessionStorage.getItem("superadmin_token");
-
-    try {
-
-      const payload = {
-        phone_number: `+91${phonenumber}`,
-        role: "doctor",
-      };
-
-
-      const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
-
-
-      const data = await response.json();
-
-
-      if (!response.ok) {
-        toast.error(data?.error);
-        return;
-      }
-
-
-      const uid = data?.user?.id;
-      toast.success("Doctor ready. Please complete doctor registration");
-
-      if (uid) {
-        setUserId(uid);
-        localStorage.setItem("USER_ID", uid);
-        setDoctorModal(false);
-        setDoctorformModal(true);
-
-      }
-    } catch (err) {
-      console.error("Doctor create error:", err);
-      toast.error("Something went wrong. Please try again");
-    }
-  };
+  // useEffect(() => {
+  //   if (!hasFetchedTreatment.current) {
+  //     fetchTreatmentTypes();
+  //     hasFetchedTreatment.current = true;
+  //   }
+  // }, []);
 
 
 
 
-  const handleDoctorinputchange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-
-    if (doctorFormErrors[name]) {
-      setDoctorFormErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
+  // const handledoctorSubmit = async (e) => {
+  //   e.preventDefault();
 
 
-    if (type === "checkbox") {
-      setDoctorform((prev) => ({
-        ...prev,
-        [name]: checked,
-      }));
-      return;
-    }
+  //   const phoneValidation = validatePhoneNumber(phonenumber);
+  //   if (Object.keys(phoneValidation).length > 0) {
+  //     setPhoneErrors(phoneValidation);
+  //     return;
+  //   }
+
+  //   const token = sessionStorage.getItem("superadmin_token");
+
+  //   try {
+
+  //     const payload = {
+  //       phone_number: `+91${phonenumber}`,
+  //       role: "doctor",
+  //     };
 
 
-    if (type === "file" && name === "profile_image") {
-      setDoctorform((prev) => ({
-        ...prev,
-        profile_image: files && files.length > 0 ? files[0] : null,
-      }));
-      return;
-    }
+  //     const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
+  //       method: "POST",
+  //       headers: {
+  //         Accept: "application/json",
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify(payload),
+  //     });
 
 
-    if (name === "documentFile") {
-      setDoctorform((prev) => ({
-        ...prev,
-        documentFile: files && files.length > 0 ? files[0] : null,
-      }));
-      return;
-    }
-
-    setDoctorform((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  //     if (response.status === 401 || response.status === 403) {
+  //       toast.error("Session expired. Please login again");
+  //       sessionStorage.removeItem("superadmin_token");
+  //       navigate("/login");
+  //       return;
+  //     }
 
 
-  const handleDoctorDownload = () => {
-    const exportData = Doctordata.map((d, index) => ({
-      ID: index + 1,
-      "First Name": d.first_name,
-      "Last Name": d.last_name,
-      "Phone Number": d.verified_phone_number,
-      Email: d.email,
-      "Consultation Fee (₹)": d.consultation_fee,
-      Specialization: d.specializations?.map((s) => s.name).join(", "),
-      Experience: d.experience_years,
-      "Ayush Register Number": d.practice_license_number,
-      Qualtification: d.qualification,
-      Status: d.status,
-      "Available To": d.available_from,
-      "Available From": d.available_to,
-      "Treatment": d.treatment_type,
-      "Address": d.address_line,
+  //     const data = await response.json();
 
 
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(exportData)
-    const colWidths = Object.keys(exportData[0] || {}).map((key) => ({ wch: key.length + 20 }));
-    ws['!cols'] = colWidths;
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Doctors");
-    XLSX.writeFile(wb, "doctor_data.xlsx");
-  };
+  //     if (!response.ok) {
+  //       toast.error(data?.error);
+  //       return;
+  //     }
 
 
+  //     const uid = data?.user?.id;
+  //     toast.success("Doctor ready. Please complete doctor registration");
 
-  const fetchSpecialization = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
+  //     if (uid) {
+  //       setUserId(uid);
+  //       localStorage.setItem("USER_ID", uid);
+  //       setDoctorModal(false);
+  //       setDoctorformModal(true);
 
-    try {
-      const response = await fetch(`${BASE_URL}/healthcare/speciality/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-      });
-
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
-
-      const data = await response.json();
-      console.log("Fetched Specialities:", data);
-      setSpecialities(data);
-
-    } catch (error) {
-      console.error("Error fetching specialities:", error);
-      // toast.error("Failed to fetch specialities");
-    }
-  };
-
-  const hasFetchedSpecialization = useRef(false);
-
-  useEffect(() => {
-    if (!hasFetchedSpecialization.current) {
-      fetchSpecialization();
-      hasFetchedSpecialization.current = true;
-    }
-  }, []);
+  //     }
+  //   } catch (err) {
+  //     console.error("Doctor create error:", err);
+  //     toast.error("Something went wrong. Please try again");
+  //   }
+  // };
 
 
 
 
-  const handleSelection = () => {
-    setDropdownOpen(!dropdownOpen);
-  }
+  // const handleDoctorinputchange = (e) => {
+  //   const { name, value, type, checked, files } = e.target;
+
+  //   if (doctorFormErrors[name]) {
+  //     setDoctorFormErrors((prev) => ({
+  //       ...prev,
+  //       [name]: "",
+  //     }));
+  //   }
+
+
+  //   if (type === "checkbox") {
+  //     setDoctorform((prev) => ({
+  //       ...prev,
+  //       [name]: checked,
+  //     }));
+  //     return;
+  //   }
+
+
+  //   if (type === "file" && name === "profile_image") {
+  //     setDoctorform((prev) => ({
+  //       ...prev,
+  //       profile_image: files && files.length > 0 ? files[0] : null,
+  //     }));
+  //     return;
+  //   }
+
+
+  //   if (name === "documentFile") {
+  //     setDoctorform((prev) => ({
+  //       ...prev,
+  //       documentFile: files && files.length > 0 ? files[0] : null,
+  //     }));
+  //     return;
+  //   }
+
+  //   setDoctorform((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
+  // };
+
+
+  // const handleDoctorDownload = () => {
+  //   const exportData = Doctordata.map((d, index) => ({
+  //     ID: index + 1,
+  //     "First Name": d.first_name,
+  //     "Last Name": d.last_name,
+  //     "Phone Number": d.verified_phone_number,
+  //     Email: d.email,
+  //     "Consultation Fee (₹)": d.consultation_fee,
+  //     Specialization: d.specializations?.map((s) => s.name).join(", "),
+  //     Experience: d.experience_years,
+  //     "Ayush Register Number": d.practice_license_number,
+  //     Qualtification: d.qualification,
+  //     Status: d.status,
+  //     "Available To": d.available_from,
+  //     "Available From": d.available_to,
+  //     "Treatment": d.treatment_type,
+  //     "Address": d.address_line,
+
+
+  //   }));
+
+  //   const ws = XLSX.utils.json_to_sheet(exportData)
+  //   const colWidths = Object.keys(exportData[0] || {}).map((key) => ({ wch: key.length + 20 }));
+  //   ws['!cols'] = colWidths;
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Doctors");
+  //   XLSX.writeFile(wb, "doctor_data.xlsx");
+  // };
+
+
+
+  // const fetchSpecialization = async () => {
+  //   const token = sessionStorage.getItem("superadmin_token");
+
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/healthcare/speciality/`, {
+  //       method: "GET",
+  //       headers: {
+  //         Accept: "application/json",
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`
+  //       },
+  //     });
+
+  //     if (response.status === 401 || response.status === 403) {
+  //       toast.error("Session expired. Please login again");
+  //       sessionStorage.removeItem("superadmin_token");
+  //       navigate("/login");
+  //       return;
+  //     }
+
+  //     const data = await response.json();
+  //     console.log("Fetched Specialities:", data);
+  //     setSpecialities(data);
+
+  //   } catch (error) {
+  //     console.error("Error fetching specialities:", error);
+  //     // toast.error("Failed to fetch specialities");
+  //   }
+  // };
+
+  // const hasFetchedSpecialization = useRef(false);
+
+  // useEffect(() => {
+  //   if (!hasFetchedSpecialization.current) {
+  //     fetchSpecialization();
+  //     hasFetchedSpecialization.current = true;
+  //   }
+  // }, []);
+
+
+
+
+  // const handleSelection = () => {
+  //   setDropdownOpen(!dropdownOpen);
+  // }
 
 
   const getInitials = (firstName, lastName) => {
@@ -825,19 +830,21 @@ const Doctor = () => {
 
 
 
-  const handleStatusChange = async (doctorId, newStatus, reason = "") => {
+ const handleStatusChange = async (doctorId, newStatus, reason = "") => {
     const token = sessionStorage.getItem("superadmin_token")
     try {
-      const response = await fetch(`${BASE_URL}/healthcare/approvedoctor/${doctorId}/`, {
+      const response = await fetch(`${BASE_URL}/doctors/admin/doctor/status/`, {
         method: "PUT",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+           "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
+          doctor_id: doctorId,
           status: newStatus,
-          rejection_reason: reason
+          reason: reason
         }),
       })
       if (response.status === 401 || response.status === 403) {
@@ -852,10 +859,10 @@ const Doctor = () => {
       }
 
       if (response.status === 200 || response.status === 201) {
-        await getDoctorStats();
+        // await getDoctorStats();
         setDoctorData((prev) =>
           prev.map((doctor) =>
-            doctor.id === doctorId ? { ...doctor, status: newStatus } : doctor,
+            doctor.id === doctorId ? { ...doctor, approval_status: newStatus } : doctor,
           ),
         )
       }
@@ -865,7 +872,7 @@ const Doctor = () => {
       console.error(err)
       toast.error("Error updating vendor status")
     }
-  }
+  } 
 
 
   return (
@@ -886,7 +893,7 @@ const Doctor = () => {
           </div>
           <div className="stat2-info">
             <h3>Total Doctors</h3>
-            <div className="stat2-value">{doctorStats?.total_doctors || 0}</div>
+            <div className="stat2-value"> 0</div>
           </div>
         </div>
 
@@ -960,7 +967,7 @@ const Doctor = () => {
             <BsPlus size={18} />
             Add Doctor
           </button>
-          <button className="btn-secondary" onClick={handleDoctorDownload}>
+          <button className="btn-secondary" >
             <BsDownload size={16} />
             Export Details
           </button>
@@ -984,10 +991,7 @@ const Doctor = () => {
               <th>Ayush.No</th>
               <th>Qualification </th>
               <th>Specialization</th>
-              <th>Type</th>
-
               <th>Experience</th>
-
               <th>Documents </th>
               <th>Actions</th>
 
@@ -1010,191 +1014,192 @@ const Doctor = () => {
             ) : Doctordata.length > 0 ? (
               Doctordata.map((item, index) => (
                 <tr key={item.id}>
-                  <td>{index + 1}</td>
+  <td>{index + 1}</td>
 
-                  <td>
-                    <div className="customer-avatar-wrapper">
-                      {item.profile_image ? (
-                        <img
-                          src={item.profile_image}
-                          alt="profile"
-                          className="customer-avatar-img"
-                          onClick={() => {
-                            setImageModal(true);
-                            setPreviewImage(item.profile_image);
-                          }}
-                        />
-                      ) : (
-                        <div className="customer-avatar">
-                          {getInitials(item.first_name, item.last_name)}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    {item.first_name
-                      ? `${item.first_name}${item.last_name
+  {/* PROFILE */}
+  <td>
+    <div className="customer-avatar-wrapper">
+      {item.profile_image ? (
+        <img
+          src={item.profile_image}
+          alt="profile"
+          className="customer-avatar-img"
+          onClick={() => {
+            setImageModal(true);
+            setPreviewImage(item.profile_image);
+          }}
+        />
+      ) : (
+        <div className="customer-avatar">
+          {getInitials(item.first_name, item.last_name)}
+        </div>
+      )}
+    </div>
+  </td>
 
-                        ? " " + item.last_name : ""}`
-                      : "NA"}
-                  </td>
+ 
+  <td>
+    {item.first_name
+      ? `${item.first_name} ${item.last_name || ""}`
+      : "NA"}
+  </td>
 
-
-                  <td>{item?.email}</td>
-                  <td>{item?.verified_phone_number}</td>
-
-                  <td>
-                    <select
-                      value={item?.status}
-                      onChange={(e) => {
-                        const newStatus = e.target.value;
-                        if (newStatus === "rejected" || newStatus === "suspended") {
-                          handleRejectClick(item.id, newStatus);
-                        } else {
-                          handleStatusChange(item.id, newStatus);
-                        }
-                      }}
-                      className="status-dropdown"
-                    >
-
-                      <option value="pending">Pending</option>
-                      <option value="approved">Approved</option>
-                      <option value="rejected">Rejected</option>
-                      <option value="suspended">Suspended</option>
-                    </select>
-                  </td>
-
-                  <td>₹{item?.consultation_fee}</td>
-                  <td style={{ color: "blue" }}>
-                    {item?.available_from} - {item?.available_to}
-                  </td>
-
-                  <td>{item?.practice_license_number}</td>
-                  <td>{item?.qualification}</td>
-
-                  <td>{item?.specializations?.map((s) => s.name).join(", ")}</td>
-
-                  <td>{item?.treatment_type.map((item) => item.treatment_type)}</td>
-
-                  <td>{item?.experience_years} years</td>
+  
+  <td>{item.email || "NA"}</td>
 
 
-                  <td style={{ textAlign: "center" }}>
-                    <FiFileText size={20} color="#0D614E"
-                      onClick={() => openDocumentModal(item)}
-                    />
-                  </td>
+  <td>{item.secondary_number || "NA"}</td>
 
-                  <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
+  
+  <td>
+    <select
+      value={item?.approval_status || "pending"}
+      onChange={(e) => {
+        const newStatus = e.target.value;
 
-                    <button
-                      className="action-menu-toggle"
-                      onClick={() =>
-                        setOpenthreedotId(OpenthreedotId === item.id ? null : item.id)
-                      }
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "20px",
-                      }}
-                    >
-                  <span className="icon">  <BsThreeDotsVertical /></span>   
-                    </button>
+        if (
+          newStatus === "rejected" ||
+          newStatus === "suspended"
+        ) {
+          handleRejectClick(item.id, newStatus);
+        } else {
+          handleStatusChange(item.id, newStatus);
+        }
+      }}
+      className="status-dropdown"
+    >
+      <option value="pending">Pending</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+      <option value="suspended">Suspended</option>
+    </select>
+  </td>
 
+  
+  <td>₹{item.consultation_fee || 0}</td>
 
-
-
-                    {OpenthreedotId === item.id && (
-                      <div
-                        className="action-buttons-modal"
-
-                      >
-
-
-                        {item.status === "approved" && (
-                          <button
-                            className="action-btn1"
-                            title=" Detail Page"
-                            onClick={() => handleNavigateDoctor(item.id)}
-                          >
-                            <span className="icon"><FaEye/></span>
-                            <span>Detail Page</span>
-                          </button>
-                        )}
-
-                        <button
-                          className="action-btn1"
-                          title="Edit Doctor Details"
-                          onClick={() => {
-                            const existingDocs = [];
-                            if (item.documents && item.documents.length > 0) {
-                              item.documents.forEach((doc) => {
-                                existingDocs.push({
-                                  type: doc.document_type,
-                                  file: null,
-                                  existingUrl: doc.file_url,
-                                });
-                              });
-                            }
+ 
+  <td style={{ color: "blue" }}>
+   <td style={{ color: "blue" }}>
+  {Array.isArray(item.consultation_modes)
+    ? item.consultation_modes.join(", ")
+    : item.consultation_modes || "NA"}
+</td>
+  </td>
 
 
-                            setDoctorform({
-                              profile_image: item.profile_image,
-                              first_name: item.first_name,
-                              last_name: item.last_name,
-                              email: item.email,
+  <td>{item.ayurvedic_council_id || "NA"}</td>
 
-                              assured_muni: item.assured_muni,
-                              verified_phone_number: item.verified_phone_number,
-                              experience_years: item.experience_years,
-                              specialization_ids: item.specializations
-                                ? item.specializations.map((spec) => String(spec.id))
-                                : [],
-                              consultation_fee: item.consultation_fee,
-                              available_from: item.available_from || "",
-                              available_to: item.available_to || "",
-                              treatment_type_id: item.treatment_type?.[0]?.id || "",
-                              practice_license_number: item.practice_license_number,
-                              qualification: item.qualification,
-                              documentType: "",
-                              documentFile: null,
-                            });
+ 
+  <td>{item.qualification || "NA"}</td>
 
-                            setUploadedDocs(existingDocs);
-                            setSpecs(
-                              item.specializations ? item.specializations.map((spec) => spec.id) : []
-                            );
-                            setPhonenumber(item.verified_phone_number?.replace("+91", ""));
-                            setEditingDoctorId(item.id);
-                            clearAllErrors();
-                            setDoctorformModal(true);
-                          }}
-                        >
-                          <span className="icon"><FaEdit/></span>
-                          <span>Edit Detail</span>
-                        </button>
+  
+  <td>
+    {item.specializations?.length > 0
+      ? item.specializations.map((s) => s.name).join(", ")
+      : "NA"}
+  </td>
+
+ 
+  
+
+ 
+  <td>{item.experience_years || 0} years</td>
+
+ 
+  <td style={{ textAlign: "center" }}>
+    <FiFileText
+      size={20}
+      color="#0D614E"
+      onClick={() => openDocumentModal(item)}
+      style={{ cursor: "pointer" }}
+    />
+  </td>
 
 
+  <td
+    style={{ position: "relative" }}
+    onClick={(e) => e.stopPropagation()}
+  >
+    <button
+      className="action-menu-toggle"
+      onClick={() =>
+        setOpenthreedotId(
+          OpenthreedotId === item.id ? null : item.id
+        )
+      }
+      style={{
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        fontSize: "20px",
+      }}
+    >
+      <span className="icon">
+        <BsThreeDotsVertical />
+      </span>
+    </button>
 
-                        <button
-                          className="action-btn1"
-                          title="Delete"
-                          onClick={() => {
-                            setSelectedDoctorId(item.id)
-                            setDeleteConfirmModal(true)
-                          }}
-                        >
-                          <span className="icon-delete">< FiTrash2/></span>
-                          <span className="delete-text">Delete </span>
-                        </button>
-                      </div>
-                    )}
-                  </td>
+    {OpenthreedotId === item.id && (
+      <div className="action-buttons-modal">
 
+        
+          <button
+            className="action-btn1"
+            title="Detail Page"
+            onClick={() => handleNavigateDoctor(item.id)}
+          >
+            <span className="icon">
+              <FaEye />
+            </span>
+            <span>Detail Page</span>
+          </button>
+        
 
+       
+        <button
+          className="action-btn1"
+          title="Edit Doctor Details"
+          onClick={() => {
+            setDoctorform({
+              profile_image: item.profile_image || "",
+              first_name: item.first_name || "",
+              last_name: item.last_name || "",
+              email: item.email || "",
+              experience_years: item.experience_years || "",
+              consultation_fee: item.consultation_fee || "",
+              qualification: item.qualification || "",
+              practice_license_number:
+                item.registration_number || "",
+            });
 
-                </tr>
+            setEditingDoctorId(item.id);
+            setDoctorformModal(true);
+          }}
+        >
+          <span className="icon">
+            <FaEdit />
+          </span>
+          <span>Edit Detail</span>
+        </button>
+
+        <button
+          className="action-btn1"
+          title="Delete"
+          onClick={() => {
+            setSelectedDoctorId(item.id);
+            setDeleteConfirmModal(true);
+          }}
+        >
+          <span className="icon-delete">
+            <FiTrash2 />
+          </span>
+          <span className="delete-text">Delete</span>
+        </button>
+      </div>
+    )}
+  </td>
+</tr>
               ))
             ) : (
               <tr>
@@ -1212,7 +1217,7 @@ const Doctor = () => {
 
 
             <button
-              onClick={() => getdoctorlist(currentpage - 1, doctorsearch)}
+             onClick={() => getdoctorlist(currentpage - 1)}
               disabled={!previousPage}
             >
               Prev
@@ -1222,7 +1227,7 @@ const Doctor = () => {
             {pages.map((page) => (
               <button
                 key={page}
-                onClick={() => getdoctorlist(page, doctorsearch)}
+                onClick={() => getdoctorlist(page)}
                 style={{
 
                   fontWeight: currentpage === page ? "bold" : "normal",
@@ -1236,7 +1241,7 @@ const Doctor = () => {
 
 
             <button
-              onClick={() => getdoctorlist(currentpage + 1, doctorsearch)}
+              onClick={() => getdoctorlist(currentpage + 1)}
               disabled={!Nextpage}
             >
               Next
@@ -1248,7 +1253,7 @@ const Doctor = () => {
       </div>
 
 
-      {DoctorModal && (
+      {/* {DoctorModal && (
         <div className="modal">
           <form className="customer-form" onSubmit={handledoctorSubmit}>
             <h2>Enter your phone number</h2>
@@ -1281,11 +1286,11 @@ const Doctor = () => {
             </div>
           </form>
         </div>
-      )}
+      )} */}
 
 
 
-      {DoctorformModal && (
+      {/* {DoctorformModal && (
         <div className="modal">
           <form className="product-form" onSubmit={handleDoctorformSubmit}>
             <h3>{EditingDoctorId ? "Edit Doctor" : "Add Doctor"}</h3>
@@ -1752,8 +1757,8 @@ const Doctor = () => {
             </div>
           </form>
         </div>
-      )}
-      {AddSpeciality && (
+      )} */}
+      {/* {AddSpeciality && (
         <div className="modal">
           <form className="customer-form" onSubmit={handleAddSpecialization}>
             <h2>Add New Specialization</h2>
@@ -1773,9 +1778,9 @@ const Doctor = () => {
             </div>
           </form>
         </div>
-      )}
+      )} */}
 
-      {deleteConfirmModal && (
+      {/* {deleteConfirmModal && (
         <div className="modal">
           <div className="modal-content">
             <h3>Are you sure you want to delete this doctor?</h3>
@@ -1793,9 +1798,9 @@ const Doctor = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
-      {openModal && (
+      {/* {openModal && (
         <div className="modal-overlay" onClick={() => setOpenModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Uploaded Documents</h3>
@@ -1822,10 +1827,10 @@ const Doctor = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
 
-      {ImageModal && (
+       {ImageModal && (
         <div className="image-preview-overlay" onClick={() => setImageModal(false)}>
           <div className="image-preview-modal" onClick={(e) => e.stopPropagation()}>
             <img src={previewImage} alt="Preview" />
@@ -1837,7 +1842,7 @@ const Doctor = () => {
 
 
 
-      {showReasonModal && (
+       {showReasonModal && (
         <div className=" modal">
 
           <form className="customer-form">
@@ -1863,7 +1868,7 @@ const Doctor = () => {
           </form>
         </div>
 
-      )}
+      )} 
       <ToastContainer
         position="top-center"
         autoClose={3000}

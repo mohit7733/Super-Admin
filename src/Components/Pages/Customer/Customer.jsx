@@ -115,87 +115,87 @@ const Customers = () => {
     setCustomerForm(initialCustomerFormState)
     setFormErrors(initialFormErrors)
   }
-  const handleDownload = () => {
+  // const handleDownload = () => {
 
-    const exportData = customerData?.map((c) => ({
-      Name: c.first_name,
-      Email: c.email,
-      "Phone Number": c.verified_phone_number,
-    }));
+  //   const exportData = customerData?.map((c) => ({
+  //     Name: c.first_name,
+  //     Email: c.email,
+  //     "Phone Number": c.verified_phone_number,
+  //   }));
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Customers");
+  //   const ws = XLSX.utils.json_to_sheet(exportData);
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Customers");
 
-    XLSX.writeFile(wb, "Customers.xlsx");
-  };
+  //   XLSX.writeFile(wb, "Customers.xlsx");
+  // };
 
   const handleNavigate = (id) => {
     navigate(`/CustomerDetailPage/${id}`)
   }
 
 
-  const handleCreateCustomer = async (e) => {
-    e.preventDefault();
+  // const handleCreateCustomer = async (e) => {
+  //   e.preventDefault();
 
-    if (!validatePhoneForm()) {
-      return;
-    }
-
-
-
-    try {
-      const token = sessionStorage.getItem("superadmin_token");
-      const payload = {
-        phone_number: `+91${CustomerForm.verified_phone_number}`,
-        role: "customer",
-      };
-
-      const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+  //   if (!validatePhoneForm()) {
+  //     return;
+  //   }
 
 
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
 
-      const data = await response.json();
+  //   try {
+  //     const token = sessionStorage.getItem("superadmin_token");
+  //     const payload = {
+  //       phone_number: `+91${CustomerForm.verified_phone_number}`,
+  //       role: "customer",
+  //     };
+
+  //     const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
+  //       method: "POST",
+  //       headers: {
+  //         Accept: "application/json",
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify(payload),
+  //     });
 
 
-      if (!response.ok) {
-        toast.error(data?.error);
-        return;
-      }
+  //     if (response.status === 401 || response.status === 403) {
+  //       toast.error("Session expired. Please login again");
+  //       sessionStorage.removeItem("superadmin_token");
+  //       navigate("/login");
+  //       return;
+  //     }
+
+  //     const data = await response.json();
 
 
-      const uid = data?.user?.id;
+  //     if (!response.ok) {
+  //       toast.error(data?.error);
+  //       return;
+  //     }
 
-      toast.success("Customer created. Please complete your registration");
 
-      if (uid) {
-        setUserId(uid);
-        localStorage.setItem("USER_ID", uid);
-        setOtpVerified(false);
-        setCustomerModalOpen(true);
-      }
+  //     const uid = data?.user?.id;
 
-    } catch (err) {
-      console.error("Customer create error:", err);
-      toast.error("Something went wrong. Please try again", {
-        position: "top-center",
-      });
-    }
-  };
+  //     toast.success("Customer created. Please complete your registration");
+
+  //     if (uid) {
+  //       setUserId(uid);
+  //       localStorage.setItem("USER_ID", uid);
+  //       setOtpVerified(false);
+  //       setCustomerModalOpen(true);
+  //     }
+
+  //   } catch (err) {
+  //     console.error("Customer create error:", err);
+  //     toast.error("Something went wrong. Please try again", {
+  //       position: "top-center",
+  //     });
+  //   }
+  // };
 
 
 
@@ -229,67 +229,68 @@ const Customers = () => {
 
 
 
-  const handleCustomerFormSubmit = async (e) => {
-    e.preventDefault();
+  // const handleCustomerFormSubmit = async (e) => {
+  //   e.preventDefault();
 
-    if (!validateCustomerForm()) return;
+  //   if (!validateCustomerForm()) return;
 
-    const method = editingCustomerId ? "PUT" : "POST";
-    const url = editingCustomerId
-      ? `${BASE_URL}/customers/customer/${editingCustomerId}/`
-      : `${BASE_URL}/customers/customer/`;
+  //   const method = editingCustomerId ? "PUT" : "POST";
+  //   const url = editingCustomerId
+  //     ? `${BASE_URL}/customers/customer/${editingCustomerId}/`
+  //     : `${BASE_URL}/customers/customer/`;
 
-    const formData = new FormData();
+  //   const formData = new FormData();
 
-    if (method === "POST") {
-      const uid = userId || localStorage.getItem("USER_ID");
-      if (uid) formData.append("user", uid);
-    }
+  //   if (method === "POST") {
+  //     const uid = userId || localStorage.getItem("USER_ID");
+  //     if (uid) formData.append("user", uid);
+  //   }
 
-    Object.entries(CustomerForm).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
+  //   Object.entries(CustomerForm).forEach(([key, value]) => {
+  //     formData.append(key, value);
+  //   });
 
-    try {
-      const data = await apiFetch(url, {
-        method,
-        body: formData,
+  //   try {
+  //     const data = await apiFetch(url, {
+  //       method,
+  //       body: formData,
 
-        headers: {},
-      });
+  //       headers: {},
+  //     });
 
 
-      if (!data) return;
+  //     if (!data) return;
 
-      if (method === "POST") {
-        setCustomerData((prev) => [...prev, data]);
-        toast.success("Customer added successfully", {
-          position: "top-center",
-          autoClose: 2000,
-        });
-      } else {
-        setCustomerData((prev) =>
-          prev.map((cust) =>
-            cust.id === editingCustomerId ? { ...cust, ...CustomerForm } : cust
-          )
-        );
-        toast.success("Customer updated successfully", {
-          position: "top-center",
-          autoClose: 2000,
-        });
-      }
+  //     if (method === "POST") {
+  //       setCustomerData((prev) => [...prev, data]);
+  //       toast.success("Customer added successfully", {
+  //         position: "top-center",
+  //         autoClose: 2000,
+  //       });
+  //     } else {
+  //       setCustomerData((prev) =>
+  //         prev.map((cust) =>
+  //           cust.id === editingCustomerId ? { ...cust, ...CustomerForm } : cust
+  //         )
+  //       );
+  //       toast.success("Customer updated successfully", {
+  //         position: "top-center",
+  //         autoClose: 2000,
+  //       });
+  //     }
 
-      handleCloseCustomerModal();
-      getCustomerList();
+  //     handleCloseCustomerModal();
+  //     getCustomerList();
 
-    } catch (err) {
-      console.error("Customer save error:", err);
-      toast.error("Failed to save customer", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-    }
-  };
+  //   } catch (err) {
+  //     console.error("Customer save error:", err);
+  //     toast.error("Failed to save customer", {
+  //       position: "top-center",
+  //       autoClose: 2000,
+  //     });
+  //   }
+  // };
+
   const getInitials = (firstName = "", lastName = "") => {
     return (
       (firstName?.[0] || "").toUpperCase() +
@@ -300,53 +301,53 @@ const Customers = () => {
 
 
 
-  const handleCustomerFileChange = (e) => {
-    const file = e.target.files[0];
+  // const handleCustomerFileChange = (e) => {
+  //   const file = e.target.files[0];
 
-    setCustomerForm((prev) => ({
-      ...prev,
-      profile_picture: file,
-    }));
-  };
-
-
-  const handleCustomerInputChange = (e) => {
-    const { name, value } = e.target;
-
-    let updatedValue = value;
-
-    if (name === "verified_phone_number") {
-
-      const digitsOnly = value.replace(/\D/g, "");
-
-      updatedValue = digitsOnly;
-    }
-
-    setCustomerForm((prev) => ({
-      ...prev,
-      [name]: updatedValue,
-    }));
+  //   setCustomerForm((prev) => ({
+  //     ...prev,
+  //     profile_picture: file,
+  //   }));
+  // };
 
 
+  // const handleCustomerInputChange = (e) => {
+  //   const { name, value } = e.target;
 
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }))
-    }
+  //   let updatedValue = value;
 
-    if (phoneFormErrors[name]) {
-      setPhoneFormErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }))
-    }
-  }
+  //   if (name === "verified_phone_number") {
+
+  //     const digitsOnly = value.replace(/\D/g, "");
+
+  //     updatedValue = digitsOnly;
+  //   }
+
+  //   setCustomerForm((prev) => ({
+  //     ...prev,
+  //     [name]: updatedValue,
+  //   }));
 
 
 
-  const getCustomerList = async (page = 1, searchTerm = "") => {
+  //   if (formErrors[name]) {
+  //     setFormErrors((prev) => ({
+  //       ...prev,
+  //       [name]: "",
+  //     }))
+  //   }
+
+  //   if (phoneFormErrors[name]) {
+  //     setPhoneFormErrors((prev) => ({
+  //       ...prev,
+  //       [name]: "",
+  //     }))
+  //   }
+  // }
+
+
+
+  const getCustomerList = async (page = 1) => {
     const token = sessionStorage.getItem("superadmin_token");
 
     if (!token) {
@@ -359,13 +360,14 @@ const Customers = () => {
 
     try {
       const response = await fetch(
-        `${BASE_URL}/customers/customer/?page=${page}&search=${searchTerm}`,
+        `${BASE_URL}/customers/admin/customers/?page=${page}`,
         {
           method: "GET",
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+             'ngrok-skip-browser-warning': 'true',
           },
         }
       );
@@ -381,13 +383,13 @@ const Customers = () => {
 
       console.log("Customer API Response:", data);
 
-      setCustomerData(data.data || []);
-      setTotalCount(data.count || 0);
-      setNextPage(data.next);
-      setPreviousPage(data.previous);
+      setCustomerData(data.data.results || []);
+      setTotalCount(data.data.count || 0);
+      setNextPage(data.data.next);
+      setPreviousPage(data.data.previous);
       setCurrentPage(page);
-      setThisMonthCount(data.this_month_count || 0);
-      setThisYearCount(data.this_year_count || 0);
+      // setThisMonthCount(data.this_month_count || 0);
+      // setThisYearCount(data.this_year_count || 0);
 
     } catch (err) {
       console.error("Customer Fetch Error:", err);
@@ -399,13 +401,45 @@ const Customers = () => {
   };
 
   useEffect(() => {
-    const delay = setTimeout(() => {
-      getCustomerList(1, searchcustomerTerm);
-    }, 100);
+      getCustomerList()
+  },[] );
 
-    return () => clearTimeout(delay);
-  }, [searchcustomerTerm]);
+  const handleToggle = async (id, currentStatus) => {
+  const token = sessionStorage.getItem("superadmin_token");
+  if(!token){
+    toast.error("Session Expired,please login Again");
+    navigate("/login");
+    return;
+  }
 
+  try {
+    const response = await fetch(
+     `${BASE_URL}/customers/admin/customers/?id=${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+           "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          is_active: !currentStatus,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    console.log(data);
+
+    toast.success("Status updated successfully");
+
+    getCustomerList();
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to update status");
+  }
+};
 
 
 
@@ -461,15 +495,15 @@ const Customers = () => {
         <div className="action-buttons">
           <button
             className="btn-primary"
-            onClick={() => {
-              setOtpVerified(true);
-              setCustomerForm(initialCustomerFormState);
-            }}
+            // onClick={() => {
+            //   setOtpVerified(true);
+            //   setCustomerForm(initialCustomerFormState);
+            // }}
           >
             <BsPlus size={18} />
             Add Customer
           </button>
-          <button className="btn-secondary" onClick={handleDownload}>
+          <button className="btn-secondary">
             <BsDownload size={16} />
             Export
           </button>
@@ -485,6 +519,7 @@ const Customers = () => {
               <th>Email</th>
               <th>Gender</th>
               <th>Phone Number</th>
+              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -530,8 +565,16 @@ const Customers = () => {
                   <td>{customer.email}</td>
                   <td>{customer.gender}</td>
                   <td>{customer.verified_phone_number}</td>
-
-
+  <td>
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={customer.is_active}
+              onChange={() => handleToggle(customer.id, customer.is_active)}
+            />
+            <span className="slider round"></span>
+          </label>
+        </td>
 
                   <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
 
@@ -622,7 +665,7 @@ const Customers = () => {
         {totalPages > 1 && (
           <div className="pagination">
             <button
-              onClick={() => getCustomerList(currentPage - 1, searchcustomerTerm)}
+              onClick={() => getCustomerList(currentPage - 1)}
               disabled={!previousPage}
             >
               Prev
@@ -630,7 +673,7 @@ const Customers = () => {
             {pages.map((page) => (
               <button
                 key={page}
-                onClick={() => getCustomerList(page, searchcustomerTerm)}
+                onClick={() => getCustomerList(page)}
                 style={{
 
                   fontWeight: currentPage === page ? "bold" : "normal",
@@ -642,7 +685,7 @@ const Customers = () => {
               </button>
             ))}
             <button
-              onClick={() => getCustomerList(currentPage + 1, searchcustomerTerm)}
+              onClick={() => getCustomerList(currentPage + 1)}
               disabled={!nextPage}
             >
               Next
@@ -653,7 +696,7 @@ const Customers = () => {
 
       </div>
 
-      {customermodalOpen && (
+      {/* {customermodalOpen && (
         <div className="modal">
           <form className="customer-form" onSubmit={handleCustomerFormSubmit}>
             <h3>{editingCustomerId ? "Edit Customer" : "Add Customer"}</h3>
@@ -733,9 +776,9 @@ const Customers = () => {
             </div>
           </form>
         </div>
-      )}
+      )} */}
 
-      {otpVerified && (
+      {/* {otpVerified && (
         <div className="modal">
           <form className="customer-form" onSubmit={handleCreateCustomer}>
             <h2>Enter your Phone Number</h2>
@@ -769,10 +812,10 @@ const Customers = () => {
             </div>
           </form>
         </div>
-      )}
+      )} */}
 
 
-      {deleteConfirmModal && (
+      {/* {deleteConfirmModal && (
         <div className="modal">
           <div className="modal-content">
             <h3>Are you sure you want to delete this customer?</h3>
@@ -789,7 +832,7 @@ const Customers = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
 
 

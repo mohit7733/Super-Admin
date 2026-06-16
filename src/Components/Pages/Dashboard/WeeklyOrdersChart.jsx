@@ -8,7 +8,7 @@ function normalizeDateStr(dateStr = "") {
 }
 
 function getWeekdayIndex(date, weekStart) {
-  const d = date.getDay() // 
+  const d = date.getDay() 
   if (weekStart === "mon") {
  
     return (d + 6) % 7

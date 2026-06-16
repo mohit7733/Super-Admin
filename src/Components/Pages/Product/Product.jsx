@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
@@ -11,6 +12,7 @@ import { FaUsers } from "react-icons/fa";
 import { FaEdit}from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
+
 
 
 const initialProductForm = {
@@ -45,9 +47,9 @@ const initialProductForm = {
 }
 
 const Product = () => {
-  const [productSearch, setProductSearch] = useState("");
+  // const [productSearch, setProductSearch] = useState("");
   const [stockFilter, setStockFilter] = useState("All");
-  const [products, setProducts] = useState([]);
+  const [products,setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [productForm, setProductForm] = useState(initialProductForm);
@@ -84,125 +86,155 @@ const totalPages = Math.ceil(totalCount / pageSize);
 const [Nextpage, setNextPage] = useState(null);
 const [previousPage, setPreviousPage] = useState(null);
  const [openMenuId, setOpenMenuId] = useState(null);
+ const navigate = useNavigate();
+ const[ProductId,setProductId]=useState(null);
+ const[SelectedStatus,setSelectedStatus]=useState("");
+ const[showReasonModal,setShowReasonModal]=useState(false);
+ const[RejectReason,setRejectReason]=useState("")
+ const fetchedOnce = useRef(false);
 
-  const fetchedOnce = useRef(false);
+ const fetchProducts = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-  const fetchProducts = async (page = 1) => {
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setLoadingProduct(true); 
+
   try {
-    setLoadingProduct(true);
-
-    const response = await apiFetch(
-      `${BASE_URL}/catalogs/product/?page=${page}`
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/product/`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
     );
 
-    if (response?.status === "success") {
-      setProducts(response.data || []);
-      setTotalCount(response.count);
-      setCurrentPage(page);        
-      setNextPage(response.next);
-      setPreviousPage(response.previous);
-      setTotalCount(response.count)
-    } else {
-      setProducts([]);
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+
+      toast.error("Session expired. Please login again");
+
+      navigate("/login");
+      return;
     }
 
+    const data = await response.json();
+
+    console.log("Product API Response:", data);
+
+     setProducts(data.data.results)
   } catch (error) {
-    setProducts([]);
-    toast.error("Failed to fetch Product list", {
-      position: "top-center",
-      autoClose: 2000,
-    });
+    console.error("Product Fetch Error:", error);
+
+    setError("Something went wrong while fetching data.");
+
+    toast.error("Failed to fetch product data");
+
+    
   } finally {
     setLoadingProduct(false);
   }
 };
 
 
-  const fetchCategoryOptions = async () => {
-    try {
-      const response = await apiFetch(`${BASE_URL}/catalogs/productcategory/`);
 
-      setCategoryOptions(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Failed to fetch categories:", error);
-    }
-  };
-
-  const fetchhealthconcerncategory = async () => {
-  try {
-    const response = await apiFetch(`${BASE_URL}/catalogs/healthconcernscategory/`);
-
-    setHealthCategoryOption(
-      Array.isArray(response.data) ? response.data : []
-    );
-
-  } catch (error) {
-    console.error("Error fetching health categories:", error);
+const handleNavigate = (id) => {
+    navigate(`/Productdetail/${id}`)
   }
-};
+  // const fetchCategoryOptions = async () => {
+  //   try {
+  //     const response = await apiFetch(`${BASE_URL}/catalogs/productcategory/`);
+
+  //     setCategoryOptions(Array.isArray(response.data) ? response.data : []);
+  //   } catch (error) {
+  //     console.error("Failed to fetch categories:", error);
+  //   }
+  // };
+
+//   const fetchhealthconcerncategory = async () => {
+//   try {
+//     const response = await apiFetch(`${BASE_URL}/catalogs/healthconcernscategory/`);
+
+//     setHealthCategoryOption(
+//       Array.isArray(response.data) ? response.data : []
+//     );
+
+//   } catch (error) {
+//     console.error("Error fetching health categories:", error);
+//   }
+// };
 
   useEffect(() => {
     if (!fetchedOnce.current) {
-      fetchProducts(1);
-      fetchCategoryOptions();
-      fetchhealthconcerncategory();
+      fetchProducts();
+      // fetchCategoryOptions();
+      // fetchhealthconcerncategory();
       fetchedOnce.current = true;
     }
   }, []);
 
 
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
 
 
-    setProductForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  //   setProductForm((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
 
-    setValidationErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: "",
-    }));
-  };
+  //   setValidationErrors((prevErrors) => ({
+  //     ...prevErrors,
+  //     [name]: "",
+  //   }));
+  // };
 
 
 
-  const handleAddHealthCategory = async (e) => {
-    e.preventDefault();
+  // const handleAddHealthCategory = async (e) => {
+  //   e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("name", healthcategoryname);
-    formData.append("slug", Slug);
-    formData.append("icon", healthcategoryImage);
+  //   const formData = new FormData();
+  //   formData.append("name", healthcategoryname);
+  //   formData.append("slug", Slug);
+  //   formData.append("icon", healthcategoryImage);
 
-    try {
-      const response = await apiFetch(
-        `${BASE_URL}/catalogs/healthconcernscategory/`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+  //   try {
+  //     const response = await apiFetch(
+  //       `${BASE_URL}/catalogs/healthconcernscategory/`,
+  //       {
+  //         method: "POST",
+  //         body: formData,
+  //       }
+  //     );
 
-      setHealthCategoryOption((prev) => [...prev, response]);
-      setHealthCategoryForm(false);
-      setHealthcategory("");
-      setHealthCategoryImage(null);
-      setSlug("");
+  //     setHealthCategoryOption((prev) => [...prev, response]);
+  //     setHealthCategoryForm(false);
+  //     setHealthcategory("");
+  //     setHealthCategoryImage(null);
+  //     setSlug("");
 
-      toast.success("Category added successfully!");
-    } catch (err) {
-      console.error(err);
+  //     toast.success("Category added successfully!");
+  //   } catch (err) {
+  //     console.error(err);
 
-      if (err?.name) {
-        toast.error(err.name[0]);
-      } else {
-        toast.error("Failed to add category.");
-      }
-    }
-  };
+  //     if (err?.name) {
+  //       toast.error(err.name[0]);
+  //     } else {
+  //       toast.error("Failed to add category.");
+  //     }
+  //   }
+  // };
 
   const confirmDelete = (id) => {
     setDeleteProductId(id);
@@ -242,153 +274,153 @@ const [previousPage, setPreviousPage] = useState(null);
     }
   };
 
-  const handleHealthConcernChange = (id) => {
-    setSelectedHealthConcerns((prev) =>
-      prev.includes(id)
-        ? prev.filter((item) => item !== id)
-        : [...prev, id]
-    );
-  };
+  // const handleHealthConcernChange = (id) => {
+  //   setSelectedHealthConcerns((prev) =>
+  //     prev.includes(id)
+  //       ? prev.filter((item) => item !== id)
+  //       : [...prev, id]
+  //   );
+  // };
 
-  const validateForm = () => {
-    let errors = {};
-    const alphaNumRegex = /^[a-zA-Z0-9\s]+$/;
-    const ayushRegex = /^[A-Za-z0-9\/-]{5,30}$/;
+  // const validateForm = () => {
+  //   let errors = {};
+  //   const alphaNumRegex = /^[a-zA-Z0-9\s]+$/;
+  //   const ayushRegex = /^[A-Za-z0-9\/-]{5,30}$/;
 
-    if (!productForm.title.trim()) {
-      errors.title = "Product name is required";
-    } else if (!alphaNumRegex.test(productForm.title.trim())) {
-      errors.title = "Product name can only contain letters and numbers";
-    }
+  //   if (!productForm.title.trim()) {
+  //     errors.title = "Product name is required";
+  //   } else if (!alphaNumRegex.test(productForm.title.trim())) {
+  //     errors.title = "Product name can only contain letters and numbers";
+  //   }
 
-    if (!productForm.brand.trim()) {
-      errors.brand = "Brand is required";
-    } else if (!alphaNumRegex.test(productForm.brand.trim())) {
-      errors.brand = "Brand can only contain letters and numbers";
-    }
-    if (!productForm.meta_title.trim()) {
-      errors.meta_title = "Meta Title is required"
-    }
-
-
-
-    if (!productForm.form.trim()) {
-      errors.form = "Form is required";
-    } else if (!alphaNumRegex.test(productForm.form.trim())) {
-      errors.form = "Form can only contain letters and numbers";
-    }
-
-    if (!productForm.short_description.trim())
-      errors.short_description = "Short description is required";
-
-    if (!productForm.category) errors.category = "Category is required";
-
-
-    if (!productForm.ayush_license_number?.trim()) {
-      errors.ayush_license_number = "AYUSH license number is required";
-    }
-    else if (!ayushRegex.test(productForm.ayush_license_number.trim())) {
-      errors.ayush_license_number =
-        "Invalid Ayush license number. Example: DL-25-AYU-12345 ";
-    }
+  //   if (!productForm.brand.trim()) {
+  //     errors.brand = "Brand is required";
+  //   } else if (!alphaNumRegex.test(productForm.brand.trim())) {
+  //     errors.brand = "Brand can only contain letters and numbers";
+  //   }
+  //   if (!productForm.meta_title.trim()) {
+  //     errors.meta_title = "Meta Title is required"
+  //   }
 
 
 
-    if (productForm.return_days === "" || productForm.return_days === null) {
-      errors.return_days = "Return days is required";
-    } else if (isNaN(productForm.return_days)) {
-      errors.return_days = "Return days must be a number";
-    } else if (Number(productForm.return_days) < 0) {
-      errors.return_days = "Return days cannot be negative";
-    } else if (!Number.isInteger(Number(productForm.return_days))) {
-      errors.return_days = "Return days must be a whole number";
-    } else if (Number(productForm.return_days) > 7) {
-      errors.return_days = "Return days cannot be more than 7 days";
-    }
+  //   if (!productForm.form.trim()) {
+  //     errors.form = "Form is required";
+  //   } else if (!alphaNumRegex.test(productForm.form.trim())) {
+  //     errors.form = "Form can only contain letters and numbers";
+  //   }
+
+  //   if (!productForm.short_description.trim())
+  //     errors.short_description = "Short description is required";
+
+  //   if (!productForm.category) errors.category = "Category is required";
 
 
-    if (!productForm.price?.trim()) {
-      errors.price = "price is required"
-    }
-    if (!productEditing && !productForm.image)
-      errors.image = "Product image is required";
-    setValidationErrors(errors);
-    console.log(errors, 'errors')
-    return Object.keys(errors).length === 0;
-  };
-
-const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  const handleProductSubmit = async (e) => {
-    e.preventDefault();
-    console.log('clicked')
-    if (!validateForm()) return;
-    console.log('clicked 2')
-    const method = productEditing ? "PUT" : "POST";
-    const url = productEditing
-      ? `${BASE_URL}/catalogs/product/${productEditing}/`
-      : `${BASE_URL}/catalogs/product/`;
-
-    const formData = new FormData();
-    formData.append("title", productForm.title);
-    formData.append("form", productForm.form);
-    formData.append("short_description", productForm.short_description);
-    formData.append("brand", productForm.brand);
-    formData.append("category", productForm.category);
-    formData.append("sin_number", productForm.sin_number);
-    formData.append("model_number", productForm.model_number);
-    formData.append("how_to_use", productForm.how_to_use);
-    formData.append("benefits", productForm.benefits)
-    formData.append("composition", productForm.composition)
-    formData.append("manufacturer", productForm.manufacturer);
-  selectedHealthConcerns.forEach((id) => {
-  formData.append("health_concern", id);
-});
-   formData.append("safety_information", productForm.safety_information);
-    formData.append("treatment", productForm.treatment);
-    formData.append("dosage", productForm.dosage);
-    formData.append("side_effect", productForm.side_effects);
-    formData.append("ayush_license_number", productForm.ayush_license_number)
-    formData.append("is_returnable", true);
-    formData.append("price", productForm.price);
-    formData.append("meta_title", productForm.meta_title);
-    formData.append("meta_description", productForm.meta_description)
-    formData.append("full_description", productForm.full_description);
-    formData.append("return_days", productForm.return_days);
-    formData.append("origin", productForm.origin);
+  //   if (!productForm.ayush_license_number?.trim()) {
+  //     errors.ayush_license_number = "AYUSH license number is required";
+  //   }
+  //   else if (!ayushRegex.test(productForm.ayush_license_number.trim())) {
+  //     errors.ayush_license_number =
+  //       "Invalid Ayush license number. Example: DL-25-AYU-12345 ";
+  //   }
 
 
-    if (productForm.image instanceof File) {
-      formData.append("image", productForm.image);
-    }
 
-    try {
-      const response = await apiFetch(url, {
-        method,
-        body: formData,
-      });
+  //   if (productForm.return_days === "" || productForm.return_days === null) {
+  //     errors.return_days = "Return days is required";
+  //   } else if (isNaN(productForm.return_days)) {
+  //     errors.return_days = "Return days must be a number";
+  //   } else if (Number(productForm.return_days) < 0) {
+  //     errors.return_days = "Return days cannot be negative";
+  //   } else if (!Number.isInteger(Number(productForm.return_days))) {
+  //     errors.return_days = "Return days must be a whole number";
+  //   } else if (Number(productForm.return_days) > 7) {
+  //     errors.return_days = "Return days cannot be more than 7 days";
+  //   }
 
-      if (!response) throw new Error("Invalid response");
 
-      const savedProduct = response;
+  //   if (!productForm.price?.trim()) {
+  //     errors.price = "price is required"
+  //   }
+  //   if (!productEditing && !productForm.image)
+  //     errors.image = "Product image is required";
+  //   setValidationErrors(errors);
+  //   console.log(errors, 'errors')
+  //   return Object.keys(errors).length === 0;
+  // };
 
-      setProducts((prev) =>
-        productEditing
-          ? prev.map((p) => (p.id === savedProduct.id ? savedProduct : p))
-          : [...prev, savedProduct]
-      );
+// const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+//   const handleProductSubmit = async (e) => {
+//     e.preventDefault();
+//     console.log('clicked')
+//     if (!validateForm()) return;
+//     console.log('clicked 2')
+//     const method = productEditing ? "PUT" : "POST";
+//     const url = productEditing
+//       ? `${BASE_URL}/catalogs/product/${productEditing}/`
+//       : `${BASE_URL}/catalogs/product/`;
 
-      toast.success(
-        productEditing
-          ? "Product updated successfully!"
-          : "Product added successfully!"
-      );
+//     const formData = new FormData();
+//     formData.append("title", productForm.title);
+//     formData.append("form", productForm.form);
+//     formData.append("short_description", productForm.short_description);
+//     formData.append("brand", productForm.brand);
+//     formData.append("category", productForm.category);
+//     formData.append("sin_number", productForm.sin_number);
+//     formData.append("model_number", productForm.model_number);
+//     formData.append("how_to_use", productForm.how_to_use);
+//     formData.append("benefits", productForm.benefits)
+//     formData.append("composition", productForm.composition)
+//     formData.append("manufacturer", productForm.manufacturer);
+//   selectedHealthConcerns.forEach((id) => {
+//   formData.append("health_concern", id);
+// });
+//    formData.append("safety_information", productForm.safety_information);
+//     formData.append("treatment", productForm.treatment);
+//     formData.append("dosage", productForm.dosage);
+//     formData.append("side_effect", productForm.side_effects);
+//     formData.append("ayush_license_number", productForm.ayush_license_number)
+//     formData.append("is_returnable", true);
+//     formData.append("price", productForm.price);
+//     formData.append("meta_title", productForm.meta_title);
+//     formData.append("meta_description", productForm.meta_description)
+//     formData.append("full_description", productForm.full_description);
+//     formData.append("return_days", productForm.return_days);
+//     formData.append("origin", productForm.origin);
 
-      handleProductCloseModal();
-    } catch (err) {
-      console.error("Error submitting product:", err);
-      toast.error("Failed to submit product");
-    }
-  };
+
+//     if (productForm.image instanceof File) {
+//       formData.append("image", productForm.image);
+//     }
+
+//     try {
+//       const response = await apiFetch(url, {
+//         method,
+//         body: formData,
+//       });
+
+//       if (!response) throw new Error("Invalid response");
+
+//       const savedProduct = response;
+
+//       setProducts((prev) =>
+//         productEditing
+//           ? prev.map((p) => (p.id === savedProduct.id ? savedProduct : p))
+//           : [...prev, savedProduct]
+//       );
+
+//       toast.success(
+//         productEditing
+//           ? "Product updated successfully!"
+//           : "Product added successfully!"
+//       );
+
+//       handleProductCloseModal();
+//     } catch (err) {
+//       console.error("Error submitting product:", err);
+//       toast.error("Failed to submit product");
+//     }
+//   };
 
   const handleProductCloseModal = () => {
     setShowProductModal(false);
@@ -397,86 +429,149 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
     setPreviewImage(null);
     setValidationErrors({});
   };
+ const handleRejectClick = (ProductId, statusType) => {
+    setProductId(ProductId);
+    setSelectedStatus(statusType);
+    setShowReasonModal(true);
+  };
+ const handleStatusChange = async (
+  productId,
+  newStatus,
+  reason = ""
+) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
+  try {
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/product/status/`,
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          status: newStatus,
+          reason: reason,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to update status");
+    }
+
+    setProducts((prev) =>
+      prev.map((product) =>
+        product.id === productId
+          ? { ...product, status: newStatus }
+          : product
+      )
+    );
+
+    toast.success("Status updated successfully");
+  } catch (err) {
+    console.error(err);
+    toast.error("Error updating product status");
+  }
+};
  
+ const submitRejection = async (e) => {
+  e.preventDefault();
 
-  const selectedHealthConcernNames = HealthCategoryOption
-    .filter((hc) => selectedHealthConcerns.includes(hc.id))
-    .map((hc) => hc.name);
+  await handleStatusChange(
+    ProductId,
+    SelectedStatus,
+    RejectReason
+  );
 
-
-  const filteredProducts = () => {
-    return products.filter((product) => {
-      const matchesSearch =
-        product?.title?.toLowerCase().includes(productSearch.toLowerCase()) ?? false;
-      const matchesStock =
-        stockFilter === "All" ||
-        (stockFilter === "true" && product.in_stock) ||
-        (stockFilter === "false" && !product.in_stock);
-      return matchesSearch && matchesStock;
-    });
-  };
-
-  const validateCategoryForm = () => {
-    let errors = {};
-    const alphaNumRegex = /^[a-zA-Z0-9\s]+$/;
+  setShowReasonModal(false);
+  setRejectReason("");
+  setProductId("");
+  setSelectedStatus("");
+};
 
 
-    if (!Categoryname.trim()) {
-      errors.name = "Category name is required";
-    } else if (!alphaNumRegex.test(Categoryname.trim())) {
-      errors.name = "Category name can only contain letters and numbers";
-    }
-
-    if (!CategoryImage) {
-      errors.image = "Category image is required";
-    }
-
-    setCategoryValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleAddCategory = async (e) => {
-    e.preventDefault();
+  // const selectedHealthConcernNames = HealthCategoryOption
+  //   .filter((hc) => selectedHealthConcerns.includes(hc.id))
+  //   .map((hc) => hc.name);
 
 
-    const formData = new FormData();
-    formData.append("name", Categoryname);
+  // const filteredProducts = () => {
+  //   return products.filter((product) => {
+  //     const matchesSearch =
+  //       product?.title?.toLowerCase().includes(productSearch.toLowerCase()) ?? false;
+  //     const matchesStock =
+  //       stockFilter === "All" ||
+  //       (stockFilter === "true" && product.in_stock) ||
+  //       (stockFilter === "false" && !product.in_stock);
+  //     return matchesSearch && matchesStock;
+  //   });
+  // };
 
-    if (CategoryImage instanceof File) {
-      formData.append("image", CategoryImage);
-    }
-
-    try {
-      setCategoryLoading(true);
-      const response = await apiFetch(`${BASE_URL}/catalogs/productcategory/`, {
-        method: "POST",
-        body: formData,
-      });
-
-
-      setCategoryOptions((prev) => [...prev, response]);
-      setNewCategoryform(false);
-      setHealthcategory("");
-      setHealthCategoryImage(null);
+  // const validateCategoryForm = () => {
+  //   let errors = {};
+  //   const alphaNumRegex = /^[a-zA-Z0-9\s]+$/;
 
 
-      toast.success("Category added successfully!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to add category.");
-    } finally {
-      setCategoryLoading(false);
-    }
-  };
+  //   if (!Categoryname.trim()) {
+  //     errors.name = "Category name is required";
+  //   } else if (!alphaNumRegex.test(Categoryname.trim())) {
+  //     errors.name = "Category name can only contain letters and numbers";
+  //   }
 
-  const generateSlug = (text) => {
-    return text
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_]/g, "");
-  };
+  //   if (!CategoryImage) {
+  //     errors.image = "Category image is required";
+  //   }
+
+  //   setCategoryValidationErrors(errors);
+  //   return Object.keys(errors).length === 0;
+  // };
+
+  // const handleAddCategory = async (e) => {
+  //   e.preventDefault();
+
+
+  //   const formData = new FormData();
+  //   formData.append("name", Categoryname);
+
+  //   if (CategoryImage instanceof File) {
+  //     formData.append("image", CategoryImage);
+  //   }
+
+  //   try {
+  //     setCategoryLoading(true);
+  //     const response = await apiFetch(`${BASE_URL}/catalogs/productcategory/`, {
+  //       method: "POST",
+  //       body: formData,
+  //     });
+
+
+  //     setCategoryOptions((prev) => [...prev, response]);
+  //     setNewCategoryform(false);
+  //     setHealthcategory("");
+  //     setHealthCategoryImage(null);
+
+
+  //     toast.success("Category added successfully!");
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Failed to add category.");
+  //   } finally {
+  //     setCategoryLoading(false);
+  //   }
+  // };
+
+  // const generateSlug = (text) => {
+  //   return text
+  //     .toLowerCase()
+  //     .trim()
+  //     .replace(/\s+/g, "_")
+  //     .replace(/[^a-z0-9_]/g, "");
+  // };
 
   return (
     <>
@@ -490,17 +585,17 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
        
          <div className="search-wrapper">
           <BsSearch className="search-icon" />
-          <input
+           <input
             type="text"
             placeholder="Search product by product name ..."
-            value={productSearch}
-            onChange={(e) => setProductSearch(e.target.value)}
+            // value={productSearch}
+            // onChange={(e) => setProductSearch(e.target.value)}
             className="search-input"
-          />
+          /> 
         </div>
         <div className="filter-controls">
          
-          <button
+          {/* <button
   className="add-customer-btn"
   onClick={() => {
     setProductEditing(null);       
@@ -511,7 +606,7 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   }}
 >
   + Add Product
-</button>
+</button> */}
 
         </div>
       </div>
@@ -525,13 +620,16 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
             <th>ID</th>
             <th>Name</th>
             <th>Brand</th>
-            <th>Short Description</th>
+           
             <th>Form</th>
             <th>Treatment </th>
           <th>Health Category </th>
             <th>Image</th>
             <th>Category</th>
-            <th>Actions</th>
+         
+            <th>Status</th>
+
+               <th> Action</th>
 
           </tr>
         </thead>
@@ -552,173 +650,81 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
       {error}
     </td>
   </tr>
-) : filteredProducts()?.length > 0 ? (
-  filteredProducts().map((product, index) => (
-    <tr key={product.id}>
-      <td>{index + 1}</td>
-      <td>{product?.title}</td>
-      <td>{product?.brand}</td>
-      <td>{product?.short_description}</td>
-      <td>{product?.form}</td>
-      <td>{product?.treatment}</td>
+) : products.length > 0 ? (
+  products.map((product, index) => (
+   <tr key={product.id}>
+  <td>{index + 1}</td>
 
-      <td>
-        {product?.healthconcerncategory_detail &&
-        product.healthconcerncategory_detail.length > 0
-          ? product.healthconcerncategory_detail
-              .map((hc) => hc.name)
-              .join(", ")
-          : "—"}
-      </td>
+  <td>{product?.name}</td>
 
-      <td>
-        {product?.image ? (
-          <img
-            src={product?.image}
-            alt={product?.title}
-            width="50"
-            style={{
-              cursor: "pointer",
-              borderRadius: "4px",
-            }}
-            onClick={() => {
-              setPreviewimage(product.image);
-              setShowPreviewModal(true);
-            }}
-          />
-        ) : (
-          "No image"
-        )}
-      </td>
+  <td>{product?.brand_name}</td>
 
-      <td>{product?.category_detail?.name ?? ""}</td>
 
-      <td
-        style={{ position: "relative" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          className="action-menu-toggle"
-          title="Edit Details"
-          onClick={() =>
-            setOpenMenuId(
-              openMenuId === product.id
-                ? null
-                : product.id
-            )
-          }
-          style={{
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "20px",
-          }}
-        >
-          <span className="icon">
-            <BsThreeDotsVertical />
-          </span>
-        </button>
 
-        {openMenuId === product.id && (
-          <div className="action-buttons-modal">
-            <button
-              className="action-btn1"
-              title="Edit Detail"
-              onClick={() => {
-                setProductEditing(product.id);
+  <td>{product?.variants?.physical_state}</td>
 
-                setProductForm({
-                  title: product.title || "",
-                  brand: product.brand || "",
-                  treatment:
-                    product.treatment || "",
-                  form: product.form || "",
-                  manufacturer:
-                    product.manufacturer || "",
-                  ayush_license_number:
-                    product.ayush_license_number ||
-                    "",
-                  health_concern:
-                    product.health_concern || "",
-                  side_effects:
-                    product.side_effects || "",
-                  benefits:
-                    product.benefits || "",
-                  how_to_use:
-                    product.how_to_use || "",
-                  meta_description:
-                    product.meta_description ||
-                    "",
-                  price: product.price || "",
-                  model_number:
-                    product.model_number || "",
-                  return_days:
-                    product.return_days || "",
-                  dosage:
-                    product.dosage || "",
-                  sin_number:
-                    product.sin_number || "",
-                  meta_title:
-                    product.meta_title || "",
-                  origin:
-                    product.origin || "India",
-                  category:
-                    product.category ||
-                    product?.category_detail
-                      ?.id ||
-                    "",
-                  short_description:
-                    product.short_description ||
-                    "",
-                  full_description:
-                    product.full_description ||
-                    "",
-                  composition:
-                    product.composition || "",
-                  is_returnable:
-                    product.is_returnable ??
-                    false,
-                  image: null,
-                });
+  <td>{product?.treatment_type || "-"}</td>
 
-                setSelectedHealthConcerns(
-                  product.healthconcerncategory_detail
-                    ? product.healthconcerncategory_detail.map(
-                        (hc) => hc.id
-                      )
-                    : []
-                );
+  <td>
+    {product?.health_disease_ids?.length || 0}
+  </td>
 
-                setPreviewImage(product.image);
-                setShowProductModal(true);
-              }}
-            >
-              <span className="icon">
-                <FaEdit />
-              </span>
+  <td>
+    {product?.variants?.[0]?.media?.[0]?.media_url ? (
+      <img
+        src={product.variants[0].media[0].media_url}
+        alt={product.name}
+        width="50"
+        style={{
+          cursor: "pointer",
+          borderRadius: "4px",
+        }}
+        onClick={() => {
+          setPreviewimage(
+            product.variants[0].media[0].media_url
+          );
+          setShowPreviewModal(true);
+        }}
+      />
+    ) : (
+      "No Image"
+    )}
+  </td>
 
-              <span>Edit Detail</span>
-            </button>
+  <td>{product?.product_category_name || "-"}</td>
 
-            <button
-              title="Delete Product"
-              className="action-btn1"
-              onClick={() =>
-                confirmDelete(product.id)
-              }
-            >
-              <span className="icon-delete">
-                <FiTrash2 />
-              </span>
+  
+    <td>
+    <select
+      value={product?.status|| "pending"}
+   onChange={(e) => {
+  const newStatus = e.target.value;
 
-              <span className="delete-text">
-                Delete Product
-              </span>
-            </button>
-          </div>
-        )}
-      </td>
-    </tr>
+  if (newStatus === "rejected") {
+    handleRejectClick(product.id, newStatus);
+  } else {
+    handleStatusChange(product.id, newStatus);
+  }
+}}
+      className="status-dropdown"
+    >
+      <option value="pending">Pending</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option> 
+    </select>
+  </td>
+  <td>
+
+        <button className="action-btn1" title=" View Customer Order " onClick={() => handleNavigate(product.id)}>
+
+                          <span className="icon"> <FaEye/> </span>
+
+                        </button>
+  </td>
+
+   
+
+</tr>
   ))
 ) : (
   <tr>
@@ -742,7 +748,7 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
     </button>
 
    
-    {pages.map((page) => (
+    {/* {pages.map((page) => (
       <button
         key={page}
         onClick={() => fetchProducts(page)}
@@ -755,7 +761,7 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
       >
         {page}
       </button>
-    ))}
+    ))} */}
 
     
     <button
@@ -768,9 +774,35 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   </div>
 )}
 
+  {showReasonModal && (
+        <div className=" modal">
 
+          <form className="customer-form">
+            <h3>
+            {SelectedStatus === "rejected"
+                ? "Enter Rejected Reason"
+                : "Enter Suspended Reason"}
+            </h3>
+            <textarea
+              value={RejectReason}
+              placeholder={
+                SelectedStatus === "rejected"
+                  ? "Enter the reason for rejection..."
+                  : "Enter the reason for suspension..."
+              }
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+            <div className="form-buttons">
+              <button onClick={submitRejection} type="submit">   Submit  </button>
+              <button type="button" onClick={() => setShowReasonModal(false)}> Cancel </button>
+            </div>
 
-      {showProductModal && (
+          </form>
+        </div>
+
+      )} 
+
+      {/* {showProductModal && (
 
 
         <div className='modal1'>
@@ -1160,11 +1192,11 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
             </form>
           </div>
         </div>
-      )}
+      )} */}
 
 
 
-      {
+      {/* {
         Newcategoryform && (
           <div className="modal">
             <form className="customer-form" onSubmit={handleAddCategory} >
@@ -1214,20 +1246,20 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
           </div>
         )
-      }
+      } */}
 
 
      
 
-      {showPreviewModal && (
+      {/* {showPreviewModal && (
         <div className="image-preview-overlay" onClick={() => setShowPreviewModal(false)}>
           <div className="image-preview-modal" onClick={(e) => e.stopPropagation()}>
             <img src={previewimage} alt="Preview" />
 
           </div>
         </div>
-      )}
-      {
+      )} */}
+      {/* {
         HealthCategoryForm && (
           <div className="modal">
             <form className="customer-form" onSubmit={handleAddHealthCategory} >
@@ -1280,9 +1312,9 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
           </div>
         )
-      }
+      } */}
 
-      {showDeleteModal && (
+      {/* {showDeleteModal && (
         <div className="modal">
           <div className="modal-content">
             <h3>Delete Product</h3>
@@ -1298,7 +1330,7 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
         <div className="pagination">
 
         </div>
-      )}
+      )} */}
       <ToastContainer
         position="top-center"
         autoClose={3000}

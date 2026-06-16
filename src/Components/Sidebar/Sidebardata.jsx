@@ -1,159 +1,3 @@
-// import HomeIcon from '@mui/icons-material/Home';
-// import PersonIcon from '@mui/icons-material/Person';
-// import Inventory2Icon from '@mui/icons-material/Inventory2';
-// import StorefrontIcon from '@mui/icons-material/Storefront';
-// import ReorderIcon from '@mui/icons-material/Reorder';
-// import HistoryIcon from '@mui/icons-material/History';
-// import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
-// import HealingIcon from '@mui/icons-material/FitnessCenter';
-// import { FiClock } from "react-icons/fi";
-// import { FaTicketAlt, FaUsers } from "react-icons/fa";
-// import { MdQuiz } from "react-icons/md";
-// import { FaAppleAlt } from "react-icons/fa";
-// import { HiUsers } from "react-icons/hi";
-// import { TbReportAnalytics } from "react-icons/tb";
-
-// export const SidebarData = () => [
-//   // SECTION 1: DASHBOARD
-//   {
-//     title: "Dashboard",
-//     icon: <HomeIcon sx={{ fontSize: 20 }} />,
-//     path: "/Dashboard",
-//     permission: "view_dashboard",
-//     section: "Overview",
-//     order: 1,
-//   },
-
-//   // SECTION 2: USER MANAGEMENT
-//   {
-//     title: "Customers",
-//     icon: <PersonIcon sx={{ fontSize: 20 }} />,
-//     path: "/Customer",
-//     permission: "view_customers",
-//     section: "User Management",
-//     order: 2,
-//   },
-//   {
-//     title: "Patients",
-//     icon: <PersonIcon sx={{ fontSize: 20 }} />,
-//     path: "/Patient",
-//     permission: "view_patients",
-//     section: "User Management",
-//     order: 3,
-//   },
-//   {
-//     title: "Vendors",
-//     icon: <StorefrontIcon sx={{ fontSize: 20 }} />,
-//     path: "/Vendor",
-//     permission: "view_vendors",
-//     section: "User Management",
-//     order: 4,
-//   },
-//   {
-//     title: "Doctors",
-//     icon: <MedicalServicesIcon sx={{ fontSize: 20 }} />,
-//     path: "/Doctor",
-//     permission: "view_doctors",
-//     section: "User Management",
-//     order: 5,
-//   },
-//   {
-//     title: "Team",
-//     icon: <FaUsers size={20} />,
-//     path: "/Admin",
-//     permission: "manage_admin",
-//     section: "User Management",
-//     order: 6,
-//   },
-
-//   // SECTION 3: CONTENT
-//   {
-//     title: "Prakriti Questions",
-//     icon: <MdQuiz sx={{ fontSize: 20 }} />,
-//     path: "/question/prakriti",
-//     permission: "view_prakriti_questions",
-//     section: "Content Management",
-//     order: 7,
-//   },
-//   {
-//     title: "Medical Questions",
-//     icon: <MdQuiz sx={{ fontSize: 20 }} />,
-//     path: "/question/medical",
-//     permission: "view_medical_questions",
-//     section: "Content Management",
-//     order: 8,
-//   },
-//   {
-//     title: "Diet Plans",
-//     icon: <FaAppleAlt sx={{ fontSize: 20 }} />,
-//     path: "/Dietplans",
-//     permission: "view_dietplans",
-//     section: "Content Management",
-//     order: 9,
-//   },
-//   {
-//     title: "Wellness Centers",
-//     icon: <HealingIcon sx={{ fontSize: 20 }} />,
-//     path: "/Wellnesscenter",
-//     permission: "view_wellness_center",
-//     section: "Content Management",
-//     order: 10,
-//   },
-
-//   // SECTION 4: PRODUCTS & ORDERS
-//   {
-//     title: "Products",
-//     icon: <Inventory2Icon sx={{ fontSize: 20 }} />,
-//     path: "/Product",
-//     permission: "view_products",
-//     section: "Commerce",
-//     order: 11,
-//   },
-//   {
-//     title: "Orders",
-//     icon: <ReorderIcon sx={{ fontSize: 20 }} />,
-//     path: "/Order",
-//     permission: "view_orders",
-//     section: "Commerce",
-//     order: 12,
-//   },
-//   {
-//     title: "Order History",
-//     icon: <HistoryIcon sx={{ fontSize: 20 }} />,
-//     path: "/History",
-//     permission: "view_order_history",
-//     section: "Commerce",
-//     order: 13,
-//   },
-
-//   // SECTION 5: REPORTS
-//   {
-//     title: "Reports & Analytics",
-//     icon: <TbReportAnalytics size={20} />,
-//     path: "/Reports",
-//     permission: "view_reports",
-//     section: "Insights",
-//     order: 14,
-//   },
-
-//   // SECTION 6: SUPPORT & SYSTEM
-//   {
-//     title: "Support",
-//     icon: <FaTicketAlt size={20} />,
-//     path: "/Support",
-//     permission: "access_support",
-//     section: "Support",
-//     order: 15,
-//   },
-//   {
-//     title: "Audit Logs",
-//     icon: <FiClock size={20} />,
-//     path: "/Auditlogs",
-//     permission: "view_audit_logs",
-//     section: "System",
-//     order: 16,
-//   },
-// ];
 
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
@@ -164,7 +8,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import HealingIcon from '@mui/icons-material/FitnessCenter';
 import { FiClock } from "react-icons/fi";
-import { FaTicketAlt, FaUsers } from "react-icons/fa";
+import { FaTag, FaTicketAlt, FaUsers } from "react-icons/fa";
 import { MdQuiz } from "react-icons/md";
 import { FaAppleAlt } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi";
@@ -177,7 +21,20 @@ import { FaBoxOpen, FaTags } from "react-icons/fa";
 import { MdInventory } from "react-icons/md";
 import { FaChartLine,  FaHeadset } from "react-icons/fa";
 import { FaClipboardList, FaHistory } from "react-icons/fa";
-import {  FaCogs,  FaDatabase } from "react-icons/fa";
+import {  FaCogs,  FaDatabase ,FaBoxes,FaHeartbeat,FaHospital } from "react-icons/fa";
+import{GiLotus}  from "react-icons/gi";
+import { MdBrandingWatermark } from "react-icons/md";
+import { MdPhotoSizeSelectActual } from "react-icons/md";
+
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import { MdReviews } from "react-icons/md";
+
+
+import {
+  BiCategoryAlt,
+  BiPulse,
+} from "react-icons/bi";
+
 
 
 export const SidebarData = () => [
@@ -189,7 +46,92 @@ export const SidebarData = () => [
     permission: "view_dashboard",
   },
 
- 
+
+  // {
+  //   title: "Category Management",
+  //   icon: <ReorderIcon sx={{ fontSize: 20 }} />,
+  //   path: "#",
+  //   permission: "manage_orders",
+  //   children: [
+  //    {
+  //     title: "Service category",
+  //     path: "/main/category",
+  //     permission: "view_category",
+  //     icon: <FaClipboardList size={18} />
+  //   },
+   
+  //    {
+  //     title: "Sub Service category",
+  //     path: "/main/productcategory",
+  //     permission: "view_product_category",
+  //     icon: <FaClipboardList size={18} />
+  //   },
+   
+  //      {
+  //     title: "Sub-sub Service category",
+  //     path: "/main/subcategory",
+  //     permission: "view_product_category",
+  //     icon: <FaClipboardList size={18} />
+  //   },
+   
+  //   ],
+  // },
+ {
+  title: "Category Management",
+  icon: <FaBoxes size={18} />,
+  path: "#",
+  permission: "manage_orders",
+  children: [
+    {
+      title: "Service Category",
+      path: "/main/category",
+      permission: "view_category",
+      icon: <FaClipboardList size={18} />
+    },
+
+    {
+      title: "Product Category",
+      path: "#",
+      permission: "view_product_category",
+      icon: <FaBoxOpen size={18} />,
+      children: [
+        {
+          title: " Sub Category",
+          path: "/main/productcategory",
+          permission: "view_product_category",
+          icon: <FaTags size={18} />
+        },
+        {
+          title: " Sub Sub Category",
+          path: "/main/subcategory",
+          permission: "view_product_category",
+          icon: <FaBoxes size={18} />
+        }
+      ]
+    },
+
+    {
+      title: "Health Category",
+      path: "#",
+      permission: "view_health_category",
+      icon: <FaHeartbeat size={18} />,
+      children: [
+        {
+          title: "Health Sub Category",
+          path: "/category/healthcategory",
+          permission: "view_health_category",
+          icon: <FaHospital size={18} />
+        },
+        // {
+        //   title: "Health Sub Sub Category",
+        //   path: "/main/healthsubsubcategory",
+        //   permission: "view_health_category",
+        //   icon: <FaHeartbeat size={18} />
+        // }
+      ]
+    }
+  ]
+},
   {
     title: "User Management",
     icon: <HiUsers size={20} />,
@@ -229,6 +171,24 @@ export const SidebarData = () => [
     ],
   },
 
+
+ {
+    title: "Disease Management",
+     icon: <BiPulse size={20} />,
+    path: "#",
+    permission: "manage_disease",
+    children: [
+     {
+      title: "Disease",
+      path: "/disease",
+      permission: "view_disease",
+    icon: <BiCategoryAlt size={18} />,
+    },
+   
+    ],
+  },
+
+
   {
   title: "Content Management",
   icon: <MdCategory style={{ fontSize: 20 }} />, 
@@ -249,10 +209,19 @@ export const SidebarData = () => [
         },
         {
           title: "Medical Questions",
-          icon: <MdQuiz style={{ fontSize: 18 }} />,
+        icon: <GiLotus style={{ fontSize: 18 }} />,
           path: "/question/medical",
           permission: "view_medical_questions",
         },
+
+
+         {
+          title: "Prakirti-analysis",
+          icon: <MdQuiz style={{ fontSize: 18 }} />,
+          path: "/prakirti",
+          permission: "view_prakirti",
+        },
+ 
       ],
     },
     {
@@ -267,7 +236,35 @@ export const SidebarData = () => [
       path: "/Wellnesscenter",
       permission: "view_wellness_center",
     },
+
+           {
+  title: "Banner Management",
+  icon: <MdPhotoSizeSelectActual style={{ fontSize: 18 }} />,
+  path: "/content/banner",
+  permission: "manage_banner",
+},
   ],
+},
+
+{
+  title: "Reviews Management",
+  icon: <RateReviewIcon sx={{ fontSize: 20 }} />,
+  path: "#",
+  permission: "manage_reviews",
+  children: [
+    {
+      title: "Product Reviews",
+      path: "/Review/Product",
+      permission: "view_Product_review",
+      icon: <MdReviews size={18} />
+    },
+    {
+      title: "Doctor Reviews",
+      path: "/Review/doctor",
+      permission: "view_doctor_review",
+      icon: <FaUserMd size={18} />
+    }
+  ]
 },
  
   {
@@ -277,18 +274,18 @@ export const SidebarData = () => [
     permission: "manage_inventory",
     children: [
       {
-      title: "All Products",
+      title: " Products Mangement",
       path: "/Product",
       permission: "view_products",
       icon: <FaBoxOpen size={18} />
     },
     {
-      title: "Categories",
-      path: "/Product/Categories",
-      permission: "view_categories",
-      icon: <FaTags size={18} />
+      title: "Brand Name Mangement",
+      path: "/product/brandname",
+      permission: "manage_brand_name",
+     icon: <MdBrandingWatermark size={18} />
     },
-    {
+  {
       title: "Stock Management",
       path: "/Product/Stock",
       permission: "manage_stock",

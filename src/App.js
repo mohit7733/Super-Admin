@@ -2,7 +2,7 @@
 
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useState,useEffect} from 'react';
+import { useState, useEffect } from 'react';
 
 
 import Sidebar from './Components/Sidebar/Sidebar';
@@ -23,7 +23,7 @@ import Customer from './Components/Pages/Customer/Customer'
 import CustomerDetailPage from './Components/Pages/Customer/CustomerDetailPage';
 
 import Vendor from './Components/Pages/Vendor/Vendor';
-import Vendorproduct from './Components/Pages/Vendor/Vendorproduct';
+
 
 import Doctor from './Components/Pages/Doctor/Doctor';
 import DoctorDetail from './Components/Pages/Doctor/DoctorDetail';
@@ -43,7 +43,7 @@ import Dashboard from './Components/Pages/Dashboard/Dashboard'
 import Support from './Components/Pages/Support/Support';
 import Auditlogs from './Components/Pages/AuditLogs/Auditlogs';
 import ForgotPassword from './Components/Pages/Auth/ForgotPassword';
-import VerifyOtp from './Components/Pages/Auth/VerifyOtp';
+
 import ResetPassword from './Components/Pages/Auth/ResetPassword';
 import Question from './Components/Question/Question';
 import Prakriti from './Components/Question/Prakirti';
@@ -55,6 +55,21 @@ import Presceptions from './Components/Pages/Customer/Presceptions';
 import ConsultationOrder from './Components/Pages/Customer/ConsultationOrder'
 import ActivityLog from './Components/Pages/Customer/ActivityLog';
 import Paymenthistory from './Components/Pages/Customer/Paymenthistory';
+import Prakiritianalysis from './Components/Question/Prakiritianalysis';
+import Disease from './Components/Pages/Disease/Disease';
+import Category from './Components/Pages/Category/Category';
+import VendorDetail from './Components/Pages/Vendor/VendorDetail';
+
+import Productcategory from './Components/Pages/Category/Productcategory';
+import Brand from './Components/Pages/Product/Brand';
+import Banner from './Components/Pages/Banner/Banner'
+import SubProductCategory from './Components/Pages/Category/SubProductCategory';
+import Healthcategory from './Components/Pages/Category/Healthcategory';
+import ProductDetail from './Components/Pages/Product/ProductDetail';
+import Review from './Components/Pages/Review/Review';
+import Doctorreview from './Components/Pages/Review/Doctorreview';
+
+
 
 
 const Layout = ({ children }) => {
@@ -110,6 +125,30 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/main/category"
+          element={
+            <ProtectedRoute permission="view_category">
+              <Layout>
+                <Category />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/main/subcategory"
+          element={
+            <ProtectedRoute permission="view_product_category">
+              <Layout>
+                <SubProductCategory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+
         <Route
           path="/dietplans"
           element={
@@ -133,6 +172,49 @@ function App() {
         />
 
         <Route
+          path="/Review/Product"
+          element={
+            <ProtectedRoute permission="view_Product_review">
+              <Layout>
+                <Review />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/Review/doctor"
+          element={
+            <ProtectedRoute permission="view_doctor_review">
+              <Layout>
+                <Doctorreview />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/disease"
+          element={
+            <ProtectedRoute permission="view_disease">
+              <Layout>
+                <Disease />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/content/banner"
+          element={
+            <ProtectedRoute permission="manage_banner">
+              <Layout>
+                <Banner />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/question/medical"
           element={
             <ProtectedRoute permission="view_question">
@@ -142,7 +224,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/category/healthcategory"
+          element={
+            <ProtectedRoute permission="view_health_category">
+              <Layout>
+                <Healthcategory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/product"
@@ -167,6 +258,27 @@ function App() {
         />
 
         <Route
+          path="/main/productcategory"
+          element={
+            <ProtectedRoute permission="view_product_category" >
+              <Layout>
+                <Productcategory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/order"
+          element={
+            <ProtectedRoute permission="view_orders" >
+              <Layout>
+                <Order />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/order"
           element={
             <ProtectedRoute permission="view_orders" >
@@ -179,6 +291,29 @@ function App() {
 
 
         <Route
+          path="/Productdetail/:productId"
+          element={
+            <ProtectedRoute permission="view_productdetail" >
+              <Layout>
+                <ProductDetail />
+              </Layout>
+            </ProtectedRoute>
+
+          }
+        />
+        <Route
+          path="/VendorDetail/:vendorId"
+          element={
+            <ProtectedRoute permission="view_vendordetail" >
+              <Layout>
+                <VendorDetail />
+              </Layout>
+            </ProtectedRoute>
+
+          }
+        />
+
+        <Route
           path="/Doctor"
           element={
             <ProtectedRoute permission="view_doctors">
@@ -188,6 +323,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+
 
         <Route
           path="/customer"
@@ -209,6 +346,30 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/prakirti"
+          element={
+
+            <ProtectedRoute permission="view_prakirti">
+              <Layout>
+                <Prakiritianalysis />
+              </Layout>
+            </ProtectedRoute>
+
+          }
+        />
+
+        <Route
+          path="/product/brandname"
+          element={
+            <ProtectedRoute permission="view_brand_name">
+              <Layout>
+                <Brand />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
 
         <Route
           path="/ForgotPassword"
@@ -249,11 +410,6 @@ function App() {
           }
         />
 
-
-
-
-
-
         <Route
           path="/Wellnesscenter"
           element={
@@ -266,49 +422,51 @@ function App() {
         />
 
 
-<Route
-  path="/producthistory"
-  element={
-    <ProtectedRoute>
-      <Layout>
-        <Producthistory />
-      </Layout>
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/producthistory"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Producthistory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-path = "/Prescription"
-element={
-  <ProtectedRoute>
-    <Layout>
-      <Presceptions/>
-    </Layout>
-  </ProtectedRoute>
-}
-/>
-<Route
-path = "/consultationorder"
-element={
-  <ProtectedRoute>
-    <Layout>
-      <ConsultationOrder/>
-    </Layout>
-  </ProtectedRoute>
-}
-/>
+        <Route
+          path="/Prescription"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Presceptions />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
 
-<Route
-path = "/Activitylogs"
-element={
-  <ProtectedRoute>
-    <Layout>
-      <ActivityLog/>
-    </Layout>
-  </ProtectedRoute>
-}
-/>
+        <Route
+          path="/consultationorder"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ConsultationOrder />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path="/Activitylogs"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ActivityLog />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/Support"
@@ -322,16 +480,7 @@ element={
         />
 
 
-        <Route
-          path="/vendorproduct/:vendorId"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Vendorproduct />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+
 
         <Route
           path="/CustomerDetailPage/:customerId"
@@ -371,16 +520,16 @@ element={
           }
         />
 
-<Route
-path="/paymemthistory"
-element={
-<ProtectedRoute>
-  <Layout>
-    <Paymenthistory/>
-  </Layout>
-</ProtectedRoute>
-}
-/>
+        <Route
+          path="/paymemthistory"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Paymenthistory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/Items/:PaymentId"
           element={
@@ -391,16 +540,6 @@ element={
             </ProtectedRoute>
           }
         />
-
-        <Route
-          path="VerifyOtp"
-          element={
-
-            <VerifyOtp />
-
-          }
-        />
-
 
 
 

@@ -27,7 +27,7 @@ const ForgotPassword = () => {
       : `+91${phone_number}`;
 
     try {
-      const response = await fetch(`${BASE_URL}/user/forgot-password/send-otp/`, {
+      const response = await fetch(`${BASE_URL}/user/send-otp/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -46,7 +46,7 @@ const ForgotPassword = () => {
       toast.success("OTP sent to your phone!");
         sessionStorage.setItem("phone_number", formattedPhone);
       setLoading(false);
-      navigate("/VerifyOtp");
+      navigate("/ResetPassword");
 
     } catch (error) {
       setLoading(false);

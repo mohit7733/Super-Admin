@@ -1,17 +1,17 @@
 import * as XLSX from "xlsx";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import BASE_URL from "../../../Base";
-import { apiFetch } from "../../../fetchapi";
-import { BsThreeDotsVertical, BsDownload, BsPlus, BsSearch, BsTrash, BsPencil, BsEye, BsChevronLeft, BsChevronRight } from "react-icons/bs";
-import { FaUsers, FaUserPlus, FaCalendarAlt, FaChartLine } from "react-icons/fa";
-import { MdEmail, MdPhone, MdPerson, MdClose, MdVerified } from "react-icons/md";
-import { RiGenderlessLine } from "react-icons/ri";
+ import { useState, useEffect, useRef, useCallback } from "react";
+ import { useNavigate } from "react-router-dom";
+ import { ToastContainer, toast } from "react-toastify";
+ import "react-toastify/dist/ReactToastify.css";
+ import BASE_URL from "../../../Base";
+ import { apiFetch } from "../../../fetchapi";
+ import { BsThreeDotsVertical, BsDownload, BsPlus, BsSearch, BsTrash, BsPencil, BsEye, BsChevronLeft, BsChevronRight } from "react-icons/bs";
+ import { FaUsers, FaUserPlus, FaCalendarAlt, FaChartLine } from "react-icons/fa";
+ import { MdEmail, MdPhone, MdPerson, MdClose, MdVerified } from "react-icons/md";
+ import { RiGenderlessLine } from "react-icons/ri";
 import "./Customer.css"
 
-const userId = localStorage.getItem("USER_ID");
+ const userId = localStorage.getItem("USER_ID");
 
 const initialCustomerFormState = {
     profile_picture: "",
@@ -654,3 +654,5 @@ const Testing = () => {
 };
 
 export default Testing;
+
+

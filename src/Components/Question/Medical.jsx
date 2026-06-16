@@ -7,12 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
-const intialAddform = {
-  text: "",
-  section: "",
-  question_type: "",
+const initalAddForm = {
+  experience_type: "medical_history",
+  question: "",
+  answer_type: "",
   choices: [],
-}
+};
 
 
 const Medical = () => {
@@ -20,40 +20,96 @@ const Medical = () => {
   const [Error, setError] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [Loading, setLoading] = useState(true);
-  const [Addform, setAddform] = useState(intialAddform);
+  const [Addform, setAddform] = useState(initalAddForm);
   const [AddformModal, setAddformModal] = useState(false);
   const [DeleteModal, setDeleteModal] = useState(false);
   const [SelectedQuestionId, setSelectedQuestionId] = useState(null);
   const [EditformModal, setEditformModal] = useState(false);
-  const [Editform, setEditform] = useState(intialAddform);
+  const [Editform, setEditform] = useState(initalAddForm);
   const fetchOnce = useRef();
+  const[AddError,setAddError]=useState({});
   const Navigate = useNavigate();
+  const pagesize = 5;
+  const [totalCount, setTotalCount] = useState(0);
+  const totalPages = Math.ceil(totalCount / pagesize);
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  const [currentpage, setCurrentPage] = useState(1);
+  const [Nextpage, setNextpage] = useState(null);
+
+  const [previousPage, setPreviousPage] = useState(null);
 
 
-  const getAllMedicalQuestion = async () => {
-    try {
-      const token = sessionStorage.getItem("superadmin_token")
-      const response = await fetch(`${BASE_URL}/healthcare/health-questions`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          "content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        }
-      })
-      const Data = await response.json();
-      setData(Data)
-    }
+ const getAllMedicalQuestion = async (page = 1) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-    catch (Error) {
-      toast.error("Something Went Wrong while fetching the data")
-
-    }
-    finally {
-      setLoading(false)
-    }
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    Navigate("/login");
+    return;
   }
 
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?experience_type=medical_history&page=${page}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      sessionStorage.removeItem("superadmin_token");
+
+      toast.error(
+        "Session expired. Please login again"
+      );
+
+      Navigate("/login");
+
+      return;
+    }
+
+    const data = await response.json();
+
+    console.log("Medical Questions:", data);
+
+    setData(data?.data?.results );
+
+    
+    setCurrentPage(page);
+
+    setTotalCount(data?.data?.count || 0);
+
+    setNextpage(data?.data?.next);
+
+    setPreviousPage(data?.data?.previous);
+
+  } catch (error) {
+    console.error(error);
+
+    setError(
+      "Something went wrong while fetching data."
+    );
+
+    toast.error(
+      "Failed to fetch Medical Questions"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     if (!fetchOnce.current) {
       getAllMedicalQuestion();
@@ -62,25 +118,32 @@ const Medical = () => {
   }, [])
 
   const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    setEditform((prev) => ({
-      ...prev,
-      [name]: value,
+  setEditform((prev) => ({
+    ...prev,
+    [name]: value,
 
-      ...(name === "question_type" && value === "text"
-        ? { choices: [] }
-        : name === "question_type"
-          ? { choices: [{ text: "" }] }
-          : {}),
-    }));
-  };
-  const handleEditChoiceChange = (index, value) => {
-    const updated = [...Editform.choices];
-    updated[index].text = value;
-    setEditform({ ...Editform, choices: updated });
-  };
+    ...(name === "answer_type" &&
+    value === "text"
+      ? { choices: [] }
+      : {}),
+  }));
+};
+  const handleEditChoiceChange = (
+  index,
+  field,
+  value
+) => {
+  const updated = [...Editform.choices];
 
+  updated[index][field] = value;
+
+  setEditform({
+    ...Editform,
+    choices: updated,
+  });
+};
   const addEditChoice = () => {
     setEditform({
       ...Editform,
@@ -95,81 +158,174 @@ const Medical = () => {
 
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    setAddform((prev) => ({
-      ...prev,
-      [name]: value,
+  setAddform((prev) => ({
+    ...prev,
+    [name]: value,
 
+    ...(name === "answer_type" &&
+    value === "text"
+      ? { choices: [] }
+      : name === "answer_type"
+      ? {
+          choices: [
+            {
+              value: "",
+              image: null,
+            },
+          ],
+        }
+      : {}),
+  }));
+};
+  const handleChoiceChange = (
+  index,
+  field,
+  value
+) => {
+  const updated = [...Addform.choices];
 
-      ...(name === "question_type" && value === "text"
-        ? { choices: [] }
-        : name === "question_type"
-          ? { choices: [{ text: "" }] }
-          : {}),
-    }));
-  };
-  const handleChoiceChange = (index, value) => {
-    const updated = [...Addform.choices];
-    updated[index].text = value;
+  updated[index][field] = value;
 
-    setAddform({ ...Addform, choices: updated });
-  };
+  setAddform((prev) => ({
+    ...prev,
+    choices: updated,
+  }));
+};
 
-  const addChoice = () => {
-    setAddform({
-      ...Addform,
-      choices: [...Addform.choices, { text: "" }],
-    });
-  };
+ const addChoice = () => {
+  setAddform((prev) => ({
+    ...prev,
+
+    choices: [
+      ...prev.choices,
+      {
+        value: "",
+        image: null,
+      },
+    ],
+  }));
+};
 
   const removeChoice = (index) => {
     const updated = Addform.choices.filter((_, i) => i !== index);
 
     setAddform({ ...Addform, choices: updated });
   };
-  const handleSubmit = async () => {
-    try {
-      const token = sessionStorage.getItem("superadmin_token");
-      const payload = {
-        text: Addform.text,
-        section: Addform.section,
-        question_type: Addform.question_type,
-        choices:
-          Addform.question_type === "text"
-            ? []
-            : Addform.choices.filter((c) => c.text.trim() !== ""),
-      };
 
-      const res = await fetch(`${BASE_URL}/healthcare/bulk-questions/`, {
+
+ const handleSubmit = async () => {
+  try {
+    const token = sessionStorage.getItem(
+      "superadmin_token"
+    );
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    
+
+    const updatedChoices = await Promise.all(
+      Addform.choices.map(
+        async (choice, index) => {
+          let imageUrl = "";
+
+          
+          if (choice.image instanceof File) {
+            imageUrl = await uploadImage(
+              choice.image
+            );
+          }
+
+          return {
+            index,
+            value: choice.value,
+            image_path: imageUrl,
+          };
+        }
+      )
+    );
+
+  
+
+const payload = {
+  experience_type: "medical_history",
+
+  questions: [
+    {
+      question: Addform.question,
+
+      answer_type:
+        Addform.answer_type,
+
+      choices:
+        Addform.answer_type ===
+        "text"
+          ? []
+          : updatedChoices,
+    },
+  ],
+};
+
+    console.log(
+      "FINAL PAYLOAD",
+      payload
+    );
+
+    const res = await fetch(
+      `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/`,
+      {
         method: "POST",
+
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type":
+            "application/json",
+
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify([payload]),
-      });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        const errorMsg =
-          data?.errors?.questions?.non_field_errors?.[0] ||
-          "Error adding question ❌";
-
-        toast.error(errorMsg);
-        return;
+        body: JSON.stringify(payload),
       }
+    );
 
-      toast.success("Question Added Successfully ✅");
+    const data = await res.json();
 
-      setAddformModal(false);
-      setAddform(intialAddform);
-      getAllMedicalQuestion();
-    } catch (err) {
-      toast.error("Error adding question ❌");
+    console.log(
+      "FINAL RESPONSE",
+      data
+    );
+
+    if (!res.ok) {
+      // const errorMsg =
+      //   data?.errors?.questions?.[0]
+      //     ?.non_field_errors?.[0] ||
+      //   "Error adding question ❌";
+
+      toast.error("something went wrong while fetching data");
+
+      return;
     }
-  };
+
+    toast.success(
+      "Question Added Successfully ✅"
+    );
+
+    setAddformModal(false);
+
+    setAddform(initalAddForm);
+
+    getAllMedicalQuestion();
+  } catch (err) {
+    console.log(err);
+
+    toast.error(
+      "Error adding question ❌"
+    );
+  }
+};
 
   const handleDelete = async (id) => {
     const token = sessionStorage.getItem("superadmin_token")
@@ -178,7 +334,7 @@ const Medical = () => {
       return
     }
     try {
-      const res = await fetch(`${BASE_URL}/healthcare/questions-delete/${id}/`, {
+      const res = await fetch(`${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?id=${id}`, {
         method: "DELETE",
         headers: {
           Accept: "application/json",
@@ -214,17 +370,29 @@ const Medical = () => {
       const token = sessionStorage.getItem("superadmin_token");
 
       const payload = {
-        text: Editform.text,
-        section: Editform.section,
-        question_type: Editform.question_type,
-        choices:
-          Editform.question_type === "text"
-            ? []
-            : Editform.choices.filter((c) => c.text.trim() !== ""),
-      };
+  experience_type:
+    Editform.experience_type,
+
+  question: Editform.question,
+
+  answer_type:
+    Editform.answer_type,
+
+  choices:
+    Editform.answer_type === "text"
+      ? []
+      : Editform.choices.map(
+          (choice, index) => ({
+            index,
+            value: choice.value,
+            image_path:
+              choice.image_path || "",
+          })
+        ),
+};
 
       const res = await fetch(
-        `${BASE_URL}/healthcare/questions-update/${SelectedQuestionId}/`,
+`${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?id=${SelectedQuestionId}`,
         {
           method: "PUT",
           headers: {
@@ -255,6 +423,40 @@ const Medical = () => {
     }
   };
 
+const uploadImage = async (file) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  try {
+    const formData = new FormData();
+
+    formData.append("image", file);
+
+    formData.append("dir", "health_issues");
+
+    const response = await fetch(
+      `${BASE_URL}/user/upload/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("Upload Response:", data);
+
+   return data?.data?.url;
+  } catch (error) {
+    console.error(error);
+    toast.error("Image upload failed");
+
+    return null;
+  }
+};
+
   return (
     <>
 
@@ -265,7 +467,7 @@ const Medical = () => {
       <div>
 
       </div>
-      {/* <div className="Question-controls">
+      <div className="Question-controls">
 
 
         <div className="filter-controls">
@@ -273,18 +475,18 @@ const Medical = () => {
             className="add-customer-btn"
             onClick={() => {
               setAddformModal(true);
-              setAddform(intialAddform);
+              setAddform(initalAddForm);
 
             }}
           >
             + Add Question
           </button>
-
+,
           <button className="btn-secondary" >
             Export Details
           </button>
         </div>
-      </div> */}
+      </div>
 
       <div className="table-wrapper">
         <table className="data-table" >
@@ -292,9 +494,8 @@ const Medical = () => {
             <tr>
               <th>Index</th>
               <th>Question</th>
-              <th>Category</th>
-              <th>
-                Type</th>
+              <th>Answer Type</th>
+
               <th>Chocies</th>
               <th>Action</th>
             </tr>
@@ -318,13 +519,13 @@ const Medical = () => {
                 <tr key={question.id}>
 
                   <td>{index + 1}</td>
-                  <td>{question.text} </td>
-                  <td>{question.section}</td>
-                  <td>{question.question_type}</td>
+                  <td>{question.question} </td>
+                  <td>{question.answer_type}</td>
+                
 
                   <td>
                     {question.choices && question.choices.length > 0
-                      ? question.choices?.map(choice => choice.text).join(", ")
+                      ? question.choices?.map(choice => choice.value).join(", ")
                       : "No Choices"}
                   </td>
 
@@ -359,22 +560,39 @@ const Medical = () => {
 
                         <button
                           className="action-btn1"
-                          onClick={() => {
-                            setEditformModal(true);
-                            setSelectedQuestionId(question.id);
+                       onClick={() => {
+  setEditformModal(true);
 
-                            setEditform({
-                              text: question.text,
-                              section: question.section,
-                              question_type: question.question_type,
-                              choices:
-                                question.question_type === "text"
-                                  ? []
-                                  : question.choices?.length
-                                    ? question.choices
-                                    : [{ text: "" }],
-                            });
-                          }}
+  setSelectedQuestionId(question.id);
+
+  setEditform({
+    experience_type:
+      question.experience_type || "",
+
+    question: question.question || "",
+
+    answer_type:
+      question.answer_type || "",
+
+    choices:
+      question.answer_type === "text"
+        ? []
+        : question.choices?.length
+        ? question.choices.map((c) => ({
+            value: c.value || "",
+            image_path:
+              c.image_path || "",
+            image: null,
+          }))
+        : [
+            {
+              value: "",
+              image: null,
+              image_path: "",
+            },
+          ],
+  });
+}}
                         >
                           <span className='icon'> <FaEdit/> </span> 
                           <span> Edit</span>
@@ -413,112 +631,53 @@ const Medical = () => {
             )}
           </tbody>
         </table>
-        {
-          AddformModal && (
-            <div className="modal">
-              <form
-                className="customer-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmit();
+
+          {totalPages > 1 && (
+          <div className="pagination">
+
+
+            <button
+              onClick={() => getAllMedicalQuestion(currentpage - 1)}
+              disabled={!previousPage}
+            >
+              Prev
+            </button>
+
+
+            {pages.map((page) => (
+              <button
+                key={page}
+                onClick={() => getAllMedicalQuestion(page)}
+                style={{
+
+                  fontWeight: currentpage === page ? "bold" : "normal",
+                  background: currentpage === page ? "#0D614E" : "#fff",
+                  color: currentpage === page ? "#fff" : "#0D614E",
                 }}
               >
-                <h2>Add New Question</h2>
-
-                <label>Question</label>
-                <input
-                  type="text"
-                  name="text"
-                  value={Addform.text}
-                  onChange={handleInputChange}
-                />
-
-                <label>Section</label>
-                <select
-                  name="section"
-                  value={Addform.section}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Select Your Category</option>
-                  <option value="medical_history">Medical History</option>
-                  <option value="important_info">Important Health Information</option>
-                  <option value="gut_health">Gut Health Assessment</option>
-                  <option value="bowel_pattern">Bowel Pattern(Kostha)</option>
-                  <option value="digestion">Digestion</option>
-                  <option value="diet">Diet & Nutrition</option>
-                  <option value="supplements">Supplements</option>
-                  <option value="activity">Physical Activity</option>
-                  <option value="sleep">Sleep</option>
-                  <option value="mental"> Mental Well being</option>
-                </select>
-
-                <label>Question Type</label>
-                <select
-                  name="question_type"
-                  value={Addform.question_type}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Select Type</option>
-                  <option value="single">Single</option>
-                  <option value="multi">Multiple</option>
-                  <option value="text">Text</option>
-                </select>
+                {page}
+              </button>
+            ))}
 
 
-                {(Addform.question_type === "single" ||
-                  Addform.question_type === "multi") && (
-                    <>
-                      <label>Choices</label>
+            <button
+              onClick={() => getAllMedicalQuestion(currentpage + 1 )}
+              disabled={!Nextpage}
+            >
+              Next
+            </button>
 
-                      {Addform.choices.map((choice, index) => (
-                        <div key={index} className="choice-input-wrapper">
-                          <input
-                            type="text"
-                            value={choice.text}
-                            onChange={(e) =>
-                              handleChoiceChange(index, e.target.value)
-                            }
-                            placeholder={`Choice ${index + 1}`}
-                          />
+          </div>
+        )}
+        
 
-                          <button
-                            type="button"
-                            onClick={() => removeChoice(index)}
-                            className="removebtn1"
-                          >
-                            🗑
-                          </button>
-                        </div>
-                      ))}
 
-                      <button type="button" onClick={addChoice}
-                        className="AddButton"
-                      >
-                        + Add Choice
-                      </button>
-                    </>
-                  )}
-
-                <div className="form-buttons">
-                  <button type="submit">Save</button>
-
-                  <button
-                    type="button"
-                    onClick={() => setAddformModal(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          )
-        }
 
         {
           DeleteModal && (
             <div className='modal'>
               <div className="modal-content">
-                <h3>Are you sure you want to delete this vendor?</h3>
+                <h3>Are you sure you want to delete this Question?</h3>
                 <div className="form-buttons">
                   <button
                     className="otp-btn verify-btn"
@@ -537,108 +696,152 @@ const Medical = () => {
           )
         }
 
-        {
-          EditformModal && (
-            <div className="modal">
-              <form
-                className="customer-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleUpdate();
-                }}
-              >
-                <h2>Edit Question</h2>
+      {EditformModal && (
+  <div className="modal">
+    <form
+      className="customer-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleUpdate();
+      }}
+    >
+      <h2>Edit Question</h2>
 
-                <label>Question</label>
+      <label>Question</label>
+
+      <input
+        type="text"
+        name="question"
+        placeholder="Enter Question"
+        value={Editform.question}
+        onChange={handleEditInputChange}
+      />
+
+      <label>Question Type</label>
+
+      <select
+        name="answer_type"
+        value={Editform.answer_type}
+        onChange={handleEditInputChange}
+      >
+        <option value="">Select Type</option>
+
+        <option value="choice">
+          Single Choice
+        </option>
+
+        <option value="multi_choice">
+          Multiple Choice
+        </option>
+
+        <option value="text">
+          Text
+        </option>
+      </select>
+
+      {(Editform.answer_type === "choice" ||
+        Editform.answer_type === "multi_choice") && (
+        <>
+          <div className="choice-header">
+            <h4>Choices</h4>
+
+            <button
+              type="button"
+              onClick={addEditChoice}
+              className="AddButton"
+            >
+              + Add Choice
+            </button>
+          </div>
+
+          {Editform.choices.map((choice, index) => (
+            <div
+              key={index}
+              className="choice-card"
+            >
+              <div className="choice-card-header">
+
+                <span className="choice-title">
+                  Choice {index + 1}
+                </span>
+
+                <button
+                  type="button"
+                  className="remove-choice-btn"
+                  onClick={() =>
+                    removeEditChoice(index)
+                  }
+                >
+                  <FiTrash2 />
+                </button>
+              </div>
+
+              <div className="choice-fields">
+
                 <input
                   type="text"
-                  name="text"
-                  value={Editform.text}
-                  onChange={handleEditInputChange}
+                  placeholder={`Enter Choice ${
+                    index + 1
+                  }`}
+                  value={choice.value}
+                  onChange={(e) =>
+                    handleEditChoiceChange(
+                      index,
+                      "value",
+                      e.target.value
+                    )
+                  }
+                  className="choice-input"
                 />
 
-                <label>Section</label>
-                <select
-                  name="section"
-                  value={Editform.section}
-                  onChange={handleEditInputChange}
-                >
-                  <option value="">Select Category</option>
-                  <option value="medical_history">Medical History</option>
-                  <option value="important_info">Important Info</option>
-                  <option value="gut_health">Gut Health</option>
-                  <option value="bowel_pattern">Bowel Pattern</option>
-                  <option value="digestion">Digestion</option>
-                  <option value="diet">Diet & Nutrition</option>
-                  <option value="supplements">Supplements</option>
-                  <option value="activity">Physical Activity</option>
-                  <option value="sleep">Sleep</option>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    handleEditChoiceChange(
+                      index,
+                      "image",
+                      e.target.files[0]
+                    )
+                  }
+                  className="choice-file"
+                />
 
-
-                  <option value="mental">Mental well being</option>
-                </select>
-
-                <label>Question Type</label>
-                <select
-                  name="question_type"
-                  value={Editform.question_type}
-                  onChange={handleEditInputChange}
-                >
-                  <option value="">Select Type</option>
-                  <option value="single">Single</option>
-                  <option value="multi">Multiple</option>
-                  <option value="text">Text</option>
-                </select>
-
-                {(Editform.question_type === "single" ||
-                  Editform.question_type === "multi") && (
-                    <>
-                      <label>Choices</label>
-
-                      {Editform.choices.map((choice, index) => (
-                        <div key={index} className="choice-input-wrapper">
-                          <input
-                            type="text"
-                            value={choice.text}
-                            onChange={(e) =>
-                              handleEditChoiceChange(index, e.target.value)
-                            }
-                          />
-
-                          <button
-                            type="button"
-                            onClick={() => removeEditChoice(index)}
-                            className="removebtn1"
-                          >
-                            🗑
-                          </button>
-                        </div>
-                      ))}
-
-                      <button
-                        type="button"
-                        onClick={addEditChoice}
-                        className="AddButton"
-                      >
-                        + Add Choice
-                      </button>
-                    </>
-                  )}
-
-                <div className="form-buttons">
-                  <button type="submit">Update</button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEditformModal(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+                {choice.image_path && (
+                  <img
+                    src={choice.image_path}
+                    alt="choice"
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                )}
+              </div>
             </div>
-          )
-        }
+          ))}
+        </>
+      )}
+
+      <div className="form-buttons">
+        <button type="submit">
+          Update
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            setEditformModal(false)
+          }
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+)}
 
       </div>
 

@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import BASE_URL from "../../../Base";
+import { useNavigate } from "react-router-dom";
 
 import { ToastContainer, toast } from "react-toastify"
 import { BsSearch } from "react-icons/bs";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
+import {
+  FaUsers,
+  FaUserCheck,
+  FaUserTimes,
+} from "react-icons/fa";
 const initalAdminform = {
   phone_number: '',
-  admin_role: '',
+  role: '',
   password: '',
-
-
 }
 const Admin = () => {
 
@@ -33,21 +37,16 @@ const Admin = () => {
   const [actionType, setActionType] = useState("");
   const [AddError, setAddError] = useState({});
   const [EditError, setEditError] = useState({});
+  const [roleData, setRoleData] = useState([]);
+  const [AddNewRoleModal,setAddNewRoleModal]=useState(false);
+  const[NewRole,setNewRole]=useState()
 
 
   const fetchedOnce = useRef(false);
-  const filteredVerifiers = AdminData.filter(v =>
-    v.phone_number?.toLowerCase().includes(verifiersearch.toLowerCase())
-  );
+  const navigate = useNavigate();
+ 
 
-
-  const role = {
-    SUPERADMIN: "Super Admin",
-    ADMIN: "Admin",
-    FOLLOWUP: "Followup",
-    VERIFIER: "Verifier"
-  }
-
+ 
   const Status = {
     APPROVED: "Approved",
     REJECTED: "Rejected",
@@ -57,19 +56,32 @@ const Admin = () => {
   }
   const getAdminlist = async () => {
     const token = sessionStorage.getItem("superadmin_token");
+      if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
     try {
-      const response = await fetch(`${BASE_URL}/user/admin-approval/`, {
+      const response = await fetch(`${BASE_URL}/user/superadmin/admins/`, {
         method: 'GET',
         headers: {
           Accept: "application/json",
+            'ngrok-skip-browser-warning': 'true',
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
 
         }
       });
+
+       if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
       const data = await response.json();
       console.log("API Response:", data);
-      setAdminData(data)
+      setAdminData(data.data)
     }
     catch (err) {
       console.error(err.message)
@@ -82,12 +94,7 @@ const Admin = () => {
     }
   }
 
-  useEffect(() => {
-    if (!fetchedOnce.current) {
-      getAdminlist();
-      fetchedOnce.current = true;
-    }
-  }, []);
+  
 
 
 
@@ -105,89 +112,222 @@ const Admin = () => {
 
 
 
-  const handleAddAdminSubmit = async (e) => {
+   const handleAddAdminSubmit = async (e) => {
     e.preventDefault();
     let errors = {};
 
     if (!AddAdminForm.phone_number.trim()) {
-      errors.phone_number = " please Enter Valid Phone Number"
+     errors.phone_number = " please Enter Valid Phone Number"
     } else if (!/[0-9]{10}$/.test(AddAdminForm.phone_number)) {
-      errors.phone_number = "Phone Number Must be Exactly10 digits"
-    }
+     errors.phone_number = "Phone Number Must be Exactly10 digits"
+   }
 
     const password = AddAdminForm.password;
     if (!password.trim()) {
       errors.password = "please Enter a Password";
 
-    } else if (password.length < 12) {
-      errors.password = "password must be at least 12 characters"
-    } else if (!/[0-9]/.test(password)) {
-      errors.password = "passwordmust contain at least one number"
-    } else if (!/[!@#$%^&*(),.?\":{}|<>]/.test(password)) {
-      errors.password = "password must contain atleast one special character"
-    } else if (!/[A-Za-z]/.test(password)) {
-      errors.password = "Password must contain at least one letter";
-    }
+     } else if (password.length < 12) {
+       errors.password = "password must be at least 12 characters"
+  } else if (!/[0-9]/.test(password)) {
+     errors.password = "passwordmust contain at least one number"
+     } else if (!/[!@#$%^&*(),.?\":{}|<>]/.test(password)) {
+     errors.password = "password must contain atleast one special character"
+   } else if (!/[A-Za-z]/.test(password)) {
+       errors.password = "Password must contain at least one letter";
+  }
 
-    if (!AddAdminForm.admin_role.trim()) {
-      errors.admin_role = "please select any role"
-    }
+    if (!AddAdminForm.role.trim()) {
+       errors.role = "please select any role"
+     }
 
-    if (Object.keys(errors).length > 0) {
+   if (Object.keys(errors).length > 0) {
       setAddError(errors);
-      return;
+       return;
     }
 
     const token = sessionStorage.getItem("superadmin_token");
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
 
     try {
-      const res = await fetch(`${BASE_URL}/user/admin-register/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(`${BASE_URL}/user/admin/register/`, {
+       method: "POST",
+       headers: {
+        "Content-Type": "application/json",
+           Authorization: `Bearer ${token}`,
+             'ngrok-skip-browser-warning': 'true',
         },
         body: JSON.stringify(AddAdminForm),
       });
-
-      const data = await res.json();
-      toast.success("Admin created successfully 🎉");
-      setAddAdminForm(initalAdminform);
+ if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+     const data = await response.json();
+     toast.success("Admin created successfully ");
+     setAddAdminForm(initalAdminform);
       setAdminModal(false);
-      getAdminlist();
-    } catch (err) {
-      toast.error("Failed to create admin");
-    }
+     getAdminlist();
+   } catch (err) {
+     toast.error("Failed to create admin");
+   }
   };
 
 
   const getAllPermissions = async () => {
     const token = sessionStorage.getItem("superadmin_token");
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
 
     try {
-      const res = await fetch(`${BASE_URL}/user/permissions_list/`, {
+      const response = await fetch(`${BASE_URL}/user/admin/permissions/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+             "ngrok-skip-browser-warning": "true",
         },
       });
 
-      const data = await res.json();
+         if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
       console.log("Permissions List API Response 👉", data);
-      setAllPermissions(data.permissions);
+      setAllPermissions(data);
 
     } catch (err) {
       toast.error("Failed to load permissions");
     }
   };
 
+  const getRole = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+  if(!token){
+    toast.error("Session Expired,Please Login Again");
+    navigate("/login");
+    return;
+  }
 
+  try {
+    const response = await fetch(
+      `${BASE_URL}/user/admin/roles/`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true',
+        },
+      }
+    );
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+
+
+    const data = await response.json();
+
+    console.log("Role Response:", data);
+
+    setRoleData(data);
+  } catch (err) {
+    console.error(err.message);
+    setError("Something went wrong while fetching roles.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+    if (!fetchedOnce.current) {
+      getAdminlist();
+      getRole();
+      getAllPermissions();
+      fetchedOnce.current = true;
+    }
+  }, []);
+
+const addNewRole = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+  if(!token){
+    toast.error("Session Expired,Login Again")
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/user/admin/roles/`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          name: NewRole,
+        }),
+      }
+    );
+
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+
+const data = await response.json();
+
+if (!response.ok || data.success === false) {
+  toast.error(
+    data?.errors?.name ||
+    data?.message ||
+    "Failed to add role"
+  );
+  return; 
+}
+    setRoleData((prev) => [...prev, data]);
+
+    setNewRole("");
+    setAddNewRoleModal(false);
+
+    toast.success("Role added successfully");
+
+  } catch (err) {
+    console.error(err.message);
+    toast.error(err.message);
+  }
+};
 
   const updateStatus = async (id, status, reason = "") => {
     const token = sessionStorage.getItem("superadmin_token");
+    if(!token){
+      toast.error("Session Expired, Please Login Again")
+    }
     try {
-      const response = await fetch(`${BASE_URL}/user/super-admin/pending-requests/`, {
+      const response = await fetch(`${BASE_URL}/user/`, {
         method: 'PUT',
         headers: {
           "Content-Type": "application/json",
@@ -199,6 +339,14 @@ const Admin = () => {
           reason: reason,
         })
       });
+
+        if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
       const data = await response.json();
       toast.success("Status Updated");
       getAdminlist();
@@ -225,6 +373,9 @@ const Admin = () => {
 
   const handleSavePermissions = async () => {
     const token = sessionStorage.getItem("superadmin_token");
+    if(!token){
+      toast.error("Session Expired, Please Login Again")
+    }
 
     if (!editingUser) {
       toast.error("No user selected");
@@ -232,23 +383,31 @@ const Admin = () => {
     }
 
     try {
-      const res = await fetch(`${BASE_URL}/user/super-admin/pending-requests/`, {
+      const response = await fetch(`${BASE_URL}/user/admin/approval/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
           user_id: editingUser.id,
-          action: editingUser.admin_approval_status,
+          approval_status: editingUser.approval_status,
           permission_ids: selectedPermissions,
 
         }),
       });
+        if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
 
-      const data = await res.json();
 
-      toast.success("Permissions & Status Updated Successfully 🎉");
+      const data = await response.json();
+
+      toast.success("Permissions & Status Updated Successfully ");
       setPermissionModalOpen(false);
       getAdminlist();
 
@@ -261,42 +420,49 @@ const Admin = () => {
 
 
 
-  useEffect(() => {
-
-    getAllPermissions();
-
-  }, []);
+  
 
 
-  const handleDeleteAdmin = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
+ const handleDeleteAdmin = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+  if(!token){
+    toast.error("Session Expired,Please ");
+    navigate("/login");
+    return;
+  }
 
-    if (!selectedAdmin) return;
+  if (!selectedAdmin) return;
 
-    try {
-      const res = await fetch(
-        `${BASE_URL}/user/deleteuser/${selectedAdmin.id}/`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error("Delete failed");
+  try {
+    const response = await fetch(
+      `${BASE_URL}/user/superadmin/admin/?admin_id=${selectedAdmin.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
       }
+    );
+ if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+    
 
-      toast.success("Admin role deleted successfully 🗑️");
-      setDeleteModal(false);
-      setSelectedAdmin(null);
-      getAdminlist();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete admin role");
-    }
-  };
+    toast.success("Admin deleted successfully 🗑️");
+
+    setDeleteModal(false);
+    setSelectedAdmin(null);
+
+    getAdminlist();
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to delete admin");
+  }
+};
 
 
 
@@ -307,6 +473,55 @@ const Admin = () => {
         <p className="page-paragraph"> Manage Admin ,Given Permission and their details & Approvals</p>
 
       </div>
+      <div className="stats2-grid">
+  <div
+    className="stat2-card"
+    style={{ borderTopColor: "#0D614E" }}
+  >
+    <div
+      className="stat2-icon"
+      style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaUsers size={24} />
+    </div>
+    <div className="stat2-info">
+      <h3>Total Admin</h3>
+      <div className="stat2-value">0</div>
+    </div>
+  </div>
+
+  <div
+    className="stat2-card"
+    style={{ borderTopColor: "#0D614E" }}
+  >
+    <div
+      className="stat2-icon"
+      style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaUserCheck size={24} />
+    </div>
+    <div className="stat2-info">
+      <h3>Approve  Admin</h3>
+      <div className="stat2-value">0</div>
+    </div>
+  </div>
+
+  <div
+    className="stat2-card"
+    style={{ borderTopColor: "#0D614E" }}
+  >
+    <div
+      className="stat2-icon"
+      style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaUserTimes size={24} />
+    </div>
+    <div className="stat2-info">
+      <h3>Pending Admin</h3>
+      <div className="stat2-value">0</div>
+    </div>
+  </div>
+</div>
 
       <div className="controls-section">
         <div className="search-wrapper">
@@ -366,27 +581,24 @@ const Admin = () => {
                 {Error}
               </td>
             </tr>
-          ) : filteredVerifiers.length > 0 ? (
-            filteredVerifiers.map((verifier, index) => (
+          ) : AdminData?.length > 0 ? (
+            AdminData.map((verifier, index) => (
               <tr key={verifier.id}>
                 <td>{index + 1}</td>
-                <td>{role[verifier.role_name] || verifier.role_name}</td>
+                <td>{ verifier.admin_role}</td>
                 <td>{verifier?.phone_number}</td>
 
-                <td>
-
-
-                  {Status[verifier.admin_approval_status]}
-                </td>
-
+             <td>
+  {Status[verifier.admin_approval_status]}
+</td>
                 <td>
                   <div className="action-buttons">
 
 
-                    <button className="action-btn edit" onClick={() => handleEditClick(verifier)}>
-                      <FaEdit/>
-                    </button>
-
+                  
+  <button className="action-btn edit" onClick={() => handleEditClick(verifier)}>
+    <FaEdit/>
+</button>
 
                     <button
                       className="action-btn delete"
@@ -415,7 +627,7 @@ const Admin = () => {
 
 
 
-      {rejectModalOpen && (
+       {rejectModalOpen && (
         <div className="modal">
           <div className="modal-content">
             <h3>{actionType === "REJECTED" ? " Enter Rejected Reason " : " Entr Suspended Reason"}</h3>
@@ -452,21 +664,21 @@ const Admin = () => {
             </div>
           </div>
         </div>
-      )}
+      )} 
 
 
-      {permissionModalOpen && (
+   {permissionModalOpen && (
         <div className="modal">
           <div className="modal-content">
-            <h3>Edit Permissions</h3>
+            <h3>Edit Permissions  and Status</h3>
 
 
-            {allPermissions.map((p) => (
-              <div key={p.uid} className="checkbox-row">
+            {allPermissions?.map((p) => (
+              <div key={p.id} className="checkbox-row">
                 <input
                   type="checkbox"
-                  value={p.uid}
-                  checked={selectedPermissions.includes(p.uid)}
+                  value={p.id}
+                  checked={selectedPermissions.includes(p.id)}
                   onChange={(e) => {
                     const val = e.target.value;
                     if (e.target.checked) {
@@ -482,33 +694,40 @@ const Admin = () => {
               </div>
             ))}
 
+            {/* <div className="permission-header">
+  <button className="add-permission-btn">
+    + Add Permissions
+  </button>
+  
+</div> */}
+
 
             <div className="form-group">
               <label>Status</label>
-              <select
-                className="status-select"
-                value={editingUser?.admin_approval_status || "PENDING"}
-                onChange={(e) => {
-                  const newStatus = e.target.value;
+            <select
+  className="status-select"
+  value={editingUser?.admin_approval_status || "PENDING"}
+  onChange={(e) => {
+    const newStatus = e.target.value;
 
-                  if (newStatus === "REJECTED" || newStatus === "SUSPENDED") {
-                    setSelectedVerifier(editingUser);
-                    setRejectModalOpen(true);
-                    setPermissionModalOpen(false);
-                    setActionType(newStatus)
-                  } else {
-                    setEditingUser(prev => ({
-                      ...prev,
-                      admin_approval_status: newStatus,
-                    }));
-                  }
-                }}
-              >
-                <option value="PENDING">Pending</option>
-                <option value="APPROVED">Approved</option>
-                <option value="REJECTED">Rejected</option>
-                <option value="SUSPENDED"> Suspended</option>
-              </select>
+    if (newStatus === "REJECTED" || newStatus === "SUSPENDED") {
+      setSelectedVerifier(editingUser);
+      setRejectModalOpen(true);
+      setPermissionModalOpen(false);
+      setActionType(newStatus);
+    } else {
+      setEditingUser((prev) => ({
+        ...prev,
+        admin_approval_status: newStatus,
+      }));
+    }
+  }}
+>
+  <option value="PENDING">Pending</option>
+  <option value="APPROVED">Approved</option>
+  <option value="REJECTED">Rejected</option>
+  <option value="SUSPENDED">Suspended</option>
+</select>
             </div>
 
 
@@ -518,7 +737,7 @@ const Admin = () => {
             </div>
           </div>
         </div>
-      )}
+      )} 
       {AddAdminModal && (
         <div className="modal">
 
@@ -546,19 +765,30 @@ const Admin = () => {
             />
             {AddError.password && <p className="error">{AddError.password}</p>}
             <label>Role</label>
-            <select
-              name="admin_role"
-              value={AddAdminForm.admin_role}
-              onChange={handleinputchange}
+        <div className="role-select-wrapper">
+  <select
+    name="role"
+    value={AddAdminForm.role}
+    onChange={handleinputchange}
+  >
+    <option value="">Select Role</option>
 
-            >
-              <option value="">Select Role</option>
-              <option value="ADMIN">Admin</option>
-              <option value="VERIFIER">Verifier</option>
-              <option value="FOLLOWUP">Followup</option>
-              <option value="SUPERADMIN"> SuperAdmin </option>
-            </select>
-            {AddError.admin_role && <p className="error">{AddError.admin_role}</p>}
+    {roleData?.map((role) => (
+      <option key={role.id} value={role.name}>
+        {role.name}
+      </option>
+    ))}
+  </select>
+
+  <button
+    type="button"
+    className="add-role-btn"
+    onClick={()=>setAddNewRoleModal(true)}
+  >
+    + Add Role
+  </button>
+</div>
+            {AddError.role && <p className="error">{AddError.role}</p>}
 
             <div className="form-buttons">
               <button type="submit">Add Admin</button>
@@ -578,6 +808,46 @@ const Admin = () => {
         </div>
       )}
 
+  
+
+{
+  AddNewRoleModal && (
+    <div className="modal">
+
+      <form
+        className="customer-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          addNewRole();
+        }}
+      >
+        <h3>Add New Role</h3>
+
+        <input
+          type="text"
+          name="name"
+          placeholder="Enter the New Role Name"
+          value={NewRole}
+          onChange={(e) => setNewRole(e.target.value)}
+        />
+
+        <div className="form-buttons">
+          <button type="submit">Submit</button>
+
+          <button
+            type="button"
+            onClick={() => setAddNewRoleModal(false)}
+          >
+            Cancel
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  )
+}
+
 
       {DeleteModal && (
         <div className="modal">
@@ -595,7 +865,7 @@ const Admin = () => {
           </div>
         </div>
       )}
-
+<ToastContainer position="top-center" autoClose={1000} />
     </>
   );
 };

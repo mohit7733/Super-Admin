@@ -1,5 +1,5 @@
 
-const BASE_URL = "https://ksncfd6v-8002.inc1.devtunnels.ms/";  
+const BASE_URL = "https://6057-203-110-81-106.ngrok-free.app";  
 
 export default BASE_URL;
 

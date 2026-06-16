@@ -13,26 +13,29 @@ const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
+ const [otp, setOtp] = useState(["", "", "", ""]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!phoneNumber || !newPassword) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
+const formattedPhone = `+91${phoneNumber.replace(/^\+91|^0/g, "")}`
+ 
+    
     setLoading(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/user/forgot-password/reset/`, {
+      const response = await fetch(`${BASE_URL}/user/admin/forgot-password/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+         "Content-Type": "application/json",
+      
+          "ngrok-skip-browser-warning": "true",
+
         },
         body: JSON.stringify({
-          phone_number: phoneNumber,
-          new_password: newPassword,
+            phone_number: formattedPhone,
+       
+        password: newPassword,
+      otp: otp.join("") 
         }),
       });
 
@@ -62,31 +65,73 @@ const ResetPassword = () => {
           <p>Create a new password for your account</p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Phone Number</label>
-            <input
-              type="number"
-              placeholder="Enter your phone number"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-            />
-          </div>
+     <form onSubmit={handleSubmit}>
 
-          <div className="form-group">
-            <label>New Password</label>
-            <input
-              type="password"
-              placeholder="Enter new password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </div>
 
-          <button type="submit" className="reset-btn" disabled={loading}>
-            {loading ? "Updating..." : "Update Password"}
-          </button>
-        </form>
+  <div className="form-group">
+    <label>Phone Number</label>
+    <input
+      type="number"
+      placeholder="Enter your phone number"
+      value={phoneNumber}
+      onChange={(e) => setPhoneNumber(e.target.value)}
+    />
+  </div>
+   <div className="form-group">
+    <label>New Password</label>
+    <input
+      type="password"
+      placeholder="Enter new password"
+      value={newPassword}
+      onChange={(e) => setNewPassword(e.target.value)}
+    />
+  </div>
+
+
+<div className="form-group">
+
+   <label>Enter OTP</label>
+  <div className="otp-box-wrapper">
+    {otp?.map((digit, index) => (
+      <input
+        key={index}
+        id={`otp-${index}`}
+        type="text"
+        maxLength="1"
+        value={digit}
+        onChange={(e) => {
+          const value = e.target.value;
+
+          if (/^[0-9]?$/.test(value)) {
+            const newOtp = [...otp];
+            newOtp[index] = value;
+            setOtp(newOtp);
+
+         
+            if (value && index < 3) {
+              document.getElementById(`otp-${index + 1}`).focus();
+            }
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Backspace" && !otp[index] && index > 0) {
+            document.getElementById(`otp-${index - 1}`).focus();
+          }
+        }}
+        className="otp-input"
+      />
+    ))}
+  </div>
+</div>
+  
+
+
+ 
+  <button type="submit" className="reset-btn" disabled={loading}>
+    {loading ? "Updating..." : "Reset Password"}
+  </button>
+
+</form>
       </div>
     </div>
       <ToastContainer position="top-center" autoClose={1000} />

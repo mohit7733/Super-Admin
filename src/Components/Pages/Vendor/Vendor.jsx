@@ -87,11 +87,11 @@ const Vendor = () => {
 
 
 
-  const documentOptions = [
-    { value: "gst_certificate", label: "GST Certificate" },
-    { value: "shop_license", label: " Shop License" },
-    { value: "owner_id_proof", label: "Government ID Proof" },
-  ];
+  // const documentOptions = [
+  //   { value: "gst_certificate", label: "GST Certificate" },
+  //   { value: "shop_license", label: " Shop License" },
+  //   { value: "owner_id_proof", label: "Government ID Proof" },
+  // ];
 
 
 
@@ -110,12 +110,13 @@ const Vendor = () => {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/vendors/vendor/?page=${page}&store_name=${searchTerm}`, {
+      const response = await fetch(`${BASE_URL}/vendors/admin/vendors-list/?${page}`, {
         method: "GET",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+           "ngrok-skip-browser-warning": "true",
         },
       });
 
@@ -129,10 +130,10 @@ const Vendor = () => {
 
       const data = await response.json();
 
-      setVendorData(data.data);
-      setTotalCount(data.count);
-      setPreviousPage(data.previous);
-      setNextPage(data.next);
+      setVendorData(data.data.results);
+      setTotalCount(data.data.count);
+      setPreviousPage(data.data.previous);
+      setNextPage(data.data.next);
       setcurentpage(page)
 
 
@@ -146,43 +147,37 @@ const Vendor = () => {
     }
   };
 
-  useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      getVendorList(1);
-    }, 100);
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
-
+ useEffect(() => {
+    if (!fetchedOnce.current) {
+      getVendorList();
+      fetchedOnce.current = true;
+    }
+  }, [])
   const handleDocumentUpload = (e) => {
     const file = e.target.files[0];
     setForm({ ...form, documentFile: file });
   };
 
-  const getVendorStats = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
+  // const getVendorStats = async () => {
+  //   const token = sessionStorage.getItem("superadmin_token");
 
-    try {
-      const res = await fetch(`${BASE_URL}/vendors/vendorstats/`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
+  //   try {
+  //     const res = await fetch(`${BASE_URL}/vendors/vendorstats/`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Authorization": `Bearer ${token}`,
+  //         "Content-Type": "application/json"
+  //       }
+  //     });
 
-      const data = await res.json();
-      setVendorStats(data);
-    } catch (error) {
-      console.error("Error fetching doctor stats:", error);
-    }
-  };
+  //     const data = await res.json();
+  //     setVendorStats(data);
+  //   } catch (error) {
+  //     console.error("Error fetching doctor stats:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    if (!fetchedOnce.current) {
-      getVendorStats();
-      fetchedOnce.current = true;
-    }
-  }, []);
+  // 
   const openDocumentModal = (i) => {
 
     setVendorModal(true);
@@ -191,87 +186,92 @@ const Vendor = () => {
 
   const handleNavigate = (id) => {
     console.log(id)
-    navigate(`/vendorproduct/${id}`)
+    navigate(`/VendorDetail/${id}`)
   }
 
-  const validateAddressForm = () => {
-    const errors = {}
+  // const validateAddressForm = () => {
+  //   const errors = {}
 
-    if (!Addform.pincode || !/^\d{6}$/.test(Addform.pincode)) {
-      errors.pincode = "Pincode must be exactly 6 digits"
-    }
+  //   if (!Addform.pincode || !/^\d{6}$/.test(Addform.pincode)) {
+  //     errors.pincode = "Pincode must be exactly 6 digits"
+  //   }
 
-    if (!Addform.country) {
-      errors.country = "Please select a country"
-    }
+  //   if (!Addform.country) {
+  //     errors.country = "Please select a country"
+  //   }
 
-    if (!Addform.state) {
-      errors.state = "Please select a state"
-    }
+  //   if (!Addform.state) {
+  //     errors.state = "Please select a state"
+  //   }
 
-    if (!Addform.city) {
-      errors.city = "Please select a city"
-    }
+  //   if (!Addform.city) {
+  //     errors.city = "Please select a city"
+  //   }
 
-    if (!Addform.address_line1 || Addform.address_line1.trim()?.length < 5) {
-      errors.address_line1 = "Address line 1 must be at least 5 characters long"
-    }
+  //   if (!Addform.address_line1 || Addform.address_line1.trim()?.length < 5) {
+  //     errors.address_line1 = "Address line 1 must be at least 5 characters long"
+  //   }
 
-    setAddressErrors(errors)
-    return Object.keys(errors)?.length === 0
-  }
-
-
-  const validateVendorForm = () => {
-    const errors = {};
-
-    if (!form.first_name.trim()) {
-      errors.first_name = "First Name is Required"
-    }
+  //   setAddressErrors(errors)
+  //   return Object.keys(errors)?.length === 0
+  // }
 
 
-    if (!form.store_name.trim()?.length < 2) {
-      errors.store_name = "Store name must be required";
-    }
+  // const validateVendorForm = () => {
+  //   const errors = {};
 
-    if (!form.profile_picture) {
-      errors.profile_picture = "Profile picture is required";
-    }
-
-    if (!form.gst_number || form.gst_number.trim() === "") {
-      errors.gst_number = "GST number is required";
-    } else {
-      const gst = form.gst_number.trim().toUpperCase();
+  //   if (!form.first_name.trim()) {
+  //     errors.first_name = "First Name is Required"
+  //   }
 
 
-      if (gst?.length !== 15) {
-        errors.gst_number = "GST number must be exactly 15 characters";
-      }
+  //   if (!form.store_name.trim()?.length < 2) {
+  //     errors.store_name = "Store name must be required";
+  //   }
+
+  //   if (!form.profile_picture) {
+  //     errors.profile_picture = "Profile picture is required";
+  //   }
+
+  //   if (!form.gst_number || form.gst_number.trim() === "") {
+  //     errors.gst_number = "GST number is required";
+  //   } else {
+  //     const gst = form.gst_number.trim().toUpperCase();
 
 
-      const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+  //     if (gst?.length !== 15) {
+  //       errors.gst_number = "GST number must be exactly 15 characters";
+  //     }
 
-      if (!gstRegex.test(gst)) {
-        errors.gst_number = "Invalid GST format. Example: 27ABCDE1234F1Z5";
-      }
-    }
 
-    setFormErrors(errors);
-    return Object.keys(errors)?.length === 0;
-  };
+  //     const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+  //     if (!gstRegex.test(gst)) {
+  //       errors.gst_number = "Invalid GST format. Example: 27ABCDE1234F1Z5";
+  //     }
+  //   }
+
+  //   setFormErrors(errors);
+  //   return Object.keys(errors)?.length === 0;
+  // };
 
   const handleStatusChange = async (vendorId, newStatus, Reason = "") => {
     const token = sessionStorage.getItem("superadmin_token");
 
     try {
 
-      const bodyData = {
-        status: newStatus,
-        ...(newStatus === "rejected" && { rejection_reason: Reason })
-      };
-
+     const bodyData = {
+  status: newStatus,
+  vendor_id: vendorId,
+  ...(
+    (newStatus === "rejected" || newStatus === "suspended") && {
+      reason: Reason,
+    }
+  ),
+};
+       
       const response = await fetch(
-        `${BASE_URL}/vendors/approvevendor/${vendorId}/`,
+        `${BASE_URL}/vendors/admin/vendor/status/`,
         {
           method: "PUT",
           headers: {
@@ -297,16 +297,15 @@ const Vendor = () => {
         return;
       }
 
+setVendorData((prev) =>
+  prev.map((vendor) =>
+    vendor.id === vendorId
+      ? { ...vendor, approval_status: newStatus }
+      : vendor
+  )
+);
 
-      setVendorData((prev) =>
-        prev.map((vendor) =>
-          vendor.id === vendorId
-            ? { ...vendor, status: newStatus }
-            : vendor
-        )
-      );
-
-      await getVendorStats();
+      // await getVendorStats();
 
       toast.success("Status updated successfully ✅");
 
@@ -315,6 +314,7 @@ const Vendor = () => {
       toast.error("Error updating vendor status");
     }
   };
+
   const updateVendor = (updatedVendor) => {
     setVendorData((prevVendors) =>
       prevVendors.map((v) => (v.id === updatedVendor.id ? updatedVendor : v))
@@ -322,46 +322,46 @@ const Vendor = () => {
   }
 
 
-  const handleDelete = async (id) => {
-    const token = sessionStorage.getItem("superadmin_token");
+  // const handleDelete = async (id) => {
+  //   const token = sessionStorage.getItem("superadmin_token");
 
 
-    if (!token) {
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
+  //   if (!token) {
+  //     toast.error("Session expired. Please login again");
+  //     navigate("/login");
+  //     return;
+  //   }
 
-    try {
-      const res = await fetch(`${BASE_URL}/vendors/vendor/${id}/`, {
-        method: "DELETE",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  //   try {
+  //     const res = await fetch(`${BASE_URL}/vendors/vendor/${id}/`, {
+  //       method: "DELETE",
+  //       headers: {
+  //         Accept: "application/json",
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
 
 
-      if (res.status === 401 || res.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
+  //     if (res.status === 401 || res.status === 403) {
+  //       sessionStorage.removeItem("superadmin_token");
+  //       toast.error("Session expired. Please login again");
+  //       navigate("/login");
+  //       return;
+  //     }
 
-      if (!res.ok) {
-        toast.error("Failed to delete vendor");
-        return;
-      }
-      setVendorData((prev) => prev.filter((v) => v.id !== id));
-      toast.success("Vendor deleted successfully");
+  //     if (!res.ok) {
+  //       toast.error("Failed to delete vendor");
+  //       return;
+  //     }
+  //     setVendorData((prev) => prev.filter((v) => v.id !== id));
+  //     toast.success("Vendor deleted successfully");
 
-    } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong while deleting vendor");
-    }
-  };
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Something went wrong while deleting vendor");
+  //   }
+  // };
 
   const submitRejection = async (e) => {
     e.preventDefault();
@@ -455,145 +455,145 @@ const Vendor = () => {
     }
   }
 
-  const handleAddressSubmit = async (e) => {
-    e.preventDefault()
+  // const handleAddressSubmit = async (e) => {
+  //   e.preventDefault()
 
-    if (!validateAddressForm()) {
-      toast.error("Please Enter valid Input")
-      return
-    }
+  //   if (!validateAddressForm()) {
+  //     toast.error("Please Enter valid Input")
+  //     return
+  //   }
 
-    const { ...rest } = Addform
-    const finalData = {
-      vendor: addressVendorId,
-      ...rest,
-    }
+  //   const { ...rest } = Addform
+  //   const finalData = {
+  //     vendor: addressVendorId,
+  //     ...rest,
+  //   }
 
-    if (!addressVendorId) {
-      toast.error("Vendor not selected for address")
-      return
-    }
-    const token = sessionStorage.getItem("superadmin_token");
-
-
-
-    const method = addressEditingId ? "PUT" : "POST";
-    const url = addressEditingId
-      ? `${BASE_URL}/vendors/vendoraddress/${addressEditingId}/`
-      : `${BASE_URL}/vendors/vendoraddress/`;
-
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(finalData),
-      })
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
-
-      if (!response.ok) throw new Error("Server responded with an error.")
-
-      await getVendorList()
-      handleCloseAdddModal()
-      toast.success(`Address ${addressEditingId ? "updated" : "added"} successfully`)
-    } catch (err) {
-      console.error("Submit Error:", err)
-      toast.error("Failed to save address")
-      handleCloseAdddModal()
-      setAddform(intialAddressform)
-    }
-  }
+  //   if (!addressVendorId) {
+  //     toast.error("Vendor not selected for address")
+  //     return
+  //   }
+  //   const token = sessionStorage.getItem("superadmin_token");
 
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    const isValid = validateVendorForm();
-    if (!isValid) return;
-    const token = sessionStorage.getItem("superadmin_token");
 
-    const formData = new FormData();
-    formData.append("first_name", form.first_name);
-    formData.append("last_name", form.last_name);
-    formData.append("store_name", form.store_name);
-    formData.append("secondary_number", `+91${form.verified_phone_number}`);
-    formData.append("gst_number", form.gst_number);
+  //   const method = addressEditingId ? "PUT" : "POST";
+  //   const url = addressEditingId
+  //     ? `${BASE_URL}/vendors/vendoraddress/${addressEditingId}/`
+  //     : `${BASE_URL}/vendors/vendoraddress/`;
+
+  //   try {
+  //     const response = await fetch(url, {
+  //       method,
+  //       headers: {
+  //         Accept: "application/json",
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify(finalData),
+  //     })
+
+  //     if (response.status === 401 || response.status === 403) {
+  //       sessionStorage.removeItem("superadmin_token");
+  //       toast.error("Session expired. Please login again");
+  //       navigate("/login");
+  //       return;
+  //     }
+
+  //     if (!response.ok) throw new Error("Server responded with an error.")
+
+  //     await getVendorList()
+  //     handleCloseAdddModal()
+  //     toast.success(`Address ${addressEditingId ? "updated" : "added"} successfully`)
+  //   } catch (err) {
+  //     console.error("Submit Error:", err)
+  //     toast.error("Failed to save address")
+  //     handleCloseAdddModal()
+  //     setAddform(intialAddressform)
+  //   }
+  // }
 
 
-    if (form.profile_picture && typeof form.profile_picture !== "string") {
-      formData.append("profile_picture", form.profile_picture);
-    }
+  // const handleFormSubmit = async (e) => {
+  //   e.preventDefault();
+  //   const isValid = validateVendorForm();
+  //   if (!isValid) return;
+  //   const token = sessionStorage.getItem("superadmin_token");
+
+  //   const formData = new FormData();
+  //   formData.append("first_name", form.first_name);
+  //   formData.append("last_name", form.last_name);
+  //   formData.append("store_name", form.store_name);
+  //   formData.append("secondary_number", `+91${form.verified_phone_number}`);
+  //   formData.append("gst_number", form.gst_number);
 
 
-    let docIndex = 0;
-    uploadedDocs.forEach((item) => {
-      if (item.file) {
-        formData.append(`document_types[${docIndex}]`, item.type);
-        formData.append(`documents[${docIndex}]`, item.file);
+  //   if (form.profile_picture && typeof form.profile_picture !== "string") {
+  //     formData.append("profile_picture", form.profile_picture);
+  //   }
 
-        docIndex++;
-      }
-    });
 
-    const method = editingId ? "PUT" : "POST";
+  //   let docIndex = 0;
+  //   uploadedDocs.forEach((item) => {
+  //     if (item.file) {
+  //       formData.append(`document_types[${docIndex}]`, item.type);
+  //       formData.append(`documents[${docIndex}]`, item.file);
 
-    if (method === "POST") {
-      const uid = userId || localStorage.getItem("USER_ID");
-      if (uid) formData.append("user_id", uid);
-    }
+  //       docIndex++;
+  //     }
+  //   });
 
-    const url = editingId
-      ? `${BASE_URL}/vendors/vendor/${editingId}/`
-      : `${BASE_URL}/vendors/vendor/`;
+  //   const method = editingId ? "PUT" : "POST";
 
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
+  //   if (method === "POST") {
+  //     const uid = userId || localStorage.getItem("USER_ID");
+  //     if (uid) formData.append("user_id", uid);
+  //   }
 
-        },
-        body: formData,
-      });
+  //   const url = editingId
+  //     ? `${BASE_URL}/vendors/vendor/${editingId}/`
+  //     : `${BASE_URL}/vendors/vendor/`;
 
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again.");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
+  //   try {
+  //     const response = await fetch(url, {
+  //       method,
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
 
-      if (!response.ok) {
-        throw new Error("Server error");
-      }
+  //       },
+  //       body: formData,
+  //     });
 
-      const data = await response.json();
+  //     if (response.status === 401 || response.status === 403) {
+  //       toast.error("Session expired. Please login again.");
+  //       sessionStorage.removeItem("superadmin_token");
+  //       navigate("/login");
+  //       return;
+  //     }
 
-      if (editingId) {
-        updateVendor(data);
-      } else {
-        setVendorData((prev) => [...prev, data]);
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Server error");
+  //     }
 
-      await getVendorList();
-      handleCloseModal();
+  //     const data = await response.json();
 
-      toast.success(`Vendor ${editingId ? "updated" : "added"} successfully`);
-    } catch (err) {
-      console.error("Submit Error:", err);
-      toast.error("Failed to save vendor");
-      handleCloseModal();
-      setForm(initialFormState);
-    }
-  };
+  //     if (editingId) {
+  //       updateVendor(data);
+  //     } else {
+  //       setVendorData((prev) => [...prev, data]);
+  //     }
+
+  //     await getVendorList();
+  //     handleCloseModal();
+
+  //     toast.success(`Vendor ${editingId ? "updated" : "added"} successfully`);
+  //   } catch (err) {
+  //     console.error("Submit Error:", err);
+  //     toast.error("Failed to save vendor");
+  //     handleCloseModal();
+  //     setForm(initialFormState);
+  //   }
+  // };
 
 
   const handleRemoveDocument = (type) => {
@@ -827,7 +827,7 @@ const Vendor = () => {
             Add Vendor
           </button>
 
-          <button className="btn-secondary" onClick={exportToCSV}>
+          <button className="btn-secondary">
             <BsDownload size={16} />
             Export Details
           </button>
@@ -839,13 +839,12 @@ const Vendor = () => {
             <tr>
               <th>Id</th>
               <th>Profile</th>
-              <th> vendor</th>
-              <th>Store Name</th>
-              <th>Location</th>
+              <th>Store Name</th>   
               <th>Gst Number</th>
+              <th>Location</th>
               <th>Phone Number</th>
               <th>Status</th>
-              <th> Documents </th>
+              <th>Document</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -866,46 +865,43 @@ const Vendor = () => {
 
                     <td>
                       <div className="customer-avatar-wrapper">
-                        {vendor.profile_picture ? (
-                          <img
-                            src={vendor.profile_picture}
-                            alt="profile"
-                            className="customer-avatar-img"
-                            onClick={() => {
-                              setPreviewImage(vendor.profile_picture);
-                              setimageModal(true);
-                            }}
-                          />
-                        ) : (
-                          <div className="customer-avatar">
-                            {getInitials(vendor.first_name, vendor.last_name)}
-                          </div>
-                        )}
+                      {vendor?.documents?.company_logo ? (
+  <img
+    src={vendor?.documents?.company_logo}
+    alt="company logo"
+    className="customer-avatar-img"
+    onClick={() => {
+      setPreviewImage(vendor?.documents?.company_logo);
+      setimageModal(true);
+    }}
+  />
+) : (
+  <div className="customer-avatar">
+    {getInitials(vendor?.business_name)}
+  </div>
+)}
                       </div>
                     </td>
 
                     <td>
-                      {vendor.first_name && vendor.last_name
-                        ? `${vendor.first_name} ${vendor.last_name}`
-                        : "NA"}
+                     {vendor?.business_name}
                     </td>
 
-                    <td>{vendor.store_name ?? "NA"}</td>
+                    <td>{vendor.gst_number ?? "NA"}</td>
 
-                    <td>
-                      {vendor.pickup_locations?.map(
-                        (loc) =>
-                          `${loc.pincode}, ${loc.country}, ${loc.state}, ${loc.city}, ${loc.address_line1}, ${loc.address_line2}`
-                      )}
-                    </td>
+                  <td>
+  {vendor?.street_address}, {vendor?.city}, {vendor?.state} -{" "}
+  {vendor?.pincode}
+</td>
 
-                    <td>{vendor.gst_number}</td>
+ 
+                
 
                     <td>{vendor.verified_phone_number}</td>
 
                     <td>
                       <select
-                        value={vendor.status}
+                        value={vendor.approval_status}
                         onChange={(e) => {
                           const newStatus = e.target.value;
                           if (newStatus === "rejected" || newStatus === "suspended") {
@@ -952,7 +948,7 @@ const Vendor = () => {
                       {openMenuId === vendor.id && (
                         <div className="action-buttons-modal">
 
-                          {vendor.status === "approved" && (
+                        
                             <button
                               className="action-btn1"
                               title="View vendor product"
@@ -961,9 +957,9 @@ const Vendor = () => {
                               <span className="icon"><FaEye/></span>
                               <span>Detail Page</span>
                             </button>
-                          )}
+                      
 
-                          <button
+                          {/* <button
                             title="Edit Vendor Details"
                             className="action-btn1"
                             onClick={() => {
@@ -996,10 +992,9 @@ const Vendor = () => {
                           >
                             <span className="icon"><FaEdit/></span>
                             <span>Edit Detail</span>
-                          </button>
+                          </button> */}
 
-                        
-                          {vendor.pickup_locations.length === 0 && (
+{/*                         
                             <button
                               className="action-btn1"
                               title="Add Address"
@@ -1013,12 +1008,12 @@ const Vendor = () => {
                               <span className="icon"><FaPlusCircle/></span>
                               <span>Add Address</span>
 
-                            </button>
-                          )}
+                            </button> */}
+                       
 
 
-                          {vendor?.pickup_locations?.length > 0 && (
-                            <button
+                      
+                            {/* <button
                               title="Edit Address Details"
                               className="action-btn1"
                               onClick={() => {
@@ -1049,9 +1044,8 @@ const Vendor = () => {
                               </span>
                               <span>Edit Address</span>
                             </button>
-                          )}
-
-  <button
+                         */}
+  {/* <button
                             className="action-btn1"
                             title="Delete vendor"
                             onClick={() => {
@@ -1061,7 +1055,7 @@ const Vendor = () => {
                           >
                             <span className="icon-delete"><FiTrash2/></span>
                             <span className="delete-text">Delete</span>
-                          </button>
+                          </button> */}
                         </div>
                       )}
                     </td>
@@ -1083,7 +1077,7 @@ const Vendor = () => {
 
 
             <button
-              onClick={() => getVendorList(currentpage - 1, searchTerm)}
+              onClick={() => getVendorList(currentpage)}
               disabled={!previousPage}
             >
               Prev
@@ -1103,7 +1097,7 @@ const Vendor = () => {
               >
                 {page}
               </button>
-            ))}
+            ))} 
 
 
             <button
@@ -1119,7 +1113,7 @@ const Vendor = () => {
 
       </div>
 
-      {modalOpen && (
+      {/* {modalOpen && (
         <div className="modal">
           <form className="product-form" onSubmit={handleFormSubmit}>
             <h3>{editingId ? "Edit Vendor" : "Add Vendor"}</h3>
@@ -1350,10 +1344,10 @@ const Vendor = () => {
             </div>
           </form>
         </div>
-      )}
+      )} */}
 
 
-      {viewVendor && (
+      {/* {viewVendor && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Vendor Details</h3>
@@ -1394,8 +1388,8 @@ const Vendor = () => {
             </button>
           </div>
         </div>
-      )}
-      {vendorverifiedmodal && (
+      )} */}
+      {/* {vendorverifiedmodal && (
         <div className="modal">
           <form className="customer-form" onSubmit={handlevendorverifiedSubmit}>
             <h2> Enter your phone number</h2>
@@ -1427,9 +1421,9 @@ const Vendor = () => {
             </div>
           </form>
         </div>
-      )}
+      )} */}
 
-      {deleteConfirmModal && (
+      {/* {deleteConfirmModal && (
         <div className="modal">
           <div className="modal-content">
             <h3>Are you sure you want to delete this vendor?</h3>
@@ -1447,7 +1441,7 @@ const Vendor = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {imageModal && (
         <div className="image-preview-overlay" onClick={() => setimageModal(false)}>
@@ -1457,7 +1451,7 @@ const Vendor = () => {
           </div>
         </div>)}
 
-      {AddModal && (
+      {/* {AddModal && (
         <div className="modal">
           <form className="address-form" onSubmit={handleAddressSubmit}>
             <h3>{addressEditingId ? "Edit Address" : "Add Address"}</h3>
@@ -1549,15 +1543,15 @@ const Vendor = () => {
             </div>
           </form>
         </div>
-      )}
+      )} */}
 
 
-      {VendoropenModal && (
+       {VendoropenModal && (
         <div className="modal-overlay" onClick={() => setVendorData(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Uploaded Documents</h3>
 
-            {SelectedVendorId?.documents && SelectedVendorId.documents?.length > 0 ? (
+            {/* {SelectedVendorId?.documents && SelectedVendorId.documents?.length > 0 ? (
               <ul className="doc-list">
                 {SelectedVendorId.documents.map((doc, i) => (
                   <li key={i}>
@@ -1573,14 +1567,36 @@ const Vendor = () => {
               </ul>
             ) : (
               <p className="no-docs">No documents uploaded.</p>
-            )}
+            )} */}
+
+            {SelectedVendorId?.documents ? (
+  <ul className="doc-list">
+    {Object.entries(SelectedVendorId.documents)
+      .filter(([key]) => key !== "id" && key !== "vendor")
+      .map(([key, value]) => (
+        <li key={key}>
+          {value ? (
+            <a href={value} target="_blank" rel="noopener noreferrer">
+              📄 {key.replace(/_/g, " ").toUpperCase()}
+            </a>
+          ) : (
+            <span className="docno">
+              📄 {key.replace(/_/g, " ").toUpperCase()} - Not Uploaded
+            </span>
+          )}
+        </li>
+      ))}
+  </ul>
+) : (
+  <p className="no-docs">No documents uploaded.</p>
+)}
             <button className="close1-btn1" onClick={() => setVendorModal(false)}>
               Close
             </button>
           </div>
         </div>
-      )}
-      {RejectionVendorModal && (
+      )} 
+       {RejectionVendorModal && (
         <div className=" modal">
 
           <form className="customer-form">
@@ -1606,7 +1622,7 @@ const Vendor = () => {
           </form>
         </div>
 
-      )}
+      )} 
 
 
       <ToastContainer

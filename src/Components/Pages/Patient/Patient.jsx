@@ -8,6 +8,7 @@ import { BsSearch, BsThreeDots, BsThreeDotsVertical,BsDownload } from "react-ico
 
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const Patient = () => {
   const [patientdata, setPatientData] = useState([]);
@@ -41,39 +42,60 @@ const Patient = () => {
     setNewPatient((prev) => ({ ...prev, [name]: value }));
   };
   const fetchOnce = useRef();
+  const navigate = useNavigate();
 
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
-  const getAllpatientList = async (page = 1) => {
-    try {
-      const data = await apiFetch(`${BASE_URL}/healthcare/patient/?page=${page} `, {
+ const getAllpatientList = async (page = 1) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setPatientLoading(true);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/patients/admin/patients/?page=${page}`,
+      {
         method: "GET",
-      });
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
 
+    const data = await response.json();
 
+    console.log("Patient API Response:", data);
 
+    setPatientData(data?.data?.results || []);
+    setCount(data?.data?.count || 0);
+    setNextPage(data?.data?.next || null);
+    setPreviousPage(data?.data?.previous || null);
+    setCurrentpage(page);
 
-      if (!data) return;
-      setPatientData(data.data);
-      setCurrentpage(page);
-      setNextPage(data.next);
-      setPreviousPage(data.previous);
-      setCount(data.count)
+  } catch (err) {
+    console.error("Patient Fetch Error:", err);
 
-    } catch (err) {
-      console.error("Patient Fetch Error:", err);
+    setPatientError("Something went wrong while fetching patient data.");
 
-      setPatientError("Something went wrong while fetching data.");
+    toast.error("Failed to fetch patient data", {
+      position: "top-center",
+      autoClose: 2000,
+    });
 
-      toast.error("Failed to fetch patient data", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-    } finally {
-      setPatientLoading(false);
-    }
-  };
+  } finally {
+    setPatientLoading(false);
+  }
+};
 
   useEffect(() => {
     if (!fetchOnce.current) {
@@ -83,123 +105,158 @@ const Patient = () => {
 
   }, [])
 
+ const handleToggle = async (id, currentStatus) => {
+  const token = sessionStorage.getItem("superadmin_token");
+  if(!token){
+    toast.error("Session Expired,please login Again");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+     `${BASE_URL}/patients/admin/patients/?id=${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+           "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          is_active: !currentStatus,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    console.log(data);
+
+    toast.success("Status updated successfully");
+
+    getAllpatientList();
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to update status");
+  }
+};
+
+  // const handleAddPatient = async (e) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     const addedPatient = await apiFetch(`${BASE_URL}/healthcare/patient/`, {
+  //       method: "POST",
+  //       body: JSON.stringify(newPatient),
+  //     });
+
+  //     setPatientData((prev) => [...prev, addedPatient]);
+  //     setNewPatient({ name: "", gender: "", age: "", description: "", relation: "" });
+  //     setAddform(false);
+
+  //     toast.success("Patient added successfully!", {
+  //       position: "top-center",
+  //       autoClose: 2000,
+  //     });
+  //   } catch (err) {
+  //     toast.error("Failed to add patient");
+  //   }
+  // };
 
 
-  const handleAddPatient = async (e) => {
-    e.preventDefault();
+  // const handleEditClick = (patient) => {
+  //   setSelectedPatient(patient);
+  //   setEditForm(true);
+  // };
 
-    try {
-      const addedPatient = await apiFetch(`${BASE_URL}/healthcare/patient/`, {
-        method: "POST",
-        body: JSON.stringify(newPatient),
-      });
-
-      setPatientData((prev) => [...prev, addedPatient]);
-      setNewPatient({ name: "", gender: "", age: "", description: "", relation: "" });
-      setAddform(false);
-
-      toast.success("Patient added successfully!", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-    } catch (err) {
-      toast.error("Failed to add patient");
-    }
-  };
-
-
-  const handleEditClick = (patient) => {
-    setSelectedPatient(patient);
-    setEditForm(true);
-  };
-
-  const handleDownload = () => {
-    const exportData = patientdata.map((p, index) => ({
-      ID: index + 1,
-      Name: p.name,
-      Gender: p.gender,
-      Age: p.age,
-      Description: p.description,
-      Relation: p.relation,
-    }));
-
-
-
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
-      wch: key.length + 20,
-    }));
-    ws["!cols"] = colWidths;
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Patients");
-    XLSX.writeFile(wb, "patient_data.xlsx");
-  };
-
-
-  const handlePatientDelete = async (id) => {
-    try {
-      await apiFetch(`${BASE_URL}/healthcare/patient/${id}/`, {
-        method: "DELETE",
-      });
-
-
-      setPatientData((prev) => prev.filter((p) => p?.id !== id));
-
-      toast.success("Patient deleted successfully!", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete patient", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-    }
-  };
-
-
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setSelectedPatient((prev) => ({ ...prev, [name]: value }));
-  };
+  // const handleDownload = () => {
+  //   const exportData = patientdata.map((p, index) => ({
+  //     ID: index + 1,
+  //     Name: p.name,
+  //     Gender: p.gender,
+  //     Age: p.age,
+  //     Description: p.description,
+  //     Relation: p.relation,
+  //   }));
 
 
 
-  const handleEditPatient = async (e) => {
-    e.preventDefault();
-
-    try {
-
-      const updatedPatient = await apiFetch(
-        `${BASE_URL}/healthcare/patient/${selectedPatient?.id}/`,
-        {
-          method: "PUT",
-          body: JSON.stringify(selectedPatient),
-        }
-      );
+  //   const ws = XLSX.utils.json_to_sheet(exportData);
+  //   const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
+  //     wch: key.length + 20,
+  //   }));
+  //   ws["!cols"] = colWidths;
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Patients");
+  //   XLSX.writeFile(wb, "patient_data.xlsx");
+  // };
 
 
-      setPatientData((prev) =>
-        prev.map((patient) =>
-          patient?.id === updatedPatient?.id ? updatedPatient : patient
-        )
-      );
+  // const handlePatientDelete = async (id) => {
+  //   try {
+  //     await apiFetch(`${BASE_URL}/healthcare/patient/${id}/`, {
+  //       method: "DELETE",
+  //     });
 
-      setEditForm(false);
 
-      toast.success("Patient updated successfully!", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update patient", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-    }
-  };
+  //     setPatientData((prev) => prev.filter((p) => p?.id !== id));
+
+  //     toast.success("Patient deleted successfully!", {
+  //       position: "top-center",
+  //       autoClose: 2000,
+  //     });
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Failed to delete patient", {
+  //       position: "top-center",
+  //       autoClose: 2000,
+  //     });
+  //   }
+  // };
+
+
+  // const handleEditInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setSelectedPatient((prev) => ({ ...prev, [name]: value }));
+  // };
+
+
+
+  // const handleEditPatient = async (e) => {
+  //   e.preventDefault();
+
+  //   try {
+
+  //     const updatedPatient = await apiFetch(
+  //       `${BASE_URL}/healthcare/patient/${selectedPatient?.id}/`,
+  //       {
+  //         method: "PUT",
+  //         body: JSON.stringify(selectedPatient),
+  //       }
+  //     );
+
+
+  //     setPatientData((prev) =>
+  //       prev.map((patient) =>
+  //         patient?.id === updatedPatient?.id ? updatedPatient : patient
+  //       )
+  //     );
+
+  //     setEditForm(false);
+
+  //     toast.success("Patient updated successfully!", {
+  //       position: "top-center",
+  //       autoClose: 2000,
+  //     });
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Failed to update patient", {
+  //       position: "top-center",
+  //       autoClose: 2000,
+  //     });
+  //   }
+  // };
 
 
 
@@ -226,34 +283,34 @@ const Patient = () => {
 
         </div>
         <div className="action-buttons">
-          <button className="add-customer-btn" onClick={() => setAddform(true)}>
+          {/* <button className="add-customer-btn" onClick={() => setAddform(true)}>
             + Add Patient
-          </button>
+          </button> */}
 
 
           {/* <button className="btn-secondary" onClick={handleDownload}>
             Export Details
           </button> */}
 
-                    <button className="btn-secondary" onClick={handleDownload}>
+                    {/* <button className="btn-secondary" >
                       <BsDownload size={16} />
                       Export Details
-                    </button>
-          
+                    </button> */}
         </div>
 
 
       </div>
-      <table className="data-table" ref={patienttableRef}>
+      <table className="data-table" >
         <thead>
           <tr>
             <th> Id</th>
             <th>Patient Name</th>
             <th>Gender</th>
-            <th>Age</th>
+            {/* <th>Age</th> */}
             <th> Relation</th>
             <th>Descripition</th>
-            <th> Actions</th>
+            <th>Status</th>
+            {/* <th> Actions</th> */}
           </tr>
         </thead>
         <tbody>
@@ -274,17 +331,17 @@ const Patient = () => {
             (
               <tr key={patient?.id}>
                 <td>{index + 1}</td>
-                <td>{patient?.name}</td>
+                <td>{patient?.first_name}</td>
                 <td>{patient?.gender}</td>
-                <td>{patient?.age}Years</td>
+                {/* <td>{patient?.age}Years</td> */}
                 <td>{patient.relation}</td>
                 <td>{patient?.description}</td>
-                <td>
+                {/* <td>
                   <div className="action-buttons">
 
                     <button
                       className="action-btn edit"
-                      onClick={() => handleEditClick(patient)}
+                     
 
                     >
                       <FaEdit/>
@@ -292,10 +349,7 @@ const Patient = () => {
 
                     <button
                       className="action-btn delete"
-                      onClick={() => {
-                        setSelectedPatientId(patient?.id);
-                        setDeleteConfirmModal(true);
-                      }}
+                     
                     >
                       <FiTrash2/>
                     </button>
@@ -303,7 +357,17 @@ const Patient = () => {
 
 
                   </div>
-                </td>
+                </td> */}
+                  <td>
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={patient.is_active}
+              onChange={() => handleToggle(patient.id, patient.is_active)}
+            />
+            <span className="slider round"></span>
+          </label>
+        </td>
               </tr>
             )
             )
@@ -368,7 +432,7 @@ const Patient = () => {
         pauseOnHover
         closeButton
       />
-      {Addform && (
+      {/* {Addform && (
 
         <div className="modal">
           <form className="customer-form" onSubmit={handleAddPatient}>
@@ -439,10 +503,10 @@ const Patient = () => {
           </form>
 
         </div>
-      )}
+      )} */}
 
 
-      {editForm && selectedPatient && (
+      {/* {editForm && selectedPatient && (
         <div className="modal">
           <form className='customer-form' onSubmit={handleEditPatient}>
             <h2>Edit Patient</h2>
@@ -509,10 +573,10 @@ const Patient = () => {
           </form>
 
         </div>
-      )}
+      )} */}
 
 
-
+{/* 
       {deleteConfirmModal && (
         <div className="modal">
           <div className="modal-content">
@@ -531,7 +595,7 @@ const Patient = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
 
 
