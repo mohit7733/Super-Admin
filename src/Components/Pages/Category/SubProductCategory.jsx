@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect ,useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaUsers,
@@ -40,6 +40,12 @@ const[AddError,setAddError]=useState({});
 const[SubCategoryImage,setSubCategoryImage]=useState(null);
 const [showEditModal, setShowEditModal] = useState(false);
 const [editId, setEditId] = useState(null);
+const [editErrors, setEditErrors] = useState({});
+const[SubproductcategoryPreviewimage,setSubProductCategoryPreviewImage]=useState("");
+const [SubproductCategoryStatusModal, setProductSubCategoryStatusModal] = useState(false);
+const [selectedSubProductCategory, setSelectedSubProductCategory] = useState(null);
+const [isStatusChanging, setIsStatusChanging] = useState(false);
+
 
 const [EditForm, setEditForm] = useState({
   name: "",
@@ -49,6 +55,8 @@ const [EditForm, setEditForm] = useState({
   product_id: "",
   image_url: "",
 });
+const fileInputRef = useRef(null);
+const editFileRef = useRef(null);
 
 const [EditImage, setEditImage] = useState(null);
 
@@ -103,6 +111,12 @@ const handleCategoryChange = (e) => {
   setSubCategoryForm((prev) => ({
     ...prev,
     [name]: type === "checkbox" ? checked : value,
+  }));
+
+ 
+  setAddError((prev) => ({
+    ...prev,
+    [name]: "",
   }));
 };
 
@@ -160,108 +174,123 @@ const handleEditChange = (e) => {
     ...prev,
     [name]: type === "checkbox" ? checked : value,
   }));
+
+  setEditErrors((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
 };
+// const getCategoryList = async () => {
+// const token = sessionStorage.getItem("superadmin_token");
 
-const getCategoryList = async () => {
-const token = sessionStorage.getItem("superadmin_token");
+//   if (!token) {
+//     toast.error("Session expired. Please login again");
+//     navigate("/login");
+//     return;
+//   }
 
-  if (!token) {
-    toast.error("Session expired. Please login again");
-    navigate("/login");
-    return;
-  }
-
-setServiceCategoryLoading(true);
+// setServiceCategoryLoading(true);
 
 
-  try {
-    const response = await fetch(
-      `${BASE_URL}/user/admin/categories/`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
-    );
+//   try {
+//     const response = await fetch(
+//       `${BASE_URL}/user/admin/categories/`,
+//       {
+//         method: "GET",
+//         headers: {
+//           Accept: "application/json",
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//           "ngrok-skip-browser-warning": "true",
+//         },
+//       }
+//     );
 
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
+//     if (response.status === 401 || response.status === 403) {
+//       sessionStorage.removeItem("superadmin_token");
 
-      toast.error("Session expired. Please login again");
+//       toast.error("Session expired. Please login again");
 
-      navigate("/login");
+//       navigate("/login");
 
-      return;
-    }
+//       return;
+//     }
 
-    const data = await response.json();
+//     const data = await response.json();
 
-    console.log("Category API Response:", data);
+//     console.log("Category API Response:", data);
 
-    if (data.success) {
-      setServiceCategoryData(data.data);
+//     if (data.success) {
+//       setServiceCategoryData(data.data);
 
      
 
-    } else {
-      toast.error(data.message || "Failed to get categories");
-    }
+//     } else {
+//       toast.error(data.message || "Failed to get categories");
+//     }
 
-  } catch (error) {
+//   } catch (error) {
 
-    console.error("Category Fetch Error:", error);
+//     console.error("Category Fetch Error:", error);
 
-    setError("Something went wrong while fetching data.");
+//     setError("Something went wrong while fetching data.");
 
-    toast.error("Failed to fetch category data");
+//     toast.error("Failed to fetch category data");
 
-  } finally {
-    setServiceCategoryLoading(false);
-  }
-};
-const handleEdit = async (item) => {
-    console.log("EDIT ITEM =>", item);
+//   } finally {
+//     setServiceCategoryLoading(false);
+//   }
+// };
+const handleEdit = (item) => {
   setEditId(item.id);
 
   setEditForm({
     name: item.name || "",
     description: item.description || "",
     is_active: item.is_active || false,
-    category_id: item.category_id || "",
     product_id: item.product_category_id || "",
     image_url: item.image_url || "",
   });
 
- 
-  if (item.category_id) {
-    await getSubProductCategoryList(item.category_id);
-  }
+  setEditImage(null);
+  setEditErrors({});
 
   setShowEditModal(true);
 };
 
+const validateEdit = () => {
+  let errors = {};
+
+  if (!EditForm.product_id) {
+    errors.product_id = "Product category is required";
+  }
+
+  if (!EditForm.name || !EditForm.name.trim()) {
+    errors.name = "Name is required";
+  }
+
+  if (!EditForm.image_url && !EditImage) {
+    errors.image_url = "Image is required";
+  }
+
+  setEditErrors(errors);
+  return Object.keys(errors).length === 0;
+};;
+
 const handleUpdateSubSubCategory = async (e) => {
   e.preventDefault();
 
+  if (!validateEdit()) return;
+
   const token = sessionStorage.getItem("superadmin_token");
+  setIsSubmitting(true);
 
   try {
-    setIsSubmitting(true);
-
     let imageUrl = EditForm.image_url;
 
-    // New image selected hai toh pehle upload karo
     if (EditImage) {
       imageUrl = await uploadImage(EditImage);
-
-      if (!imageUrl) {
-        toast.error("Image upload failed");
-        return;
-      }
+      if (!imageUrl) return toast.error("Image upload failed");
     }
 
     const payload = {
@@ -272,8 +301,6 @@ const handleUpdateSubSubCategory = async (e) => {
       is_active: EditForm.is_active,
     };
 
-    console.log("UPDATE PAYLOAD =>", payload);
-
     const response = await fetch(
       `${BASE_URL}/vendors/admin/product-subcategory/?id=${editId}`,
       {
@@ -281,7 +308,6 @@ const handleUpdateSubSubCategory = async (e) => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify(payload),
       }
@@ -290,38 +316,36 @@ const handleUpdateSubSubCategory = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-      toast.success("Category updated successfully");
-
-      setEditImage(null);
+      toast.success("Updated successfully");
       setShowEditModal(false);
-
       getSubSubProductCategoryList();
     } else {
-      toast.error(data.message || "Update failed");
+      toast.error(data.message);
     }
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong");
   } finally {
     setIsSubmitting(false);
   }
 };
-
 const handleAddSubSubCategory = async (e) => {
   e.preventDefault();
 
-  let errors = {};
+let errors = {};
 
-  if (!SubCategoryForm.category_id) {
-    errors.category_id = "Please select service category";
-  }
+ 
 
   if (!SubCategoryForm.product_id) {
-    errors.product_id = "Please select sub service category";
+    errors.product_id = "Please select product category";
+    toast.error("Please select product category");
   }
 
   if (!SubCategoryForm.name.trim()) {
     errors.name = "Name is required";
+    toast.error("Name is required");
+  }
+
+  if (!SubCategoryImage) {
+    errors.image_url = "Please upload image";
+    toast.error("Please upload image");
   }
 
   setAddError(errors);
@@ -459,7 +483,7 @@ const getSubProductCategoryList = async (categoryId) => {
 
   try {
     const response = await fetch(
-      `${BASE_URL}/vendors/admin/product-category/?category_id=${categoryId}`,
+      `${BASE_URL}/vendors/admin/product-category/`,
       {
         method: "GET",
         headers: {
@@ -484,23 +508,40 @@ const getSubProductCategoryList = async (categoryId) => {
 };
 useEffect(()=>{
     getSubProductCategoryList();
-    getCategoryList();
+    // getCategoryList();
     getSubSubProductCategoryList();
 },[])
 
   return (
     <>
  <div className="page-header">
-                 <h1> Sub-Sub Service Category </h1>
+                 <h1> Sub Product Category </h1>
                  <p className="page-paragraph"> Manage Sub Service Category  and their details</p>
                </div>
     
         <div className="filter-category">
   <button
     className="add-customer-btn"
-    onClick={() => setShowCategoryModal(true)}
+    onClick={() =>{
+      setShowCategoryModal(true);
+      setSubCategoryForm(
+        {
+           name: "",
+  description: "",
+  is_active: false,
+  category_id: "",
+  product_id: "", 
+  image_url: "",
+        }
+      );
+      setAddError({});
+      setSubCategoryImage(null);
+    }}
+
+  
+
   >
-    + Add Sub-Sub Service Category
+    + Add Sub Product Category
   </button>
 </div>
   <div className="stats2-grid">
@@ -540,7 +581,7 @@ useEffect(()=>{
                                                                        <th>ID</th>
                                                                        <th>Name </th>
                                                                        <th>Image</th>
-                                                                       <th>Description</th>               
+                                                                               
                                                                        <th> Status</th>
                                     <th> Action</th>
                                                                      </tr>
@@ -577,9 +618,10 @@ useEffect(()=>{
       objectFit: "cover",
       borderRadius: "6px"
     }}
+    onClick={()=>setSubProductCategoryPreviewImage(item.image_url)}
   />
 </td> 
-                                                           <td>{item.description}</td>
+                                                       
                                                             <td>
                                               <label className="switch">
                                                 <input
@@ -634,7 +676,7 @@ useEffect(()=>{
                                                         onClick={(e) => e.stopPropagation()}
                                                       >
                                                         <div className="prakriti-modal-header">
-                                                          <h2>Add Sub-Sub service Category</h2>
+                                                          <h2>Add Sub Product Category</h2>
                                                           <button
                                                             className="close-btn"
                                                             onClick={() => setShowCategoryModal(false)}
@@ -646,7 +688,7 @@ useEffect(()=>{
                                                         <form className="prakriti-form"
                                                           onSubmit={handleAddSubSubCategory} >
                                                   
-                                                     <div className="form-group">
+                                                     {/* <div className="form-group">
                                                               <label>Select Service Category</label>
                                                   
                                                               <div className="category-row">
@@ -678,9 +720,9 @@ useEffect(()=>{
                                                                   {AddError.category_id}
                                                                 </p>
                                                               )}
-                                                            </div>
+                                                            </div> */}
                                                              <div className="form-group">
-                                                              <label>Select Sub Service Category</label>
+                                                              <label>Select Product Category</label>
                                                   
                                                               <div className="category-row">
                                                   
@@ -704,22 +746,21 @@ useEffect(()=>{
     ))
   ) : (
     <option value="" disabled>
-      No Sub Service Category Found
+      No Product Category Found
     </option>
   )}
 </select>
                                                                                                   
                                                               </div>
                                                   
-                                                              {AddError.Product_id && (
-                                                                <p className="error-text">
-                                                                  {AddError.Product_id}
-                                                                </p>
-                                                              )}
+                                                            {AddError.product_id && (
+  <p className="error-text">{AddError.product_id}</p>
+)}
+                                                          
                                                             </div>
                                                   
                                                           <div className="form-group">
-                                                            <label>Sub-Service Category  Name</label>
+                                                            <label>Product Sub Category  Name</label>
                                                            <input
                                                     type="text"
                                                     name="name"
@@ -743,21 +784,26 @@ useEffect(()=>{
                                                   <div className="form-group">
                                                   <label> Upload Image</label>
                                                      <div className="upload-box1">
-                                                      <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        id="categoryUpload"
-                                                        onChange={(e) => {
-                                                          const file = e.target.files[0];
-                                                  
-                                                          setSubCategoryImage(file);
-                                                  
-                                                          setSubCategoryForm((prev) => ({
-                                                            ...prev,
-                                                            image_url: file,
-                                                          }));
-                                                        }}
-                                                      />
+                                                     
+  <input
+  ref={fileInputRef}
+  type="file"
+  accept="image/*"
+  id="categoryUpload"
+  onChange={(e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      setSubCategoryImage(file);
+
+      setAddError((prev) => ({
+        ...prev,
+        image_url: "",
+      }));
+    }
+  }}
+/>
+
                                                   
                                                       {SubCategoryImage ? (
                                                         <div className="banner-preview-wrapper">
@@ -784,14 +830,19 @@ useEffect(()=>{
                                                     <button
                                                       type="button"
                                                       className="delete-btn-preview"
-                                                      onClick={() => {
-                                                        setSubCategoryImage(null);
-                                                  
-                                                        setSubCategoryForm((prev) => ({
-                                                          ...prev,
-                                                          image_url: null,
-                                                        }));
-                                                      }}
+                                                   onClick={() => {
+  setSubCategoryImage(null);
+
+  setSubCategoryForm((prev) => ({
+    ...prev,
+    image_url: "",
+  }));
+
+  
+  if (fileInputRef.current) {
+    fileInputRef.current.value = "";
+  }
+}}
                                                     >
                                                       <FiTrash2 />
                                                     
@@ -802,8 +853,8 @@ useEffect(()=>{
                                                         <label htmlFor="categoryUpload" className="upload-label">
                                                           <div className="upload-content">
                                                             <span className="upload-icon">⬆</span>
-                                                            <p>Click to upload banner image</p>
-                                                            <small>PNG, JPG up to 2MB</small>
+                                                            <p>Click to upload Sub Product Category image</p>
+                                                       
                                                           </div>
                                                         </label>
                                                       )}
@@ -852,7 +903,21 @@ useEffect(()=>{
                                                             <button
                                                               type="button"
                                                               className="cancel-btn"
-                                                              onClick={() => setShowCategoryModal(false)}
+                                                        onClick={() =>{
+      setShowCategoryModal(false);
+      setSubCategoryForm(
+        {
+           name: "",
+  description: "",
+  is_active: false,
+  category_id: "",
+  product_id: "", 
+  image_url: "",
+        }
+      );
+      setAddError({});
+      setSubCategoryImage(null);
+    }}
                                                             >
                                                               Cancel
                                                             </button>
@@ -880,7 +945,7 @@ useEffect(()=>{
       onClick={(e) => e.stopPropagation()}
     >
       <div className="prakriti-modal-header">
-        <h2>Edit Sub-Sub Service Category</h2>
+        <h2>Edit Sub Product Category</h2>
 
         <button
           className="close-btn"
@@ -896,7 +961,7 @@ useEffect(()=>{
       >
         {/* Service Category */}
 
-        <div className="form-group">
+        {/* <div className="form-group">
           <label>Select Service Category</label>
 
           <div className="category-row">
@@ -910,7 +975,7 @@ useEffect(()=>{
               }}
             >
               <option value="">
-                Select Service Category
+                Select Product Category
               </option>
 
               {ServiceCategoryData?.map((cat) => (
@@ -923,12 +988,12 @@ useEffect(()=>{
               ))}
             </select>
           </div>
-        </div>
+        </div> */}
 
         {/* Sub Service Category */}
 
         <div className="form-group">
-          <label>Select Sub Service Category</label>
+          <label>Select Product Category</label>
 
           <div className="category-row">
             <select
@@ -937,7 +1002,7 @@ useEffect(()=>{
               onChange={handleEditChange}
             >
               <option value="">
-                Select Sub Service Category
+                Select Product  Category
               </option>
 
               {SubCategoryData?.length > 0 ? (
@@ -954,17 +1019,20 @@ useEffect(()=>{
                   value=""
                   disabled
                 >
-                  No Sub Service Category Found
+                  No Product Category Found
                 </option>
               )}
             </select>
           </div>
+          {editErrors.product_id && (
+  <p className="error-text">{editErrors.product_id}</p>
+)}
         </div>
 
         {/* Name */}
 
         <div className="form-group">
-          <label>Sub-Service Category Name</label>
+          <label>Sub Product Category Name</label>
 
           <input
             type="text"
@@ -973,6 +1041,9 @@ useEffect(()=>{
             onChange={handleEditChange}
             placeholder="Enter category name"
           />
+          {editErrors.name && (
+  <p className="error-text">{editErrors.name}</p>
+)}
         </div>
 
         {/* Image Upload */}
@@ -982,19 +1053,26 @@ useEffect(()=>{
 
   <div className="upload-box1">
 
-    <input
-      type="file"
-      accept="image/*"
-      id="editBannerUpload"
-      style={{ display: "none" }}
-      onChange={(e) => {
-        const file = e.target.files[0];
+   <input
+  ref={editFileRef}
+  type="file"
+  accept="image/*"
+  id="editBannerUpload"
+  style={{ display: "none" }}
+onChange={(e) => {
+  const file = e.target.files[0];
 
-        if (file) {
-          setEditImage(file);
-        }
-      }}
-    />
+  if (file) {
+    setEditImage(file);
+
+    // ✅ error remove instantly
+    setEditErrors((prev) => ({
+      ...prev,
+      image_url: "",
+    }));
+  }
+}}
+/>
 
     {(EditImage || EditForm.image_url) ? (
       <div className="banner-preview-wrapper">
@@ -1041,15 +1119,24 @@ useEffect(()=>{
           <button
             type="button"
             className="delete-btn-preview"
-            onClick={() => {
-              setEditImage(null);
+         
+  onClick={() => {
+  setEditImage(null);
 
-              setEditForm((prev) => ({
-                ...prev,
-                image_url: "",
-              }));
-            }}
-          >
+  setEditForm((prev) => ({
+    ...prev,
+    image_url: "",
+  }));
+
+  setEditErrors((prev) => ({
+    ...prev,
+    image_url: "",
+  }));
+
+  if (editFileRef.current) {
+    editFileRef.current.value = "";
+  }
+}}        >
             <FiTrash2 />
           </button>
 
@@ -1063,13 +1150,16 @@ useEffect(()=>{
       >
         <div className="upload-content">
           <span className="upload-icon">⬆</span>
-          <p>Click to upload banner image</p>
+          <p>Click to upload sub product image</p>
           <small>PNG, JPG up to 2MB</small>
         </div>
       </label>
     )}
 
   </div>
+  {editErrors.image_url && (
+  <p className="error-text">{editErrors.image_url}</p>
+)}
 </div>
 
         {/* Description */}
@@ -1121,6 +1211,135 @@ useEffect(()=>{
           </button>
         </div>
       </form>
+    </div>
+  </div>
+)}
+
+{SubproductcategoryPreviewimage && (
+  <div
+    className="prakriti-modal-overlay"
+    onClick={() =>setSubProductCategoryPreviewImage("")}
+  >
+    <div
+      className="prakriti-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="prakriti-modal-header">
+        <h2>Image Preview</h2>
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        <img
+          src={SubproductcategoryPreviewimage}
+          alt="preview"
+          style={{
+            width: "100%",
+            maxHeight: "500px",
+            objectFit: "contain",
+            borderRadius: "10px",
+          }}
+        />
+      </div>
+
+      <div className="modal-footer">
+        <button
+          className="cancel-btn"
+          onClick={() => setSubProductCategoryPreviewImage("")}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{SubproductCategoryStatusModal && selectedSubProductCategory && (
+  <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setProductCategorySubStatusModal(false);
+      setSelectedSubProductCategory(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setProductSubCategoryStatusModal(false);
+          setSelectedSubProductCategory(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            selectedSubProductCategory.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {selectedSubProductCategory.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this Product Category?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{selectedSubProductCategory.name}</h4>
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setProductSubCategoryStatusModal(false);
+            setSelectedProductCategory(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          disabled={isStatusChanging}
+          className={`activeModal-confirm ${
+            selectedProductCategory.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          onClick={async () => {
+            await handleToggle(
+              selectedSubProductCategory.id,
+              selectedSubProductCategory.is_active
+            );
+
+            setProductCategoryStatusModal(false);
+            setSelectedProductCategory(null);
+          }}
+        >
+          {isStatusChanging
+            ? "Updating..."
+            : `Yes, ${
+                selectedProductCategory.is_active
+                  ? "Deactivate"
+                  : "Activate"
+              }`}
+        </button>
+      </div>
     </div>
   </div>
 )}

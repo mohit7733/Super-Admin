@@ -29,6 +29,13 @@ const[ServiceCategoryError,setServiceCategoryError]=useState(null);
 const[SubCategoryImage,setSubCategoryImage]=useState(null);
 const [isSubmitting, setIsSubmitting] = useState(false);
 const[EditImage,setEditImage]=useState(null);
+const [productCategoryStatusModal, setProductCategoryStatusModal] = useState(false);
+const[ProductPreviewImage,setProductPreviewImage]=useState("")
+const [selectedProductCategory, setSelectedProductCategory] = useState(null);
+const [isStatusChanging, setIsStatusChanging] = useState(false);
+const [isDeleting, setIsDeleting] = useState(false);
+
+const[IsUpdating,setIsUpdating]=useState(false);
 
 
 
@@ -56,6 +63,7 @@ const [editForm, setEditForm] = useState({
 const [editErrors, setEditErrors] = useState({});
 const [addErrors, setAddErrors] = useState({});
 const fileInputRef = useRef(null);
+const editFileRef = useRef(null);
     
 const handleCategoryChange = (e) => {
   const { name, value, type, checked } = e.target;
@@ -64,26 +72,34 @@ const handleCategoryChange = (e) => {
     ...prev,
     [name]: type === "checkbox" ? checked : value,
   }));
+
+  setAddErrors((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
 };
 
-    const handleToggle = async (id, currentStatus) => {
+   const handleToggle = async (id, currentStatus) => {
   const token = sessionStorage.getItem("superadmin_token");
-  if(!token){
-    toast.error("Session Expired,please login Again");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
     navigate("/login");
     return;
   }
 
+  setIsStatusChanging(true);
+
   try {
     const response = await fetch(
-     `${BASE_URL}/vendors/admin/product-category/?id=${id}`,
+      `${BASE_URL}/vendors/admin/product-category/?id=${id}`,
       {
         method: "PATCH",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-           "ngrok-skip-browser-warning": "true",
+          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
           is_active: !currentStatus,
@@ -92,14 +108,24 @@ const handleCategoryChange = (e) => {
     );
 
     const data = await response.json();
-    console.log(data);
 
-    toast.success("Status updated successfully");
+    if (!response.ok) {
+      toast.error(data?.message || "Failed to update status");
+      return;
+    }
 
-getProductCategoryList();
+    toast.success(
+      !currentStatus
+        ? "Category Activated Successfully"
+        : "Category Deactivated Successfully"
+    );
+
+    await getProductCategoryList();
   } catch (error) {
     console.error(error);
-    toast.error("Failed to update status");
+    toast.error("Something went wrong");
+  } finally {
+    setIsStatusChanging(false);
   }
 };
 
@@ -227,13 +253,16 @@ const AddProductCategory = async (e) => {
 };
 
 const handleDelete = async (id) => {
+  if(isDeleting) return;
   const token = sessionStorage.getItem("superadmin_token");
+
 
   if (!token) {
     toast.error("Session expired. Please login again");
     navigate("/login");
     return;
   }
+setIsDeleting(true);
 
   try {
     const response = await fetch(
@@ -265,6 +294,9 @@ const handleDelete = async (id) => {
   } catch (error) {
     console.error(error);
     toast.error("Something went wrong while deleting");
+  }
+  finally{
+    setIsDeleting(false);
   }
 };
 
@@ -401,6 +433,7 @@ const handleEditChange = (e) => {
 
 const handleUpdateCategory = async (e) => {
   e.preventDefault();
+  if(IsUpdating)return;
 
   let newErrors = {};
 
@@ -416,6 +449,7 @@ const handleUpdateCategory = async (e) => {
   }
 
   const token = sessionStorage.getItem("superadmin_token");
+  setIsUpdating(false);
 
   try {
     let imageUrl = editForm.image_url;
@@ -469,12 +503,15 @@ const handleUpdateCategory = async (e) => {
     console.error(error);
     toast.error("Something went wrong");
   }
+  finally{
+    setIsUpdating(false);
+  }
 };
 const navigate = useNavigate();
   return (
     <>
   <div className="page-header">
-                 <h1> Sub Product Category </h1>
+                 <h1>  Product Category </h1>
                  <p className="page-paragraph"> Manage Sub Product Category  and their details</p>
                </div>
 
@@ -496,7 +533,7 @@ const navigate = useNavigate();
   setAddErrors({});
 }}
   >
-    + Add Sub Product  Category
+    + Add Product  Category
   </button>
 </div>
 
@@ -573,19 +610,23 @@ const navigate = useNavigate();
       objectFit: "cover",
       borderRadius: "6px"
     }}
+     onClick={() => setProductPreviewImage(item.image_url)}
   />
 </td>
                        <td>{item.description}</td>
-                        <td>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={item.is_active}
-              onChange={() => handleToggle(item.id, item.is_active)}
-            />
-            <span className="slider round"></span>
-          </label>
-        </td>
+                    <td>
+  <label className="switch">
+    <input
+      type="checkbox"
+      checked={item.is_active}
+      onChange={() => {
+        setSelectedProductCategory(item);
+        setProductCategoryStatusModal(true);
+      }}
+    />
+    <span className="slider round"></span>
+  </label>
+</td>
 
                        <td>
                                  <div className="action-buttons">
@@ -646,7 +687,7 @@ const navigate = useNavigate();
       onClick={(e) => e.stopPropagation()}
     >
       <div className="prakriti-modal-header">
-        <h2>Add Sub Category</h2>
+        <h2>Add Product Category</h2>
         <button
           className="close-btn"
           onClick={() => setShowCategoryModal(false)}
@@ -692,7 +733,7 @@ const navigate = useNavigate();
           </div>
 
         <div className="form-group">
-          <label>Sub product Category   Name</label>
+          <label> product Category Name</label>
          <input
   type="text"
   name="name"
@@ -722,16 +763,23 @@ const navigate = useNavigate();
   type="file"
   accept="image/*"
   id="categoryUpload"
-  onChange={(e) => {
-    const file = e.target.files[0];
+onChange={(e) => {
+  const file = e.target.files[0];
 
+  if (file) {
     setSubCategoryImage(file);
 
     setCategoryForm((prev) => ({
       ...prev,
       image_url: file,
     }));
-  }}
+
+    setAddErrors((prev) => ({
+      ...prev,
+      image_url: "",
+    }));
+  }
+}}
 />
 
     {SubCategoryImage ? (
@@ -781,8 +829,8 @@ const navigate = useNavigate();
       <label htmlFor="categoryUpload" className="upload-label">
         <div className="upload-content">
           <span className="upload-icon">⬆</span>
-          <p>Click to upload banner image</p>
-          <small>PNG, JPG up to 2MB</small>
+          <p>Click to upload Product Category image</p>
+     
         </div>
       </label>
     )}
@@ -913,7 +961,7 @@ const navigate = useNavigate();
         <div className="form-group">
 
 
-          <label>Category Name</label>
+          <label> Product Category Name</label>
 
           <input
             type="text"
@@ -949,24 +997,26 @@ const navigate = useNavigate();
         
           <div className="upload-box1">
         
-            <input
-              type="file"
-              accept="image/*"
-              id="editBannerUpload"
-              style={{ display: "none" }}
-             onChange={(e) => {
-  const file = e.target.files[0];
+        
+           <input
+  ref={editFileRef}
+  type="file"
+  accept="image/*"
+  id="editBannerUpload"
+  style={{ display: "none" }}
+  onChange={(e) => {
+    const file = e.target.files[0];
 
-  if (file) {
-    setEditImage(file);
+    if (file) {
+      setEditImage(file);
 
-    setEditForm((prev) => ({
-      ...prev,
-      image_url: URL.createObjectURL(file),
-    }));
-  }
-}}
-            />
+      setEditForm((prev) => ({
+        ...prev,
+        image_url: URL.createObjectURL(file),
+      }));
+    }
+  }}
+/>
         
             {(EditImage || editForm.image_url) ? (
         
@@ -1020,14 +1070,18 @@ const navigate = useNavigate();
                   <button
                     type="button"
                     className="delete-btn-preview"
-                    onClick={() => {
-                      setEditImage(null);
-        
-                      setEditForm((prev) => ({
-                        ...prev,
-                        image_url: "",
-                      }));
-                    }}
+                  onClick={() => {
+  setEditImage(null);
+
+  setEditForm((prev) => ({
+    ...prev,
+    image_url: "",
+  }));
+
+  if (editFileRef.current) {
+    editFileRef.current.value = "";
+  }
+}}
                   >
                     <FiTrash2 />
                   </button>
@@ -1044,8 +1098,8 @@ const navigate = useNavigate();
               >
                 <div className="upload-content">
                   <span className="upload-icon">⬆</span>
-                  <p>Click to upload banner image</p>
-                  <small>PNG, JPG up to 2MB</small>
+                  <p>Click to upload category image</p>
+               
                 </div>
               </label>
         
@@ -1082,7 +1136,7 @@ const navigate = useNavigate();
             type="submit"
             className="save-btn"
           >
-            Update Category
+          {IsUpdating ? "Updating":"Update Product"}
           </button>
         </div>
       </form>
@@ -1102,17 +1156,17 @@ const navigate = useNavigate();
       <h3>Are you sure you want to delete this category?</h3>
 
       <div className="form-buttons">
-        <button
-          className="otp-btn verify-btn"
-          onClick={() => {
-            handleDelete(categoryId);
-            setDeleteModal(false);
-            setCategoryId(null);
-          }}
-        >
-          Yes
-        </button>
-
+       <button
+  className="otp-btn verify-btn"
+  disabled={isDeleting}
+  onClick={async () => {
+    await handleDelete(categoryId);
+    setDeleteModal(false);
+    setCategoryId(null);
+  }}
+>
+  {isDeleting ? "Deleting..." : "Yes"}
+</button>
         <button
           onClick={() => {
             setDeleteModal(false);
@@ -1126,6 +1180,134 @@ const navigate = useNavigate();
   </div>
 )}
 
+{productCategoryStatusModal && selectedProductCategory && (
+  <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setProductCategoryStatusModal(false);
+      setSelectedProductCategory(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setProductCategoryStatusModal(false);
+          setSelectedProductCategory(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            selectedProductCategory.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {selectedProductCategory.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this Product Category?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{selectedProductCategory.name}</h4>
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setProductCategoryStatusModal(false);
+            setSelectedProductCategory(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          disabled={isStatusChanging}
+          className={`activeModal-confirm ${
+            selectedProductCategory.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          onClick={async () => {
+            await handleToggle(
+              selectedProductCategory.id,
+              selectedProductCategory.is_active
+            );
+
+            setProductCategoryStatusModal(false);
+            setSelectedProductCategory(null);
+          }}
+        >
+          {isStatusChanging
+            ? "Updating..."
+            : `Yes, ${
+                selectedProductCategory.is_active
+                  ? "Deactivate"
+                  : "Activate"
+              }`}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{ProductPreviewImage && (
+  <div
+    className="prakriti-modal-overlay"
+    onClick={() => setProductPreviewImage("")}
+  >
+    <div
+      className="prakriti-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="prakriti-modal-header">
+        <h2>Image Preview</h2>
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        <img
+          src={ProductPreviewImage}
+          alt="preview"
+          style={{
+            width: "100%",
+            maxHeight: "500px",
+            objectFit: "contain",
+            borderRadius: "10px",
+          }}
+        />
+      </div>
+
+      <div className="modal-footer">
+        <button
+          className="cancel-btn"
+          onClick={() => setProductPreviewImage("")}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
  <ToastContainer position="top-center" autoClose={1000} />
     </>
   )

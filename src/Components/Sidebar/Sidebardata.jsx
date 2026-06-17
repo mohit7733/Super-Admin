@@ -96,7 +96,7 @@ export const SidebarData = () => [
       icon: <FaBoxOpen size={18} />,
       children: [
         {
-          title: " Sub Category",
+          title: " Product Category",
           path: "/main/productcategory",
           permission: "view_product_category",
           icon: <FaTags size={18} />

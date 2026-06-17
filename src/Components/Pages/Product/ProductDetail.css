@@ -8,14 +8,14 @@
    ============================================ */
 :root {
   /* Primary Colors - #0D614E */
-  --primary: #0D614E;
+  /* --primary: #0D614E;
   --primary-dark: #094E3E;
-  --primary-light: #1A8A70;
-  --primary-lighter: #E8F5F1;
+  --primary-light: #1A8A70; */
+  /* --primary-lighter: #E8F5F1;
   --primary-lightest: #F4FAF8;
   --primary-gradient: linear-gradient(135deg, #0D614E 0%, #1A8A70 50%, #25A084 100%);
   --primary-gradient-hover: linear-gradient(135deg, #094E3E 0%, #0D614E 50%, #1A8A70 100%);
-  
+   */
   /* Secondary Colors */
   --secondary: #0EA5E9;
   --secondary-light: #E0F2FE;

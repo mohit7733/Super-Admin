@@ -27,6 +27,11 @@ const [editCategoryImage, setEditCategoryImage] = useState(null);
 const [editCategoryId, setEditCategoryId] = useState(null);
 const [errors, setErrors] = useState({});
 const navigate = useNavigate();
+const[isSubmitting,setIsSubmitting]=useState(false);
+const [previewImage, setPreviewImage] = useState("");
+const [statusModal, setStatusModal] = useState(false);
+
+const [selectedCategory, setSelectedCategory] = useState(null);
 
 
 const generateSlug = (text) => {
@@ -38,7 +43,7 @@ const generateSlug = (text) => {
 };
 
 
-
+const editFileRef = useRef(null);
 
 
 const uploadImage = async (file) => {
@@ -151,19 +156,23 @@ const token = sessionStorage.getItem("superadmin_token");
 useEffect(()=>{
     getCategoryList();
 },[]);
+const addFileRef = useRef(null);
 
 
 const handleAddCategory = async (e) => {
   e.preventDefault();
+  
+ 
+
 
   const token = sessionStorage.getItem("superadmin_token");
+
 
   if (!token) {
     toast.error("Session expired. Please login again");
     navigate("/login");
     return;
   }
-
   let newErrors = {};
 
   if (!categoryName.trim()) {
@@ -186,6 +195,7 @@ if (!categoryImage) {
 
   try {
     setSubmitLoading(true);
+   
 
     let imageUrl = "";
 
@@ -246,13 +256,11 @@ if (!categoryImage) {
 
       getCategoryList();
     }
-else{
-   const errorMessage =
-          data?.errors?.name?.[0] ||
-        
-          "Failed to add category";
-      
-        toast.error(errorMessage);
+else {
+  const errorMessage =
+    data?.message || "Failed to add category";
+
+  toast.error(errorMessage);
 }
   } catch (error) {
 
@@ -326,6 +334,8 @@ const handleUpdateCategory = async (e) => {
 
   const token = sessionStorage.getItem("superadmin_token");
 
+ 
+
   if (!token) {
     toast.error("Session expired. Please login again");
     navigate("/login");
@@ -352,7 +362,7 @@ const handleUpdateCategory = async (e) => {
 
   try {
     setSubmitLoading(true);
-
+    
   
     let imageUrl = existingImage;
 
@@ -428,24 +438,25 @@ const handleUpdateCategory = async (e) => {
   }
 };
 
- const handleToggle = async (id, currentStatus) => {
+ const updateCategoryStatus = async (id, currentStatus) => {
   const token = sessionStorage.getItem("superadmin_token");
-  if(!token){
-    toast.error("Session Expired,please login Again");
+
+  if (!token) {
+    toast.error("Session Expired, please login Again");
     navigate("/login");
     return;
   }
 
   try {
     const response = await fetch(
-     `${BASE_URL}/user/admin/categories/?id=${id}`,
+      `${BASE_URL}/user/admin/categories/?id=${id}`,
       {
         method: "PUT",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-           "ngrok-skip-browser-warning": "true",
+          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
           is_active: !currentStatus,
@@ -454,10 +465,16 @@ const handleUpdateCategory = async (e) => {
     );
 
     const data = await response.json();
+
     console.log(data);
 
-    toast.success("Status updated successfully");
- getCategoryList();
+    toast.success(
+      !currentStatus
+        ? "Category Activated Successfully"
+        : "Category Deactivated Successfully"
+    );
+
+    getCategoryList();
 
   } catch (error) {
     console.error(error);
@@ -477,7 +494,13 @@ const handleUpdateCategory = async (e) => {
                   <div className="filter-category">
                     <button
                       className="add-customer-btn"
-                        onClick={() => setShowModal(true)}
+                        onClick={() => {
+                          setShowModal(true);
+                          setCategoryName("");
+                          setCategoryImage(null);
+                          setErrors({});
+                          setIsActive(false);
+                        }}
                     
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -561,7 +584,7 @@ const handleUpdateCategory = async (e) => {
                   <td>{item.name}</td>
           
                  
-              <td>
+         <td>
   <img
     src={item.image_url}
     alt="category"
@@ -569,8 +592,10 @@ const handleUpdateCategory = async (e) => {
     height="60"
     style={{
       objectFit: "cover",
-      borderRadius: "6px"
-    }}
+      borderRadius: "6px",
+      cursor: "pointer"
+    }} onClick={() => setPreviewImage(item.image_url)}
+   
   />
 </td>
 
@@ -579,7 +604,10 @@ const handleUpdateCategory = async (e) => {
             <input
               type="checkbox"
               checked={item.is_active}
-              onChange={() => handleToggle(item.id, item.is_active)}
+             onChange={() => {
+  setSelectedCategory(item);
+  setStatusModal(true);
+}}
             />
             <span className="slider round"></span>
           </label>
@@ -678,21 +706,24 @@ const handleUpdateCategory = async (e) => {
   <label>Category Image</label>
 
   <div className="upload-box1">
-    <input
-      type="file"
-      accept="image/*"
-      id="categoryUpload"
-      onChange={(e) => {
-        const file = e.target.files[0];
-        setCategoryImage(file);
+ <input
+  ref={addFileRef}
+  type="file"
+  accept="image/*"
+  id="categoryUpload"
+  onChange={(e) => {
+    const file = e.target.files[0];
 
-        setErrors((prev) => ({
-          ...prev,
-          categoryImage: "",
-        }));
-      }}
-    />
+    if (file) {
+      setCategoryImage(file);
 
+      setErrors((prev) => ({
+        ...prev,
+        categoryImage: "",
+      }));
+    }
+  }}
+/>
     {categoryImage ? (
       <div className="banner-preview-wrapper">
         <div className="banner-preview-left">
@@ -717,13 +748,19 @@ const handleUpdateCategory = async (e) => {
            <FiEye />
           </button>
 
-          <button
-            type="button"
-            className="delete-btn-preview"
-            onClick={() => setCategoryImage(null)}
-          >
-          <FiTrash2/>
-          </button>
+         <button
+  type="button"
+  className="delete-btn-preview"
+  onClick={() => {
+    setCategoryImage(null);
+
+    if (addFileRef.current) {
+      addFileRef.current.value = "";
+    }
+  }}
+>
+  <FiTrash2 />
+</button>
         </div>
       </div>
     ) : (
@@ -734,13 +771,17 @@ const handleUpdateCategory = async (e) => {
         <div className="upload-content">
           <span className="upload-icon">⬆</span>
           <p>Click to upload category image</p>
-          <small>PNG, JPG up to 2MB</small>
+       
         </div>
       </label>
     )}
   </div>
 
- 
+  {errors.categoryImage && (
+    <p className="error-text">
+      {errors.categoryImage}
+    </p>
+  )} 
 </div>
 
 
@@ -765,7 +806,12 @@ const handleUpdateCategory = async (e) => {
           <button
             type="button"
             className="cancel-btn"
-            onClick={() => setShowModal(false)}
+            onClick={() =>{
+              setShowModal(false);
+              setCategoryName("");
+              setCategoryImage(null);
+              setErrors({});
+            }}
           >
             Cancel
           </button>
@@ -801,38 +847,41 @@ const handleUpdateCategory = async (e) => {
 
       <form onSubmit={handleUpdateCategory} className='prakriti-form'>
 
-        <div className="form-group">
-          <label>Category Name</label>
+        
+      
+<div className="form-group">
+  <label>Category Name</label>
 
-          <input
-            type="text"
-            value={editCategoryName}
-            onChange={(e) =>
-              setEditCategoryName(e.target.value)
-            }
-            placeholder="Enter category name"
-            required
-          />
-        </div>
+  <input
+    type="text"
+    value={editCategoryName}
+    onChange={(e) => {
+      setEditCategoryName(e.target.value);
+    }}
+    placeholder="Enter category name"
+  />
+</div>
+      
+  
 
  <div className="form-group">
   <label>Category Image</label>
 
   <div className="upload-box1">
-    <input
-      type="file"
-      accept="image/*"
-      id="editCategoryUpload"
-      style={{ display: "none" }}
-      onChange={(e) => {
-        const file = e.target.files[0];
+     <input
+  ref={editFileRef}
+  type="file"
+  accept="image/*"
+  id="editCategoryUpload"
+  style={{ display: "none" }}
+  onChange={(e) => {
+    const file = e.target.files[0];
 
-        if (file) {
-          setEditCategoryImage(file);
-        }
-      }}
-    />
-
+    if (file) {
+      setEditCategoryImage(file);
+    }
+  }}
+  />
     {(editCategoryImage || existingImage) ? (
       <div className="banner-preview-wrapper">
 
@@ -876,10 +925,14 @@ const handleUpdateCategory = async (e) => {
           <button
             type="button"
             className="delete-btn-preview"
-            onClick={() => {
-              setEditCategoryImage(null);
-              setExistingImage("");
-            }}
+        onClick={() => {
+  setEditCategoryImage(null);
+  setExistingImage("");
+
+  if (editFileRef.current) {
+    editFileRef.current.value = "";
+  }
+}}
           >
             <FiTrash2 />
           </button>
@@ -894,7 +947,7 @@ const handleUpdateCategory = async (e) => {
         <div className="upload-content">
           <span className="upload-icon">⬆</span>
           <p>Click to upload category image</p>
-          <small>PNG, JPG up to 2MB</small>
+       
         </div>
       </label>
     )}
@@ -964,6 +1017,133 @@ const handleUpdateCategory = async (e) => {
           No
         </button>
       </div>
+    </div>
+  </div>
+)}
+
+{previewImage && (
+  <div
+    className="prakriti-modal-overlay"
+    onClick={() => setPreviewImage("")}
+  >
+    <div
+      className="prakriti-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="prakriti-modal-header">
+        <h2>Image Preview</h2>
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        <img
+          src={previewImage}
+          alt="preview"
+          style={{
+            width: "100%",
+            maxHeight: "500px",
+            objectFit: "contain",
+            borderRadius: "10px",
+          }}
+        />
+      </div>
+
+      <div className="modal-footer">
+        <button
+          className="cancel-btn"
+          onClick={() => setPreviewImage("")}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{statusModal && selectedCategory && (
+   <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setStatusModal(false);
+      setSelectedCategory(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setStatusModal(false);
+          setSelectedCategory(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            selectedCategory.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {selectedCategory.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this category?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{selectedCategory.name}</h4>
+     
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setStatusModal(false);
+            setSelectedCategory(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className={`activeModal-confirm ${
+            selectedCategory.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          onClick={() => {
+            updateCategoryStatus(
+              selectedCategory.id,
+              selectedCategory.is_active
+            );
+
+            setStatusModal(false);
+            setSelectedCategory(null);
+          }}
+        >
+          Yes,{" "}
+          {selectedCategory.is_active
+            ? "Deactivate"
+            : "Activate"}
+        </button>
+      </div>
+
     </div>
   </div>
 )}

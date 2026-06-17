@@ -369,7 +369,7 @@ setTimeout(() => {
             >
               {isLoading ? (
                 <>
-                  <span className="spinner" aria-hidden="true"></span>
+                  <span className="spinners" aria-hidden="true"></span>
                   Logging in...
                 </>
               ) : (
