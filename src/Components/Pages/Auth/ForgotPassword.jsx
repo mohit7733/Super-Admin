@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import logo1 from '../../Assests/logo1.png';
 import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
 import BASE_URL from "../../../Base";
+import Ayurmuniimages from "../../Assests/Ayurvedicimages.jpg";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -56,7 +57,19 @@ const ForgotPassword = () => {
 
   return (
     <>
-      <div className="login-content1">
+      <div className="login-content1"
+      style={{
+          backgroundImage: `linear-gradient(
+            rgba(114, 123, 121, 0.55),
+            rgba(141, 207, 192, 0.55)
+          ), url(${Ayurmuniimages})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          minHeight: "100vh",
+          width: "100%",
+        }}
+      >
         <div className="login-card">
           <div className="login-header">
             <div className="logo1">

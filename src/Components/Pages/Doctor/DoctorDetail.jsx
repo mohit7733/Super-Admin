@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify"
 
 import "react-toastify/dist/ReactToastify.css"
+import { IoClose } from "react-icons/io5";
 
 
 import {
@@ -81,9 +82,69 @@ const DoctorDetail = () => {
   const [Loading, setLoading] = useState(false);
   const [ConsultationLoading, setConsultationLoading] = useState(false);
   const [ConsultationError, setConsultationError] = useState(null);
-  
+  const [approveModal, setApproveModal] = useState(false);
+  const[TransactionData,setTransactionData]=useState([]);
+const[TransactionLoading,setTransactionLoading]=useState(false);
+const[TransactionError,setTransactionError]=useState(null);
+ const pagesize = 5;
+  const [totalCount, setTotalCount] = useState(0);
+  const totalPages = Math.ceil(totalCount / pagesize);
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
- 
+  const [currentpage, setCurrentPage] = useState(1);
+  const [Nextpage, setNextpage] = useState(null);
+
+  const [previousPage, setPreviousPage] = useState(null);
+  
+const getStatusStyle = (status) => {
+  const value = status?.toLowerCase();
+
+  switch (value) {
+    case "success":
+    case "completed":
+    case "approved":
+      return {
+        background: "#dcfce7",
+        color: "#15803d",
+      };
+
+    case "pending":
+    case "processing":
+      return {
+        background: "#fef3c7",
+        color: "#b45309",
+      };
+
+    case "failed":
+    case "rejected":
+    case "cancelled":
+      return {
+        background: "#fee2e2",
+        color: "#dc2626",
+      };
+
+    case "confirmed":
+      return {
+        background: "#f3f4f6",
+        color: "#6b7280",
+      };
+
+    case "refunded":
+      return {
+        background: "#ede9fe",
+        color: "#7c3aed",
+      };
+
+    default:
+      return {
+        background: "#f3f4f6",
+        color: "#4b5563",
+      };
+  }
+};
+
+
+
   const getApprovalBadge = (status) => {
     switch (status) {
       case "approved":
@@ -118,23 +179,27 @@ const DoctorDetail = () => {
   const approvalBadge = getApprovalBadge(doctorData?.approval_status);
    
 
-  const handleAction = async (status, reason = "") => {
-    setLoadingAction(true);
+ const handleAction = async (status, reason = "") => {
+  setLoadingAction(true);
 
-    try {
-      const token = sessionStorage.getItem("superadmin_token");
+  try {
+    const token = sessionStorage.getItem("superadmin_token");
 
-      const payload = {
-        doctor_id: DoctorId,
-        status: status,
-      };
+    const payload = {
+      doctor_id: DoctorId,
+      status,
+    };
 
+    if (
+      (status === "rejected" || status === "suspended") &&
+      reason
+    ) {
+      payload.reason = reason;
+    }
 
-      if (status === "rejected" || status === "suspended") {
-        payload.reason = reason;
-      }
-
-      const res = await fetch(`${BASE_URL}/doctors/admin/doctor/status/`, {
+    const res = await fetch(
+      `${BASE_URL}/doctors/admin/doctor/status/`,
+      {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -142,26 +207,31 @@ const DoctorDetail = () => {
           "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success(`Doctor ${status} successfully`);
-
-        setDoctorData((prev) => ({
-          ...prev,
-          approval_status: status,
-        }));
-      } else {
-        toast.error(data.message);
       }
-    } catch (err) {
-      toast.error("Something went wrong");
-    } finally {
-      setLoadingAction(false);
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      toast.success(`Doctor ${status} successfully`);
+
+      setDoctorData((prev) => ({
+        ...prev,
+        approval_status: status,
+      }));
+
+      setActionType(null);
+      setReason("");
+      setApproveModal(false);
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (err) {
+    toast.error("Something went wrong");
+  } finally {
+    setLoadingAction(false);
+  }
+};
 
   const safeJoin = (value) => {
     if (Array.isArray(value)) return value.join(", ");
@@ -169,53 +239,18 @@ const DoctorDetail = () => {
     return "";
   };
 
-  const handleSubmitReason = async () => {
-    if (!reason) {
-      toast.error("Reason required");
-      return;
-    }
+const handleSubmitReason = async () => {
+  if (!reason.trim()) {
+    toast.error("Reason required");
+    return;
+  }
 
-    setLoadingAction(true);
+  await handleAction(actionType, reason);
 
-    try {
-      const token = sessionStorage.getItem("superadmin_token");
-
-      const res = await fetch(`${BASE_URL}/doctors/admin/doctor/status/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          doctor_id: DoctorId,
-          status: actionType,
-          reason: reason,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        toast.success(`Doctor ${actionType} successfully`);
-
-        setDoctorData((prev) => ({
-          ...prev,
-          approval_status: actionType,
-        }));
-
-        setActionType(null);
-        setReason("");
-      } else {
-        toast.error(data.message);
-      }
-    } catch (err) {
-      toast.error("Error occurred");
-    } finally {
-      setLoadingAction(false);
-    }
-  };
-
-  const getConsultationhistory = async () => {
+  setActionType(null);
+  setReason("");
+};
+  const getConsultationhistory = async (page = 1) => {
     const token = sessionStorage.getItem("superadmin_token");
 
     if (!token) {
@@ -227,7 +262,7 @@ const DoctorDetail = () => {
       setConsultationLoading(true);
 
       const response = await fetch(
-       `${BASE_URL}/doctors/admin/consultation-history/?doctor_id=${DoctorId}`,
+       `${BASE_URL}/doctors/admin/consultation-history/?doctor_id=${DoctorId}&page=${page}`,
         {
           method: "GET",
           headers: {
@@ -245,19 +280,64 @@ const DoctorDetail = () => {
 
 
       setData(data.data.results);
+       setTotalCount(data.data.count);
+      setCurrentPage(page);
+      setNextpage(data.data.next);
+      setPreviousPage(data.data.previous);
     } catch (error) {
       console.error(error.message);
 
       setConsultationError("Something went wrong while fetching categories");
+       
 
       toast.error("Failed to fetch Category Data");
     } finally {
       setConsultationLoading(false);
     }
   };
+ const getTransactionlist = async () => {
+    const token = sessionStorage.getItem("superadmin_token");
 
+    if (!token) {
+      toast.error("Session Expired , Login Again")
+      navigate("/login");
+    }
+
+    try {
+      setTransactionLoading(true);
+
+      const response = await fetch(
+       `${BASE_URL}/doctors/admin/doctor/financial-metrics/?doctor_id=${DoctorId}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("Category API Response:", data);
+
+
+      setTransactionData(data.data.details);
+    } catch (error) {
+      console.error(error.message);
+
+      setTransactionError("Something went wrong while fetching categories");
+
+      toast.error("Failed to fetch Category Data");
+    } finally {
+      setTransactionLoading(false);
+    }
+  };
   useEffect(() => {
     getConsultationhistory();
+    getTransactionlist();
   }, [])
 
   //   const token = sessionStorage.getItem("superadmin_token");
@@ -378,7 +458,7 @@ const DoctorDetail = () => {
        setDoctorData({
   ...d,
 
-  // ❌ DO NOT convert documents
+
   documents: d.documents,
 
   languages_spoken: Array.isArray(d.languages_spoken)
@@ -417,7 +497,27 @@ const DoctorDetail = () => {
     getDoctorDetail();
   }, []);
 
+  if (Loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading doctor details...</p>
+      </div>
+    );
+  }
 
+  if (Error) {
+    return (
+      <div className="error-container">
+        <p>{Error}</p>
+        <button onClick={getDoctorDetail}>Retry</button>
+      </div>
+    );
+  }
+
+  if (!doctorData) {
+    return <div>No doctor found</div>;
+  }
 
   return (
     <>
@@ -531,34 +631,32 @@ const DoctorDetail = () => {
             </div>
             <div className="action-buttons-column">
 
-              <button
-                className="btn btn-approve"
-                onClick={() => handleAction("approved")}
-                disabled={loadingAction}
-              >
-                <FiCheckCircle size={16} /> Approve
-              </button>
+             <button
+  className="btn btn-approve"
+  onClick={() => setApproveModal(true)}
+  disabled={loadingAction}
+>
+  <FiCheckCircle size={16} /> Approve
+</button>
+   <button
+  className="btn btn-suspend"
+  onClick={() => {
+    setActionType("suspended");
+    setReason("");
+  }}
+>
+  <FiPauseCircle size={16} /> Suspend
+</button>
 
-              <button
-                className="btn btn-suspend"
-                onClick={() => {
-                  setActionType("suspended");
-                  setReason("");
-                }}
-              >
-                <FiPauseCircle size={16} /> Suspend
-              </button>
-
-              <button
-                className="btn btn-reject"
-                onClick={() => {
-                  setActionType("rejected");
-                  setReason("");
-                }}
-              >
-                <FiXCircle size={16} /> Reject
-              </button>
-
+<button
+  className="btn btn-reject"
+  onClick={() => {
+    setActionType("rejected");
+    setReason("");
+  }}
+>
+  <FiXCircle size={16} /> Reject
+</button>
             </div>
           </div>
         </div>
@@ -596,7 +694,12 @@ const DoctorDetail = () => {
 
 
 
-          
+          <button
+            className={activeTab === "Transaction" ? "active-tab" : ""}
+            onClick={() => setActiveTab("Transaction")}
+          >
+         Transaction
+          </button>
 
   <button
             className={activeTab === "documents" ? "active-tab" : ""}
@@ -932,97 +1035,97 @@ const DoctorDetail = () => {
               </div>
 
               <div className="social-main-wrapper">
+  <div className="social-grid">
 
-                <div className="social-grid">
+    {/* LinkedIn */}
+    <div className="social-card">
+      <div className="social-icon linkedin-icon">
+        <FiLinkedin />
+      </div>
 
+      <div className="social-content">
+        <h3>LinkedIn</h3>
 
-                  <div className="social-card">
+        <p>
+          {doctorData?.linkedin_url || "LinkedIn profile not added"}
+        </p>
 
-                    <div className="social-icon linkedin-icon">
-                      <FiLinkedin />
-                    </div>
+        {doctorData?.linkedin_url ? (
+          <a
+            href={doctorData.linkedin_url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Visit Profile
+          </a>
+        ) : (
+          <span className="disabled-social-link">
+            Profile Not Added
+          </span>
+        )}
+      </div>
+    </div>
 
-                    <div className="social-content">
+    {/* Facebook */}
+    <div className="social-card">
+      <div className="social-icon facebook-icon">
+        <FiFacebook />
+      </div>
 
-                      <h3>LinkedIn</h3>
+      <div className="social-content">
+        <h3>Facebook</h3>
 
-                      <p>
-                        {doctorData?.linkedin_url}
-                      </p>
+        <p>
+          {doctorData?.facebook_url || "Facebook profile not added"}
+        </p>
 
-                      <a
-                        href={doctorData?.linkedin_url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Visit Profile
-                      </a>
+        {doctorData?.facebook_url ? (
+          <a
+            href={doctorData.facebook_url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Visit Profile
+          </a>
+        ) : (
+          <span className="disabled-social-link">
+            Profile Not Added
+          </span>
+        )}
+      </div>
+    </div>
 
-                    </div>
+    {/* Instagram */}
+    <div className="social-card">
+      <div className="social-icon instagram-icon">
+        <FiInstagram />
+      </div>
 
-                  </div>
+      <div className="social-content">
+        <h3>Instagram</h3>
 
+        <p>
+          {doctorData?.instagram_url || "Instagram profile not added"}
+        </p>
 
-                  <div className="social-card">
+        {doctorData?.instagram_url ? (
+          <a
+            href={doctorData.instagram_url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Visit Profile
+          </a>
+        ) : (
+          <span className="disabled-social-link">
+            Profile Not Added
+          </span>
+        )}
+      </div>
+    </div>
 
-                    <div className="social-icon facebook-icon">
-                      <FiFacebook />
-                    </div>
-
-                    <div className="social-content">
-
-                      <h3>Facebook</h3>
-
-                      <p>
-                        {doctorData?.facebook_url}
-                      </p>
-
-                      <a
-                        href={doctorData?.facebook_url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Visit Profile
-                      </a>
-
-                    </div>
-
-                  </div>
-
-
-
-                  <div className="social-card">
-
-                    <div className="social-icon instagram-icon">
-                      <FiInstagram />
-                    </div>
-
-                    <div className="social-content">
-
-                      <h3>Instagram</h3>
-
-                      <p>
-                        {doctorData?.instagram_url}
-                      </p>
-
-                      <a
-                        href={doctorData?.instagram_url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Visit Profile
-                      </a>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-
-
-
-              </div>
+  </div>
+</div>
               <div className="card footer-action-bar">
                 <div className="footer-info">
                   <span className="info-icon"><FiInfo size={22} /></span>
@@ -1033,35 +1136,33 @@ const DoctorDetail = () => {
                 </div>
                 <div className="action-buttons-row">
 
-                  <button
-                    className="btn btn-reject-outline"
-                    onClick={() => {
-                      setActionType("rejected");
-                      setReason("");
-                    }}
-                    disabled={loadingAction}
-                  >
-                    <FiXCircle size={16} /> Reject
-                  </button>
+                <button
+  className="btn btn-suspend"
+  onClick={() => {
+    setActionType("suspended");
+    setReason("");
+  }}
+>
+  <FiPauseCircle size={16} /> Suspend
+</button>
 
-                  <button
-                    className="btn btn-suspend-outline"
-                    onClick={() => {
-                      setActionType("suspended");
-                      setReason("");
-                    }}
-                    disabled={loadingAction}
-                  >
-                    <FiPauseCircle size={16} /> Suspend
-                  </button>
+<button
+  className="btn btn-reject"
+  onClick={() => {
+    setActionType("rejected");
+    setReason("");
+  }}
+>
+  <FiXCircle size={16} /> Reject
+</button>
 
-                  <button
-                    className="btn btn-approve"
-                    onClick={() => handleAction("approved")}
-                    disabled={loadingAction}
-                  >
-                    <FiCheckCircle size={16} /> Approve
-                  </button>
+                <button
+  className="btn btn-approve"
+  onClick={() => setApproveModal(true)}
+  disabled={loadingAction}
+>
+  <FiCheckCircle size={16} /> Approve
+</button>
 
                 </div>
               </div>
@@ -1106,7 +1207,7 @@ const DoctorDetail = () => {
 
                   <div className="consultation-stat-content">
                     <h4>TOTAL CONSULTATIONS</h4>
-                    <h2>120</h2>
+                    <h2>{Data?.data?.count}</h2>
                   </div>
                 </div>
 
@@ -1118,7 +1219,7 @@ const DoctorDetail = () => {
 
                   <div className="consultation-stat-content">
                     <h4>APPROVED</h4>
-                    <h2>85</h2>
+                    <h2>0</h2>
                   </div>
                 </div>
 
@@ -1130,7 +1231,7 @@ const DoctorDetail = () => {
 
                   <div className="consultation-stat-content">
                     <h4>REJECTED</h4>
-                    <h2>15</h2>
+                    <h2>0</h2>
                   </div>
                 </div>
 
@@ -1142,7 +1243,7 @@ const DoctorDetail = () => {
 
                   <div className="consultation-stat-content">
                     <h4>PENDING</h4>
-                    <h2>20</h2>
+                    <h2>0</h2>
                   </div>
                 </div>
 
@@ -1185,8 +1286,195 @@ const DoctorDetail = () => {
                             <td>{consultation.start_time}</td>
                             <td>{consultation.end_time}</td>
                             <td>{consultation.consultation_type}</td>
+<td>
+  <span
+    className="status-badge"
+    style={getStatusStyle(consultation.status)}
+  >
+    {consultation.status}
+  </span>
+</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="10" style={{ textAlign: "center" }}>
+                            No Data Found
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  )}
+                </table>
 
-                            <td>{consultation.status}</td>
+
+
+
+              </div>
+
+               {totalPages > 1 && (
+          <div className="pagination">
+
+
+            <button
+             onClick={() => getConsultationhistory(currentpage - 1)}
+              disabled={!previousPage}
+            >
+              Prev
+            </button>
+
+
+            {pages.map((page) => (
+              <button
+                key={page}
+                onClick={() => getConsultationhistory(page)}
+                style={{
+
+                  fontWeight: currentpage === page ? "bold" : "normal",
+                  background: currentpage === page ? "#0D614E" : "#fff",
+                  color: currentpage === page ? "#fff" : "#0D614E",
+                }}
+              >
+                {page}
+              </button>
+            ))}
+
+
+            <button
+              onClick={() => getConsultationhistory(currentpage + 1)}
+              disabled={!Nextpage}
+            >
+              Next
+            </button>
+
+          </div>
+        )}
+
+
+            </div>
+          )
+        }
+
+        {
+          activeTab === "Transaction" && (
+            <div className="consultation-main-card">
+
+
+              <div className="consultation-header">
+
+                <div className="consultation-title-wrap">
+
+                  <div className="consultation-line"></div>
+
+                  <div>
+                    <h2>Transaction History</h2>
+
+                    <p>
+                      Track all transaction activities,
+                      Completed, Failed, and pending requests
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <div className="consultation-stats-grid">
+
+                {/* TOTAL */}
+                <div className="consultation-stat-card">
+                  <div className="consultation-icon-box">
+                    <FaUsers />
+                  </div>
+
+                  <div className="consultation-stat-content">
+                    <h4>TOTAL </h4>
+                    <h2>0</h2>
+                  </div>
+                </div>
+
+
+                <div className="consultation-stat-card">
+                  <div className="consultation-icon-box ">
+                    <FiCheckCircle />
+                  </div>
+
+                  <div className="consultation-stat-content">
+                    <h4>Completed</h4>
+                    <h2>0</h2>
+                  </div>
+                </div>
+
+
+                <div className="consultation-stat-card">
+                  <div className="consultation-icon-box ">
+                    <FiXCircle />
+                  </div>
+
+                  <div className="consultation-stat-content">
+                    <h4>Failed</h4>
+                    <h2>0</h2>
+                  </div>
+                </div>
+
+
+                <div className="consultation-stat-card">
+                  <div className="consultation-icon-box ">
+                    <FiClock />
+                  </div>
+
+                  <div className="consultation-stat-content">
+                    <h4>PENDING</h4>
+                    <h2>0</h2>
+                  </div>
+                </div>
+
+              </div>
+
+              <div classsName="table-wrapper1">
+                <table className="data-table" >
+                  <thead>
+                    <tr>
+                      <th>Id</th>
+                      <th>Patient Name</th>                   
+                      <th>Amount</th>
+                      <th> Date</th>
+                      <th> Payment Method</th>
+                    
+                         <th>Status</th>
+
+                    </tr>
+                  </thead>
+                  { TransactionLoading? (
+                    Array(3).fill(0).map((_, i) => (
+                      <tr key={i}>
+                        <td colSpan="10"><div className="skeleton-row"></div></td>
+                      </tr>
+                    ))
+                  ) : TransactionError ? (
+                    <p colSpan="6" style={{ color: "red" }}>{TransactionError}</p>
+                  ) : (
+                    <tbody>
+                      {TransactionData && TransactionData.length > 0 ? (
+                 TransactionData.map((transaction, index) => (
+                          <tr key={transaction.id}>
+                            <td >{transaction.transaction_id}</td>
+                            <td> {transaction.name}</td>
+                            <td>{transaction.amount}</td>
+                            <td>{transaction.date}</td>
+                            <td>{transaction.payment_method}</td>
+                          <td>
+  <span
+    className="status-badge"
+    style={getStatusStyle(transaction.status)}
+  >
+    {transaction.status}
+  </span>
+</td>
+                           
+
+                        
                           </tr>
                         ))
                       ) : (
@@ -1208,7 +1496,6 @@ const DoctorDetail = () => {
             </div>
           )
         }
-
        {
   activeTab === "bank" && (
  <div className="bank-verification-wrapper">
@@ -1219,8 +1506,12 @@ const DoctorDetail = () => {
     </div> */}
   
 
-  {doctorData?.bank_details?.map((bank) => (
-    <div className="bank-card" key={bank.id}>
+ 
+
+  {doctorData?.bank_details?.length > 0 ? (
+  <>
+    {doctorData.bank_details.map((bank) => (
+      <div className="bank-card" key={bank.id}>
       <div className="bank-top">
 
         <div>
@@ -1287,9 +1578,19 @@ const DoctorDetail = () => {
 
     
     </div>
+    ))}
+  </>
+) : (
+  <div className="empty-bank-state">
+    <FaBuilding size={50} className="empty-icon" />
 
-    
-  ))}
+    <h3>No Bank Details Available</h3>
+
+    <p>
+      This doctor has not added any bank account information yet.
+    </p>
+  </div>
+)}
 
     <div className="card footer-action-bar">
                 <div className="footer-info">
@@ -1323,13 +1624,13 @@ const DoctorDetail = () => {
                     <FiPauseCircle size={16} /> Suspend
                   </button>
 
-                  <button
-                    className="btn btn-approve"
-                    onClick={() => handleAction("approved")}
-                    disabled={loadingAction}
-                  >
-                    <FiCheckCircle size={16} /> Approve
-                  </button>
+                 <button
+  className="btn btn-approve"
+  onClick={() => setApproveModal(true)}
+  disabled={loadingAction}
+>
+  <FiCheckCircle size={16} /> Approve
+</button>
 
                 </div>
               </div>
@@ -1350,51 +1651,211 @@ const DoctorDetail = () => {
           )
         }
 
-        {actionType && (
-          <div className="document-modal-overlay">
-            <div className="document-modal">
+    {(actionType === "rejected" ||
+  actionType === "suspended") && (
+  <div className="confirm-overlay">
+    <div className="reason-modal modern-reason-modal">
 
-              <h2>
-                {actionType === "rejected" && "Reject Doctor"}
-                {actionType === "suspended" && "Suspend Doctor"}
-              </h2>
+      <button
+        className="closes-modal"
+        onClick={() => {
+          setActionType(null);
+          setReason("");
+        }}
+      >
+        <IoClose />
+      </button>
 
-              <div className="form-group">
-                <label>Reason</label>
-                <textarea
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Enter reason..."
-                />
-              </div>
+      <div
+        className={`reason-icon ${
+          actionType === "rejected"
+            ? "reject-bg"
+            : "suspend-bg"
+        }`}
+      >
+        {actionType === "rejected" ? "✕" : "❚❚"}
+      </div>
 
-              <div className="form-buttons">
-                <button
-                  type="button"
-                  onClick={handleSubmitReason}
-                  disabled={loadingAction}
-                >
-                  Submit
-                </button>
+      <h2>
+        {actionType === "rejected"
+          ? "Reject Doctor"
+          : "Suspend Doctor"}
+      </h2>
 
-                <button type="button" onClick={() => setActionType(null)}>
-                  Cancel
-                </button>
-              </div>
+      <p className="reason-subtitle">
+        {actionType === "rejected"
+          ? "Please provide a reason for rejection."
+          : "Please provide a reason for suspension."}
+      </p>
 
-            </div>
-          </div>
-        )}
+      <div
+        className={`vendor-info-card ${
+          actionType === "rejected"
+            ? "reject-card"
+            : "suspend-card"
+        }`}
+      >
+        <div className="vendor-row">
+          <span className="label">Doctor Name</span>
 
+          <span
+            className={`value ${
+              actionType === "rejected"
+                ? "reject-text"
+                : "suspend-text"
+            }`}
+          >
+            {doctorData?.first_name} {doctorData?.last_name}
+          </span>
+        </div>
+      </div>
+
+      <div className="reason-field">
+        <label>
+          Reason <span>*</span>
+        </label>
+
+        <textarea
+          className="reason-box"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={
+            actionType === "rejected"
+              ? "Enter reason for rejection..."
+              : "Enter reason for suspension..."
+          }
+        />
+      </div>
+
+      <div
+        className={`info-box ${
+          actionType === "rejected"
+            ? "reject-info-box"
+            : "suspend-info-box"
+        }`}
+      >
+        <span
+          className={`infos-icon ${
+            actionType === "rejected"
+              ? "reject-infos-icon"
+              : "suspend-infos-icon"
+          }`}
+        >
+          {actionType === "rejected"
+            ? "✕"
+            : "⏸"}
+        </span>
+
+        <span>
+          {actionType === "rejected"
+            ? "The doctor will be notified about the rejection reason."
+            : "The doctor will temporarily lose access to the platform."}
+        </span>
+      </div>
+
+      <div className="confirm-buttons">
+
+        <button
+          className="cancels-btn"
+          onClick={() => {
+            setActionType(null);
+            setReason("");
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className={`approve-btn ${
+            actionType === "rejected"
+              ? "rejects-btn"
+              : "suspend-btn"
+          }`}
+          onClick={handleSubmitReason}
+          disabled={loadingAction}
+        >
+          {loadingAction
+            ? "Processing..."
+            : actionType === "rejected"
+            ? "Reject"
+            : "Suspend"}
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
 {activeTab === "documents" && (
   <div className="documents-tab">
-    
-   
+    <Documents documentsData={doctorData?.documents} />
+  </div>
 
-  {doctorData?.documents && (
-  <Documents documentsData={doctorData.documents} />
+  
 )}
+{approveModal && (
+  <div className="confirm-overlay">
+    <div className="confirm-modal">
 
+      <button
+        className="closes-modal"
+        onClick={() => setApproveModal(false)}
+      >
+        ×
+      </button>
+
+      <div className="approval-icon-wrapper">
+        <FiCheckCircle className="approval-icon" />
+      </div>
+
+      <h2 className="confirm-title">
+        Approve Doctor
+      </h2>
+
+      <p className="confirm-description">
+        Are you sure you want to approve this doctor?
+      </p>
+
+      <div className="vendor-info-card">
+        <div className="vendor-row">
+          <span className="label">Doctor Name</span>
+
+          <span className="value approve-text">
+            {doctorData?.first_name} {doctorData?.last_name}
+          </span>
+        </div>
+      </div>
+
+      <div className="info-box">
+        <span className="info-icon">ℹ</span>
+
+        <span>
+          This action will approve the doctor account.
+        </span>
+      </div>
+
+      <div className="confirm-buttons">
+
+        <button
+          className="cancels-btn"
+          onClick={() => setApproveModal(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="approve-btn"
+          disabled={loadingAction}
+          onClick={async () => {
+            await handleAction("approved");
+            setApproveModal(false);
+          }}
+        >
+          {loadingAction ? "Approving..." : "Approve"}
+        </button>
+
+      </div>
+
+    </div>
   </div>
 )}
 

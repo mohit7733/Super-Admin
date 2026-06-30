@@ -1,6 +1,8 @@
 // ProductDetail.js - Updated with Product Details Section First
 import React, { useState, useEffect } from 'react';
 import './ProductDetail.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { 
   BsThreeDotsVertical, 
   BsGrid, 
@@ -221,45 +223,105 @@ function ProductDetail() {
   };
 
  
-  const handleVariantAction = async (variantId, action, reasonText = '') => {
-    try {
-      const token = sessionStorage.getItem("superadmin_token");
-      const response = await fetch(`${BASE_URL}/vendors/admin/product/variant-action/`, {
-        method: 'POST',
+  const handleVariantAction = async (
+  variantId,
+  action,
+  reasonText = ""
+) => {
+  try {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (
+      (action === "reject" || action === "rejected") &&
+      !reasonText.trim()
+    ) {
+      toast.error("Please enter rejection reason");
+      return;
+    }
+
+    const payload = {
+      variant_id: variantId,
+      status:
+        action === "approve"
+          ? "approved"
+          : action === "reject"
+          ? "rejected"
+          : "suspended",
+    };
+
+    if (action === "reject") {
+      payload.reason = reasonText;
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/product/?id=${productId}`,
+      {
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "true",
         },
-        body: JSON.stringify({ variant_id: variantId, action, reason: reasonText })
-      });
-
-      if (!response.ok) throw new Error(`Failed to ${action} variant`);
-      const result = await response.json();
-
-      if (result.success) {
-        const statusMap = { approve: 'approved', reject: 'rejected', suspend: 'suspended' };
-        const newStatus = statusMap[action] || 'pending';
-
-        setVariants(prev => prev.map(v => 
-          v.id === variantId ? { ...v, status: newStatus, reason: reasonText } : v
-        ));
-
-        if (selectedVariant?.id === variantId) {
-          setSelectedVariant(prev => ({ ...prev, status: newStatus, reason: reasonText }));
-        }
-
-        setShowActionModal(false);
-        setReason('');
-        setSelectedVariantForAction(null);
-        setSelectedVariants([]);
-      } else {
-        alert(result.message || `Failed to ${action} variant`);
+        body: JSON.stringify(payload),
       }
-    } catch (err) {
-      alert(err.message);
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "Failed to update status"
+      );
     }
-  };
+
+    const newStatus = payload.status;
+
+    
+    setVariants((prev) =>
+      prev.map((item) =>
+        item.id === variantId
+          ? {
+              ...item,
+              status: newStatus,
+              reason:
+                action === "reject"
+                  ? reasonText
+                  : item.reason,
+            }
+          : item
+      )
+    );
+
+   
+    if (selectedVariant?.id === variantId) {
+      setSelectedVariant((prev) => ({
+        ...prev,
+        status: newStatus,
+        reason:
+          action === "reject"
+            ? reasonText
+            : prev.reason,
+      }));
+    }
+
+    toast.success(
+      `Variant ${
+        action === "approve"
+          ? "approved"
+          : action === "reject"
+          ? "rejected"
+          : "suspended"
+      } successfully`
+    );
+
+    setShowActionModal(false);
+    setSelectedVariantForAction(null);
+    setReason("");
+    setOpenMenuId(null);
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
 
   const handleBulkAction = async (action) => {
     if (selectedVariants.length === 0) {
@@ -443,7 +505,7 @@ function ProductDetail() {
         <div className="error-icon">⚠️</div>
         <h3>Error Loading Product</h3>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()} className="btn-primary">
+        <button onClick={() => window.location.reload()} className="btns-primary">
           Retry
         </button>
       </div>
@@ -459,6 +521,7 @@ function ProductDetail() {
   }
 
   return (
+    <>
     <div className="product-detail-container">
      
       <nav className="top-nav">
@@ -475,7 +538,7 @@ function ProductDetail() {
       
       </nav>
 
-      {/* ===== PRODUCT HEADER ===== */}
+   
       <div className="product-header">
         <div className="product-header-left">
           <h1 className="product-title">{productData.name}</h1>
@@ -497,13 +560,13 @@ function ProductDetail() {
             <span className="meta-tag">
               <FiPackage /> {variants.length} Variants
             </span>
-            <span className="meta-tag">
+            {/* <span className="meta-tag">
               {getStatusBadge('approved')}
-            </span>
+            </span> */}
           </div>
         </div>
         <div className="product-header-right">
-          <button className="btn-outline" onClick={() => window.open(`/vendor/${productData.vendor_id}`, '_blank')}>
+          <button className="btns-outline"  onClick={() => navigate(-1)}>
             <FaStore /> View Vendor
           </button>
           {/* <button className="btn-primary">
@@ -514,7 +577,7 @@ function ProductDetail() {
 
     
  
-      {/* ===== PRODUCT DETAILS SECTION (NEW) ===== */}
+      
       <div className="product-details-section">
         <div className="details-header">
           <h3 className="details-title">
@@ -572,7 +635,7 @@ function ProductDetail() {
             </div>
           </div>
 
-          {/* Right Column - Vendor & Status */}
+       
           <div className="details-column">
             <div className="details-group">
               <h4 className="details-group-title">
@@ -587,10 +650,10 @@ function ProductDetail() {
                 <span className="details-label">Phone</span>
                 <span className="details-value">{productData.vendor_phone_number || 'N/A'}</span>
               </div>
-              <div className="details-row">
+              {/* <div className="details-row">
                 <span className="details-label">Vendor ID</span>
                 <span className="details-value id-text">{productData.vendor_id?.substring(0, 12)}...</span>
-              </div>
+              </div> */}
               <div className="details-row">
                 <span className="details-label">Added On</span>
                 <span className="details-value">{new Date(productData.created_at).toLocaleDateString('en-US', {
@@ -608,10 +671,10 @@ function ProductDetail() {
                 <FiShield className="group-icon" />
                 Status & Features
               </h4>
-              <div className="details-row">
+              {/* <div className="details-row">
                 <span className="details-label">Status</span>
-                <span className="details-value">{getStatusBadge('approved')}</span>
-              </div>
+                <span className="details-value">{productData.status}</span>
+              </div> */}
               <div className="details-row">
                 <span className="details-label">Featured</span>
                 <span className="details-value">
@@ -621,7 +684,7 @@ function ProductDetail() {
                   }
                 </span>
               </div>
-              {/* <div className="details-row">
+              <div className="details-row">
                 <span className="details-label">Nutrition</span>
                 <span className="details-value">
                   {productData.is_nutrition ? 
@@ -637,7 +700,7 @@ function ProductDetail() {
                   month: 'short',
                   day: 'numeric'
                 })}</span>
-              </div> */}
+              </div>
             </div>
           </div>
         </div>
@@ -692,10 +755,10 @@ function ProductDetail() {
           </button>
         </div> */}
 
-        {/* ===== VARIANTS TAB ===== */}
+    
         {activeTab === 'variants' && (
           <div className="tab-content">
-            {/* Search and Filters */}
+           
             <div className="variants-toolbar">
               <div className="search-box">
                 <BsSearch className="search-icon" />
@@ -765,7 +828,7 @@ function ProductDetail() {
               </div>
             )}
 
-            {/* ===== VARIANT DETAILS WITH IMAGE GALLERY ===== */}
+          
             {selectedVariant && (
               <div className="selected-variant-card animate-slide-down">
                 <div className="variant-selector-header">
@@ -899,11 +962,30 @@ function ProductDetail() {
                       </div>
                       <div className="detail-row">
                         <span className="detail-label">Returnable</span>
-                        <span className="detail-value">{selectedVariant.is_returnable ? '✅ Yes' : '❌ No'}</span>
+                        <span className="detail-value">
+  {selectedVariant.is_returnable ? (
+    <span >
+         <FaCheckCircle color="#0D614E" size={18} />  Yes
+    </span>
+  ) : (
+    <span style={{ color: "#0D614E" ,textAlign:"center",fontSize:"10px",marginBottom:"4px"}}>
+      <FaTimesCircle style={{ marginRight: "5px" }} />
+      No
+    </span>
+  )}
+</span>
                       </div>
                       <div className="detail-row">
                         <span className="detail-label">Pay on Delivery</span>
-                        <span className="detail-value">{selectedVariant.pay_on_delivery ? '✅ Yes' : '❌ No'}</span>
+<span className="detail-value">
+  {selectedVariant.pay_on_delivery ? (
+     <span >
+         <FaCheckCircle color="#0D614E" size={18} />  Yes
+    </span>
+  ) : (
+    <FaTimesCircle color="#dc3545" size={18} />
+  )}
+</span>
                       </div>
                       <div className="detail-row">
                         <span className="detail-label">Free Shipping</span>
@@ -921,7 +1003,7 @@ function ProductDetail() {
                       <h5 className="detail-section-title">Actions</h5>
                       <div className="action-buttons-group horizontal">
                         <button 
-                          className="actions-btn approve-btn"
+                          className="actions-btn approves-btn"
                           onClick={() => {
                             setSelectedVariantForAction(selectedVariant);
                             setShowActionModal(true);
@@ -941,7 +1023,7 @@ function ProductDetail() {
                           <FaTimesCircle /> Reject
                         </button>
                         <button 
-                          className="actions-btn suspend-btn"
+                          className="actions-btn suspends-btn"
                           onClick={() => {
                             setSelectedVariantForAction(selectedVariant);
                             setShowActionModal(true);
@@ -973,7 +1055,7 @@ function ProductDetail() {
         <th>Price (₹)</th>
         <th>Stock</th>
         <th>Status</th>
-        <th>Action</th>
+     
       </tr>
     </thead>
 
@@ -1061,7 +1143,7 @@ function ProductDetail() {
             <td>{getStatusBadge(variant.status)}</td>
 
             
-            <td
+            {/* <td
               style={{ position: "relative" }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -1112,7 +1194,7 @@ function ProductDetail() {
                   </button>
                 </div>
               )}
-            </td>
+            </td> */}
           </tr>
         ))
       ) : (
@@ -1329,7 +1411,7 @@ function ProductDetail() {
       {showActionModal && selectedVariantForAction && (
         <div className="modal-overlay" onClick={() => setShowActionModal(false)}>
           <div className="modal-content animate-slide-up" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+            <div className="modalp-header">
               <h3>
                 {actionType === 'approve' ? 'Approve' :
                  actionType === 'reject' ? 'Reject' : 
@@ -1432,7 +1514,7 @@ function ProductDetail() {
               )}
             </div>
             <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowActionModal(false)}>
+              <button className="btns-secondary" onClick={() => setShowActionModal(false)}>
                 {actionType === 'view' ? 'Close' : 'Cancel'}
               </button>
               {actionType !== 'view' && (
@@ -1456,6 +1538,9 @@ function ProductDetail() {
 
     
     </div>
+    <ToastContainer position="top-right" autoClose={3000} />
+</>
+    
   );
 }
 

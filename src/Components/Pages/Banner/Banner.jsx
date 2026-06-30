@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+
 import {
   FaImages,
   FaCheckCircle,
@@ -13,6 +13,7 @@ import { FiEye } from "react-icons/fi";
 import { BsPlus } from "react-icons/bs";
 import { FiUpload } from "react-icons/fi";
 import BASE_URL from "../../../Base";
+import { ToastContainer, toast } from "react-toastify"
 
 const Banner = () => {
   const[BannerData,setBannerData]=useState([]);
@@ -35,6 +36,9 @@ const[ShowDeleteModal,setShowDeleteModal]=useState(false);
 const [showEditModal, setShowEditModal] = useState(false);
 const [editBannerId, setEditBannerId] = useState(null);
 const [editBannerImage, setEditBannerImage] = useState(null);
+const[DeleteBannerModal,setDeleteBannerModal]=useState(false);
+const[SelectedBanner,setSelectedBanner]=useState(null);
+const[BannerPreviewImage,setBannerPreviewImage]=useState("");
 
 const [editBannerForm, setEditBannerForm] = useState({
   image_url: "",
@@ -347,6 +351,47 @@ const handleUpdateBanner = async (e) => {
     toast.error("Something went wrong");
   }
 };
+
+ const handleDeleteBanner = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+  if(!token){
+    toast.error("Session Expired,Please ");
+    navigate("/login");
+    return;
+  }
+
+  if (!SelectedBanner) return;
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/user/admin/banner/?id=${SelectedBanner.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+ if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+    
+
+    toast.success("Banner deleted successfully 🗑️");
+
+    setDeleteBannerModal(false);
+    setSelectedBanner(null);
+
+    getBannerList();
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to delete admin");
+  }
+};
   
   return (
     <>
@@ -458,6 +503,7 @@ const handleUpdateBanner = async (e) => {
       objectFit: "cover",
       borderRadius: "6px",
     }}
+    onClick={() => setBannerPreviewImage(item.image_url)}
   />
 </td>
                               <td>
@@ -492,12 +538,15 @@ const handleUpdateBanner = async (e) => {
 >
   <FaEdit />
 </button>
-                 <button
-        className="action-btn delete"
-       
-      >
-        <FiTrash2 />
-      </button>
+                  <button
+                                      className="action-btn delete"
+                                      onClick={() => {
+                                        setSelectedBanner(item);
+                                        setDeleteBannerModal(true);
+                                      }}
+                                    >
+                                    <span className="icon-delete"> <FiTrash2/></span>
+                                    </button>
                      
                      
                      
@@ -905,8 +954,7 @@ const handleUpdateBanner = async (e) => {
  
       
 
-          {/* Active */}
-
+         
           <div className="form-group">
             <label>Is Active</label>
 
@@ -954,7 +1002,63 @@ const handleUpdateBanner = async (e) => {
     </div>
   )
 }
-             
+              {DeleteBannerModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Are you sure you want to delete this Banner?</h3>
+            <div className="form-buttons">
+              <button
+                className="otp-btn verify-btn"
+                onClick={handleDeleteBanner}
+              >
+                Yes
+              </button>
+              <button onClick={() =>setDeleteBannerModal(false)}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+{BannerPreviewImage && (
+  <div
+    className="prakriti-modal-overlay"
+    onClick={() => setBannerPreviewImage("")}
+  >
+    <div
+      className="prakriti-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="prakriti-modal-header">
+        <h2>Image Preview</h2>
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        <img
+          src={BannerPreviewImage}
+          alt="preview"
+          style={{
+            width: "100%",
+            maxHeight: "500px",
+            objectFit: "contain",
+            borderRadius: "10px",
+          }}
+        />
+      </div>
+
+      <div className="modal-footer">
+        <button
+          className="cancel-btn"
+          onClick={() => setBannerPreviewImage("")}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+      <ToastContainer position="top-center" autoClose={1000} />
+     
     </>
   )
 }

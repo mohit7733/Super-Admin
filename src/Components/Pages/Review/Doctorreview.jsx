@@ -21,6 +21,10 @@ const Doctorreview = () => {
         const[ErrorDoctorReview,setErrorDoctorReview]=useState(null);
         const [selectedReview, setSelectedReview] = useState(null);
 const [showReviewModal, setShowReviewModal] = useState(false);
+const [showRejectModal, setShowRejectModal] = useState(false);
+const [selectedItem, setSelectedItem] = useState(null);
+const [reason, setReason] = useState("");
+const[SelectedStatus,setSelectedStatus]=useState("")
 
 const handleViewReview = (review) => {
   setSelectedReview(review);
@@ -50,6 +54,48 @@ const closeReviewModal = () => {
             return <FaRegStar key={index} className="star-empty" />;
           });
         };
+
+
+const handleStatusChange = async (id, status, reason = "") => {
+  if (status === "rejected" && !reason) {
+    setSelectedItem(id);
+    setShowRejectModal(true);
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/review/admin/?entity_type=doctor&id=${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionStorage.getItem("superadmin_token")}`,
+        },
+        body: JSON.stringify({
+          action: status,
+          reason,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      toast.success(`Status changed to ${status}`);
+
+      setShowRejectModal(false);
+      setReason("");
+      setSelectedItem(null);
+
+      getDoctorReviewList();
+    } else {
+      toast.error(data?.message || "Failed to update status");
+    }
+  } catch (error) {
+    toast.error("Something went wrong");
+  }
+};
 
             const getDoctorReviewList = async () => {
 const token = sessionStorage.getItem("superadmin_token");
@@ -163,7 +209,7 @@ getDoctorReviewList();
                        
                     <td>
       
-      {item.product_name}
+      {item.doctor_name}
       </td>
       
       
@@ -174,7 +220,17 @@ getDoctorReviewList();
         
         </div>
       </td>
-        <td>{item.status}</td>
+       <td>
+  <select
+    value={item.status}
+    onChange={(e) => handleStatusChange(item.id, e.target.value)}
+    className="status-dropdown"
+  >
+    <option value="">Select Status</option>
+    <option value="active">Active</option>
+    <option value="rejected">Rejected</option>
+  </select>
+</td>
       
                 
                       
@@ -382,6 +438,50 @@ getDoctorReviewList();
     </div>
   </div>
 )}
+{showRejectModal && (
+  <div className="modal">
+   <form className="customer-form"> 
+     <h3>Enter Rejection Reason</h3>
+
+      <textarea
+        placeholder="Enter reason"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+      />
+
+         <div className="form-buttons">
+        <button
+        type="submit"
+         onClick={() => {
+  if (!reason.trim()) {
+    toast.error("Reason is required");
+    return;
+  }
+
+  handleStatusChange(selectedItem, "rejected", reason);
+}}
+        >
+          Submit
+        </button>
+
+        <button
+        type="button"
+          onClick={() => {
+            setShowRejectModal(false);
+            setReason("");
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+
+   </form>
+    
+
+   
+    </div>
+
+)} 
       
 
     

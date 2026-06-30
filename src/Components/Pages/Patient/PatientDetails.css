@@ -1,0 +1,173 @@
+
+
+.patient-header-card,
+.patientinfo-card {
+  background: #fff;
+  border-radius: 20px;
+  padding:12px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+}
+
+.patient-header-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.patient-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.patient-image {
+  width: 130px;
+  height: 130px;
+  border-radius: 18px;
+  object-fit: cover;
+  background: #0d614e;
+  padding: 6px;
+}
+
+
+.patient-info h2 {
+  margin: 10px 0;
+  color: #0f172a;
+}
+
+.patient-info p {
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.patient-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.patient-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #475569;
+  font-size: 14px;
+}
+
+
+
+
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.info-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.patient-info-grid {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.patient-info-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.item-icon {
+  width: 45px;
+  height: 45px;
+  
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+      background: rgba(13, 97, 78, 0.125);
+  border-radius: 50%;
+}
+
+.item-icon svg {
+  font-size: 22px;
+      color: #0d614e;
+}
+
+.item-content h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.item-content p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  color: #64748b;
+}
+
+@media (max-width: 991px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .patient-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .patient-header-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .patient-left {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .patient-info-grid,
+  .profile-info-grid,
+  .emergency-contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .patient-meta {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

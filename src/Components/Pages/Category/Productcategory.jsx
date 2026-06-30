@@ -46,6 +46,7 @@ const [categoryForm, setCategoryForm] = useState({
   is_active: false,
   category_id:"",
   image_url:"",
+  code:"",
 });
 
 const [editModal, setEditModal] = useState(false);
@@ -184,18 +185,25 @@ const AddProductCategory = async (e) => {
 
   let newErrors = {};
 
-  if (!categoryForm.category_id) {
-    newErrors.category_id = "Please select a service category";
+  if (!categoryForm.service_category_id) {
+    newErrors.service_category_id = "Please select a service category";
   }
 
   if (!categoryForm.name.trim()) {
-    newErrors.name = "Sub category name is required";
+    newErrors.name = "Product category name is required";
   }
 
   if (!SubCategoryImage) {
     newErrors.image_url = "Please upload an image";
   }
 
+    const code = categoryForm.code;
+  if (!code) {
+    newErrors.code = "Please enter  Product category code";
+  }
+  else if (!/^[A-Z]{5}$/.test(code)) {
+    newErrors.code = "Code must be exactly 5 letters (A–Z only)";
+  }
   setAddErrors(newErrors);
 
   if (Object.keys(newErrors).length > 0) {
@@ -365,7 +373,7 @@ const token = sessionStorage.getItem("superadmin_token");
 
   try {
     const response = await fetch(
-      `${BASE_URL}/user/admin/categories/`,
+      `${BASE_URL}/user/admin/service-category/`,
       {
         method: "GET",
         headers: {
@@ -438,7 +446,7 @@ const handleUpdateCategory = async (e) => {
   let newErrors = {};
 
   if (!editForm.name.trim()) {
-    newErrors.name = "Category name is required";
+    newErrors.name = " Service Category name is required";
   }
 
   setEditErrors(newErrors);
@@ -467,7 +475,7 @@ const handleUpdateCategory = async (e) => {
     const response = await fetch(
       `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -524,8 +532,9 @@ const navigate = useNavigate();
     name: "",
     description: "",
     is_active: false,
-    category_id: "",
+    service_category_id: "",
     image_url: "",
+    code:"",
   });
   setSubCategoryImage(null);
 
@@ -573,7 +582,7 @@ const navigate = useNavigate();
                                    <th>ID</th>
                                    <th>Name </th>
                                    <th>Image</th>
-                                   <th>Description</th>               
+                                   <th>Code</th>               
                                    <th> Status</th>
 <th> Action</th>
                                  </tr>
@@ -613,7 +622,7 @@ const navigate = useNavigate();
      onClick={() => setProductPreviewImage(item.image_url)}
   />
 </td>
-                       <td>{item.description}</td>
+                       <td>{item.code}</td>
                     <td>
   <label className="switch">
     <input
@@ -635,11 +644,12 @@ const navigate = useNavigate();
   onClick={() => {
    setEditForm({
   id: item.id,
-  category_id: item.category_id || "",
+  service_category_id: item.service_category_id || "",
   name: item.name || "",
   description: item.description || "",
   image_url: item.image_url || "",
   is_active: item.is_active,
+  
 });
 
     setEditErrors({});
@@ -704,8 +714,8 @@ const navigate = useNavigate();
             <div className="category-row">
 
               <select
-                name="category_id"
-                value={categoryForm.category_id}
+                name="service_category_id"
+                value={categoryForm.service_category_id}
                 onChange={handleCategoryChange}
               >
                 <option value="">
@@ -725,9 +735,9 @@ const navigate = useNavigate();
 
             </div>
 
-            {addErrors.category_id && (
+            {addErrors.service_category_id && (
               <p className="error-text">
-                {addErrors.category_id}
+                {addErrors.service_category_id}
               </p>
             )}
           </div>
@@ -753,6 +763,35 @@ const navigate = useNavigate();
   <p className="error-text">{addErrors.name}</p>
 )}
         </div>
+
+                  <div className="form-group">
+                            <label>  Product Category Code</label>
+                       <input
+  type="text"
+  name="code"
+  value={categoryForm.code}
+onChange={(e) => {
+  let value = e.target.value.toUpperCase();
+
+
+  value = value.replace(/[^A-Z]/g, "");
+
+  setCategoryForm((prev) => ({
+    ...prev,
+    code: value,
+  }));
+
+  setAddErrors((prev) => ({
+    ...prev,
+    code: "",
+  }));
+}}
+  placeholder="Enter Category Code (A-Z, Max 5 Letters)"
+/>
+                  {addErrors.code && (
+                    <p className="error-text">{addErrors.code}</p>
+                  )}
+                          </div>   
 
 <div className="form-group">
 <label> Upload Image</label>
@@ -938,7 +977,7 @@ onChange={(e) => {
 
               <select
                 name="category_id"
-                value={editForm.category_id}
+                value={editForm.service_category_id}
                 onChange={handleEditChange}
               >
                 <option value="">

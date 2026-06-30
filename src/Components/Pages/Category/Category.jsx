@@ -16,6 +16,7 @@ const[Data,setData] = useState([]);
 const [showModal, setShowModal] = useState(false);
  const [submitLoading, setSubmitLoading] = useState(false);
 const [categoryName, setCategoryName] = useState("");
+const[CategoryCode,setCategoryCode]=useState("")
 const [categoryImage, setCategoryImage] = useState(null);
 const [isActive, setIsActive] = useState(false);
 const [deleteModal, setDeleteModal] = useState(false);
@@ -106,7 +107,7 @@ const token = sessionStorage.getItem("superadmin_token");
 
   try {
     const response = await fetch(
-      `${BASE_URL}/user/admin/categories/`,
+      `${BASE_URL}/user/admin/service-category/`,
       {
         method: "GET",
         headers: {
@@ -181,6 +182,14 @@ const handleAddCategory = async (e) => {
   toast.error("Category name is required");
 }
 
+
+if (!CategoryCode.trim()) {
+  newErrors.CategoryCode = "Category Code is required";
+} else if (!/^[A-Z]{1,5}$/.test(CategoryCode)) {
+  newErrors.CategoryCode =
+    "Code must be 1-5 uppercase letters (A-Z).";
+}
+
 if (!categoryImage) {
   newErrors.categoryImage = "Category image is required";
 
@@ -212,10 +221,11 @@ if (!categoryImage) {
       name: categoryName,
       image_url: imageUrl,
       is_active: isActive,
+      code:CategoryCode,
     };
 
     const response = await fetch(
-      `${BASE_URL}/user/admin/categories/`,
+      `${BASE_URL}/user/admin/service-category/`,
       {
         method: "POST",
         headers: {
@@ -286,7 +296,7 @@ const handleDelete = async (id) => {
 
   try {
     const response = await fetch(
-      `${BASE_URL}/user/admin/categories/?id=${id}`,
+      `${BASE_URL}/user/admin/service-category/?id=${id}`,
       {
         method: "DELETE",
         headers: {
@@ -297,6 +307,7 @@ const handleDelete = async (id) => {
         },
       }
     );
+    const data = await response.json();
 
     if (response.status === 401 || response.status === 403) {
       sessionStorage.removeItem("superadmin_token");
@@ -308,10 +319,16 @@ const handleDelete = async (id) => {
       return;
     }
 
-    if (!response.ok) {
-      toast.error("Failed to delete category");
+     if (!response.ok || data.success === false) {
+      const errorMsg =
+        data?.message ||
+        data?.errors?.id?.[0] ||
+        "Failed to delete category";
+
+      toast.error(errorMsg);
       return;
     }
+
 
     setData((prev) =>
       prev.filter((item) => item.id !== id)
@@ -384,7 +401,7 @@ const handleUpdateCategory = async (e) => {
     };
 
     const response = await fetch(
-      `${BASE_URL}/user/admin/categories/?id=${editCategoryId}`,
+      `${BASE_URL}/user/admin/service-category/?id=${editCategoryId}`,
       {
         method: "PUT",
 
@@ -449,7 +466,7 @@ const handleUpdateCategory = async (e) => {
 
   try {
     const response = await fetch(
-      `${BASE_URL}/user/admin/categories/?id=${id}`,
+      `${BASE_URL}/user/admin/service-category/?id=${id}`,
       {
         method: "PUT",
         headers: {
@@ -554,6 +571,7 @@ const handleUpdateCategory = async (e) => {
                             <tr>
                               <th>ID</th>
                               <th>Category </th>
+                              <th>Code</th>
                               <th>Image</th>                
                             <th>Status</th>
                               <th>Actions</th>
@@ -582,6 +600,7 @@ const handleUpdateCategory = async (e) => {
           
                  
                   <td>{item.name}</td>
+                  <td>{item.code}</td>
           
                  
          <td>
@@ -698,6 +717,30 @@ const handleUpdateCategory = async (e) => {
           {errors.categoryName && (
   <p className="error-text">
     {errors.categoryName}
+  </p>
+)}
+        </div>
+          <div className="form-group">
+          <label>Category Code</label>
+
+         <input
+  type="text"
+  value={CategoryCode}
+  onChange={(e) => {
+    setCategoryCode(e.target.value);
+
+    if (e.target.value.trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        CategoryCode: "",
+      }));
+    }
+  }}
+ placeholder="Enter category code (e.g., CAT001)"
+/>
+          {errors.CategoryCode && (
+  <p className="error-text">
+    {errors.CategoryCode}
   </p>
 )}
         </div>

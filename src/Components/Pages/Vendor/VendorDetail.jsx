@@ -1,6 +1,8 @@
  import React, { useState ,useEffect } from 'react';
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+import { IoClose } from "react-icons/io5";
+
 
 import BASE_URL from "../../../Base";
         import { FaStore, FaEnvelope, FaPhone, FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaUser, FaVenusMars, FaMapMarkerAlt, FaBox, FaShoppingCart, FaDollarSign, FaWallet, FaPercent, FaBan, FaEye, FaDownload, FaCheck, FaRedoAlt, FaBuilding, FaIdCard, FaCogs, FaSearch } from 'react-icons/fa';
@@ -26,69 +28,70 @@ import BASE_URL from "../../../Base";
             const[Loading,setLoading]=useState(false);
 const { vendorId } = useParams();
         
-            const vendor = {
-                name: "GreenLeaf Organic Store",
-                owner: "Rajesh Kumar",
-                email: "rajesh@greenleaf.com",
-                phone: "+91 98765 43210",
-                altPhone: "+91 99887 76655",
-                dob: "15 Aug 1985",
-                gender: "Male",
-                address: "123, Sector 14, Gurugram, Haryana - 122001",
-                storeType: "Grocery Store",
-                category: "Organic Food, Vegetables, Dairy",
-                gst: "06AABCU9603R1Z8",
-                pan: "ABCDE1234F",
-                regNumber: "UDYAM-HR-01-1234567",
-                businessAddress: "45, Industrial Area, Phase 2, Gurugram",
-                joiningDate: "12 Jan 2023",
-                status: "Approved",
-                kycStatus: "Verified",
-                totalProducts: 245,
-                totalOrders: 1890,
-                totalSales: 457200,
-                commission: "10%",
-                walletBalance: 28500,
-                vendorStatus: "Active",
-                accountStatus: "Active",
-            };
-const doc = [
-  {
-    id: 1,
-    name: "Aadhaar Card",
-    status: "Verified",
-    date: "05 Jun 2026",
-  },
-  {
-    id: 2,
-    name: "PAN Card",
-    status: "Verified",
-    date: "05 Jun 2026",
-  },
-  {
-    id: 3,
-    name: "GST Certificate",
-    status: "Verified",
-    date: "05 Jun 2026",
-  },
-  {
-    id: 4,
-    name: "Cancelled Cheque",
-    status: "Pending",
-    date: "02 Jun 2026",
-  },
-  {
-    id: 5,
-    name: "Bank Statement",
-    status: "Pending",
-    date: "02 Jun 2026",
-  },
-];
+//             const vendor = {
+//                 name: "GreenLeaf Organic Store",
+//                 owner: "Rajesh Kumar",
+//                 email: "rajesh@greenleaf.com",
+//                 phone: "+91 98765 43210",
+//                 altPhone: "+91 99887 76655",
+//                 dob: "15 Aug 1985",
+//                 gender: "Male",
+//                 address: "123, Sector 14, Gurugram, Haryana - 122001",
+//                 storeType: "Grocery Store",
+//                 category: "Organic Food, Vegetables, Dairy",
+//                 gst: "06AABCU9603R1Z8",
+//                 pan: "ABCDE1234F",
+//                 regNumber: "UDYAM-HR-01-1234567",
+//                 businessAddress: "45, Industrial Area, Phase 2, Gurugram",
+//                 joiningDate: "12 Jan 2023",
+//                 status: "Approved",
+//                 kycStatus: "Verified",
+//                 totalProducts: 245,
+//                 totalOrders: 1890,
+//                 totalSales: 457200,
+//                 commission: "10%",
+//                 walletBalance: 28500,
+//                 vendorStatus: "Active",
+//                 accountStatus: "Active",
+//             };
+// const doc = [
+//   {
+//     id: 1,
+//     name: "Aadhaar Card",
+//     status: "Verified",
+//     date: "05 Jun 2026",
+//   },
+//   {
+//     id: 2,
+//     name: "PAN Card",
+//     status: "Verified",
+//     date: "05 Jun 2026",
+//   },
+//   {
+//     id: 3,
+//     name: "GST Certificate",
+//     status: "Verified",
+//     date: "05 Jun 2026",
+//   },
+//   {
+//     id: 4,
+//     name: "Cancelled Cheque",
+//     status: "Pending",
+//     date: "02 Jun 2026",
+//   },
+//   {
+//     id: 5,
+//     name: "Bank Statement",
+//     status: "Pending",
+//     date: "02 Jun 2026",
+//   },
+// ];
 const [vendorData, setVendorData] = useState({});
 const [vendorLoadingAction, setVendorLoadingAction] = useState(false);
 const [vendorActionType, setVendorActionType] = useState(null);
 const [vendorReason, setVendorReason] = useState("");
-
+const [approveModal, setApproveModal] = useState(false);
+const [Error, setError] = useState(null);
 
 const getVendorDetail = async () => {
   const token = sessionStorage.getItem("superadmin_token");
@@ -198,56 +201,73 @@ const handleVendorAction = async (status, reason = "") => {
   }
 };
 
+// const handleVendorReasonSubmit = async () => {
+//   if (!vendorReason.trim()) {
+//     toast.error("Reason required");
+//     return;
+//   }
+
+//   setVendorLoadingAction(true);
+
+//   try {
+//     const token = sessionStorage.getItem("superadmin_token");
+
+//     const res = await fetch(
+//       `${BASE_URL}/vendors/admin/vendor/status/`,
+//       {
+//         method: "PUT",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//           "ngrok-skip-browser-warning": "true",
+//         },
+//         body: JSON.stringify({
+//           vendor_id: vendorId,
+//           status: vendorActionType,
+//           reason: vendorReason,
+//         }),
+//       }
+//     );
+
+//     const data = await res.json();
+
+//     if (data.success) {
+//       toast.success(`Vendor ${vendorActionType} successfully`);
+
+//       setVendorData((prev) => ({
+//         ...prev,
+//         approval_status: vendorActionType,
+//       }));
+
+//       setVendorActionType(null);
+//       setVendorReason("");
+//     } else {
+//       toast.error(data.message);
+//     }
+//   } catch (err) {
+//     toast.error("Error occurred");
+//   } finally {
+//     setVendorLoadingAction(false);
+//   }
+// };
 const handleVendorReasonSubmit = async () => {
   if (!vendorReason.trim()) {
-    toast.error("Reason required");
+    toast.error(
+      vendorActionType === "rejected"
+        ? "Please enter rejection reason"
+        : "Please enter suspension reason"
+    );
     return;
   }
 
-  setVendorLoadingAction(true);
+  await handleVendorAction(
+    vendorActionType,
+    vendorReason
+  );
 
-  try {
-    const token = sessionStorage.getItem("superadmin_token");
-
-    const res = await fetch(
-      `${BASE_URL}/vendors/admin/vendor/status/`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify({
-          vendor_id: vendorId,
-          status: vendorActionType,
-          reason: vendorReason,
-        }),
-      }
-    );
-
-    const data = await res.json();
-
-    if (data.success) {
-      toast.success(`Vendor ${vendorActionType} successfully`);
-
-      setVendorData((prev) => ({
-        ...prev,
-        approval_status: vendorActionType,
-      }));
-
-      setVendorActionType(null);
-      setVendorReason("");
-    } else {
-      toast.error(data.message);
-    }
-  } catch (err) {
-    toast.error("Error occurred");
-  } finally {
-    setVendorLoadingAction(false);
-  }
+  setVendorActionType(null);
+  setVendorReason("");
 };
-
 
               return (
                 <div className="vendor-details-page">
@@ -674,48 +694,6 @@ const handleVendorReasonSubmit = async () => {
   </div>
 )}
 
-        
-      {vendorActionType && (
-  <div className="document-modal-overlay">
-    <div className="document-modal">
-
-      <h2>
-        {vendorActionType === "rejected" && "Reject Vendor"}
-        {vendorActionType === "suspended" && "Suspend Vendor"}
-      </h2>
-
-      <div className="form-group">
-        <label>Reason</label>
-
-        <textarea
-          value={vendorReason}
-          onChange={(e) => setVendorReason(e.target.value)}
-          placeholder="Enter reason..."
-        />
-      </div>
-
-      <div className="form-buttons">
-        <button
-          type="button"
-          onClick={handleVendorReasonSubmit}
-          disabled={vendorLoadingAction}
-        >
-          Submit
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setVendorActionType(null)}
-        >
-          Cancel
-        </button>
-      </div>
-
-    </div>
-  </div>
-)}        
-
-
 {activeTab === "Documents" && (
   <div className="documents-tab">
     {vendorData?.documents && (
@@ -759,7 +737,7 @@ const handleVendorReasonSubmit = async () => {
  
 <button
   className="btn btn-approve"
-  onClick={() => handleVendorAction("approved")}
+  onClick={() => setApproveModal(true)}
   disabled={vendorLoadingAction}
 >
   <FiCheckCircle size={16} /> Approve
@@ -768,8 +746,227 @@ const handleVendorReasonSubmit = async () => {
 </div>
       </div>
 
+{approveModal && (
+  <div className="confirm-overlay">
+    <div className="confirm-modal">
+
+      <button
+        className="closes-modal"
+        onClick={() => setApproveModal(false)}
+      >
+        <IoClose />
+      </button>
+
+      <div className="approval-icon-wrapper">
+        <FaCheckCircle className="approval-icon" />
+      </div>
+
+      <h2 className="confirm-title">
+        Approve Vendor
+      </h2>
+
+      <p className="confirm-description">
+        Are you sure you want to approve this vendor?
+      </p>
+
+      <div className="vendor-info-card">
+        <div className="vendor-row">
+          <span className="label">Vendor Name</span>
+
+          <span className="value approve-text">
+            {vendorData?.business_name || "N/A"}
+          </span>
+        </div>
+      </div>
+
+      <div className="info-box">
+        <span className="info-icon">ℹ</span>
+
+        <span>
+          This action will grant vendor access to the platform.
+        </span>
+      </div>
+
+      <div className="confirm-buttons">
+
+        <button
+          className="cancels-btn"
+          onClick={() => setApproveModal(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="approve-btn"
+          disabled={vendorLoadingAction}
+          onClick={async () => {
+            await handleVendorAction("approved");
+            setApproveModal(false);
+          }}
+        >
+          {vendorLoadingAction
+            ? "Approving..."
+            : "Approve"}
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
     
+{(vendorActionType === "rejected" ||
+  vendorActionType === "suspended") && (
+  <div className="confirm-overlay">
+    <div className="reason-modal modern-reason-modal">
+
+      <button
+        className="closes-modal"
+        onClick={() => {
+          setVendorActionType(null);
+          setVendorReason("");
+        }}
+      >
+        <IoClose />
+      </button>
+
+      <div
+        className={`reason-icon ${
+          vendorActionType === "rejected"
+            ? "reject-bg"
+            : "suspend-bg"
+        }`}
+      >
+        {vendorActionType === "rejected" ? "✕" : "❚❚"}
+      </div>
+
+      <h2>
+        {vendorActionType === "rejected"
+          ? "Reject Vendor"
+          : "Suspend Vendor"}
+      </h2>
+
+      <p className="reason-subtitle">
+        {vendorActionType === "rejected"
+          ? "Please provide a reason for rejection."
+          : "Please provide a reason for suspension."}
+      </p>
+
+      <div
+        className={`vendor-info-card ${
+          vendorActionType === "rejected"
+            ? "reject-card"
+            : "suspend-card"
+        }`}
+      >
+        <div className="vendor-row">
+          <span className="label">Vendor Name</span>
+
+          <span
+            className={`value ${
+              vendorActionType === "rejected"
+                ? "reject-text"
+                : "suspend-text"
+            }`}
+          >
+            {vendorData?.business_name || "N/A"}
+          </span>
+        </div>
+      </div>
+
+      <div className="reason-field">
+        <label>
+          Reason <span>*</span>
+        </label>
+
+        <textarea
+          className="reason-box"
+          value={vendorReason}
+          onChange={(e) =>
+            setVendorReason(e.target.value)
+          }
+          placeholder={
+            vendorActionType === "rejected"
+              ? "Enter reason for rejection..."
+              : "Enter reason for suspension..."
+          }
+        />
+      </div>
+
+      <div
+        className={`info-box ${
+          vendorActionType === "rejected"
+            ? "reject-info-box"
+            : "suspend-info-box"
+        }`}
+      >
+        <span
+          className={`infos-icon ${
+            vendorActionType === "rejected"
+              ? "reject-infos-icon"
+              : "suspend-infos-icon"
+          }`}
+        >
+          {vendorActionType === "rejected"
+            ? "✕"
+            : "⏸"}
+        </span>
+
+        <span>
+          {vendorActionType === "rejected"
+            ? "The vendor will be notified about the rejection reason."
+            : "The vendor will temporarily lose access to the platform."}
+        </span>
+      </div>
+
+      <div className="confirm-buttons">
+
+        <button
+          className="cancels-btn"
+          onClick={() => {
+            setVendorActionType(null);
+            setVendorReason("");
+          }}
+        >
+          Cancel
+        </button>
+
+      <button
+  className={`approve-btn ${
+    vendorActionType === "rejected"
+      ? "rejects-btn"
+      : "suspend-btn"
+  }`}
+  onClick={handleVendorReasonSubmit}
+  disabled={vendorLoadingAction}
+>
+  {vendorLoadingAction
+    ? "Processing..."
+    : vendorActionType === "rejected"
+    ? "Reject"
+    : "Suspend"}
+</button>
+      </div>
+    </div>
+  </div>
+)}
+   <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        closeButton
+      />
+
                 </div>
+
+
+
 
 
 

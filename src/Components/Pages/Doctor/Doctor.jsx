@@ -12,6 +12,9 @@ import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
 import Calender from "./Calendar"
+import { FaCheckCircle } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
+
 
 const userId = localStorage.getItem("USER_ID")
 console.log("userIduserIduserId", userId)
@@ -67,6 +70,8 @@ const Doctor = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const[approvedoctorModal,setDoctorApproveModal]=useState(false);
+ const [isApproving, setIsApproving] = useState(false);
   const [uploadedDocs, setUploadedDocs] = useState([]);
 
   const [showReasonModal, setShowReasonModal] = useState(false);
@@ -87,6 +92,8 @@ const Doctor = () => {
 
   const [previousPage, setPreviousPage] = useState(null);
   const [doctorStats, setDoctorStats] = useState(null);
+  const[RejectionDoctorModal,setRejectionDoctorModal]=useState(false);
+
 
 
 
@@ -104,6 +111,11 @@ const Doctor = () => {
   const doctortableRef = useRef(null);
   const fetchedOnce = useRef(false);
   const navigate = useNavigate();
+    const handleApproveClick = (doctor) => {
+  setSelectedDoctorId(doctor.id);
+  setSelectedDoctor(doctor);      
+  setDoctorApproveModal(true);
+};
   const validatePhoneNumber = (phone) => {
     const errors = {}
 
@@ -245,22 +257,26 @@ const Doctor = () => {
 
 
 
-  const submitRejection = async (e) => {
-    e.preventDefault();
+const submitRejection = async (e) => {
+  e.preventDefault();
 
-    await handleStatusChange(selectedDoctorId, selectedStatus, rejectReason);
+  await handleStatusChange(
+    selectedDoctorId,
+    selectedStatus,
+    rejectReason
+  );
 
-    setShowReasonModal(false);
-    setRejectReason("");
-    setSelectedDoctorId(null);
-    setSelectedStatus("");
-  };
-
-  const handleRejectClick = (doctorId, statusType) => {
-    setSelectedDoctorId(doctorId);
-    setSelectedStatus(statusType);
-    setShowReasonModal(true);
-  };
+  setRejectionDoctorModal(false);  
+  setRejectReason("");
+  setSelectedDoctorId(null);
+  setSelectedStatus("");
+};
+  const handleRejectClick = (doctor, statusType) => {
+  setSelectedDoctorId(doctor.id);
+  setSelectedStatus(statusType);
+  setSelectedDoctor(doctor);
+  setRejectionDoctorModal(true);
+};
 
   const getdoctorlist = async (page = 1) => {
     
@@ -963,14 +979,14 @@ const Doctor = () => {
             ))}
           </select>
 
-          <button className="btn-primary" onClick={() => setDoctorModal(true)}>
+          {/* <button className="btn-primary" onClick={() => setDoctorModal(true)}>
             <BsPlus size={18} />
             Add Doctor
           </button>
           <button className="btn-secondary" >
             <BsDownload size={16} />
             Export Details
-          </button>
+          </button> */}
 
         </div>
       </div>
@@ -987,12 +1003,12 @@ const Doctor = () => {
               <th>Phone</th>
               <th>Status</th>
               <th> Fees </th>
-              <th>Availability</th>
+            
               <th>Ayush.No</th>
               <th>Qualification </th>
               <th>Specialization</th>
               <th>Experience</th>
-              <th>Documents </th>
+              {/* <th>Documents </th> */}
               <th>Actions</th>
 
             </tr>
@@ -1052,40 +1068,32 @@ const Doctor = () => {
 
   
   <td>
-    <select
-      value={item?.approval_status || "pending"}
-      onChange={(e) => {
-        const newStatus = e.target.value;
+            <select
+  value={item.approval_status}
+  className="status-dropdown"
+  onChange={(e) => {
+    const newStatus = e.target.value;
 
-        if (
-          newStatus === "rejected" ||
-          newStatus === "suspended"
-        ) {
-          handleRejectClick(item.id, newStatus);
-        } else {
-          handleStatusChange(item.id, newStatus);
-        }
-      }}
-      className="status-dropdown"
-    >
-      <option value="pending">Pending</option>
-      <option value="approved">Approved</option>
-      <option value="rejected">Rejected</option>
-      <option value="suspended">Suspended</option>
-    </select>
+    if (newStatus === "approved") {
+      handleApproveClick(item);
+    } else if (
+      newStatus === "rejected" ||
+      newStatus === "suspended"
+    ) {
+      handleRejectClick(item, newStatus);
+    }
+  }}
+>
+  <option value="pending">Pending</option>
+  <option value="approved">Approved</option>
+  <option value="rejected">Rejected</option>
+  <option value="suspended">Suspended</option>
+</select>
   </td>
 
   
   <td>₹{item.consultation_fee || 0}</td>
 
- 
-  <td style={{ color: "blue" }}>
-   <td style={{ color: "blue" }}>
-  {Array.isArray(item.consultation_modes)
-    ? item.consultation_modes.join(", ")
-    : item.consultation_modes || "NA"}
-</td>
-  </td>
 
 
   <td>{item.ayurvedic_council_id || "NA"}</td>
@@ -1107,14 +1115,14 @@ const Doctor = () => {
   <td>{item.experience_years || 0} years</td>
 
  
-  <td style={{ textAlign: "center" }}>
+  {/* <td style={{ textAlign: "center" }}>
     <FiFileText
       size={20}
       color="#0D614E"
       onClick={() => openDocumentModal(item)}
       style={{ cursor: "pointer" }}
     />
-  </td>
+  </td> */}
 
 
   <td
@@ -1839,10 +1847,239 @@ const Doctor = () => {
         </div>
       )}
 
+{approvedoctorModal && (
+  <div className="confirm-overlay">
+    <div className="confirm-modal">
 
+      <button
+        className="closes-modal"
+        onClick={() => {
+          setDoctorApproveModal(false);
+          setSelectedDoctorId(null);
+        }}
+      >
+        <IoClose />
+      </button>
 
+      <div className="approval-icon-wrapper">
+        <FaCheckCircle className="approval-icon" />
+      </div>
 
-       {showReasonModal && (
+      <h2 className="confirm-title">
+        Approve Doctor
+      </h2>
+
+      <p className="confirm-description">
+        Are you sure you want to approve this doctor?
+      </p>
+
+   <div className="vendor-info-card">
+  <div className="vendor-row">
+    <span className="label">Doctor Name</span>
+
+    <span
+      className={`value ${
+        selectedStatus === "rejected"
+          ? "reject-text"
+          : selectedStatus === "suspended"
+          ? "suspend-text"
+          : "approve-text"
+      }`}
+    >
+      {selectedDoctor?.first_name || "N/A"}
+    </span>
+  </div>
+</div>
+
+      <div className="info-box">
+        <span className="info-icon">ℹ</span>
+
+        <span>
+          This action will grant Doctor access to the platform.
+        </span>
+      </div>
+
+      <div className="confirm-buttons">
+
+        <button
+          className="cancels-btn"
+          onClick={() => {
+            setDoctorApproveModal(false);
+            setSelectedDoctorId(null);
+          }}
+        >
+          Cancel
+        </button>
+
+       <button
+  className="approve-btn"
+  disabled={isApproving}
+  onClick={async () => {
+    if (isApproving) return;
+
+    setIsApproving(true);
+
+    try {
+      await handleStatusChange(
+        selectedDoctorId,
+        "approved"
+      );
+
+      setDoctorApproveModal(false);
+      setSelectedDoctorId(null);
+    } finally {
+      setIsApproving(false);
+    }
+  }}
+>
+  {isApproving ? "Approving..." : "Approve"}
+</button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+
+   {RejectionDoctorModal && (
+  <div className="confirm-overlay">
+    <div className="reason-modal modern-reason-modal">
+
+      <button
+        className="closes-modal"
+        onClick={() => {
+          setRejectionDoctorModal(false);
+          setRejectReason("");
+        }}
+      >
+        <IoClose />
+      </button>
+
+      <div
+        className={`reason-icon ${
+          selectedStatus === "rejected"
+            ? "reject-bg"
+            : "suspend-bg"
+        }`}
+      >
+        {selectedStatus === "rejected" ? "✕" : "❚❚"}
+      </div>
+
+      <h2>
+        {selectedStatus === "rejected"
+          ? "Reject Doctor"
+          : "Suspend Doctor"}
+      </h2>
+
+      <p className="reason-subtitle">
+        {selectedStatus === "rejected"
+          ? "Please provide a reason for rejection."
+          : "Please provide a reason for suspension."}
+      </p>
+
+  <div
+  className={`vendor-info-card ${
+    selectedStatus === "rejected"
+      ? "reject-card"
+      : "suspend-card"
+  }`}
+>
+  <div className="vendor-row">
+    <span className="label">Doctor Name</span>
+
+    <span
+      className={`value ${
+        selectedStatus === "rejected"
+          ? "reject-text"
+          : "suspend-text"
+      }`}
+    >
+      {selectedDoctor?.first_name || "N/A"}
+    </span>
+  </div>
+</div>
+
+      {/* Reason Box */}
+      <div className="reason-field">
+        <label>
+          Reason <span>*</span>
+        </label>
+
+      <textarea
+  className="reason-box"
+  value={rejectReason}
+  onChange={(e) => setRejectReason(e.target.value)}
+  placeholder={
+    selectedStatus === "rejected"
+      ? "Enter reason for rejection..."
+      : "Enter reason for suspension..."
+  }
+/>
+      </div>
+
+     
+      <div
+  className={`info-box ${
+    selectedStatus === "rejected"
+      ? "reject-info-box"
+      : "suspend-info-box"
+  }`}
+>
+  <span
+    className={`infos-icon ${
+      selectedStatus === "rejected"
+        ? "reject-infos-icon"
+        : "suspend-infos-icon"
+    }`}
+  >
+    {selectedStatus === "rejected" ? "✕" : "⏸"}
+  </span>
+
+  <span>
+    {selectedStatus === "rejected"
+      ? "The Doctor will be notified about the rejection reason."
+      : "The Doctor will temporarily lose access to the platform."}
+  </span>
+</div>
+
+    <div className="confirm-buttons">
+        <button
+          className="cancels-btn"
+          onClick={() => {
+            setRejectionDoctorModal(false);
+            setRejectReason("");
+          }}
+        >
+          Cancel
+        </button>
+
+    <button
+  className={`approve-btn ${
+    selectedStatus === "rejected"
+      ? "rejects-btn"
+      : "suspend-btn"
+  }`}
+  onClick={(e) => {
+    if (!rejectReason.trim()) {
+      toast.error(
+        selectedStatus === "rejected"
+          ? "Please enter rejection reason"
+          : "Please enter suspension reason"
+      );
+      return;
+    }
+
+    submitRejection(e);
+  }}
+>
+  {selectedStatus === "rejected" ? "Reject" : "Suspend"}
+</button>
+      </div>
+    </div>
+  </div>
+)}
+
+       {/* {showReasonModal && (
         <div className=" modal">
 
           <form className="customer-form">
@@ -1868,7 +2105,7 @@ const Doctor = () => {
           </form>
         </div>
 
-      )} 
+      )}  */}
       <ToastContainer
         position="top-center"
         autoClose={3000}

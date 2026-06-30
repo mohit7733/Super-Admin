@@ -14,6 +14,8 @@ import { FaUsers } from "react-icons/fa";
 import { FaEdit, FaMapMarkerAlt, FaPlusCircle } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
 
 
 
@@ -55,7 +57,8 @@ const Vendor = () => {
   const [addressVendorId, setAddressVendorId] = useState(null)
   const [addressEditingId, setAddressEditingId] = useState(null)
   const [deleteConfirmModal, setDeleteConfirmModal] = useState(false)
-  const [selectedVendorId, setSelectedVendorId] = useState(null)
+  const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const[SelectedVendor,setSelectedVendor]=useState("");
   const [addressErrors, setAddressErrors] = useState({})
   const [formErrors, setFormErrors] = useState({})
   const [phoneErrors, setPhoneErrors] = useState({})
@@ -82,6 +85,8 @@ const Vendor = () => {
 
   const [totalCount, setTotalCount] = useState(0);
   const totalPages = Math.ceil(totalCount / pageSize);
+  const [approveModal, setApproveModal] = useState(false);
+
 
 
 
@@ -96,7 +101,8 @@ const Vendor = () => {
 
 
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [isApproving, setIsApproving] = useState(false);
 
 
 
@@ -147,6 +153,12 @@ const Vendor = () => {
     }
   };
 
+  const handleApproveClick = (vendor) => {
+  setSelectedVendorId(vendor.id);
+  setSelectedVendor(vendor);      
+  setApproveModal(true);
+};
+
  useEffect(() => {
     if (!fetchedOnce.current) {
       getVendorList();
@@ -157,6 +169,10 @@ const Vendor = () => {
     const file = e.target.files[0];
     setForm({ ...form, documentFile: file });
   };
+
+
+ 
+
 
   // const getVendorStats = async () => {
   //   const token = sessionStorage.getItem("superadmin_token");
@@ -256,64 +272,68 @@ const Vendor = () => {
   // };
 
   const handleStatusChange = async (vendorId, newStatus, Reason = "") => {
-    const token = sessionStorage.getItem("superadmin_token");
+  const token = sessionStorage.getItem("superadmin_token");
 
-    try {
 
-     const bodyData = {
-  status: newStatus,
-  vendor_id: vendorId,
-  ...(
-    (newStatus === "rejected" || newStatus === "suspended") && {
-      reason: Reason,
-    }
-  ),
-};
-       
-      const response = await fetch(
-        `${BASE_URL}/vendors/admin/vendor/status/`,
-        {
-          method: "PUT",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(bodyData),
+  try {
+    const bodyData = {
+      status: newStatus,
+      vendor_id: vendorId,
+      ...(
+        (newStatus === "rejected" || newStatus === "suspended") && {
+          reason: Reason,
         }
-      );
+      ),
+    };
 
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/vendor/status/`,
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(bodyData),
       }
+    );
 
-
-      if (!response.ok) {
-        toast.error("Failed to update status");
-        return;
-      }
-
-setVendorData((prev) =>
-  prev.map((vendor) =>
-    vendor.id === vendorId
-      ? { ...vendor, approval_status: newStatus }
-      : vendor
-  )
-);
-
-      // await getVendorStats();
-
-      toast.success("Status updated successfully ✅");
-
-    } catch (err) {
-      console.error(err);
-      toast.error("Error updating vendor status");
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
     }
-  };
+
+    if (!response.ok) {
+      toast.error("Failed to update status");
+      return;
+    }
+
+    setVendorData((prev) =>
+      prev.map((vendor) =>
+        vendor.id === vendorId
+          ? { ...vendor, approval_status: newStatus }
+          : vendor
+      )
+    );
+
+    if (newStatus === "approved") {
+      toast.success("Vendor approved successfully ✅");
+    } else if (newStatus === "rejected") {
+      toast.error("Vendor rejected successfully ❌");
+    } else if (newStatus === "suspended") {
+      toast.warning("Vendor suspended successfully ");
+    } else {
+      toast.success("Status updated successfully ✅");
+    }
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Error updating vendor status");
+  }
+};
 
   const updateVendor = (updatedVendor) => {
     setVendorData((prevVendors) =>
@@ -364,17 +384,30 @@ setVendorData((prev) =>
   // };
 
   const submitRejection = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    await handleStatusChange(selectedVendorId, selectedStatus, Reason);
-    setRejectionModal(false);
-    setReason("");
-    setSelectedIdVendor(null);
-    setSelectedStatus("");
-  };
-  const handleRejectClick = (VendorId, statusType) => {
+  if (!Reason.trim()) {
+    toast.error("Please enter a reason");
+    return;
+  }
 
-    setSelectedVendorId(VendorId);
+  await handleStatusChange(
+    selectedVendorId,
+    selectedStatus,
+    Reason
+  );
+
+  setRejectionModal(false);
+  setSelectedVendorId(null);
+  setSelectedStatus("");
+  setReason("");
+};
+
+   
+  const handleRejectClick = (Vendor, statusType) => {
+      setRejectionModal(true);
+    setSelectedVendorId(Vendor.id);
+   setSelectedVendor(Vendor)
     setSelectedStatus(statusType);
     setRejectionModal(true);
   };
@@ -814,7 +847,7 @@ setVendorData((prev) =>
         </div>
 
         <div className="action-buttons">
-          <button
+          {/* <button
             className="btn-primary"
             onClick={() => {
               setVendorverifiedModal(true);
@@ -825,7 +858,7 @@ setVendorData((prev) =>
           >
             <BsPlus size={18} />
             Add Vendor
-          </button>
+          </button> */}
 
           <button className="btn-secondary">
             <BsDownload size={16} />
@@ -900,24 +933,27 @@ setVendorData((prev) =>
                     <td>{vendor.verified_phone_number}</td>
 
                     <td>
-                      <select
-                        value={vendor.approval_status}
-                        onChange={(e) => {
-                          const newStatus = e.target.value;
-                          if (newStatus === "rejected" || newStatus === "suspended") {
-                            handleRejectClick(vendor.id, newStatus);
-                          } else {
-                            handleStatusChange(vendor.id, newStatus);
+                  <select
+  value={vendor.approval_status}
+  className="status-dropdown"
+  onChange={(e) => {
+    const newStatus = e.target.value;
 
-                          }
-                        }}
-                        className="status-dropdown"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="suspended">Suspended</option>
-                      </select>
+    if (newStatus === "approved") {
+      handleApproveClick(vendor);
+    } else if (
+      newStatus === "rejected" ||
+      newStatus === "suspended"
+    ) {
+      handleRejectClick(vendor, newStatus);
+    }
+  }}
+>
+  <option value="pending">Pending</option>
+  <option value="approved">Approved</option>
+  <option value="rejected">Rejected</option>
+  <option value="suspended">Suspended</option>
+</select>
                     </td>
 
                     <td style={{ textAlign: "center" }}>
@@ -1596,34 +1632,236 @@ setVendorData((prev) =>
           </div>
         </div>
       )} 
-       {RejectionVendorModal && (
-        <div className=" modal">
+   {RejectionVendorModal && (
+  <div className="confirm-overlay">
+    <div className="reason-modal modern-reason-modal">
 
-          <form className="customer-form">
-            <h3>
-              {selectedStatus === "rejected"
-                ? "Enter Rejected Reason"
-                : "Enter Suspended Reason"}
-            </h3>
-            <textarea
-              value={Reason}
-              placeholder={
-                selectedStatus === "rejected"
-                  ? "Enter the reason for rejection..."
-                  : "Enter the reason for suspension..."
-              }
-              onChange={(e) => setReason(e.target.value)}
-            />
-            <div className="form-buttons">
-              <button onClick={submitRejection} type="submit">   Submit  </button>
-              <button type="button" onClick={() => setRejectionModal(false)}> Cancel </button>
-            </div>
+      <button
+        className="closes-modal"
+        onClick={() => {
+          setRejectionModal(false);
+          setReason("");
+        }}
+      >
+        <IoClose />
+      </button>
 
-          </form>
-        </div>
+      <div
+        className={`reason-icon ${
+          selectedStatus === "rejected"
+            ? "reject-bg"
+            : "suspend-bg"
+        }`}
+      >
+        {selectedStatus === "rejected" ? "✕" : "❚❚"}
+      </div>
 
-      )} 
+      <h2>
+        {selectedStatus === "rejected"
+          ? "Reject Vendor"
+          : "Suspend Vendor"}
+      </h2>
 
+      <p className="reason-subtitle">
+        {selectedStatus === "rejected"
+          ? "Please provide a reason for rejection."
+          : "Please provide a reason for suspension."}
+      </p>
+
+  <div
+  className={`vendor-info-card ${
+    selectedStatus === "rejected"
+      ? "reject-card"
+      : "suspend-card"
+  }`}
+>
+  <div className="vendor-row">
+    <span className="label">Vendor Name</span>
+
+    <span
+      className={`value ${
+        selectedStatus === "rejected"
+          ? "reject-text"
+          : "suspend-text"
+      }`}
+    >
+      {SelectedVendor?.business_name || "N/A"}
+    </span>
+  </div>
+</div>
+
+      {/* Reason Box */}
+      <div className="reason-field">
+        <label>
+          Reason <span>*</span>
+        </label>
+
+        <textarea
+          className="reason-box"
+          value={Reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={
+            selectedStatus === "rejected"
+              ? "Enter reason for rejection..."
+              : "Enter reason for suspension..."
+          }
+        />
+      </div>
+
+     
+      <div
+  className={`info-box ${
+    selectedStatus === "rejected"
+      ? "reject-info-box"
+      : "suspend-info-box"
+  }`}
+>
+  <span
+    className={`infos-icon ${
+      selectedStatus === "rejected"
+        ? "reject-infos-icon"
+        : "suspend-infos-icon"
+    }`}
+  >
+    {selectedStatus === "rejected" ? "✕" : "⏸"}
+  </span>
+
+  <span>
+    {selectedStatus === "rejected"
+      ? "The vendor will be notified about the rejection reason."
+      : "The vendor will temporarily lose access to the platform."}
+  </span>
+</div>
+
+    <div className="confirm-buttons">
+        <button
+          className="cancels-btn"
+          onClick={() => {
+            setRejectionModal(false);
+            setReason("");
+          }}
+        >
+          Cancel
+        </button>
+
+    <button
+  className={`approve-btn ${
+    selectedStatus === "rejected"
+      ? "rejects-btn"
+      : "suspend-btn"
+  }`}
+  onClick={(e) => {
+    if (!Reason.trim()) {
+      toast.error(
+        selectedStatus === "rejected"
+          ? "Please enter rejection reason"
+          : "Please enter suspension reason"
+      );
+      return;
+    }
+
+    submitRejection(e);
+  }}
+>
+  {selectedStatus === "rejected" ? "Reject" : "Suspend"}
+</button>
+      </div>
+    </div>
+  </div>
+)}
+      {approveModal && (
+  <div className="confirm-overlay">
+    <div className="confirm-modal">
+
+      <button
+        className="closes-modal"
+        onClick={() => {
+          setApproveModal(false);
+          setSelectedVendorId(null);
+        }}
+      >
+        <IoClose />
+      </button>
+
+      <div className="approval-icon-wrapper">
+        <FaCheckCircle className="approval-icon" />
+      </div>
+
+      <h2 className="confirm-title">
+        Approve Vendor
+      </h2>
+
+      <p className="confirm-description">
+        Are you sure you want to approve this vendor?
+      </p>
+
+   <div className="vendor-info-card">
+  <div className="vendor-row">
+    <span className="label">Vendor Name</span>
+
+    <span
+      className={`value ${
+        selectedStatus === "rejected"
+          ? "reject-text"
+          : selectedStatus === "suspended"
+          ? "suspend-text"
+          : "approve-text"
+      }`}
+    >
+      {SelectedVendor?.business_name || "N/A"}
+    </span>
+  </div>
+</div>
+
+      <div className="info-box">
+        <span className="info-icon">ℹ</span>
+
+        <span>
+          This action will grant vendor access to the platform.
+        </span>
+      </div>
+
+      <div className="confirm-buttons">
+
+        <button
+          className="cancels-btn"
+          onClick={() => {
+            setApproveModal(false);
+            setSelectedVendorId(null);
+          }}
+        >
+          Cancel
+        </button>
+
+       <button
+  className="approve-btn"
+  disabled={isApproving}
+  onClick={async () => {
+    if (isApproving) return;
+
+    setIsApproving(true);
+
+    try {
+      await handleStatusChange(
+        selectedVendorId,
+        "approved"
+      );
+
+      setApproveModal(false);
+      setSelectedVendorId(null);
+    } finally {
+      setIsApproving(false);
+    }
+  }}
+>
+  {isApproving ? "Approving..." : "Approve"}
+</button>
+
+      </div>
+
+    </div>
+  </div>
+)}
 
       <ToastContainer
         position="top-center"

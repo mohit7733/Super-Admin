@@ -14,6 +14,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
 
 
+
 const userId = localStorage.getItem("USER_ID")
 
 console.log("USER_ID", userId)
@@ -66,6 +67,13 @@ const Customers = () => {
   const totalPages = Math.ceil(totalCount / pageSize);
   const [nextPage, setNextPage] = useState(null);
   const [previousPage, setPreviousPage] = useState(null);
+  const[CustomerstatusModal,setCustomerstautsModal]=useState(false);
+  const[SelectedCustomer,setSelectedCustomer]=useState(null);
+const[CustomerStatusModal,setCustomerStatusModal]=useState(false);
+const[IsUpdating,setIsUpdating]=useState(false);
+
+
+  
 
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -380,9 +388,6 @@ const Customers = () => {
       }
 
       const data = await response.json();
-
-      console.log("Customer API Response:", data);
-
       setCustomerData(data.data.results || []);
       setTotalCount(data.data.count || 0);
       setNextPage(data.data.next);
@@ -405,12 +410,16 @@ const Customers = () => {
   },[] );
 
   const handleToggle = async (id, currentStatus) => {
+  
   const token = sessionStorage.getItem("superadmin_token");
   if(!token){
     toast.error("Session Expired,please login Again");
     navigate("/login");
     return;
   }
+  if (IsUpdating) return;
+
+  setIsUpdating(true);
 
   try {
     const response = await fetch(
@@ -434,10 +443,16 @@ const Customers = () => {
 
     toast.success("Status updated successfully");
 
-    getCustomerList();
+   getCustomerList();
+
+setCustomerStatusModal(false);
+setSelectedCustomer(null);
   } catch (error) {
     console.error(error);
     toast.error("Failed to update status");
+  }
+  finally {
+    setIsUpdating(false);
   }
 };
 
@@ -493,7 +508,7 @@ const Customers = () => {
           />
         </div>
         <div className="action-buttons">
-          <button
+          {/* <button
             className="btn-primary"
             // onClick={() => {
             //   setOtpVerified(true);
@@ -502,7 +517,7 @@ const Customers = () => {
           >
             <BsPlus size={18} />
             Add Customer
-          </button>
+          </button> */}
           <button className="btn-secondary">
             <BsDownload size={16} />
             Export
@@ -570,7 +585,11 @@ const Customers = () => {
             <input
               type="checkbox"
               checked={customer.is_active}
-              onChange={() => handleToggle(customer.id, customer.is_active)}
+            
+             onChange={() => {
+  setSelectedCustomer(customer);
+  setCustomerStatusModal(true);
+             }} 
             />
             <span className="slider round"></span>
           </label>
@@ -848,7 +867,186 @@ const Customers = () => {
         )
       }
 
+      {CustomerStatusModal && SelectedCustomer && (
+   <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setCustomerStatusModal(false);
+      setSelectedCustomer(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
 
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setCustomerStatusModal(false);
+          setSelectedCustomer(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            SelectedCustomer.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {SelectedCustomer.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this Customer?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{SelectedCustomer.first_name}</h4>
+     
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setCustomerModalOpen(false);
+            setSelectedCustomer(null);
+          }}
+        >
+          Cancel
+        </button>
+
+     <button
+  disabled={IsUpdating}
+  className={`activeModal-confirm ${
+    SelectedCustomer.is_active
+      ? "deactivate-btn"
+      : "activate-btn"
+  }`}
+  onClick={() => {
+    handleToggle(
+      SelectedCustomer.id,
+      SelectedCustomer.is_active
+    );
+  }}
+>
+  {IsUpdating
+    ? "Updating..."
+    : `Yes, ${
+        SelectedCustomer.is_active
+          ? "Deactivate"
+          : "Activate"
+      }`}
+</button>
+      </div>
+
+    </div>
+  </div>
+)}
+
+{/* {CustomerstatusModal && selectedCustomer && (
+   <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setCustomerstautsModal(false);
+      setSelectedCustomer(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setCustomerstausModal(false);
+          setSelectedCustomer(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+          SelectedCustomer.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {SelectedCustomer.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this category?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{SelectedCustomer.name}</h4>
+     
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setStatusModal(false);
+            setSelectedCategory(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className={`activeModal-confirm ${
+          SelectedCustomer.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          onClick={() => {
+            updateCategoryStatus(
+              SelectedCustomer.id,
+              SelectedCustomer.is_active
+            );
+
+           setCustomerstautsModal(false);
+            setSelectedCustomer(null);
+          }}
+        >
+          Yes,{" "}
+          {SelectedCustomer.is_active
+            ? "Deactivate"
+            : "Activate"}
+        </button>
+      </div>
+
+    </div>
+  </div>
+)} */}
       <ToastContainer position="top-center" autoClose={1000} />
     </>
   )

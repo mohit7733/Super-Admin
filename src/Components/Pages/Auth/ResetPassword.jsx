@@ -6,6 +6,7 @@ import BASE_URL from "../../../Base";
 
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from 'react-toastify';
+import Ayurmuniimages from "../../Assests/Ayurvedicimages.jpg";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -57,7 +58,19 @@ const formattedPhone = `+91${phoneNumber.replace(/^\+91|^0/g, "")}`
 
   return (
     <>
-    <div className="reset-wrapper">
+    <div className="reset-wrapper"
+     style={{
+        backgroundImage: `linear-gradient(
+          rgba(114, 123, 121, 0.55),
+          rgba(141, 207, 192, 0.55)
+        ), url(${Ayurmuniimages})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        minHeight: "100vh",
+        width: "100%",
+      }}
+    >
       <div className="reset-card">
         <div className="reset-header">
           <img src={Ayurmunilogo} alt="Logo" className="reset-logo" />

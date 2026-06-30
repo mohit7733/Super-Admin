@@ -38,7 +38,6 @@ const Documents = ({ documentsData }) => {
     signature: "Signature",
     experience_certificate: "Experience Certificate",
 
-    // Vendor
     gst_certificate: "GST Certificate",
     pan_card: "PAN Card",
     establishment_certificate: "Establishment Certificate",
@@ -82,27 +81,32 @@ const docs = React.useMemo(() => {
             <div className="document-type">{doc.type}</div>
           </div>
 
-          <button className="menu-btn">
-            <FaEllipsisV />
-          </button>
+         
         </div>
 
-       
-        <div className="document-image-container">
-          {doc.fileUrl ? (
-            <iframe
-              src={doc.fileUrl}
-              title={doc.type}
-              className="pdf-preview"
-            />
-          ) : (
-            <div className="no-preview">No File</div>
-          )}
-        </div>
-
-    
-
-        {/* ACTIONS */}
+      <div className="document-image-container">
+  {doc.fileUrl ? (
+    /\.(jpg|jpeg|png|gif|webp)$/i.test(doc.fileUrl) ? (
+      <img
+        src={doc.fileUrl}
+        alt={doc.type}
+        className="document-image"
+      />
+    ) : /\.pdf$/i.test(doc.fileUrl) ? (
+      <iframe
+        src={`${doc.fileUrl}#toolbar=0&navpanes=0`}
+        title={doc.type}
+        className="pdf-preview"
+      />
+    ) : (
+      <div className="no-preview">
+        No Preview Available
+      </div>
+    )
+  ) : (
+    <div className="no-preview">No File</div>
+  )}
+</div>
         <div className="document-actions">
 
           <button
@@ -113,19 +117,18 @@ const docs = React.useMemo(() => {
             <FaEye /> View
           </button>
 
-          <a
-            href={doc.fileUrl}
-            download
-            target="_blank"
-            rel="noreferrer"
-          >
-            <button
-              className="document-btn docdownload-btn"
-              disabled={!doc.fileUrl}
-            >
-              <FaDownload /> Download
-            </button>
-          </a>
+         <button
+  className="document-btn docdownload-btn"
+  disabled={!doc.fileUrl}
+  onClick={() =>
+    handleDownload(
+      doc.fileUrl,
+      `${doc.type}.${doc.fileUrl.split(".").pop()}`
+    )
+  }
+>
+  <FaDownload /> Download
+</button>
 
         </div>
 
@@ -133,28 +136,55 @@ const docs = React.useMemo(() => {
     );
   };
 
+  const handleDownload = async (url, fileName) => {
+  try {
+    console.log("Downloading:", url);
+
+    const response = await fetch(url);
+    console.log("Response:", response);
+
+    const blob = await response.blob();
+
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName || "document";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error("Download failed:", error);
+  }
+};
+
   return (
-    <div className="verification-container">
+   <div className="verification-container">
+  <div className="documentss-section">
 
-      <div className="documentss-section">
-
-        <div className="documents-grids">
-
-          {docs.length > 0 ? (
-            docs.map((doc) => (
-              <DocumentCard key={doc.id} doc={doc} />
-            ))
-          ) : (
-            <div className="no-docs">
-              No Documents Found
-            </div>
-          )}
-
-        </div>
-
+    {docs.length > 0 ? (
+      <div className="documents-grids">
+        {docs.map((doc) => (
+          <DocumentCard key={doc.id} doc={doc} />
+        ))}
       </div>
+    ) : (
+      <div className="empty-bank-state">
+        <FaFileAlt size={50} className="empty-icon" />
 
-    </div>
+        <h3>No Documents Available</h3>
+
+        <p>
+          This doctor has not uploaded any documents yet.
+        </p>
+      </div>
+    )}
+
+  </div>
+</div>
   );
 };
 

@@ -68,6 +68,9 @@ import Healthcategory from './Components/Pages/Category/Healthcategory';
 import ProductDetail from './Components/Pages/Product/ProductDetail';
 import Review from './Components/Pages/Review/Review';
 import Doctorreview from './Components/Pages/Review/Doctorreview';
+import YogaCategory from './Components/Pages/Yoga/YogaCategory';
+import YogaSession from './Components/Pages/Yoga/YogaSession';
+import PatientDetails from './Components/Pages/Patient/PatientDetails';
 
 
 
@@ -202,6 +205,26 @@ function App() {
             </ProtectedRoute>
           }
         />
+ <Route
+          path="/yoga/category"
+          element={
+            <ProtectedRoute permission="view_yoga_category">
+              <Layout>
+                <YogaCategory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/yoga/sessions"
+          element={
+            <ProtectedRoute permission="view_yoga_sessions">
+              <Layout>
+                <YogaSession />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/content/banner"
@@ -238,7 +261,7 @@ function App() {
         <Route
           path="/product"
           element={
-            <ProtectedRoute permission=" view_products">
+            <ProtectedRoute permission="view_products">
               <Layout>
                 <Product />
               </Layout>
@@ -505,6 +528,19 @@ function App() {
           }
         />
 
+
+        <Route
+          path="/Patientdetail/:PatientId"
+          element={
+
+
+            <ProtectedRoute>
+              <Layout>
+                <PatientDetails />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
 
         <Route

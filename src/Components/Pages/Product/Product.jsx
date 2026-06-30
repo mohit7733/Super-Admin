@@ -620,15 +620,6 @@ const handleNavigate = (id) => {
             <th>ID</th>
             <th>Name</th>
             <th>Brand</th>
-           
-            <th>Form</th>
-            <th>Treatment </th>
-          <th>Health Category </th>
-            <th>Image</th>
-            <th>Category</th>
-         
-            <th>Status</th>
-
                <th> Action</th>
 
           </tr>
@@ -658,68 +649,16 @@ const handleNavigate = (id) => {
   <td>{product?.name}</td>
 
   <td>{product?.brand_name}</td>
-
-
-
-  <td>{product?.variants?.physical_state}</td>
-
-  <td>{product?.treatment_type || "-"}</td>
-
-  <td>
-    {product?.health_disease_ids?.length || 0}
-  </td>
-
-  <td>
-    {product?.variants?.[0]?.media?.[0]?.media_url ? (
-      <img
-        src={product.variants[0].media[0].media_url}
-        alt={product.name}
-        width="50"
-        style={{
-          cursor: "pointer",
-          borderRadius: "4px",
-        }}
-        onClick={() => {
-          setPreviewimage(
-            product.variants[0].media[0].media_url
-          );
-          setShowPreviewModal(true);
-        }}
-      />
-    ) : (
-      "No Image"
-    )}
-  </td>
-
-  <td>{product?.product_category_name || "-"}</td>
-
   
-    <td>
-    <select
-      value={product?.status|| "pending"}
-   onChange={(e) => {
-  const newStatus = e.target.value;
-
-  if (newStatus === "rejected") {
-    handleRejectClick(product.id, newStatus);
-  } else {
-    handleStatusChange(product.id, newStatus);
-  }
-}}
-      className="status-dropdown"
-    >
-      <option value="pending">Pending</option>
-      <option value="approved">Approved</option>
-      <option value="rejected">Rejected</option> 
-    </select>
-  </td>
   <td>
+<div className="action-buttons">
+     <button className="action-btn view" title=" View product details " onClick={() => handleNavigate(product.id)}>
+       <FaEye/>
+     </button>
+       
 
-        <button className="action-btn1" title=" View Customer Order " onClick={() => handleNavigate(product.id)}>
-
-                          <span className="icon"> <FaEye/> </span>
-
-                        </button>
+</div>
+      
   </td>
 
    

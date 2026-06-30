@@ -9,6 +9,7 @@ import { BsSearch, BsThreeDots, BsThreeDotsVertical,BsDownload } from "react-ico
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { FaEye } from "react-icons/fa";
 
 const Patient = () => {
   const [patientdata, setPatientData] = useState([]);
@@ -36,6 +37,8 @@ const Patient = () => {
     description: '',
     relation: ''
   });
+  const[PatientStatusModal,setPatientStatusModal]=useState(false);
+  const[IsUpdating,setIsUpdating]=useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -43,6 +46,10 @@ const Patient = () => {
   };
   const fetchOnce = useRef();
   const navigate = useNavigate();
+   const handleNavigate = (id) => {
+    console.log(id)
+    navigate(`/patientdetail/${id}`)
+  }
 
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -71,6 +78,13 @@ const Patient = () => {
         },
       }
     );
+    
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
 
     const data = await response.json();
 
@@ -112,6 +126,8 @@ const Patient = () => {
     navigate("/login");
     return;
   }
+if(IsUpdating)return;
+setIsUpdating(true);
 
   try {
     const response = await fetch(
@@ -134,11 +150,17 @@ const Patient = () => {
     console.log(data);
 
     toast.success("Status updated successfully");
+    setPatientStatusModal(false);
+setSelectedPatient(null);
 
     getAllpatientList();
+    
   } catch (error) {
     console.error(error);
     toast.error("Failed to update status");
+  }
+  finally{
+    setIsUpdating(false)
   }
 };
 
@@ -306,11 +328,12 @@ const Patient = () => {
             <th> Id</th>
             <th>Patient Name</th>
             <th>Gender</th>
-            {/* <th>Age</th> */}
+        
             <th> Relation</th>
-            <th>Descripition</th>
+            <th> Phone Number</th>
             <th>Status</th>
-            {/* <th> Actions</th> */}
+            <th>Action</th>
+           
           </tr>
         </thead>
         <tbody>
@@ -333,41 +356,42 @@ const Patient = () => {
                 <td>{index + 1}</td>
                 <td>{patient?.first_name}</td>
                 <td>{patient?.gender}</td>
-                {/* <td>{patient?.age}Years</td> */}
+              
                 <td>{patient.relation}</td>
-                <td>{patient?.description}</td>
-                {/* <td>
-                  <div className="action-buttons">
-
-                    <button
-                      className="action-btn edit"
-                     
-
-                    >
-                      <FaEdit/>
-                    </button>
-
-                    <button
-                      className="action-btn delete"
-                     
-                    >
-                      <FiTrash2/>
-                    </button>
+              
+               
+<td>{patient?.phone_number}</td>
 
 
-
-                  </div>
-                </td> */}
+                 
+             
                   <td>
           <label className="switch">
             <input
               type="checkbox"
               checked={patient.is_active}
-              onChange={() => handleToggle(patient.id, patient.is_active)}
+
+               onChange={() => {
+  setSelectedPatient(patient);
+  setPatientStatusModal(true);}}
+            
             />
             <span className="slider round"></span>
           </label>
         </td>
+
+
+ <td>
+<div className="action-buttons">
+     <button className="action-btn view" title=" View product details "onClick={()=>handleNavigate(patient.id)} >
+       <FaEye/>
+     </button>
+       
+
+</div>
+      
+  </td>
+
               </tr>
             )
             )
@@ -596,6 +620,98 @@ const Patient = () => {
           </div>
         </div>
       )} */}
+
+       {PatientStatusModal &&selectedPatient && (
+   <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setPatientStatusModal(false);
+      setSelectedPatient(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setPatientStatusModal(false);
+          setSelectedPatient(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            selectedPatient.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {selectedPatient.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this Customer?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{selectedPatient.first_name}</h4>
+     
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setPatientStatusModal(false);
+            setSelectedPatient(null);
+          }}
+        >
+          Cancel
+        </button>
+
+     <button
+  disabled={IsUpdating}
+  className={`activeModal-confirm ${
+    selectedPatient.is_active
+      ? "deactivate-btn"
+      : "activate-btn"
+  }`}
+  onClick={() => {
+    handleToggle(
+    selectedPatient.id,
+      selectedPatient.is_active
+    );
+  }}
+>
+  {IsUpdating
+    ? "Updating..."
+    : `Yes, ${
+        selectedPatient.is_active
+          ? "Deactivate"
+          : "Activate"
+      }`}
+</button>
+      </div>
+
+    </div>
+  </div>
+)}
+
 
 
 

@@ -278,7 +278,7 @@ h1, h3, h4, p { margin: 0; }
   transition: all 0.2s ease;
 }
 
-.btn-approve { background: #20a486; color: white; border: 1px solid #20a486; }
+.btn-approve { background: #0D614E; color: white; border: 1px solid #0D614E; }
 .btn-suspend { background: white; color: #f59e0b; border: 1px solid #f59e0b; }
 .btn-reject { background: white; color: #ef4444; border: 1px solid #ef4444; }
 .btn-reject-outline { background: white; color: #ef4444; border: 1px solid #ef4444; }
@@ -1367,6 +1367,36 @@ h1, h3, h4, p { margin: 0; }
   border-radius: 10px;
   cursor: pointer;
 }
+.empty-bank-state {
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  border: 1px dashed #d1d5db;
+}
+
+.empty-bank-state .empty-icon {
+  color: #9ca3af;
+}
+
+.empty-bank-state h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #111827;
+}
+
+.empty-bank-state p {
+  margin: 0;
+  color: #6b7280;
+  max-width: 350px;
+}
 /* RESPONSIVE */
 
 @media (max-width: 1200px) {
@@ -1444,4 +1474,12 @@ h1, h3, h4, p { margin: 0; }
   .doctor-name-row h2 {
     font-size: 26px;
   }
+}
+.disabled-social-link {
+  color: #999;
+  cursor: not-allowed;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-block;
+  margin-top: 6px;
 }

@@ -28,6 +28,7 @@ const SubProductCategory = () => {
   category_id: "",
   product_id: "", 
   image_url: "",
+  hsn_code:"",
 });
 const[isSubmitting,setIsSubmitting]=useState(false);
 const[ServiceCategoryData,setServiceCategoryData]=useState([]);
@@ -45,6 +46,9 @@ const[SubproductcategoryPreviewimage,setSubProductCategoryPreviewImage]=useState
 const [SubproductCategoryStatusModal, setProductSubCategoryStatusModal] = useState(false);
 const [selectedSubProductCategory, setSelectedSubProductCategory] = useState(null);
 const [isStatusChanging, setIsStatusChanging] = useState(false);
+const[TaxClassData,setTaxClassData]=useState([]);
+const[TaxClassLoading,setTaxClassLoading]=useState(false);
+const[TaxClassError,setTaxClassError]=useState(null);
 
 
 const [EditForm, setEditForm] = useState({
@@ -54,57 +58,14 @@ const [EditForm, setEditForm] = useState({
   category_id: "",
   product_id: "",
   image_url: "",
+ hsn_code:"",
 });
 const fileInputRef = useRef(null);
 const editFileRef = useRef(null);
 
 const [EditImage, setEditImage] = useState(null);
 
-  const handleToggle = async (id, currentStatus) => {
-  const token = sessionStorage.getItem("superadmin_token");
-  if(!token){
-    toast.error("Session Expired,please login Again");
-    navigate("/login");
-    return;
-  }
-
-  try {
-    const response = await fetch(
-     `${BASE_URL}/vendors/admin/product-category/?id=${id}`,
-      {
-        method: "PATCH",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-           "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify({
-          is_active: !currentStatus,
-        }),
-      }
-    );
-
-    
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
-
-
-    const data = await response.json();
-    console.log(data);
-
-    toast.success("Status updated successfully");
-
-getSubProductCategoryList();
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to update status");
-  }
-};
+  
 const handleCategoryChange = (e) => {
   const { name, value, type, checked } = e.target;
 
@@ -165,7 +126,55 @@ if(!token){
     return null;
   }
 };
-   
+ const handleToggle = async (id, currentStatus) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setIsStatusChanging(true);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/product-subcategory/?id=${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          is_active: !currentStatus,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      toast.error(data?.message || "Failed to update status");
+      return;
+    }
+
+    toast.success(
+  !currentStatus
+    ? "Category Activated Successfully"
+    : "Category Deactivated Successfully"
+);
+
+await getSubSubProductCategoryList();
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+  } finally {
+    setIsStatusChanging(false);
+  }
+};   
 
 const handleEditChange = (e) => {
   const { name, value, type, checked } = e.target;
@@ -250,6 +259,8 @@ const handleEdit = (item) => {
     is_active: item.is_active || false,
     product_id: item.product_category_id || "",
     image_url: item.image_url || "",
+    tax_class_id :item.tax_class_id || "",
+  
   });
 
   setEditImage(null);
@@ -299,6 +310,7 @@ const handleUpdateSubSubCategory = async (e) => {
       description: EditForm.description,
       image_url: imageUrl,
       is_active: EditForm.is_active,
+      tax_class_id:EditForm.tax_class_id,
     };
 
     const response = await fetch(
@@ -338,6 +350,11 @@ let errors = {};
     toast.error("Please select product category");
   }
 
+if (!SubCategoryForm.tax_class_id) {
+    errors.tax_class_id = "Please select tax  class";
+    toast.error("Please select tax Class");
+  }
+
   if (!SubCategoryForm.name.trim()) {
     errors.name = "Name is required";
     toast.error("Name is required");
@@ -346,6 +363,21 @@ let errors = {};
   if (!SubCategoryImage) {
     errors.image_url = "Please upload image";
     toast.error("Please upload image");
+  }
+const hsnCode = SubCategoryForm.hsn_code.trim();
+
+if (!hsnCode) {
+  errors.hsn_code = "HSN Code is required";
+} else if (hsnCode.length !== 8) {
+  errors.hsn_code = "HSN Code must be exactly 8 characters";
+}
+
+ const code = SubCategoryForm.code;
+  if (!code) {
+    errors.code = "Please enter category code";
+  }
+  else if (!/^[A-Z]{5}$/.test(code)) {
+    errors.code = "Code must be exactly 5 letters (A–Z only)";
   }
 
   setAddError(errors);
@@ -371,10 +403,14 @@ let errors = {};
 
     const payload = {
       product_category_id: SubCategoryForm.product_id,
+      tax_class_id:SubCategoryForm.tax_class_id,
       name: SubCategoryForm.name,
       description: SubCategoryForm.description,
-      image_url: imageUrl, // <-- URL yaha jayega
+      image_url: imageUrl,
       is_active: SubCategoryForm.is_active,
+      hsn_code:SubCategoryForm.hsn_code,
+      code:SubCategoryForm.code,
+
     };
 
     console.log("Payload:", payload);
@@ -510,8 +546,56 @@ useEffect(()=>{
     getSubProductCategoryList();
     // getCategoryList();
     getSubSubProductCategoryList();
+    getTaxClasslist();
 },[])
 
+const getTaxClasslist = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setTaxClassLoading(true);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/unicommerce-tax-class/`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    console.log("Product Categorysub API Response:", data);
+
+    setTaxClassData(data.data);
+    
+
+  } catch (err) {
+    console.error("Product Category Fetch Error:", err);
+    setTaxClassError("Something went wrong while fetching categories.");
+    toast.error("Failed to fetch product categories");
+  } finally {
+    setTaxClassLoading(false);
+  }
+};
   return (
     <>
  <div className="page-header">
@@ -580,8 +664,11 @@ useEffect(()=>{
                                                                      <tr>
                                                                        <th>ID</th>
                                                                        <th>Name </th>
+                                                                         <th  > HSN Code</th> 
+                                                                         <th> Code</th> 
                                                                        <th>Image</th>
-                                                                               
+
+                                                                         
                                                                        <th> Status</th>
                                     <th> Action</th>
                                                                      </tr>
@@ -608,6 +695,8 @@ useEffect(()=>{
                                                    
                                                           
                                                            <td>{item.name}</td> 
+                                                           <td>{item.hsn_code}</td>
+                                                           <td>{item.code}</td>
                                                                                         <td>
   <img
     src={item.image_url}
@@ -627,7 +716,10 @@ useEffect(()=>{
                                                 <input
                                                   type="checkbox"
                                                   checked={item.is_active}
-                                                  onChange={() => handleToggle(item.id, item.is_active)}
+                                                 onChange={() => {
+        setSelectedSubProductCategory(item);
+      setProductSubCategoryStatusModal(true);
+      }}
                                                 />
                                                 <span className="slider round"></span>
                                               </label>
@@ -732,7 +824,7 @@ useEffect(()=>{
   onChange={handleCategoryChange}
 >
   <option value="">
-    Select Sub Service Category
+    Select  Service Category
   </option>
 
   {SubCategoryData?.length > 0 ? (
@@ -758,6 +850,44 @@ useEffect(()=>{
 )}
                                                           
                                                             </div>
+
+                                                                  <div className="form-group">
+                                                              <label>Select tax Class</label>
+                                                  
+                                                              <div className="category-row">
+                                                  
+                                                           <select
+  name="tax_class_id"
+  value={SubCategoryForm.tax_class_id}
+  onChange={handleCategoryChange}
+>
+  <option value="">
+    Select Tax Class
+  </option>
+
+  {TaxClassData?.length > 0 ? (
+    TaxClassData.map((cat) => (
+      <option
+        key={cat.id}
+        value={cat.id}
+      >
+        {cat.name}
+      </option>
+    ))
+  ) : (
+    <option value="" disabled>
+      No Tax Class Found
+    </option>
+  )}
+</select>
+                                                                                                  
+                                                              </div>
+                                                  
+                                                            {AddError.tax_class_id && (
+  <p className="error-text">{AddError.tax_class_id}</p>
+)}
+                                                          
+                                                            </div>
                                                   
                                                           <div className="form-group">
                                                             <label>Product Sub Category  Name</label>
@@ -780,6 +910,68 @@ useEffect(()=>{
                                                     <p className="error-text">{AddError.name}</p>
                                                   )}
                                                           </div>
+
+                                                          
+                                  <div className="form-group">
+                            <label> HSN Code</label>
+                       <input
+  type="text"
+  name="hsn_code"
+  value={SubCategoryForm.hsn_code}
+ onChange={(e) => {
+    let value = e.target.value;
+
+    value = value.slice(0, 8);
+
+    setSubCategoryForm((prev) => ({
+      ...prev,
+      hsn_code: value,
+    }));
+
+    setAddError((prev) => ({
+      ...prev,
+      hsn_code: "",
+    }));
+  }}
+  placeholder="Enter Category Code (Max 8 Characters)"
+/>
+
+
+ 
+                  {AddError.hsn_code && (
+                    <p className="error-text">{AddError.hsn_code}</p>
+                  )}
+                          </div>
+
+                                <div className="form-group">
+                            <label> Product sub Category Code</label>
+                       <input
+  type="text"
+  name="code"
+  value={SubCategoryForm.code}
+onChange={(e) => {
+  let value = e.target.value.toUpperCase();
+
+
+  value = value.replace(/[^A-Z]/g, "");
+
+  setSubCategoryForm((prev) => ({
+    ...prev,
+    code: value,
+  }));
+
+  setAddError((prev) => ({
+    ...prev,
+    code: "",
+  }));
+}}
+  placeholder="Enter Category Code (A-Z, Max 5 Letters)"
+/>
+                  {AddError.code && (
+                    <p className="error-text">{AddError.code}</p>
+                  )}
+                          </div>
+                  
                                                   
                                                   <div className="form-group">
                                                   <label> Upload Image</label>
@@ -910,9 +1102,12 @@ useEffect(()=>{
            name: "",
   description: "",
   is_active: false,
-  category_id: "",
+  tax_class_id:"",
   product_id: "", 
   image_url: "",
+  hsn_code:"",
+  code:"",
+  
         }
       );
       setAddError({});
@@ -1028,7 +1223,42 @@ useEffect(()=>{
   <p className="error-text">{editErrors.product_id}</p>
 )}
         </div>
+ <div className="form-group">
+          <label>Select Tax Class</label>
 
+          <div className="category-row">
+            <select
+              name="tax_class_id"
+              value={EditForm.tax_class_id}
+              onChange={handleEditChange}
+            >
+              <option value="">
+                Select tax Class
+              </option>
+
+              {TaxClassData?.length > 0 ? (
+                TaxClassData.map((cat) => (
+                  <option
+                    key={cat.id}
+                    value={cat.id}
+                  >
+                    {cat.name}
+                  </option>
+                ))
+              ) : (
+                <option
+                  value=""
+                  disabled
+                >
+                  No Tax Class found
+                </option>
+              )}
+            </select>
+          </div>
+          {editErrors.tax_class_id && (
+  <p className="error-text">{editErrors.tax_class_id}</p>
+)}
+        </div>
         {/* Name */}
 
         <div className="form-group">
@@ -1257,8 +1487,8 @@ onChange={(e) => {
   <div
     className="activeModal-overlay"
     onClick={() => {
-      setProductCategorySubStatusModal(false);
-      setSelectedSubProductCategory(null);
+     setProductSubCategoryStatusModal(false);
+   setSelectedSubProductCategory(null);
     }}
   >
     <div
@@ -1269,7 +1499,7 @@ onChange={(e) => {
         className="activeModal-close"
         onClick={() => {
           setProductSubCategoryStatusModal(false);
-          setSelectedSubProductCategory(null);
+         setSelectedSubProductCategory(null);
         }}
       >
         ×
@@ -1307,8 +1537,8 @@ onChange={(e) => {
         <button
           className="activeModal-cancel"
           onClick={() => {
-            setProductSubCategoryStatusModal(false);
-            setSelectedProductCategory(null);
+           setProductSubCategoryStatusModal(false);
+           setSelectedSubProductCategory(null);
           }}
         >
           Cancel
@@ -1317,7 +1547,7 @@ onChange={(e) => {
         <button
           disabled={isStatusChanging}
           className={`activeModal-confirm ${
-            selectedProductCategory.is_active
+            selectedSubProductCategory.is_active
               ? "deactivate-btn"
               : "activate-btn"
           }`}
@@ -1327,14 +1557,14 @@ onChange={(e) => {
               selectedSubProductCategory.is_active
             );
 
-            setProductCategoryStatusModal(false);
-            setSelectedProductCategory(null);
+           setProductSubCategoryStatusModal(false);
+             setSelectedSubProductCategory(null);
           }}
         >
           {isStatusChanging
             ? "Updating..."
             : `Yes, ${
-                selectedProductCategory.is_active
+                selectedSubProductCategory.is_active
                   ? "Deactivate"
                   : "Activate"
               }`}
@@ -1343,8 +1573,10 @@ onChange={(e) => {
     </div>
   </div>
 )}
+
+ <ToastContainer position="top-center" autoClose={1000} />
     </>
   )
 }
 
-export default SubProductCategory
+export default SubProductCategory;

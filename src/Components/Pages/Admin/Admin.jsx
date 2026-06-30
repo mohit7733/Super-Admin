@@ -39,7 +39,10 @@ const Admin = () => {
   const [EditError, setEditError] = useState({});
   const [roleData, setRoleData] = useState([]);
   const [AddNewRoleModal,setAddNewRoleModal]=useState(false);
-  const[NewRole,setNewRole]=useState()
+  const[NewRole,setNewRole]=useState();
+  const [addAdminLoading, setAddAdminLoading] = useState(false);
+const [addRoleLoading, setAddRoleLoading] = useState(false);
+const [savePermissionLoading, setSavePermissionLoading] = useState(false);
 
 
   const fetchedOnce = useRef(false);
@@ -86,7 +89,7 @@ const Admin = () => {
     catch (err) {
       console.error(err.message)
       setError("Something went wrong while fetching data.")
-      toast.error("Failed to fetch Doctor Data")
+      toast.error("Failed to fetch Admin Data")
 
     }
     finally {
@@ -151,6 +154,9 @@ const Admin = () => {
       navigate("/login");
       return;
     }
+     if (addAdminLoading) return;
+
+  setAddAdminLoading(true);
 
     try {
       const response = await fetch(`${BASE_URL}/user/admin/register/`, {
@@ -168,13 +174,26 @@ const Admin = () => {
         navigate("/login");
         return;
       }
+
+  
      const data = await response.json();
+         if (!response.ok || data.success === false) {
+  toast.error(
+    data?.error?.details?.non_field_errors ||
+    data?.error?.message ||
+    "Failed to create admin"
+  );
+  return;
+}
      toast.success("Admin created successfully ");
      setAddAdminForm(initalAdminform);
       setAdminModal(false);
      getAdminlist();
    } catch (err) {
      toast.error("Failed to create admin");
+   }
+   finally{
+    setAddAdminLoading(false);
    }
   };
 
@@ -212,6 +231,10 @@ const Admin = () => {
     } catch (err) {
       toast.error("Failed to load permissions");
     }
+    finally {
+    setAddAdminLoading(false);
+  }
+
   };
 
   const getRole = async () => {
@@ -270,7 +293,10 @@ const addNewRole = async () => {
   const token = sessionStorage.getItem("superadmin_token");
   if(!token){
     toast.error("Session Expired,Login Again")
-  }
+  };
+   if (addRoleLoading) return;
+
+  setAddRoleLoading(true);
 
   try {
     const response = await fetch(
@@ -319,6 +345,9 @@ if (!response.ok || data.success === false) {
     console.error(err.message);
     toast.error(err.message);
   }
+  finally{
+    setAddRoleLoading(false);
+  }
 };
 
   const updateStatus = async (id, status, reason = "") => {
@@ -326,6 +355,10 @@ if (!response.ok || data.success === false) {
     if(!token){
       toast.error("Session Expired, Please Login Again")
     }
+
+     if (savePermissionLoading) return;
+
+  setSavePermissionLoading(true);
     try {
       const response = await fetch(`${BASE_URL}/user/`, {
         method: 'PUT',
@@ -355,21 +388,30 @@ if (!response.ok || data.success === false) {
       toast.error("Failed to update status");
 
     }
+    finally {
+    setSavePermissionLoading(false);
+  }
+    
   }
 
 
 
 
-  const handleEditClick = (verifier) => {
 
-    setEditingUser(verifier);
-    setSelectedPermissions(
-      verifier.permissions?.map((perm) => perm.uid) || []
-    );
+const handleEditClick = (verifier) => {
+  setEditingUser(verifier);
 
-    setPermissionModalOpen(true);
-  };
+  const activePermissions =
+    verifier.permissions_details
+      ?.filter((perm) => perm.is_active)
+      .map((perm) => perm.id) || [];
 
+  console.log("ACTIVE IDS =>", activePermissions);
+
+  setSelectedPermissions(activePermissions);
+
+  setPermissionModalOpen(true);
+};
 
   const handleSavePermissions = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -392,7 +434,7 @@ if (!response.ok || data.success === false) {
         },
         body: JSON.stringify({
           user_id: editingUser.id,
-          approval_status: editingUser.approval_status,
+          approval_status: editingUser.admin_approval_status,
           permission_ids: selectedPermissions,
 
         }),
@@ -406,6 +448,8 @@ if (!response.ok || data.success === false) {
 
 
       const data = await response.json();
+
+
 
       toast.success("Permissions & Status Updated Successfully ");
       setPermissionModalOpen(false);
@@ -732,7 +776,13 @@ if (!response.ok || data.success === false) {
 
 
             <div className="form-buttons">
-              <button type="submit" onClick={handleSavePermissions}>Save</button>
+             <button
+  type="submit"
+  disabled={savePermissionLoading}
+  onClick={handleSavePermissions}
+>
+  {savePermissionLoading ? "Saving..." : "Save"}
+</button>
               <button type="button" onClick={() => setPermissionModalOpen(false)}>Cancel</button>
             </div>
           </div>
@@ -791,7 +841,12 @@ if (!response.ok || data.success === false) {
             {AddError.role && <p className="error">{AddError.role}</p>}
 
             <div className="form-buttons">
-              <button type="submit">Add Admin</button>
+         <button
+  type="submit"
+  disabled={addAdminLoading}
+>
+  {addAdminLoading ? "Adding..." : "Add Admin"}
+</button>
               <button type="button" onClick={() => {
                 setAdminModal(false);
                 setAddAdminForm(initalAdminform);
@@ -832,7 +887,12 @@ if (!response.ok || data.success === false) {
         />
 
         <div className="form-buttons">
-          <button type="submit">Submit</button>
+       <button
+  type="submit"
+  disabled={addRoleLoading}
+>
+  {addRoleLoading ? "Adding..." : "Add Role"}
+</button>
 
           <button
             type="button"

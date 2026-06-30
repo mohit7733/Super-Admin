@@ -6,6 +6,9 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { FaChevronDown, FaChevronRight, FaBars } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa";
 
+import Ayurmunilogo from "../Assests/ayurmunilogo1.png"
+
+
 console.log("ICON TEST:", <FaUsers />);
 
 const Sidebar = ({ collapsed, onToggleCollapse }) => {
@@ -314,7 +317,8 @@ const renderParentMenuItem = (item, index) => {
             </div>
           ) : (
             <img
-              src={logo1}
+              // src={logo1}
+              src={Ayurmunilogo}
               alt="Ayurveda Wellness Logo"
               className="logo-expanded"
               loading="lazy"

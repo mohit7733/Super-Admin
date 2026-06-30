@@ -10,6 +10,7 @@ import { ToastContainer, toast } from "react-toastify"
 
 import './Disease.css';
 import { useNavigate } from "react-router-dom";
+import { FiEye ,FiUpload} from "react-icons/fi";
 
 
 
@@ -21,8 +22,10 @@ const Disease = () => {
   const [AddcategoryModal, setAddCategoryModal] = useState(false);
  const [imageFile, setImageFile] = useState(null);
 const [healthcategoryname, setHealthcategory] = useState("");
-const [Slug, setSlug] = useState("");
+
 const [Description, setDescription] = useState("");
+
+const[CategoryCode,setCategoryCode]=useState("");
 const [HealthCategoryImage, setHealthCategoryImage] =useState(null);
 const[HealthCategoryData,setHealthcategoryData]=useState([]);
 const [catLoading, setCatLoading] = useState(false);
@@ -44,9 +47,17 @@ const [editDiseaseId, setEditDiseaseId] = useState(null);
 const [previewModal, setPreviewModal] = useState(false);
 const [diseaseErrors, setDiseaseErrors] = useState({});
 const [categoryErrors, setCategoryErrors] = useState({});
+const[ServiceCategoryData,setServiceCategoryData]=useState([])
+const[ServiceCategoryLoading,setServiceCategoryLoading]=useState(false);
+const[ServiceCategoryError,setServiceCategoryError]=useState(null);
+const [ServicecategoryId, setServiceCategoryId] = useState("");
+const[SelectedDisease,setSelectedDisease]=useState(null);
+const[StatusModal,setStatusModal]=useState(false);
+const diseaseFileRef = useRef(null);
+
 
 const [editForm, setEditForm] = useState({
-  category_id: "",
+  health_category_id: "",
   name: "",
   alternate_name: "",
   description: "",
@@ -59,7 +70,7 @@ const openEditModal = (item) => {
   setEditDiseaseId(item.id);
 
   setEditForm({
-    category_id: item.category_id,
+    health_category_id: item.health_category_id,
     name: item.name,
     alternate_name: item.alternate_name,
     description: item.description,
@@ -72,6 +83,7 @@ const openEditModal = (item) => {
   setEditModal(true);
 };
 
+const healthCategoryInputRef = useRef(null);
 
 const handleEditChange = (e) => {
   const { name, value, type, checked } = e.target;
@@ -117,13 +129,14 @@ const removeEditSymptom = (index) => {
     symptoms: [""],
     is_active:false ,
     image_url:null,
+    code:"",
   });
 
  
 const validateDiseaseForm = () => {
   let errors = {};
 
-  if (!formData.category_id) {
+  if (!formData.health_category_id) {
     errors.category_id = "Category is required";
     toast.error("Category is required");
   }
@@ -137,6 +150,14 @@ const validateDiseaseForm = () => {
     errors.name = "Disease name is required";
     toast.error("Disease name is required");
   }
+   const code = formData.code;
+  if (!code) {
+    errors.code = "Please enter category code";
+  }
+  else if (!/^[A-Z]{5}$/.test(code)) {
+    errors.code = "Code must be exactly 5 letters (A–Z only)";
+  }
+
 
 
   if (!imageFile) {
@@ -161,6 +182,9 @@ const validateDiseaseForm = () => {
 
 const validateCategoryForm = () => {
   let errors = {};
+   if (!ServicecategoryId) {
+    errors.ServicecategoryId = "Please select service category";
+  }
 
   if (!healthcategoryname.trim()) {
     errors.healthcategoryname =
@@ -168,7 +192,15 @@ const validateCategoryForm = () => {
 
     toast.error("Category name is required");
   }
+  
+  
+  const code = CategoryCode; 
 
+  if (!code) {
+    errors.code = "Please enter category code";
+  } else if (!/^[A-Z]{5}$/.test(code)) {
+    errors.code = "Code must be exactly 5 letters (A-Z only)";
+  }
   if (!HealthCategoryImage) {
     errors.HealthCategoryImage =
       "Category image is required";
@@ -192,17 +224,77 @@ const validateCategoryForm = () => {
     .replace(/\s+/g, "_"); 
 };
 
+const getServiceCategoryList = async () => {
+const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setServiceCategoryLoading(true);
 
 
+  try {
+    const response = await fetch(
+      `${BASE_URL}/user/admin/service-category/`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
 
-const getCategoryList = async () => {
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+
+      toast.error("Session expired. Please login again");
+
+      navigate("/login");
+
+      return;
+    }
+
+    const data = await response.json();
+
+  console.log("APIrrrResponse:", data);
+    if (data.success) {
+      setServiceCategoryData(data.data);
+
+     
+
+    } else {
+      toast.error(data.message || "Failed to get categories");
+    }
+
+  } catch (error) {
+
+    console.error("Category Fetch Error:", error);
+
+    setServiceCategoryError("Something went wrong while fetching data.");
+
+    toast.error("Failed to fetch category data");
+
+  } finally {
+    setServiceCategoryLoading(false);
+  }
+};
+
+
+const getHealthCategoryList = async () => {
   const token = sessionStorage.getItem("superadmin_token");
 
   try {
     setCatLoading(true);
 
     const response = await fetch(
-      `${BASE_URL}/user/admin/health-category/`,
+      `${BASE_URL}/user/admin/health-category/
+      `,
       {
         method: "GET",
         headers: {
@@ -232,7 +324,8 @@ const getCategoryList = async () => {
 };
 
 useEffect(() => {
-  getCategoryList();
+  getHealthCategoryList();
+  getServiceCategoryList();
   
 }, []);
 
@@ -289,7 +382,7 @@ const handleCategoryChange = (e) => {
 
   if (name === "name") {
     setHealthcategory(value);
-    setSlug(generateSlug(value));
+ 
 
     setCategoryErrors((prev) => ({
       ...prev,
@@ -518,9 +611,11 @@ const handleAddCategory = async (e) => {
    
     const payload = {
       name: healthcategoryname,
-      codename: Slug,
+      service_category_id:ServicecategoryId,
+   
       description: Description,
       image_url: uploadedImageUrl,
+      code:CategoryCode,
     };
 
     console.log("Payload:", payload);
@@ -547,7 +642,7 @@ const handleAddCategory = async (e) => {
 
      
       setHealthcategory("");
-      setSlug("");
+  
       setDescription("");
       setHealthCategoryImage(null);
 
@@ -555,12 +650,18 @@ const handleAddCategory = async (e) => {
       setAddCategoryModal(false);
 
      
-      getCategoryList();
-    } else {
-      toast.error(
-        data.message || "Failed to add category"
-      );
-    }
+      getHealthCategoryList();
+   } else {
+  if (data.errors) {
+    Object.keys(data.errors).forEach((key) => {
+      data.errors[key].forEach((msg) => {
+        toast.error(msg);
+      });
+    });
+  } else {
+    toast.error(data.message || "Failed to add category");
+  }
+}
   } catch (error) {
     console.error(error);
 
@@ -594,8 +695,9 @@ if (!validateDiseaseForm()) {
 
    
     const payload = {
-      category_id: formData.category_id,
+      health_category_id: formData.health_category_id,
       name: formData.name,
+      code:formData.code,
       alternate_name: formData.alternate_name,
       description: formData.description,
       prakriti: formData.prakriti,
@@ -635,6 +737,7 @@ if (!validateDiseaseForm()) {
         description: "",
         prakriti: "",
         symptoms: [""],
+        code:"",
         is_active: false,
       });
 
@@ -680,7 +783,7 @@ const handleUpdateDisease = async (e) => {
     }
 
     const payload = {
-      category_id: editForm.category_id,
+      health_category_id: editForm.health_category_id,
       name: editForm.name,
       alternate_name: editForm.alternate_name,
       description: editForm.description,
@@ -693,7 +796,7 @@ const handleUpdateDisease = async (e) => {
     const response = await fetch(
      `${BASE_URL}/user/admin/health-disease/?id=${editDiseaseId}`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -780,7 +883,7 @@ const handleDiseaseDelete = async (id) => {
                 <FaDisease size={24} />
               </div>
               <div className="stat2-info">
-                <h3>Total Review</h3>
+                <h3>Total Disease</h3>
                 <div className="stat2-value">0</div>
               </div>
             </div>
@@ -790,7 +893,7 @@ const handleDiseaseDelete = async (id) => {
                 <FaCheckCircle size={24} />
               </div>
               <div className="stat2-info">
-                <h3>Active Review</h3>
+                <h3>Active Disease</h3>
                 <div className="stat2-value">0</div>
               </div>
             </div>
@@ -800,21 +903,19 @@ const handleDiseaseDelete = async (id) => {
               <FaTimesCircle size={24} />
               </div>
               <div className="stat2-info">
-                <h3>Inactive Review</h3>
+                <h3>Inactive Disease</h3>
                 <div className="stat2-value">0</div>
               </div>
             </div>
     
           </div>
-  <div className="controls-section">
-        {/* <div className="search-wrapper">
-          <BsSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search by ..."
-            className="search-input"
-          />
-        </div> */}
+ <div className="filter-category">
+                    <button
+  className="add-customer-btn"
+  onClick={() => setAddDiseaseformModal(true)}
+>
+  + Add Disease
+</button>
 
       
 
@@ -826,7 +927,8 @@ const handleDiseaseDelete = async (id) => {
                   <tr>
                     <th>ID</th>
                     <th>Diseases</th>
-                    <th>category</th>                
+                    <th> Health category</th>   
+                <th> Code</th>         
                    <th>prakriti</th>
                      <th>Status</th>  
                     <th>Actions</th>
@@ -857,22 +959,28 @@ const handleDiseaseDelete = async (id) => {
         <td>{item.name}</td>
 
        
-        <td>{item.category_name}</td>
+        <td>{item.health_category_name}</td>
+        <td>{item.code}</td>
 
       
         <td>{item.prakriti }</td>
 
        
-        <td>
+         <td>
           <label className="switch">
             <input
               type="checkbox"
               checked={item.is_active}
-              onChange={() => handleToggle(item.id, item.is_active)}
+             onChange={() => {
+  setSelectedDisease(item);
+  setStatusModal(true);
+}}
             />
             <span className="slider round"></span>
           </label>
         </td>
+
+
 
         
         <td>
@@ -979,17 +1087,17 @@ const handleDiseaseDelete = async (id) => {
 
           
           <div className="form-group">
-            <label>Category</label>
+            <label> Select Health Category</label>
 
             <div className="category-row">
 
               <select
-                name="category_id"
-                value={formData.category_id}
+                name="health_category_id"
+                value={formData.health_category_id}
                 onChange={handleChange}
               >
                 <option value="">
-                  Select Category
+                  Select  Health Category
                 </option>
 
                 {HealthCategoryData?.map((cat) => (
@@ -1005,18 +1113,26 @@ const handleDiseaseDelete = async (id) => {
               <button
                 type="button"
                 className="add-category-btn"
-                onClick={() =>
-                  setAddCategoryModal(true)
-                }
+               onClick={()=>{
+                setAddCategoryModal(true);
+                setServiceCategoryId("");
+                setHealthcategory("");
+               
+                setDescription("");
+                setHealthCategoryImage(null);
+                setCategoryErrors({});
+                
+
+               }}
               >
-                + Add Category
+                + Add Health Category
               </button>
 
             </div>
 
-            {diseaseErrors.category_id && (
+            {diseaseErrors.health_category_id && (
               <p className="error-text">
-                {diseaseErrors.category_id}
+                {diseaseErrors.health_category_id}
               </p>
             )}
           </div>
@@ -1053,7 +1169,7 @@ const handleDiseaseDelete = async (id) => {
             )}
           </div>
 
-         
+       
           <div className="form-group">
             <label>Disease Name</label>
 
@@ -1072,18 +1188,126 @@ const handleDiseaseDelete = async (id) => {
             )}
           </div>
 
-      
-          <div className="form-group">
+                <div className="form-group">
             <label>Alternate Name</label>
 
             <input
               type="text"
               name="alternate_name"
               value={formData.alternate_name}
-              placeholder="Enter alternate name"
+              placeholder="Enter Alternate Name of Disease"
               onChange={handleChange}
             />
+
+            {diseaseErrors.alternate_name && (
+              <p className="error-text">
+                {diseaseErrors.alternate_name}
+              </p>
+            )}
           </div>
+                <div className="form-group">
+                            <label> Category Code</label>
+                       <input
+  type="text"
+  name="code"
+  value={formData.code}
+onChange={(e) => {
+  let value = e.target.value.toUpperCase();
+
+
+  value = value.replace(/[^A-Z]/g, "");
+
+  setFormData((prev) => ({
+    ...prev,
+    code: value,
+  }));
+
+ setDiseaseErrors((prev) => ({
+    ...prev,
+    code: "",
+  }));
+}}
+  placeholder="Enter Category Code (A-Z, Max 5 Letters)"
+/>
+                  {diseaseErrors.code && (
+                    <p className="error-text">{diseaseErrors.code}</p>
+                  )}
+                          </div>
+      
+       <div className="form-group">
+  <label>Disease Image</label>
+
+  <div className="upload-box1">
+    <input
+      type="file"
+      accept="image/*"
+      id="diseaseUpload"
+      name="image"
+      onChange={handleImageChange}
+    />
+
+    {imageFile ? (
+      <div className="banner-preview-wrapper">
+        <div className="banner-preview-left">
+          <img
+            src={URL.createObjectURL(imageFile)}
+            alt="preview"
+            className="banner-preview-image"
+          />
+        </div>
+
+        <div className="banner-preview-actions">
+          <button
+            type="button"
+            className="preview-btn"
+            onClick={() =>
+              window.open(
+                URL.createObjectURL(imageFile),
+                "_blank"
+              )
+            }
+          >
+            <FiEye />
+          </button>
+
+          <button
+            type="button"
+            className="delete-btn-preview"
+            onClick={() => {
+              setImageFile(null);
+
+              setFormData((prev) => ({
+  ...prev,
+  image_url: null,
+}));
+
+              document.getElementById("diseaseUpload").value = "";
+            }}
+          >
+            <FiTrash2 />
+          </button>
+        </div>
+      </div>
+    ) : (
+      <label
+        htmlFor="diseaseUpload"
+        className="upload-label"
+      >
+        <div className="upload-content">
+          <span className="upload-icon">⬆</span>
+          <p>Click to upload disease image</p>
+          <small>PNG, JPG up to 2MB</small>
+        </div>
+      </label>
+    )}
+  </div>
+
+  {diseaseErrors.image && (
+    <p className="error-text">
+      {diseaseErrors.image}
+    </p>
+  )}
+</div>
 
          
           <div className="form-group">
@@ -1101,40 +1325,6 @@ const handleDiseaseDelete = async (id) => {
           </div>
 
         
-          <div className="form-group">
-            <label>Disease Image</label>
-
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-             {diseaseErrors.image && (
-    <p className="error-text">
-      {diseaseErrors.image}
-    </p>
-  )}
-
-            {imageFile && (
-              <div className="single-image-card">
-
-                <img
-                  src={URL.createObjectURL(
-                    imageFile
-                  )}
-                  alt="preview"
-                  className="preview-image"
-                  onClick={() =>
-                    setPreviewModal(true)
-                  }
-                />
-
-              
-
-              </div>
-            )}
-          </div>
 
          
           <div className="dynamic-section">
@@ -1263,7 +1453,7 @@ const handleDiseaseDelete = async (id) => {
       <div className="prakriti-modal">
 
         <div className="prakriti-modal-header">
-          <h2>Add Category</h2>
+          <h2>Add  Health Category</h2>
 
           <button
             className="close-btn"
@@ -1281,7 +1471,39 @@ const handleDiseaseDelete = async (id) => {
           onSubmit={handleAddCategory}
         >
 
-         
+         <div className="form-group">
+  <label>
+     select Service Category
+    <span className="required">*</span>
+  </label>
+
+  <select
+  value={ServicecategoryId}
+  onChange={(e) => {
+    setServiceCategoryId(e.target.value);
+
+    setCategoryErrors((prev) => ({
+      ...prev,
+      ServicecategoryId: "",
+    }));
+  }}
+> <option value="">-- Select Category --</option>
+
+    {ServiceCategoryData.map((cat) => (
+      <option key={cat.id} value={cat.id}>
+        {cat.name}
+      </option>
+    ))}
+  </select>
+
+  {categoryErrors.ServicecategoryId && (
+    <p className="error-text">
+      {categoryErrors.ServicecategoryId}
+    </p>
+  )}
+</div>
+
+
           <div className="form-group">
             <label>
               Health Category Name
@@ -1297,7 +1519,13 @@ const handleDiseaseDelete = async (id) => {
                 const value = e.target.value;
 
                 setHealthcategory(value);
-                setSlug(generateSlug(value));
+
+    setCategoryErrors((prev) => ({
+      ...prev,
+      healthcategoryname: "",
+    }));
+
+              
               }}
             />
 
@@ -1308,18 +1536,32 @@ const handleDiseaseDelete = async (id) => {
             )}
           </div>
 
-      
-          <div className="form-group">
-            <label>Codename</label>
+                               <div className="form-group">
+                            <label> Category Code</label>
+                       <input
+  type="text"
+  name="code"
+  value={CategoryCode}
+onChange={(e) => {
+  let value = e.target.value.toUpperCase();
 
-            <input
-              type="text"
-              name="codename"
-              value={Slug}
-              disabled
-            />
-          </div>
 
+  value = value.replace(/[^A-Z]/g, "");
+
+ setCategoryCode(value)
+
+  setCategoryErrors((prev) => ({
+    ...prev,
+    code: "",
+  }));
+}}
+  placeholder="Enter Category Code (A-Z, Max 5 Letters)"
+/>
+                  {categoryErrors.code && (
+                    <p className="error-text">{categoryErrors.code}</p>
+                  )}
+                          </div>
+    
          
           <div className="form-group">
             <label>Description</label>
@@ -1335,19 +1577,22 @@ const handleDiseaseDelete = async (id) => {
           </div>
 
        
-          <div className="form-group">
-            <label>Category Image</label>
+     <div className="form-group">
+  <label>Category Image</label>
 
-           <input
+  <div className="upload-box1">
+    <input
+  ref={healthCategoryInputRef}
   type="file"
-  name="image"
   accept="image/*"
+  id="healthCategoryUpload"
   onChange={(e) => {
     const file = e.target.files[0];
 
+    if (!file) return;
+
     setHealthCategoryImage(file);
 
-    
     setCategoryErrors((prev) => ({
       ...prev,
       HealthCategoryImage: "",
@@ -1355,23 +1600,69 @@ const handleDiseaseDelete = async (id) => {
   }}
 />
 
-            {categoryErrors.HealthCategoryImage && (
-              <p className="error-text">
-                {categoryErrors.HealthCategoryImage}
-              </p>
-            )}
-          </div>
+    {HealthCategoryImage ? (
+      <div className="banner-preview-wrapper">
+        <div className="banner-preview-left">
+          <img
+            src={URL.createObjectURL(HealthCategoryImage)}
+            alt="preview"
+            className="banner-preview-image"
+          />
+        </div>
 
+        <div className="banner-preview-actions">
+          <button
+            type="button"
+            className="preview-btn"
+            onClick={() =>
+              window.open(
+                URL.createObjectURL(HealthCategoryImage),
+                "_blank"
+              )
+            }
+          >
+            <FiEye />
+          </button>
+
+        <button
+  type="button"
+  className="delete-btn-preview"
+  onClick={() => {
+    setHealthCategoryImage(null);
+
+    setCategoryErrors((prev) => ({
+      ...prev,
+      HealthCategoryImage: "",
+    }));
+
+    if (healthCategoryInputRef.current) {
+      healthCategoryInputRef.current.value = "";
+    }
+  }}
+>
+  <FiTrash2 />
+</button>
+        </div>
+      </div>
+    ) : (
+      <label htmlFor="healthCategoryUpload" className="upload-label">
+        <div className="upload-content">
+          <span className="upload-icon">⬆</span>
+          <p>Click to upload category image</p>
+          <small>PNG, JPG up to 2MB</small>
+        </div>
+      </label>
+    )}
+  </div>
+
+  {categoryErrors.HealthCategoryImage && (
+    <p className="error-text">
+      {categoryErrors.HealthCategoryImage}
+    </p>
+  )}
+</div>
           
-          {HealthCategoryImage && (
-            <img
-              src={URL.createObjectURL(
-                HealthCategoryImage
-              )}
-              alt="preview"
-              className="preview-image"
-            />
-          )}
+         
 
          
           <div className="modal-footer">
@@ -1389,7 +1680,7 @@ const handleDiseaseDelete = async (id) => {
               onClick={() => {
                 setAddCategoryModal(false);
                 setHealthcategory("");
-                setSlug("");
+                setCategoryCode("");
                 setDescription("");
                 setHealthCategoryImage(null);
                 setCategoryErrors({});
@@ -1470,8 +1761,8 @@ const handleDiseaseDelete = async (id) => {
           <div className="category-row">
 
             <select
-              name="category_id"
-              value={editForm.category_id}
+              name="health_category_id"
+              value={editForm.health_category_id}
               onChange={handleEditChange}
             >
               <option value="">Select Category</option>
@@ -1483,13 +1774,7 @@ const handleDiseaseDelete = async (id) => {
               ))}
             </select>
 
-            <button
-              type="button"
-              className="add-category-btn"
-              onClick={() => setAddCategoryModal(true)}
-            >
-              + Add Category
-            </button>
+        
 
           </div>
         </div>
@@ -1608,73 +1893,102 @@ const handleDiseaseDelete = async (id) => {
           </div>
         </div>
 
-          <div className="form-group">
-          <label>Disease Image</label>
+         <div className="form-group">
+  <label>Disease Image</label>
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) =>
-              setImageFile(e.target.files[0])
+  <div className="upload-box1">
+
+    <input
+      ref={diseaseFileRef}
+      type="file"
+      accept="image/*"
+      id="editDiseaseUpload"
+      style={{ display: "none" }}
+      onChange={(e) => {
+        const file = e.target.files[0];
+        if (file) {
+          setImageFile(file);
+        }
+      }}
+    />
+
+    {(imageFile || editForm.image_url) ? (
+      <div className="banner-preview-wrapper">
+
+        {/* Preview Image */}
+        <div className="banner-preview-left">
+          <img
+            src={
+              imageFile
+                ? URL.createObjectURL(imageFile)
+                : editForm.image_url
             }
+            alt="preview"
+            className="banner-preview-image"
           />
-
-         
-          {(imageFile || editForm.image_url) && (
-            <div className="single-image-card">
-
-              <img
-                src={
-                  imageFile
-                    ? URL.createObjectURL(imageFile)
-                    : editForm.image_url
-                }
-                alt="preview"
-                className="preview-image"
-                onClick={() => setPreviewModal(true)}
-              />
-
-              <div className="image-actions">
-
-               
-                <button
-                  type="button"
-                  className="remove-btn"
-                  onClick={() => {
-                    setImageFile(null);
-
-                    setEditForm((prev) => ({
-                      ...prev,
-                      image_url: null,
-                    }));
-                  }}
-                >
-                  ✕
-                </button>
-
-                {/* Replace */}
-                <label className="replace-btn">
-                  Replace
-
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={(e) =>
-                      setImageFile(e.target.files[0])
-                    }
-                  />
-                </label>
-
-              </div>
-
-              <p className="image-name">
-                {imageFile?.name || "Current Image"}
-              </p>
-
-            </div>
-          )}
         </div>
+
+        {/* Actions */}
+        <div className="banner-preview-actions">
+
+          {/* View */}
+          <button
+            type="button"
+            className="preview-btn"
+            onClick={() =>
+              window.open(
+                imageFile
+                  ? URL.createObjectURL(imageFile)
+                  : editForm.image_url,
+                "_blank"
+              )
+            }
+          >
+            <FiEye />
+          </button>
+
+          {/* Replace */}
+          <label
+            htmlFor="editDiseaseUpload"
+            className="preview-btn"
+            style={{ cursor: "pointer" }}
+          >
+            <FiUpload />
+          </label>
+
+          {/* Delete */}
+          <button
+            type="button"
+            className="delete-btn-preview"
+            onClick={() => {
+              setImageFile(null);
+
+              setEditForm((prev) => ({
+                ...prev,
+                image_url: null,
+              }));
+
+              if (diseaseFileRef.current) {
+                diseaseFileRef.current.value = "";
+              }
+            }}
+          >
+            <FiTrash2 />
+          </button>
+
+        </div>
+      </div>
+    ) : (
+      <label htmlFor="editDiseaseUpload" className="upload-label">
+        <div className="upload-content">
+          <span className="upload-icon">⬆</span>
+          <p>Click to upload disease image</p>
+        </div>
+      </label>
+    )}
+
+  </div>
+</div>
 
        
       
@@ -1736,6 +2050,96 @@ const handleDiseaseDelete = async (id) => {
         alt="full-preview"
         className="full-preview-image"
       />
+
+    </div>
+  </div>
+)}
+
+{StatusModal && SelectedDisease && (
+   <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setStatusModal(false);
+      setSelectedDisease(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setStatusModal(false);
+          setSelectedDisease(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            SelectedDisease.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {SelectedDisease.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this category?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{SelectedDisease.name}</h4>
+     
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setStatusModal(false);
+            setSelectedDisease(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className={`activeModal-confirm ${
+            SelectedDisease.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          onClick={() => {
+        handleToggle(
+              SelectedDisease.id,
+              SelectedDisease.is_active
+            );
+
+            setStatusModal(false);
+            setSelectedDisease(null);
+          }}
+        >
+          Yes,{" "}
+          {SelectedDisease.is_active
+            ? "Deactivate"
+            : "Activate"}
+        </button>
+      </div>
 
     </div>
   </div>

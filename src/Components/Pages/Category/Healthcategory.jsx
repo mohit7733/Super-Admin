@@ -35,8 +35,9 @@ const Healthcategory = () => {
    name: "",
    description: "",
    is_active: false,
-   category_id:"",
+   service_category_id:"",
    image_url:"",
+   code:"",
  });
  
  const [editModal, setEditModal] = useState(false);
@@ -46,7 +47,7 @@ const Healthcategory = () => {
    name: "",
    description: "",
    image_url:"",
-   category_id:"",
+   service_category_id:"",
    is_active: false,
  
  });
@@ -63,8 +64,13 @@ const handleCategoryChange = (e) => {
     ...prev,
     [name]: type === "checkbox" ? checked : value,
   }));
-};
 
+  // clear error instantly
+  setAddErrors((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
+};
 const uploadImage = async (file) => {
 const token = sessionStorage.getItem("superadmin_token");
 if(!token){
@@ -166,7 +172,7 @@ const token = sessionStorage.getItem("superadmin_token");
 
   try {
     const response = await fetch(
-      `${BASE_URL}/user/admin/categories/`,
+      `${BASE_URL}/user/admin/service-category/`,
       {
         method: "GET",
         headers: {
@@ -260,21 +266,116 @@ const getHealthCategoryList = async () => {
     setHealthLoading(false);
   }
 };
+// const AddHealthCategory = async (e) => {
+//   e.preventDefault();
+
+//   if (isSubmitting) return;
+
+//   setIsSubmitting(true);
+
+//   let newErrors = {};
+
+//   if (!categoryForm.service_category_id) {
+//     newErrors.service_category_id = "Please select a service category";
+//   }
+
+//   if (!categoryForm.name.trim()) {
+//     newErrors.name = "Health category name is required";
+//   }
+// const code = categoryForm.code;
+
+// if (!code) {
+//   toast.error("Please enter category code");
+//   newErrors.code = "Please enter category code";
+// }
+// else if (!/^[A-Z]{5}$/.test(code)) {
+//   toast.error("Code must be exactly 5 letters (A–Z only)");
+//   newErrors.code = "Code must be exactly 5 letters (A–Z only)";
+// }
+//   if (!SubCategoryImage) {
+//     newErrors.image_url = "Please upload an image";
+//   }
+
+//   setAddErrors(newErrors);
+
+//   if (Object.keys(newErrors).length > 0) {
+//     Object.values(newErrors).forEach((msg) => toast.error(msg));
+//     setIsSubmitting(false); // validation fail
+//     return;
+//   }
+
+//   try {
+//     let imageUrl = "";
+
+//     if (SubCategoryImage) {
+//       imageUrl = await uploadImage(SubCategoryImage);
+//     }
+
+//     const payload = {
+//       ...categoryForm,
+//       image_url: imageUrl,
+//     };
+
+//     const token = sessionStorage.getItem("superadmin_token");
+
+//     const response = await fetch(
+//       `${BASE_URL}/user/admin/health-category/`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//           "ngrok-skip-browser-warning": "true",
+//         },
+//         body: JSON.stringify(payload),
+//       }
+//     );
+
+//     const data = await response.json();
+
+//     if (response.ok) {
+//       toast.success("Health Category Added Successfully");
+//       setShowCategoryModal(false);
+//     getHealthCategoryList();
+//     } else {
+//   const errorMessage =
+//     data?.errors?.name?.[0] ||
+//       data?.errors?.code?.[0] ||
+//     data?.errors?.image_url?.[0] ||
+//     data?.message ||
+//     "Failed to add category";
+
+//   toast.error(errorMessage);
+// }
+//   } catch (error) {
+//     console.error(error);
+//     toast.error("Something went wrong");
+//   } finally {
+//     setIsSubmitting(false); 
+//   }
+// };
 const AddHealthCategory = async (e) => {
   e.preventDefault();
 
   if (isSubmitting) return;
-
   setIsSubmitting(true);
 
   let newErrors = {};
 
-  if (!categoryForm.category_id) {
-    newErrors.category_id = "Please select a service category";
+  if (!categoryForm.service_category_id) {
+    newErrors.service_category_id = "Please select a service category";
   }
 
   if (!categoryForm.name.trim()) {
-    newErrors.name = "Sub category name is required";
+    newErrors.name = "Health category name is required";
+  }
+
+  const code = categoryForm.code;
+  if (!code) {
+    newErrors.code = "Please enter category code";
+  }
+  else if (!/^[A-Z]{5}$/.test(code)) {
+    newErrors.code = "Code must be exactly 5 letters (A–Z only)";
   }
 
   if (!SubCategoryImage) {
@@ -285,7 +386,7 @@ const AddHealthCategory = async (e) => {
 
   if (Object.keys(newErrors).length > 0) {
     Object.values(newErrors).forEach((msg) => toast.error(msg));
-    setIsSubmitting(false); // validation fail
+    setIsSubmitting(false);
     return;
   }
 
@@ -319,26 +420,19 @@ const AddHealthCategory = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-      toast.success("Product Category Added Successfully");
+      toast.success("Health Category Added Successfully");
       setShowCategoryModal(false);
-    getHealthCategoryList();
+      getHealthCategoryList();
     } else {
-  const errorMessage =
-    data?.errors?.name?.[0] ||
-    data?.errors?.image_url?.[0] ||
-    data?.message ||
-    "Failed to add category";
+      toast.error(data?.message || "Failed to add category");
+    }
 
-  toast.error(errorMessage);
-}
   } catch (error) {
-    console.error(error);
     toast.error("Something went wrong");
   } finally {
-    setIsSubmitting(false); 
+    setIsSubmitting(false);
   }
 };
-
 
 useEffect(()=>{
 getHealthCategoryList();
@@ -348,7 +442,7 @@ getCategoryList();
   return (
     <>
     <div className="page-header">
-                     <h1> Sub Health Category </h1>
+                     <h1> Health Category </h1>
                      <p className="page-paragraph"> Manage Sub Product Category  and their details</p>
                    </div>
     
@@ -361,7 +455,8 @@ getCategoryList();
     name: "",
     description: "",
     is_active: false,
-    category_id: "",
+    service_category_id: "",
+    code:"",
     image_url: "",
   });
   setSubCategoryImage(null);
@@ -370,7 +465,7 @@ getCategoryList();
   setAddErrors({});
 }}
       >
-        + Add Sub Health  Category
+        + Add  Health  Category
       </button>
     </div>
     
@@ -468,7 +563,7 @@ getCategoryList();
       onClick={() => {
        setEditForm({
       id: item.id,
-      category_id: item.category_id || "",
+      service_category_id: item.service_category_id || "",
       name: item.name || "",
       description: item.description || "",
       image_url: item.image_url || "",
@@ -524,7 +619,7 @@ getCategoryList();
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="prakriti-modal-header">
-                          <h2>Add Sub Category</h2>
+                          <h2>Add Health Category</h2>
                           <button
                             className="close-btn"
                             onClick={() => setShowCategoryModal(false)}
@@ -544,8 +639,8 @@ getCategoryList();
                               <div className="category-row">
                   
                                 <select
-                                  name="category_id"
-                                  value={categoryForm.category_id}
+                                  name="service_category_id"
+                                  value={categoryForm.service_category_id}
                                   onChange={handleCategoryChange}
                                 >
                                   <option value="">
@@ -565,15 +660,15 @@ getCategoryList();
                   
                               </div>
                   
-                              {addErrors.category_id && (
+                              {addErrors.service_category_id && (
                                 <p className="error-text">
-                                  {addErrors.category_id}
+                                  {addErrors.service_category_id}
                                 </p>
                               )}
                             </div>
                   
                           <div className="form-group">
-                            <label>Sub Category Name</label>
+                            <label>Health Category Name</label>
                            <input
                     type="text"
                     name="name"
@@ -593,6 +688,35 @@ getCategoryList();
                     <p className="error-text">{addErrors.name}</p>
                   )}
                           </div>
+
+                                  <div className="form-group">
+                            <label> Category Code</label>
+                       <input
+  type="text"
+  name="code"
+  value={categoryForm.code}
+onChange={(e) => {
+  let value = e.target.value.toUpperCase();
+
+
+  value = value.replace(/[^A-Z]/g, "");
+
+  setCategoryForm((prev) => ({
+    ...prev,
+    code: value,
+  }));
+
+  setAddErrors((prev) => ({
+    ...prev,
+    code: "",
+  }));
+}}
+  placeholder="Enter Category Code (A-Z, Max 5 Letters)"
+/>
+                  {addErrors.code && (
+                    <p className="error-text">{addErrors.code}</p>
+                  )}
+                          </div>
                   
                   <div className="form-group">
                   <label> Upload Image</label>
@@ -601,16 +725,23 @@ getCategoryList();
                         type="file"
                         accept="image/*"
                         id="categoryUpload"
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                  
-                          setSubCategoryImage(file);
-                  
-                          setCategoryForm((prev) => ({
-                            ...prev,
-                            image_url: file,
-                          }));
-                        }}
+                      onChange={(e) => {
+  const file = e.target.files[0];
+
+  setSubCategoryImage(file);
+
+  setCategoryForm((prev) => ({
+    ...prev,
+    image_url: file,
+  }));
+
+  if (file) {
+    setAddErrors((prev) => ({
+      ...prev,
+      image_url: "",
+    }));
+  }
+}}
                       />
                   
                       {SubCategoryImage ? (
@@ -711,8 +842,9 @@ getCategoryList();
     name: "",
     description: "",
     is_active: false,
-    category_id: "",
+    service_category_id: "",
     image_url: "",
+    code:"",
   });
 
   setShowCategoryModal(false);
@@ -728,7 +860,7 @@ getCategoryList();
                     className="save-btn"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Adding..." : "Add Product Category"}
+                    {isSubmitting ? "Adding..." : "Add Health Category"}
                   </button>
                           </div>
                         </form>
