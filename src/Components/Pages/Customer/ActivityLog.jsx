@@ -100,5 +100,4 @@ const Paymenthistory = () => {
     </>
   )
 }
-
 export default Paymenthistory

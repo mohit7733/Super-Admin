@@ -1,8 +1,7 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
-import { ToastContainer, toast } from "react-toastify"
+import { toast } from 'react-toastify'
 
-import "react-toastify/dist/ReactToastify.css"
 import { data, useNavigate } from "react-router-dom"
 import BASE_URL from "../../../Base";
 import { FiFileText } from "react-icons/fi";
@@ -2106,19 +2105,7 @@ const submitRejection = async (e) => {
         </div>
 
       )}  */}
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        closeButton
-      />
-    </>
+      </>
   )
 }
 

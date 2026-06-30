@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
+;
 import logo1 from '../../Assests/logo1.png';
 import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
 import BASE_URL from "../../../Base";
@@ -115,8 +115,7 @@ const ForgotPassword = () => {
         </div>
       </div>
 
-      <ToastContainer position="top-center" autoClose={1000} />
-    </>
+      </>
   );
 };
 

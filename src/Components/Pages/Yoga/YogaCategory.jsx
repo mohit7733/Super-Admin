@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BsPlus } from 'react-icons/bs';
 import { FaThLarge, FaCheckCircle, FaTimesCircle,FaEdit } from "react-icons/fa";
 import { FiTrash2 } from 'react-icons/fi';
-import { ToastContainer, toast } from "react-toastify"
+import { toast } from 'react-toastify'
 import BASE_URL from "../../../Base";
 
 import { FiEye } from 'react-icons/fi';

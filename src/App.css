@@ -9,6 +9,7 @@
   min-height: 100vh;
   padding: 80px 20px 20px 20px;
   transition: margin-left 0.3s ease;
+  margin-top: 30px;
 
 }
 
@@ -620,7 +621,7 @@
 .form-group {
   margin: 16px 0;
   width: 100%;
-  padding: 0 16px;
+  /* padding: 0 16px; */
   box-sizing: border-box;
 }
 

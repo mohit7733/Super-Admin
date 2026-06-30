@@ -2,7 +2,7 @@ import React, { useState ,useEffect, } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye } from "react-icons/fa";
 import BASE_URL from "../../../Base";
-import { ToastContainer, toast } from "react-toastify"
+import { toast } from 'react-toastify'
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import {
   FaTimes,

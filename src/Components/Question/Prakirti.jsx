@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import * as XLSX from "xlsx";
 import BASE_URL from '../../Base';
 import { useNavigate } from "react-router-dom"
-import { toast, ToastContainer } from "react-toastify"
+import { toast } from 'react-toastify'
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
@@ -1106,19 +1106,7 @@ const uploadImage = async (file) => {
 
 
 
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        closeButton
-      />
-    </>
+      </>
 
 
 

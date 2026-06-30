@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import BASE_URL from "../../../Base";
 import { useNavigate } from "react-router-dom";
 
-import { ToastContainer, toast } from "react-toastify"
+import { toast } from 'react-toastify'
 import { BsSearch } from "react-icons/bs";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
@@ -925,8 +925,7 @@ const handleEditClick = (verifier) => {
           </div>
         </div>
       )}
-<ToastContainer position="top-center" autoClose={1000} />
-    </>
+</>
   );
 };
 

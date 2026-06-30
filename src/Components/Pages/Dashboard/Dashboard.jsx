@@ -3,7 +3,7 @@ import { FaUsers, FaStore, FaBox, FaUserMd, FaSearch, FaFilter, FaDownload, FaEy
 import { MdRefresh, MdChevronLeft, MdChevronRight } from "react-icons/md";
 import BASE_URL from "../../../Base";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from 'react-toastify';
 import WeeklyOrdersChart from "./WeeklyOrdersChart";
 import { apiFetch } from "../../../fetchapi";
 import "./Dashboard.css"; // We'll create this
@@ -274,18 +274,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <ToastContainer 
-        position="top-center"
-        autoClose={TOAST_DURATION}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-
       {/* Header */}
       <div className="dashboard-header">
         <div className="header-left">

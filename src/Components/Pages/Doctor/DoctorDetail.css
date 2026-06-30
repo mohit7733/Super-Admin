@@ -1345,7 +1345,7 @@ h1, h3, h4, p { margin: 0; }
 }
 
 .action-buttons {
-  margin-top: 15px;
+  /* margin-top: 15px; */
   display: flex;
   gap: 12px;
 }

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from 'react-toastify';
+;
 import BASE_URL from "../../../Base";
 import { apiFetch } from "../../../fetchapi";
 import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
@@ -1270,20 +1270,7 @@ const handleNavigate = (id) => {
 
         </div>
       )} */}
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        closeButton
-      />
-
-    </>
+      </>
   );
 };
 

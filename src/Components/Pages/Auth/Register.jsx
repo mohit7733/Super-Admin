@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState, useEffect } from 'react';
 import { useNavigate} from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import logo1 from '../../Assests/logo1.png';
 import BASE_URL from "../../../Base";
 
@@ -114,9 +114,7 @@ const[AddError,setError]=useState({})
         </div>
       </div>
 
-      <ToastContainer position="top-center" autoClose={1000} />
-    
-    </>
+      </>
   )
 }
 

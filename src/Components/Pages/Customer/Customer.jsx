@@ -1,8 +1,7 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
+import { toast } from 'react-toastify'
 import BASE_URL from "../../../Base";
 import { apiFetch } from "../../../fetchapi";
 import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
@@ -1047,8 +1046,7 @@ setSelectedCustomer(null);
     </div>
   </div>
 )} */}
-      <ToastContainer position="top-center" autoClose={1000} />
-    </>
+      </>
   )
 
 

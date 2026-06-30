@@ -10,7 +10,7 @@ import {
 
 import { BsSearch,BsPlus } from "react-icons/bs";
 import { FiTrash2 } from "react-icons/fi";
-import { ToastContainer, toast } from "react-toastify"
+import { toast } from 'react-toastify'
 import BASE_URL from "../../../Base";
 import { useNavigate } from 'react-router-dom';
 
@@ -696,9 +696,7 @@ const handleDelete = async (id) => {
   </div>
 )}
 
-<ToastContainer position="top-center" autoClose={1000} />
-
-    </>
+</>
   )
 }
 

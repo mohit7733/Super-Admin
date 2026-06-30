@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from 'react-toastify';
+;
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import BASE_URL from "../../../Base";
@@ -380,23 +380,7 @@ setTimeout(() => {
         </div>
       </div>
 
-   <ToastContainer
-  position={TOAST_POSITION}
-  autoClose={TOAST_AUTO_CLOSE}
-  newestOnTop={false}
-  closeOnClick
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-  theme="light"
-  toastStyle={{
-    borderRadius: "10px",
-  }}
-  progressStyle={{
-    background: "#0D614E", 
-  }}
-/>
-    </>
+   </>
   );
 };
 

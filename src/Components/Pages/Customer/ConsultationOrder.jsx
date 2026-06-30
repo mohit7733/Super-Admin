@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from 'react-toastify';
+;
 import BASE_URL from "../../../Base";
 import { FaFileMedical } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -254,19 +254,7 @@ const indexoffirstorder =indexoflastorder -ProductOrderperpage;
       </div>
 
 
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        closeButton
-      />
-    </>
+      </>
   );
  
 };

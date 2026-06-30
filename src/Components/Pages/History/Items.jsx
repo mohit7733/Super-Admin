@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from 'react-toastify';
 import BASE_URL from "../../../Base";
 
 
-import "react-toastify/dist/ReactToastify.css";
+;
 const Items = () => {
   const [ItemsData, setItemsData] = useState([]);
   const [Itemsloading, setItemsloading] = useState(true);

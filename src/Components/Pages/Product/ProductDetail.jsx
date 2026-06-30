@@ -1,8 +1,8 @@
 // ProductDetail.js - Updated with Product Details Section First
 import React, { useState, useEffect } from 'react';
 import './ProductDetail.css';
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from 'react-toastify';
+;
 import { 
   BsThreeDotsVertical, 
   BsGrid, 
@@ -1538,8 +1538,7 @@ function ProductDetail() {
 
     
     </div>
-    <ToastContainer position="top-right" autoClose={3000} />
-</>
+    </>
     
   );
 }

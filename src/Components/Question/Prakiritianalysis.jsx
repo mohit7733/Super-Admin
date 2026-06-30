@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import BASE_URL from "../../Base";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
-import { ToastContainer, toast } from "react-toastify"
+import { toast } from 'react-toastify'
 import { useNavigate } from "react-router-dom";
 
 

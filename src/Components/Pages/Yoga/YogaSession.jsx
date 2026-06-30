@@ -8,5 +8,4 @@ const YogaSession = () => {
     </>
   )
 }
-
 export default YogaSession
