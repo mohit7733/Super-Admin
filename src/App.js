@@ -71,6 +71,7 @@ import Doctorreview from './Components/Pages/Review/Doctorreview';
 import YogaCategory from './Components/Pages/Yoga/YogaCategory';
 import YogaSession from './Components/Pages/Yoga/YogaSession';
 import PatientDetails from './Components/Pages/Patient/PatientDetails';
+import Management from './Components/Pages/Mangement/Management';
 
 
 
@@ -511,6 +512,18 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <CustomerDetailPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+
+   <Route
+          path="/Magement/Appointment"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Management/>
               </Layout>
             </ProtectedRoute>
           }

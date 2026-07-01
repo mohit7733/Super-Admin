@@ -627,7 +627,7 @@ setSelectedCustomer(null);
                           <span>Detail page</span>
                         </button>
 
-                        <button
+                        {/* <button
                           className="action-btn1"
                           title="Edit Customer Details"
                           onClick={() => {
@@ -659,7 +659,7 @@ setSelectedCustomer(null);
 
                           <span className="icon-delete">< FiTrash2/></span>
                           <span className="delete-text" >Delete</span>
-                        </button>
+                        </button> */}
 
 
 

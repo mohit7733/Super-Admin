@@ -31,6 +31,7 @@ import { MdReviews } from "react-icons/md";
 import { GiLotusFlower } from "react-icons/gi";
 import { FaListAlt } from "react-icons/fa";
 import { MdOndemandVideo } from "react-icons/md";
+ import { FaBriefcaseMedical, FaCalendarCheck } from "react-icons/fa";
 
 
 import {
@@ -79,6 +80,8 @@ export const SidebarData = () => [
 
   //   ],
   // },
+
+  
   {
     title: "Category Management",
     icon: <FaBoxes size={18} />,
@@ -135,6 +138,7 @@ export const SidebarData = () => [
       }
     ]
   },
+  
   {
     title: "User Management",
     icon: <HiUsers size={20} />,
@@ -173,6 +177,21 @@ export const SidebarData = () => [
       }
     ],
   },
+
+{
+  title: "Management",
+  icon: <FaBriefcaseMedical size={18} />,
+  path: "#",
+  permission: "view_mangement",
+  children: [
+    {
+      title: "Appointment Management",
+      path: "/Magement/Appointment",
+      permission: "view_mangement",
+      icon: <FaCalendarCheck size={18} />,
+    },
+  ],
+},
 
 
   {

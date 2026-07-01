@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState,useEffect } from 'react';
+import { useState,useEffect ,useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import {
   FaUsers,
@@ -27,6 +27,8 @@ const Healthcategory = () => {
  const[SubCategoryImage,setSubCategoryImage]=useState(null);
  const [isSubmitting, setIsSubmitting] = useState(false);
  const[EditImage,setEditImage]=useState(null);
+ const[IsUpdating,setIsUpdating]=useState(false);
+ const editFileRef = useRef(null);
  
  
  
@@ -39,6 +41,8 @@ const Healthcategory = () => {
    image_url:"",
    code:"",
  });
+
+ 
  
  const [editModal, setEditModal] = useState(false);
  
@@ -49,6 +53,7 @@ const Healthcategory = () => {
    image_url:"",
    service_category_id:"",
    is_active: false,
+   code:"",
  
  });
  
@@ -65,8 +70,21 @@ const handleCategoryChange = (e) => {
     [name]: type === "checkbox" ? checked : value,
   }));
 
-  // clear error instantly
   setAddErrors((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
+};
+
+const handleEditChange = (e) => {
+  const { name, value, type, checked } = e.target;
+
+  setEditForm((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
+
+  setEditErrors((prev) => ({
     ...prev,
     [name]: "",
   }));
@@ -438,6 +456,83 @@ useEffect(()=>{
 getHealthCategoryList();
 getCategoryList();
 },[])
+
+
+const handleUpdateCategory = async (e) => {
+  e.preventDefault();
+  if(IsUpdating)return;
+
+  let newErrors = {};
+
+  if (!editForm.name.trim()) {
+    newErrors.name = " Service Category name is required";
+  }
+
+  setEditErrors(newErrors);
+
+  if (Object.keys(newErrors).length > 0) {
+    toast.error(Object.values(newErrors)[0]);
+    return;
+  }
+
+  const token = sessionStorage.getItem("superadmin_token");
+  setIsUpdating(false);
+
+  try {
+    let imageUrl = editForm.image_url;
+
+    // New image selected hai to upload karo
+    if (EditImage) {
+      imageUrl = await uploadImage(EditImage);
+
+      if (!imageUrl) {
+        toast.error("Image upload failed");
+        return;
+      }
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          name: editForm.name,
+          description: editForm.description,
+          is_active: editForm.is_active,
+          category_id: editForm.category_id,
+          image_url: imageUrl, // updated url
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      toast.success("Product Category Updated Successfully");
+
+      setEditModal(false);
+      setEditImage(null);
+      getHealthCategoryList();
+    } else {
+      toast.error(
+        data?.errors?.name?.[0] ||
+        data?.message ||
+        "Failed to update category"
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+  }
+  finally{
+    setIsUpdating(false);
+  }
+};
 
   return (
     <>
@@ -867,6 +962,243 @@ onChange={(e) => {
                       </div>
                     </div>
                   )} 
+
+                  {editModal && (
+                    <div
+                      className="prakriti-modal-overlay"
+                      onClick={() => setEditModal(false)}
+                    >
+                      <div
+                        className="prakriti-modal"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="prakriti-modal-header">
+                          <h2>Edit Product Category</h2>
+                  
+                          <button
+                            className="close-btn"
+                            onClick={() => setEditModal(false)}
+                          >
+                            ×
+                          </button>
+                        </div>
+                  
+                        <form className="prakriti-form" onSubmit={handleUpdateCategory}>
+                  
+                          <div className="form-group">
+                              <label>Select Service Category</label>
+                  
+                              <div className="category-row">
+                  
+                                <select
+                                  name="category_id"
+                                  value={editForm.service_category_id}
+                                  onChange={handleEditChange}
+                                >
+                                  <option value="">
+                                    Select  Service Category
+                                  </option>
+                  
+                                  {ServiceCategoryData?.map((cat) => (
+                                    <option
+                                      key={cat.id}
+                                      value={cat.id}
+                                    >
+                                      {cat.name}
+                                    </option>
+                                  ))}
+                                </select>
+                  
+                  
+                              </div>
+                              </div>
+                          <div className="form-group">
+                  
+                  
+                            <label> Product Category Name</label>
+                  
+                            <input
+                              type="text"
+                              name="name"
+                              value={editForm.name}
+                              onChange={handleEditChange}
+                              placeholder="Enter category name"
+                            />
+                  
+                            {editErrors.name && (
+                              <p className="error-text">
+                                {editErrors.name}
+                              </p>
+                            )}
+                          </div>
+                  
+                          <div className="form-group">
+                            <label>Description</label>
+                  
+                            <textarea
+                              name="description"
+                              value={editForm.description}
+                              onChange={handleEditChange}
+                              rows="4"
+                              placeholder="Enter description"
+                            />
+                  
+                         
+                          </div>
+                  
+                            <div className="form-group">
+                            <label>Upload Image</label>
+                          
+                            <div className="upload-box1">
+                          
+                          
+                             <input
+                    ref={editFileRef}
+                    type="file"
+                    accept="image/*"
+                    id="editBannerUpload"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                  
+                      if (file) {
+                        setEditImage(file);
+                  
+                        setEditForm((prev) => ({
+                          ...prev,
+                          image_url: URL.createObjectURL(file),
+                        }));
+                      }
+                    }}
+                  />
+                          
+                              {(EditImage || editForm.image_url) ? (
+                          
+                                <div className="banner-preview-wrapper">
+                          
+                                  <div className="banner-preview-left">
+                                   <img
+                    src={
+                      EditImage
+                        ? URL.createObjectURL(EditImage)
+                        : editForm.image_url
+                    }
+                    alt="preview"
+                    className="banner-preview-image"
+                  />
+                                  </div>
+                          
+                                  <div className="banner-preview-actions">
+                          
+                                   
+                          
+                                    <button
+                                      type="button"
+                                      className="preview-btn"
+                                      onClick={() =>
+                                        window.open(
+                                          EditImage
+                                            ? URL.createObjectURL(EditImage)
+                                            : editForm.image_url,
+                                          "_blank"
+                                        )
+                                      }
+                                    >
+                                      <FiEye />
+                                    </button>
+                          
+                                   
+                          
+                                 <button
+                    type="button"
+                    className="preview-btn"
+                    onClick={() => {
+                      document.getElementById("editBannerUpload").click();
+                    }}
+                  >
+                    <FiUpload />
+                  </button>
+                          
+                                  
+                          
+                                    <button
+                                      type="button"
+                                      className="delete-btn-preview"
+                                    onClick={() => {
+                    setEditImage(null);
+                  
+                    setEditForm((prev) => ({
+                      ...prev,
+                      image_url: "",
+                    }));
+                  
+                    if (editFileRef.current) {
+                      editFileRef.current.value = "";
+                    }
+                  }}
+                                    >
+                                      <FiTrash2 />
+                                    </button>
+                          
+                                  </div>
+                          
+                                </div>
+                          
+                              ) : (
+                          
+                                <label
+                                  htmlFor="editBannerUpload"
+                                  className="upload-label"
+                                >
+                                  <div className="upload-content">
+                                    <span className="upload-icon">⬆</span>
+                                    <p>Click to upload category image</p>
+                                 
+                                  </div>
+                                </label>
+                          
+                              )}
+                          
+                            </div>
+                          </div>
+                  
+                          <div className="form-group">
+                                <label>Is Active</label>
+                              <div className="checkbox-row">
+                                   
+                  
+                            <input
+                              type="checkbox"
+                              name="is_active"
+                              checked={editForm.is_active}
+                              onChange={handleEditChange}
+                            />
+                                   </div>
+                         
+                          </div>
+                  
+                          <div className="modal-footer">
+                            <button
+                              type="button"
+                              className="cancel-btn"
+                              onClick={() => setEditModal(false)}
+                            >
+                              Cancel
+                            </button>
+                  
+                            <button
+                              type="submit"
+                              className="save-btn"
+                            >
+                            {IsUpdating ? "Updating":"Update Product"}
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  )}
+                  
+
     
      <ToastContainer position="top-center" autoClose={1000} />
     </>
