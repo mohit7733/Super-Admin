@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import { useState,useEffect ,useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import {
   FaUsers,
@@ -14,126 +15,88 @@ import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 
 const Healthcategory = () => {
-  const [HealthCategoryData, setHealthCategoryData] = useState([]);
-  const [FilteredData, setFilteredData] = useState([]);
-  const [HealthLoading, setHealthLoading] = useState(false);
-  const [HealthError, setHealthError] = useState(null);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [categoryId, setCategoryId] = useState(null);
-  const [ServiceCategoryData, setServiceCategoryData] = useState([]);
-  const [ServiceCategoryLoading, setServiceCategoryLoading] = useState(false);
-  const [ServiceCategoryError, setServiceCategoryError] = useState(null);
-  const [SubCategoryImage, setSubCategoryImage] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [EditImage, setEditImage] = useState(null);
-  const [editModal, setEditModal] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isStatusChanging, setIsStatusChanging] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    inactive: 0,
-  });
-  const [previewImage, setPreviewImage] = useState("");
-  const [statusModal, setStatusModal] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const[HealthCategoryData,setHealthCategoryData]=useState([]);
+     const[HealthLoading,setHealthLoading]=useState(false);
+     const[HealthError,setHealthError]=useState(null);
+     const [showCategoryModal, setShowCategoryModal] = useState(false);
+     const [deleteModal, setDeleteModal] = useState(false);
+ const [categoryId, setCategoryId] = useState(null);
+ const[ServiceCategoryData,setServiceCategoryData]=useState([]);
+ const[SeviceCategoryLoading,setServiceCategoryLoading]=useState(false);
+ const[ServiceCategoryError,setServiceCategoryError]=useState(null);
+ const[SubCategoryImage,setSubCategoryImage]=useState(null);
+ const [isSubmitting, setIsSubmitting] = useState(false);
+ const[EditImage,setEditImage]=useState(null);
+ const[IsUpdating,setIsUpdating]=useState(false);
+ const editFileRef = useRef(null);
+ 
+ 
+ 
+ 
+ const [categoryForm, setCategoryForm] = useState({
+   name: "",
+   description: "",
+   is_active: false,
+   service_category_id:"",
+   image_url:"",
+   code:"",
+ });
 
-  const fileInputRef = useRef(null);
-  const editFileRef = useRef(null);
-  const navigate = useNavigate();
-
-  const [categoryForm, setCategoryForm] = useState({
-    name: "",
-    description: "",
-    is_active: false,
-    service_category_id: "",
-    image_url: "",
-    code: "",
-  });
-
-  const [editForm, setEditForm] = useState({
-    id: "",
-    name: "",
-    description: "",
-    image_url: "",
-    service_category_id: "",
-    is_active: false,
-  });
-
-  const [editErrors, setEditErrors] = useState({});
-  const [addErrors, setAddErrors] = useState({});
-
-  // Calculate statistics
-  const calculateStats = (data) => {
-    const total = data.length;
-    const active = data.filter((item) => item.is_active === true).length;
-    const inactive = data.filter((item) => item.is_active === false).length;
-    setStats({ total, active, inactive });
-  };
-
-  // Filter data based on search and status
-  const filterData = (data, search, status) => {
-    let filtered = data;
-
-    if (search.trim()) {
-      const term = search.toLowerCase().trim();
-      filtered = filtered.filter(
-        (item) =>
-          item.name.toLowerCase().includes(term) ||
-          item.code?.toLowerCase().includes(term) ||
-          item.service_category_name?.toLowerCase().includes(term)
-      );
-    }
-
-    if (status === "active") {
-      filtered = filtered.filter((item) => item.is_active === true);
-    } else if (status === "inactive") {
-      filtered = filtered.filter((item) => item.is_active === false);
-    }
-
-    return filtered;
-  };
-
-  const handleCategoryChange = (e) => {
-    const { name, value, type, checked } = e.target;
+ 
+ 
+ const [editModal, setEditModal] = useState(false);
+ 
+ const [editForm, setEditForm] = useState({
+   id: "",
+   name: "",
+   description: "",
+   image_url:"",
+   service_category_id:"",
+   is_active: false,
+   code:"",
+ 
+ });
+ 
+ const [editErrors, setEditErrors] = useState({});
+ const [addErrors, setAddErrors] = useState({});
+ const navigate = useNavigate();
+     
+    
+const handleCategoryChange = (e) => {
+  const { name, value, type, checked } = e.target;
 
     setCategoryForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
 
-    setAddErrors((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
-  };
+  setAddErrors((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
+};
 
-  const handleEditChange = (e) => {
-    const { name, value, type, checked } = e.target;
+const handleEditChange = (e) => {
+  const { name, value, type, checked } = e.target;
 
-    setEditForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+  setEditForm((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
 
-    setEditErrors((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
-  };
+  setEditErrors((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
+};
+const uploadImage = async (file) => {
+const token = sessionStorage.getItem("superadmin_token");
+if(!token){
 
-  const uploadImage = async (file) => {
-    const token = sessionStorage.getItem("superadmin_token");
-    if (!token) {
-      toast.error("Session Expired, Please Login Again");
-      navigate("/login");
-      return null;
-    }
+    toast.error("Session Expired, Please Login Again");
+    navigate("/login");
+    return;
+}
 
     try {
       const formData = new FormData();
@@ -154,15 +117,18 @@ const Healthcategory = () => {
         navigate("/login");
         return null;
       }
+    const data = await response.json();
 
-      const data = await response.json();
-      return data?.data?.url;
-    } catch (error) {
-      console.error(error);
-      toast.error("Image upload failed");
-      return null;
-    }
-  };
+    console.log("Upload Response:", data);
+
+   return data?.data?.url;
+  } catch (error) {
+    console.error(error);
+    toast.error("Image upload failed");
+
+    return null;
+  }
+};
 
   const handleToggle = async (id, currentStatus) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -408,238 +374,147 @@ const Healthcategory = () => {
     }
   };
 
-  const resetForm = () => {
-    setCategoryForm({
-      name: "",
-      description: "",
-      is_active: false,
-      service_category_id: "",
-      image_url: "",
-      code: "",
-    });
-    setSubCategoryImage(null);
-    setAddErrors({});
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+useEffect(()=>{
+getHealthCategoryList();
+getCategoryList();
+},[])
 
-  const handleUpdateHealthCategory = async (e) => {
-    e.preventDefault();
 
-    if (isUpdating) return;
+const handleUpdateCategory = async (e) => {
+  e.preventDefault();
+  if(IsUpdating)return;
 
-    let newErrors = {};
+  let newErrors = {};
 
-    if (!editForm.name.trim()) {
-      newErrors.name = "Health category name is required";
-    }
+  if (!editForm.name.trim()) {
+    newErrors.name = " Service Category name is required";
+  }
 
-    if (!editForm.service_category_id) {
-      newErrors.service_category_id = "Please select a service category";
-    }
+  setEditErrors(newErrors);
 
-    setEditErrors(newErrors);
+  if (Object.keys(newErrors).length > 0) {
+    toast.error(Object.values(newErrors)[0]);
+    return;
+  }
 
-    if (Object.keys(newErrors).length > 0) {
-      Object.values(newErrors).forEach((msg) => toast.error(msg));
-      return;
-    }
+  const token = sessionStorage.getItem("superadmin_token");
+  setIsUpdating(false);
 
-    const token = sessionStorage.getItem("superadmin_token");
-    setIsUpdating(true);
+  try {
+    let imageUrl = editForm.image_url;
 
-    try {
-      let imageUrl = editForm.image_url;
+    // New image selected hai to upload karo
+    if (EditImage) {
+      imageUrl = await uploadImage(EditImage);
 
-      if (EditImage) {
-        imageUrl = await uploadImage(EditImage);
-        if (!imageUrl) {
-          toast.error("Image upload failed");
-          return;
-        }
-      }
-
-      const payload = {
-        name: editForm.name.trim(),
-        description: editForm.description,
-        image_url: imageUrl,
-        is_active: editForm.is_active,
-        service_category_id: editForm.service_category_id,
-      };
-
-      const response = await fetch(
-        `${BASE_URL}/user/admin/health-category/?id=${editForm.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("Health Category Updated Successfully");
-        setEditModal(false);
-        setEditImage(null);
-        getHealthCategoryList();
-      } else {
-        toast.error(data?.message || "Failed to update category");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (isDeleting) return;
-
-    const token = sessionStorage.getItem("superadmin_token");
-    if (!token) {
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
-
-    setIsDeleting(true);
-
-    try {
-      const response = await fetch(
-        `${BASE_URL}/user/admin/health-category/?id=${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(data?.message || "Failed to delete category");
+      if (!imageUrl) {
+        toast.error("Image upload failed");
         return;
       }
-
-      toast.success("Category deleted successfully");
-      setDeleteModal(false);
-      getHealthCategoryList();
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong while deleting");
-    } finally {
-      setIsDeleting(false);
     }
-  };
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setStatusFilter("all");
-  };
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          name: editForm.name,
+          description: editForm.description,
+          is_active: editForm.is_active,
+          category_id: editForm.category_id,
+          image_url: imageUrl, // updated url
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      toast.success("Product Category Updated Successfully");
+
+      setEditModal(false);
+      setEditImage(null);
+      getHealthCategoryList();
+    } else {
+      toast.error(
+        data?.errors?.name?.[0] ||
+        data?.message ||
+        "Failed to update category"
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+  }
+  finally{
+    setIsUpdating(false);
+  }
+};
 
   return (
     <>
-      <div className="page-header">
-        <h1>Health Category</h1>
-        <p className="page-paragraph">Manage health categories and their details</p>
-      </div>
+    <div className="page-header">
+                     <h1> Health Category </h1>
+                     <p className="page-paragraph"> Manage Sub Product Category  and their details</p>
+                   </div>
+    
+    
+                      <div className="filter-category">
+      <button
+        className="add-customer-btn"
+      onClick={() => {
+  setCategoryForm({
+    name: "",
+    description: "",
+    is_active: false,
+    service_category_id: "",
+    code:"",
+    image_url: "",
+  });
+  setSubCategoryImage(null);
 
-      {/* Stats Cards */}
-      <div className="stats2-grid">
-        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
-          </div>
-          <div className="stat2-info">
-            <h3>Total Categories</h3>
-            <div className="stat2-value">{stats.total}</div>
-          </div>
-        </div>
-        <div className="stat2-card" style={{ borderTopColor: "#28a745" }}>
-          <div className="stat2-icon" style={{ background: "#28a74520", color: "#28a745" }}>
-            <FaChartLine size={24} />
-          </div>
-          <div className="stat2-info">
-            <h3>Active</h3>
-            <div className="stat2-value">{stats.active}</div>
-          </div>
-        </div>
-        <div className="stat2-card" style={{ borderTopColor: "#dc3545" }}>
-          <div className="stat2-icon" style={{ background: "#dc354520", color: "#dc3545" }}>
-            <FaCalendarAlt size={24} />
-          </div>
-          <div className="stat2-info">
-            <h3>Inactive</h3>
-            <div className="stat2-value">{stats.inactive}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters and Actions */}
-      <div className="filter-category">
-        <div className="filter-controls">
-          <div className="search-wrapper">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search by name or code..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-            {searchTerm && (
-              <button className="clear-search" onClick={() => setSearchTerm("")}>
-                <FaTimes />
-              </button>
-            )}
-          </div>
-
-          <select
-            className="status-filter-select"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-
-          {(searchTerm || statusFilter !== "all") && (
-            <button className="clear-filters-btn" onClick={clearFilters}>
-              Clear Filters
-            </button>
-          )}
-        </div>
-
-        <button
-          className="add-customer-btn"
-          onClick={() => {
-            resetForm();
-            setShowCategoryModal(true);
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="10" cy="7" r="4" />
-            <path d="M4 21v-2a6 6 0 0 1 12 0v2" />
-            <line x1="19" y1="8" x2="19" y2="14" />
-            <line x1="22" y1="11" x2="16" y2="11" />
-          </svg>
-          Add Health Category
-        </button>
-      </div>
-
-      {/* Table */}
+  setShowCategoryModal(true);
+  setAddErrors({});
+}}
+      >
+        + Add  Health  Category
+      </button>
+    </div>
+    
+                             <div className="stats2-grid">
+                                            <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+                                              <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                                                <FaUsers size={24} />
+                                              </div>
+                                              <div className="stat2-info">
+                                                <h3>Total Category</h3>
+                                                <div className="stat2-value">0</div>
+                                              </div>
+                                            </div>
+                                            <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+                                              <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                                                <FaChartLine size={24} />
+                                              </div>
+                                              <div className="stat2-info">
+                                                <h3>This Year</h3>
+                                                <div className="stat2-value">0</div>
+                                              </div>
+                                            </div>
+                                            <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+                                              <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                                                <FaCalendarAlt size={24} />
+                                              </div>
+                                              <div className="stat2-info">
+                                                <h3>This Month</h3>
+                                                <div className="stat2-value">0</div>
+                                              </div>
+                                            </div>
+                                          </div>
       <div className="table-wrapper">
         <table className="data-table">
           <thead>
@@ -895,144 +770,209 @@ const Healthcategory = () => {
                         />
                       </div>
                       <div className="banner-preview-actions">
-                        <button
-                          type="button"
-                          className="preview-btn"
-                          onClick={() =>
-                            window.open(URL.createObjectURL(SubCategoryImage), "_blank")
-                          }
-                        >
-                          <FiEye />
-                        </button>
-                        <button
-                          type="button"
-                          className="delete-btn-preview"
-                          onClick={() => {
-                            setSubCategoryImage(null);
-                            if (fileInputRef.current) {
-                              fileInputRef.current.value = "";
-                            }
-                          }}
-                        >
-                          <FiTrash2 />
-                        </button>
+                    <button
+                      type="button"
+                      className="preview-btn"
+                      onClick={() =>
+                        window.open(URL.createObjectURL(SubCategoryImage), "_blank")
+                      }
+                    >
+                      <FiEye />
+                     
+                    </button>
+                  
+                    <button
+                      type="button"
+                      className="delete-btn-preview"
+                      onClick={() => {
+                        setSubCategoryImage(null);
+                  
+                        setCategoryForm((prev) => ({
+                          ...prev,
+                          image_url: null,
+                        }));
+                      }}
+                    >
+                      <FiTrash2 />
+                    
+                    </button>
+                  </div>
+                        </div>
+                      ) : (
+                        <label htmlFor="categoryUpload" className="upload-label">
+                          <div className="upload-content">
+                            <span className="upload-icon">⬆</span>
+                            <p>Click to upload banner image</p>
+                            <small>PNG, JPG up to 2MB</small>
+                          </div>
+                        </label>
+                      )}
+                    </div>
+                  
+                    {addErrors.image_url && (
+                    <p className="error-text">{addErrors.image_url}</p>
+                  )}
+                  </div>
+                      <div className="form-group">
+                            <label>Description</label>
+                            <textarea
+                              name="description"
+                              value={categoryForm.description}
+                              onChange={handleCategoryChange}
+                              placeholder="Enter description"
+                              rows="4"
+                          
+                            />
+                          </div>       
+                  
+                  
+                  
+                  
+                       
+                  
+                          <div className="form-group">
+                            <label>Is Active</label>
+                  
+                            <div className="checkbox-row">
+                  
+                              <input
+                                type="checkbox"
+                                name="is_active"
+                                checked={categoryForm.is_active}
+                               onChange={handleCategoryChange}
+                              />
+                  
+                              
+                  
+                            </div>
+                          </div>
+                  
+                  
+                          <div className="modal-footer">
+                            <button
+                              type="button"
+                              className="cancel-btn"
+                                onClick={() => {
+  setCategoryForm({
+    name: "",
+    description: "",
+    is_active: false,
+    service_category_id: "",
+    image_url: "",
+    code:"",
+  });
+
+  setShowCategoryModal(false);
+  setAddErrors({});
+}}
+                           
+                            >
+                              Cancel
+                            </button>
+                  
+                           <button
+                    type="submit"
+                    className="save-btn"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Adding..." : "Add Health Category"}
+                  </button>
+                          </div>
+                        </form>
                       </div>
                     </div>
-                  ) : (
-                    <label htmlFor="categoryUpload" className="upload-label">
-                      <div className="upload-content">
-                        <span className="upload-icon">⬆</span>
-                        <p>Click to upload category image</p>
-                        <span className="upload-hint">PNG, JPG, JPEG (Max 5MB)</span>
-                      </div>
-                    </label>
-                  )}
-                </div>
-                {addErrors.image_url && <p className="error-text">{addErrors.image_url}</p>}
-              </div>
+                  )} 
 
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  name="description"
-                  value={categoryForm.description}
-                  onChange={handleCategoryChange}
-                  placeholder="Enter description"
-                  rows="3"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Status</label>
-                <div className="checkbox-row">
-                  <input
-                    type="checkbox"
-                    name="is_active"
-                    checked={categoryForm.is_active}
-                    onChange={handleCategoryChange}
-                  />
-                  <span>Active</span>
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => {
-                    setShowCategoryModal(false);
-                    resetForm();
-                  }}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="save-btn" disabled={isSubmitting}>
-                  {isSubmitting ? "Adding..." : "Add Health Category"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {editModal && (
-        <div
-          className="prakriti-modal-overlay"
-          onClick={() => setEditModal(false)}
-        >
-          <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="prakriti-modal-header">
-              <h2>Edit Health Category</h2>
-              <button
-                className="modal-close-btn"
-                onClick={() => {
-                  setEditModal(false);
-                  setEditImage(null);
-                }}
-              >
-                <FaTimes />
-              </button>
-            </div>
-
-            <form className="prakriti-form" onSubmit={handleUpdateHealthCategory}>
-              <div className="form-group">
-                <label>Service Category <span className="required">*</span></label>
-                <select
-                  name="service_category_id"
-                  value={editForm.service_category_id}
-                  onChange={handleEditChange}
-                  className={editErrors.service_category_id ? "error-input" : ""}
-                >
-                  <option value="">Select Service Category</option>
-                  {ServiceCategoryData?.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name} ({cat.code})
-                    </option>
-                  ))}
-                </select>
-                {editErrors.service_category_id && (
-                  <p className="error-text">{editErrors.service_category_id}</p>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label>Health Category Name <span className="required">*</span></label>
-                <input
-                  type="text"
-                  name="name"
-                  value={editForm.name}
-                  onChange={handleEditChange}
-                  placeholder="Enter health category name"
-                  className={editErrors.name ? "error-input" : ""}
-                />
-                {editErrors.name && <p className="error-text">{editErrors.name}</p>}
-              </div>
-
-              <div className="form-group">
-                <label>Upload Image</label>
-                <div className="upload-box1">
-                  <input
+                  {editModal && (
+                    <div
+                      className="prakriti-modal-overlay"
+                      onClick={() => setEditModal(false)}
+                    >
+                      <div
+                        className="prakriti-modal"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="prakriti-modal-header">
+                          <h2>Edit Product Category</h2>
+                  
+                          <button
+                            className="close-btn"
+                            onClick={() => setEditModal(false)}
+                          >
+                            ×
+                          </button>
+                        </div>
+                  
+                        <form className="prakriti-form" onSubmit={handleUpdateCategory}>
+                  
+                          <div className="form-group">
+                              <label>Select Service Category</label>
+                  
+                              <div className="category-row">
+                  
+                                <select
+                                  name="category_id"
+                                  value={editForm.service_category_id}
+                                  onChange={handleEditChange}
+                                >
+                                  <option value="">
+                                    Select  Service Category
+                                  </option>
+                  
+                                  {ServiceCategoryData?.map((cat) => (
+                                    <option
+                                      key={cat.id}
+                                      value={cat.id}
+                                    >
+                                      {cat.name}
+                                    </option>
+                                  ))}
+                                </select>
+                  
+                  
+                              </div>
+                              </div>
+                          <div className="form-group">
+                  
+                  
+                            <label> Product Category Name</label>
+                  
+                            <input
+                              type="text"
+                              name="name"
+                              value={editForm.name}
+                              onChange={handleEditChange}
+                              placeholder="Enter category name"
+                            />
+                  
+                            {editErrors.name && (
+                              <p className="error-text">
+                                {editErrors.name}
+                              </p>
+                            )}
+                          </div>
+                  
+                          <div className="form-group">
+                            <label>Description</label>
+                  
+                            <textarea
+                              name="description"
+                              value={editForm.description}
+                              onChange={handleEditChange}
+                              rows="4"
+                              placeholder="Enter description"
+                            />
+                  
+                         
+                          </div>
+                  
+                            <div className="form-group">
+                            <label>Upload Image</label>
+                          
+                            <div className="upload-box1">
+                          
+                          
+                             <input
                     ref={editFileRef}
                     type="file"
                     accept="image/*"
@@ -1040,232 +980,149 @@ const Healthcategory = () => {
                     style={{ display: "none" }}
                     onChange={(e) => {
                       const file = e.target.files[0];
+                  
                       if (file) {
                         setEditImage(file);
+                  
+                        setEditForm((prev) => ({
+                          ...prev,
+                          image_url: URL.createObjectURL(file),
+                        }));
                       }
                     }}
                   />
-                  {(EditImage || editForm.image_url) ? (
-                    <div className="banner-preview-wrapper">
-                      <div className="banner-preview-left">
-                        <img
-                          src={
-                            EditImage
-                              ? URL.createObjectURL(EditImage)
-                              : editForm.image_url
-                          }
-                          alt="preview"
-                          className="banner-preview-image"
-                        />
-                      </div>
-                      <div className="banner-preview-actions">
-                        <button
-                          type="button"
-                          className="preview-btn"
-                          onClick={() =>
-                            window.open(
-                              EditImage
-                                ? URL.createObjectURL(EditImage)
-                                : editForm.image_url,
-                              "_blank"
-                            )
-                          }
-                        >
-                          <FiEye />
-                        </button>
-                        <button
-                          type="button"
-                          className="preview-btn"
-                          onClick={() => {
-                            document.getElementById("editBannerUpload").click();
-                          }}
-                        >
-                          <FiUpload />
-                        </button>
-                        <button
-                          type="button"
-                          className="delete-btn-preview"
-                          onClick={() => {
-                            setEditImage(null);
-                            setEditForm((prev) => ({
-                              ...prev,
-                              image_url: "",
-                            }));
-                            if (editFileRef.current) {
-                              editFileRef.current.value = "";
-                            }
-                          }}
-                        >
-                          <FiTrash2 />
-                        </button>
+                          
+                              {(EditImage || editForm.image_url) ? (
+                          
+                                <div className="banner-preview-wrapper">
+                          
+                                  <div className="banner-preview-left">
+                                   <img
+                    src={
+                      EditImage
+                        ? URL.createObjectURL(EditImage)
+                        : editForm.image_url
+                    }
+                    alt="preview"
+                    className="banner-preview-image"
+                  />
+                                  </div>
+                          
+                                  <div className="banner-preview-actions">
+                          
+                                   
+                          
+                                    <button
+                                      type="button"
+                                      className="preview-btn"
+                                      onClick={() =>
+                                        window.open(
+                                          EditImage
+                                            ? URL.createObjectURL(EditImage)
+                                            : editForm.image_url,
+                                          "_blank"
+                                        )
+                                      }
+                                    >
+                                      <FiEye />
+                                    </button>
+                          
+                                   
+                          
+                                 <button
+                    type="button"
+                    className="preview-btn"
+                    onClick={() => {
+                      document.getElementById("editBannerUpload").click();
+                    }}
+                  >
+                    <FiUpload />
+                  </button>
+                          
+                                  
+                          
+                                    <button
+                                      type="button"
+                                      className="delete-btn-preview"
+                                    onClick={() => {
+                    setEditImage(null);
+                  
+                    setEditForm((prev) => ({
+                      ...prev,
+                      image_url: "",
+                    }));
+                  
+                    if (editFileRef.current) {
+                      editFileRef.current.value = "";
+                    }
+                  }}
+                                    >
+                                      <FiTrash2 />
+                                    </button>
+                          
+                                  </div>
+                          
+                                </div>
+                          
+                              ) : (
+                          
+                                <label
+                                  htmlFor="editBannerUpload"
+                                  className="upload-label"
+                                >
+                                  <div className="upload-content">
+                                    <span className="upload-icon">⬆</span>
+                                    <p>Click to upload category image</p>
+                                 
+                                  </div>
+                                </label>
+                          
+                              )}
+                          
+                            </div>
+                          </div>
+                  
+                          <div className="form-group">
+                                <label>Is Active</label>
+                              <div className="checkbox-row">
+                                   
+                  
+                            <input
+                              type="checkbox"
+                              name="is_active"
+                              checked={editForm.is_active}
+                              onChange={handleEditChange}
+                            />
+                                   </div>
+                         
+                          </div>
+                  
+                          <div className="modal-footer">
+                            <button
+                              type="button"
+                              className="cancel-btn"
+                              onClick={() => setEditModal(false)}
+                            >
+                              Cancel
+                            </button>
+                  
+                            <button
+                              type="submit"
+                              className="save-btn"
+                            >
+                            {IsUpdating ? "Updating":"Update Product"}
+                            </button>
+                          </div>
+                        </form>
                       </div>
                     </div>
-                  ) : (
-                    <label htmlFor="editBannerUpload" className="upload-label">
-                      <div className="upload-content">
-                        <span className="upload-icon">⬆</span>
-                        <p>Click to upload category image</p>
-                      </div>
-                    </label>
                   )}
-                </div>
-              </div>
+                  
 
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  name="description"
-                  value={editForm.description}
-                  onChange={handleEditChange}
-                  placeholder="Enter description"
-                  rows="3"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Status</label>
-                <div className="checkbox-row">
-                  <input
-                    type="checkbox"
-                    name="is_active"
-                    checked={editForm.is_active}
-                    onChange={handleEditChange}
-                  />
-                  <span>Active</span>
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => {
-                    setEditModal(false);
-                    setEditImage(null);
-                  }}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="save-btn" disabled={isUpdating}>
-                  {isUpdating ? "Updating..." : "Update Category"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Modal */}
-      {deleteModal && (
-        <div className="modal-overlay" onClick={() => setDeleteModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Are you sure you want to delete this category?</h3>
-            <p className="modal-warning">This action cannot be undone.</p>
-            <div className="form-buttons">
-              <button
-                className="btn-danger"
-                disabled={isDeleting}
-                onClick={() => {
-                  handleDelete(categoryId);
-                }}
-              >
-                {isDeleting ? "Deleting..." : "Yes, Delete"}
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  setDeleteModal(false);
-                  setCategoryId(null);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Status Change Modal */}
-      {statusModal && selectedCategory && (
-        <div
-          className="modal-overlay"
-          onClick={() => {
-            setStatusModal(false);
-            setSelectedCategory(null);
-          }}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Confirm Status Change</h3>
-            <p>
-              Are you sure you want to <strong>{selectedCategory.is_active ? "deactivate" : "activate"}</strong>{" "}
-              "{selectedCategory.name}"?
-            </p>
-            <div className="form-buttons">
-              <button
-                className={`btn-${selectedCategory.is_active ? "danger" : "success"}`}
-                disabled={isStatusChanging}
-                onClick={() => {
-                  handleToggle(selectedCategory.id, selectedCategory.is_active);
-                  setStatusModal(false);
-                  setSelectedCategory(null);
-                }}
-              >
-                {isStatusChanging
-                  ? "Updating..."
-                  : `Yes, ${selectedCategory.is_active ? "Deactivate" : "Activate"}`}
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  setStatusModal(false);
-                  setSelectedCategory(null);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Preview Image Modal */}
-      {previewImage && (
-        <div
-          className="prakriti-modal-overlay"
-          onClick={() => setPreviewImage("")}
-        >
-          <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="prakriti-modal-header">
-              <h2>Image Preview</h2>
-              <button
-                className="modal-close-btn"
-                onClick={() => setPreviewImage("")}
-              >
-                <FaTimes />
-              </button>
-            </div>
-            <div style={{ textAlign: "center", padding: "20px" }}>
-              <img
-                src={previewImage}
-                alt="preview"
-                style={{
-                  width: "100%",
-                  maxHeight: "500px",
-                  objectFit: "contain",
-                  borderRadius: "10px",
-                }}
-              />
-            </div>
-            <div className="modal-footer">
-              <button className="cancel-btn" onClick={() => setPreviewImage("")}>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    
+     <ToastContainer position="top-center" autoClose={1000} />
     </>
-  );
-};
+  )
+}
 
 export default Healthcategory;

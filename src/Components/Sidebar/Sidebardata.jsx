@@ -432,8 +432,32 @@ import { FaAppleAlt, FaBoxOpen, FaTags, FaChartLine, FaHeadset, FaUserInjured, F
 import { HiUsers } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
-import { GiLotus, GiLotusFlower } from "react-icons/gi";
-import { BiCategoryAlt, BiPulse } from "react-icons/bi";
+import { FaUserInjured, FaStore, FaUserMd, FaUserShield } from "react-icons/fa";
+
+import { MdRestaurantMenu, MdSpa, MdCategory } from "react-icons/md";
+import { FaBoxOpen, FaTags } from "react-icons/fa";
+import { MdInventory } from "react-icons/md";
+import { FaChartLine, FaHeadset } from "react-icons/fa";
+import { FaClipboardList, FaHistory } from "react-icons/fa";
+import { FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital } from "react-icons/fa";
+import { GiLotus } from "react-icons/gi";
+import { MdBrandingWatermark } from "react-icons/md";
+import { MdPhotoSizeSelectActual } from "react-icons/md";
+
+import RateReviewIcon from "@mui/icons-material/RateReview";
+import { MdReviews } from "react-icons/md";
+import { GiLotusFlower } from "react-icons/gi";
+import { FaListAlt } from "react-icons/fa";
+import { MdOndemandVideo } from "react-icons/md";
+ import { FaBriefcaseMedical, FaCalendarCheck } from "react-icons/fa";
+
+
+import {
+  BiCategoryAlt,
+  BiPulse,
+} from "react-icons/bi";
+
+
 
 export const SidebarData = () => [
   // ========== DASHBOARD ==========
@@ -444,7 +468,38 @@ export const SidebarData = () => [
     permission: "view_dashboard",
   },
 
-  // ========== CATEGORY MANAGEMENT ==========
+
+  // {
+  //   title: "Category Management",
+  //   icon: <ReorderIcon sx={{ fontSize: 20 }} />,
+  //   path: "#",
+  //   permission: "manage_orders",
+  //   children: [
+  //    {
+  //     title: "Service category",
+  //     path: "/main/category",
+  //     permission: "view_category",
+  //     icon: <FaClipboardList size={18} />
+  //   },
+
+  //    {
+  //     title: "Sub Service category",
+  //     path: "/main/productcategory",
+  //     permission: "view_product_category",
+  //     icon: <FaClipboardList size={18} />
+  //   },
+
+  //      {
+  //     title: "Sub-sub Service category",
+  //     path: "/main/subcategory",
+  //     permission: "view_product_category",
+  //     icon: <FaClipboardList size={18} />
+  //   },
+
+  //   ],
+  // },
+
+  
   {
     title: "Category Management",
     icon: <MdCategory style={{ fontSize: 20 }} />,
@@ -499,8 +554,7 @@ export const SidebarData = () => [
       }
     ]
   },
-
-  // ========== USER MANAGEMENT ==========
+  
   {
     title: "User Management",
     icon: <HiUsers size={20} />,
@@ -537,10 +591,42 @@ export const SidebarData = () => [
         permission: "manage_admin",
         icon: <FaUserShield size={18} />
       }
-    ]
+    ],
   },
 
-  // ========== CONTENT MANAGEMENT ==========
+{
+  title: "Management",
+  icon: <FaBriefcaseMedical size={18} />,
+  path: "#",
+  permission: "view_mangement",
+  children: [
+    {
+      title: "Appointment Management",
+      path: "/Magement/Appointment",
+      permission: "view_mangement",
+      icon: <FaCalendarCheck size={18} />,
+    },
+  ],
+},
+
+
+  {
+    title: "Disease Management",
+    icon: <BiPulse size={20} />,
+    path: "#",
+    permission: "manage_disease",
+    children: [
+      {
+        title: "Disease",
+        path: "/disease",
+        permission: "view_disease",
+        icon: <BiCategoryAlt size={18} />,
+      },
+
+    ],
+  },
+
+
   {
     title: "Content Management",
     icon: <MedicalServicesIcon sx={{ fontSize: 20 }} />,

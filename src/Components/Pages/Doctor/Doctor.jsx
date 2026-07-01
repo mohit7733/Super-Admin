@@ -1164,7 +1164,7 @@ const submitRejection = async (e) => {
         
 
        
-        <button
+        {/* <button
           className="action-btn1"
           title="Edit Doctor Details"
           onClick={() => {
@@ -1202,7 +1202,7 @@ const submitRejection = async (e) => {
             <FiTrash2 />
           </span>
           <span className="delete-text">Delete</span>
-        </button>
+        </button> */}
       </div>
     )}
   </td>
