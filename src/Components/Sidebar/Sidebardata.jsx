@@ -423,7 +423,6 @@ import ReorderIcon from '@mui/icons-material/Reorder';
 import HistoryIcon from '@mui/icons-material/History';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import HealingIcon from '@mui/icons-material/FitnessCenter';
-import RateReviewIcon from "@mui/icons-material/RateReview";
 
 import { FiClock } from "react-icons/fi";
 import { FaTag, FaTicketAlt, FaUsers, FaClipboardList, FaHistory, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital } from "react-icons/fa";
@@ -432,24 +431,11 @@ import { FaAppleAlt, FaBoxOpen, FaTags, FaChartLine, FaHeadset, FaUserInjured, F
 import { HiUsers } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
-import { FaUserInjured, FaStore, FaUserMd, FaUserShield } from "react-icons/fa";
 
-import { MdRestaurantMenu, MdSpa, MdCategory } from "react-icons/md";
-import { FaBoxOpen, FaTags } from "react-icons/fa";
-import { MdInventory } from "react-icons/md";
-import { FaChartLine, FaHeadset } from "react-icons/fa";
-import { FaClipboardList, FaHistory } from "react-icons/fa";
-import { FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital } from "react-icons/fa";
-import { GiLotus } from "react-icons/gi";
-import { MdBrandingWatermark } from "react-icons/md";
-import { MdPhotoSizeSelectActual } from "react-icons/md";
 
 import RateReviewIcon from "@mui/icons-material/RateReview";
-import { MdReviews } from "react-icons/md";
-import { GiLotusFlower } from "react-icons/gi";
-import { FaListAlt } from "react-icons/fa";
-import { MdOndemandVideo } from "react-icons/md";
- import { FaBriefcaseMedical, FaCalendarCheck } from "react-icons/fa";
+import { GiLotus, GiLotusFlower } from "react-icons/gi";
+import { FaBriefcaseMedical, FaCalendarCheck } from "react-icons/fa";
 
 
 import {
@@ -499,7 +485,7 @@ export const SidebarData = () => [
   //   ],
   // },
 
-  
+
   {
     title: "Category Management",
     icon: <MdCategory style={{ fontSize: 20 }} />,
@@ -554,7 +540,7 @@ export const SidebarData = () => [
       }
     ]
   },
-  
+
   {
     title: "User Management",
     icon: <HiUsers size={20} />,
@@ -594,20 +580,20 @@ export const SidebarData = () => [
     ],
   },
 
-{
-  title: "Management",
-  icon: <FaBriefcaseMedical size={18} />,
-  path: "#",
-  permission: "view_mangement",
-  children: [
-    {
-      title: "Appointment Management",
-      path: "/Magement/Appointment",
-      permission: "view_mangement",
-      icon: <FaCalendarCheck size={18} />,
-    },
-  ],
-},
+  {
+    title: "Management",
+    icon: <FaBriefcaseMedical size={18} />,
+    path: "#",
+    permission: "view_mangement",
+    children: [
+      {
+        title: "Appointment Management",
+        path: "/Magement/Appointment",
+        permission: "view_mangement",
+        icon: <FaCalendarCheck size={18} />,
+      },
+    ],
+  },
 
 
   {

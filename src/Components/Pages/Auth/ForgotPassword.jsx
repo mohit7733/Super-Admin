@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-;
 import logo1 from '../../Assests/logo1.png';
 import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
 import BASE_URL from "../../../Base";

@@ -720,7 +720,7 @@
 }
 
 .details-group.full-width {
-  grid-column: 1 / -1;
+  /* grid-column: 1 / -1; */
   margin-top: 20px;
 }
 

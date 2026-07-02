@@ -1,27 +1,34 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-
-import { Navigate } from "react-router-dom";
-
-const ProtectedRoute = ({ children, permission }) => {
+const ProtectedRoute = ({ children, permission = null }) => {
   const token = sessionStorage.getItem("superadmin_token");
-  const role = sessionStorage.getItem("role");
-  const permissions = JSON.parse(sessionStorage.getItem("permissions") || "[]");
+  const role = sessionStorage.getItem("role")?.toLowerCase();
+  const navigate = useNavigate();
 
-  
-  if (!token) {
-    return <Navigate to="/login" replace />;
+  let permissions = [];
+  try {
+    permissions = JSON.parse(sessionStorage.getItem("permissions") || "[]");
+  } catch (error) {
+    permissions = [];
   }
 
- 
-  if (role?.toLowerCase() === "superadmin") {
+  // Redirect to login if not authenticated
+  if (!token) {
+    navigate("/login", { replace: true });
+    return null;
+  }
+
+  // Super Admin has full access
+  if (role === "superadmin") {
     return children;
   }
 
-
+  // Check permission for other users
   if (permission && !permissions.includes(permission)) {
-    return <Navigate to="/login" replace />;
+    navigate("/login", { replace: true });
+    return null;
   }
-
 
   return children;
 };

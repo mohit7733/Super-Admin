@@ -2,7 +2,6 @@ import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
 import { toast } from 'react-toastify';
 import BASE_URL from "../../../Base";
-;
 import { apiFetch } from "../../../fetchapi";
 import { BsSearch, BsThreeDots, BsThreeDotsVertical,BsDownload } from "react-icons/bs";
 

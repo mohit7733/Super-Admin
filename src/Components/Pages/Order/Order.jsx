@@ -4,7 +4,6 @@ import { useRef } from "react";
 import React, { useState, useEffect } from "react";
 import { toast } from 'react-toastify';
 import BASE_URL from "../../../Base";
-;
 import { apiFetch } from "../../../fetchapi";
 import OrderModal from "./OrderModal";
 import { BsSearch, } from "react-icons/bs";
