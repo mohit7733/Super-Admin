@@ -6,23 +6,24 @@ import {
   FaChartLine,
   FaCalendarAlt,
   FaEdit,
+  FaSearch,
+  FaTimes,
 } from "react-icons/fa";
-import { FiTrash2 } from "react-icons/fi";
-import { FiEye } from "react-icons/fi";
-import { ToastContainer, toast } from "react-toastify"
+import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
+import { toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
-import { FiUpload } from "react-icons/fi";
-
 
 const Healthcategory = () => {
   const [HealthCategoryData, setHealthCategoryData] = useState([]);
+  const [FilteredData, setFilteredData] = useState([]);
   const [HealthLoading, setHealthLoading] = useState(false);
   const [HealthError, setHealthError] = useState(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [categoryId, setCategoryId] = useState(null);
   const [ServiceCategoryData, setServiceCategoryData] = useState([]);
-  const [SeviceCategoryLoading, setServiceCategoryLoading] = useState(false);
+  const [ServiceCategoryLoading, setServiceCategoryLoading] = useState(false);
   const [ServiceCategoryError, setServiceCategoryError] = useState(null);
   const [SubCategoryImage, setSubCategoryImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,14 +64,41 @@ const Healthcategory = () => {
     image_url: "",
     service_category_id: "",
     is_active: false,
-    code: "",
-
   });
 
   const [editErrors, setEditErrors] = useState({});
   const [addErrors, setAddErrors] = useState({});
-  const navigate = useNavigate();
 
+  // Calculate statistics
+  const calculateStats = (data) => {
+    const total = data.length;
+    const active = data.filter((item) => item.is_active === true).length;
+    const inactive = data.filter((item) => item.is_active === false).length;
+    setStats({ total, active, inactive });
+  };
+
+  // Filter data based on search and status
+  const filterData = (data, search, status) => {
+    let filtered = data;
+
+    if (search.trim()) {
+      const term = search.toLowerCase().trim();
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(term) ||
+          item.code?.toLowerCase().includes(term) ||
+          item.service_category_name?.toLowerCase().includes(term)
+      );
+    }
+
+    if (status === "active") {
+      filtered = filtered.filter((item) => item.is_active === true);
+    } else if (status === "inactive") {
+      filtered = filtered.filter((item) => item.is_active === false);
+    }
+
+    return filtered;
+  };
 
   const handleCategoryChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -99,48 +127,40 @@ const Healthcategory = () => {
       [name]: "",
     }));
   };
+
   const uploadImage = async (file) => {
     const token = sessionStorage.getItem("superadmin_token");
     if (!token) {
-
       toast.error("Session Expired, Please Login Again");
       navigate("/login");
-      return;
+      return null;
     }
 
     try {
       const formData = new FormData();
-
       formData.append("image", file);
-
       formData.append("dir", "health_issues");
 
-      const response = await fetch(
-        `${BASE_URL}/user/upload/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      );
+      const response = await fetch(`${BASE_URL}/user/upload/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
       if (response.status === 401 || response.status === 403) {
         sessionStorage.removeItem("superadmin_token");
         toast.error("Session expired. Please login again");
         navigate("/login");
-        return;
+        return null;
       }
+
       const data = await response.json();
-
-      console.log("Upload Response:", data);
-
       return data?.data?.url;
     } catch (error) {
       console.error(error);
       toast.error("Image upload failed");
-
       return null;
     }
   };
@@ -153,6 +173,8 @@ const Healthcategory = () => {
       navigate("/login");
       return;
     }
+
+    setIsStatusChanging(true);
 
     try {
       const response = await fetch(
@@ -173,10 +195,12 @@ const Healthcategory = () => {
 
       const data = await response.json();
 
-      console.log("Toggle Response:", data);
-
       if (response.ok && data.success) {
-        toast.success(data.message || "Status updated successfully");
+        toast.success(
+          !currentStatus
+            ? "Category Activated Successfully"
+            : "Category Deactivated Successfully"
+        );
         getHealthCategoryList();
       } else {
         toast.error(data.message || "Failed to update status");
@@ -184,8 +208,11 @@ const Healthcategory = () => {
     } catch (error) {
       console.error(error);
       toast.error("Failed to update status");
+    } finally {
+      setIsStatusChanging(false);
     }
   };
+
   const getCategoryList = async () => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -196,7 +223,6 @@ const Healthcategory = () => {
     }
 
     setServiceCategoryLoading(true);
-
 
     try {
       const response = await fetch(
@@ -214,40 +240,26 @@ const Healthcategory = () => {
 
       if (response.status === 401 || response.status === 403) {
         sessionStorage.removeItem("superadmin_token");
-
         toast.error("Session expired. Please login again");
-
         navigate("/login");
-
         return;
       }
 
       const data = await response.json();
 
-      console.log("Category API Response:", data);
-
       if (data.success) {
         setServiceCategoryData(data.data);
-
-
-
       } else {
         toast.error(data.message);
       }
-
     } catch (error) {
-
       console.error("Category Fetch Error:", error);
-
       setServiceCategoryError("Something went wrong while fetching data.");
-
       toast.error("Failed to fetch category data");
-
     } finally {
       setServiceCategoryLoading(false);
     }
   };
-
 
   const getHealthCategoryList = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -283,9 +295,14 @@ const Healthcategory = () => {
 
       const data = await response.json();
 
-      console.log("Health Category API Response:", data);
-
-      setHealthCategoryData(data.data);
+      if (data.success) {
+        setHealthCategoryData(data.data);
+        calculateStats(data.data);
+        setFilteredData(filterData(data.data, searchTerm, statusFilter));
+      } else {
+        toast.error(data.message || "Failed to fetch categories");
+        setHealthError(data.message || "Failed to fetch categories");
+      }
     } catch (err) {
       console.error("Health Category Fetch Error:", err);
       setHealthError("Something went wrong while fetching categories.");
@@ -294,94 +311,16 @@ const Healthcategory = () => {
       setHealthLoading(false);
     }
   };
-  // const AddHealthCategory = async (e) => {
-  //   e.preventDefault();
 
-  //   if (isSubmitting) return;
+  useEffect(() => {
+    getHealthCategoryList();
+    getCategoryList();
+  }, []);
 
-  //   setIsSubmitting(true);
+  useEffect(() => {
+    setFilteredData(filterData(HealthCategoryData, searchTerm, statusFilter));
+  }, [HealthCategoryData, searchTerm, statusFilter]);
 
-  //   let newErrors = {};
-
-  //   if (!categoryForm.service_category_id) {
-  //     newErrors.service_category_id = "Please select a service category";
-  //   }
-
-  //   if (!categoryForm.name.trim()) {
-  //     newErrors.name = "Health category name is required";
-  //   }
-  // const code = categoryForm.code;
-
-  // if (!code) {
-  //   toast.error("Please enter category code");
-  //   newErrors.code = "Please enter category code";
-  // }
-  // else if (!/^[A-Z]{5}$/.test(code)) {
-  //   toast.error("Code must be exactly 5 letters (A–Z only)");
-  //   newErrors.code = "Code must be exactly 5 letters (A–Z only)";
-  // }
-  //   if (!SubCategoryImage) {
-  //     newErrors.image_url = "Please upload an image";
-  //   }
-
-  //   setAddErrors(newErrors);
-
-  //   if (Object.keys(newErrors).length > 0) {
-  //     Object.values(newErrors).forEach((msg) => toast.error(msg));
-  //     setIsSubmitting(false); // validation fail
-  //     return;
-  //   }
-
-  //   try {
-  //     let imageUrl = "";
-
-  //     if (SubCategoryImage) {
-  //       imageUrl = await uploadImage(SubCategoryImage);
-  //     }
-
-  //     const payload = {
-  //       ...categoryForm,
-  //       image_url: imageUrl,
-  //     };
-
-  //     const token = sessionStorage.getItem("superadmin_token");
-
-  //     const response = await fetch(
-  //       `${BASE_URL}/user/admin/health-category/`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //           "ngrok-skip-browser-warning": "true",
-  //         },
-  //         body: JSON.stringify(payload),
-  //       }
-  //     );
-
-  //     const data = await response.json();
-
-  //     if (response.ok) {
-  //       toast.success("Health Category Added Successfully");
-  //       setShowCategoryModal(false);
-  //     getHealthCategoryList();
-  //     } else {
-  //   const errorMessage =
-  //     data?.errors?.name?.[0] ||
-  //       data?.errors?.code?.[0] ||
-  //     data?.errors?.image_url?.[0] ||
-  //     data?.message ||
-  //     "Failed to add category";
-
-  //   toast.error(errorMessage);
-  // }
-  //   } catch (error) {
-  //     console.error(error);
-  //     toast.error("Something went wrong");
-  //   } finally {
-  //     setIsSubmitting(false); 
-  //   }
-  // };
   const AddHealthCategory = async (e) => {
     e.preventDefault();
 
@@ -398,12 +337,12 @@ const Healthcategory = () => {
       newErrors.name = "Health category name is required";
     }
 
-    const code = categoryForm.code;
+    const code = categoryForm.code.trim();
+
     if (!code) {
       newErrors.code = "Please enter category code";
-    }
-    else if (!/^[A-Z]{5}$/.test(code)) {
-      newErrors.code = "Code must be exactly 5 letters (A–Z only)";
+    } else if (!/^[A-Z]{5}$/.test(code)) {
+      newErrors.code = "Code must be exactly 5 uppercase letters (A-Z)";
     }
 
     if (!SubCategoryImage) {
@@ -423,11 +362,19 @@ const Healthcategory = () => {
 
       if (SubCategoryImage) {
         imageUrl = await uploadImage(SubCategoryImage);
+        if (!imageUrl) {
+          toast.error("Image upload failed");
+          return;
+        }
       }
 
       const payload = {
-        ...categoryForm,
+        service_category_id: categoryForm.service_category_id,
+        name: categoryForm.name.trim(),
+        description: categoryForm.description,
         image_url: imageUrl,
+        is_active: categoryForm.is_active,
+        code: categoryForm.code.toUpperCase().trim(),
       };
 
       const token = sessionStorage.getItem("superadmin_token");
@@ -450,27 +397,163 @@ const Healthcategory = () => {
       if (response.ok) {
         toast.success("Health Category Added Successfully");
         setShowCategoryModal(false);
+        resetForm();
         getHealthCategoryList();
       } else {
         toast.error(data?.message || "Failed to add category");
       }
-
     } catch (error) {
+      console.error(error);
       toast.error("Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    getHealthCategoryList();
-    getCategoryList();
-  }, [])
+  const resetForm = () => {
+    setCategoryForm({
+      name: "",
+      description: "",
+      is_active: false,
+      service_category_id: "",
+      image_url: "",
+      code: "",
+    });
+    setSubCategoryImage(null);
+    setAddErrors({});
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleUpdateHealthCategory = async (e) => {
+    e.preventDefault();
+
+    if (isUpdating) return;
+
+    let newErrors = {};
+
+    if (!editForm.name.trim()) {
+      newErrors.name = "Health category name is required";
+    }
+
+    if (!editForm.service_category_id) {
+      newErrors.service_category_id = "Please select a service category";
+    }
+
+    setEditErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      Object.values(newErrors).forEach((msg) => toast.error(msg));
+      return;
+    }
+
+    const token = sessionStorage.getItem("superadmin_token");
+    setIsUpdating(true);
+
+    try {
+      let imageUrl = editForm.image_url;
+
+      if (EditImage) {
+        imageUrl = await uploadImage(EditImage);
+        if (!imageUrl) {
+          toast.error("Image upload failed");
+          return;
+        }
+      }
+
+      const payload = {
+        name: editForm.name.trim(),
+        description: editForm.description,
+        image_url: imageUrl,
+        is_active: editForm.is_active,
+        service_category_id: editForm.service_category_id,
+      };
+
+      const response = await fetch(
+        `${BASE_URL}/user/admin/health-category/?id=${editForm.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Health Category Updated Successfully");
+        setEditModal(false);
+        setEditImage(null);
+        getHealthCategoryList();
+      } else {
+        toast.error(data?.message || "Failed to update category");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (isDeleting) return;
+
+    const token = sessionStorage.getItem("superadmin_token");
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/user/admin/health-category/?id=${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data?.message || "Failed to delete category");
+        return;
+      }
+
+      toast.success("Category deleted successfully");
+      setDeleteModal(false);
+      getHealthCategoryList();
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while deleting");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
 
 
-const handleUpdateCategory = async (e) => {
-  e.preventDefault();
-  if(isUpdating)return;
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    if (isUpdating) return;
 
     let newErrors = {};
 
@@ -491,9 +574,9 @@ const handleUpdateCategory = async (e) => {
     try {
       let imageUrl = editForm.image_url;
 
-   
-    if (EditImage) {
-      imageUrl = await uploadImage(EditImage);
+
+      if (EditImage) {
+        imageUrl = await uploadImage(EditImage);
 
         if (!imageUrl) {
           toast.error("Image upload failed");
@@ -501,24 +584,24 @@ const handleUpdateCategory = async (e) => {
         }
       }
 
-    const response = await fetch(
-      `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify({
-          name: editForm.name,
-          description: editForm.description,
-          is_active: editForm.is_active,
-          category_id: editForm.category_id,
-          image_url: imageUrl,
-        }),
-      }
-    );
+      const response = await fetch(
+        `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({
+            name: editForm.name,
+            description: editForm.description,
+            is_active: editForm.is_active,
+            category_id: editForm.category_id,
+            image_url: imageUrl,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -547,59 +630,37 @@ const handleUpdateCategory = async (e) => {
   return (
     <>
       <div className="page-header">
-        <h1> Health Category </h1>
-        <p className="page-paragraph"> Manage Sub Product Category  and their details</p>
+        <h1>Health Category</h1>
+        <p className="page-paragraph">Manage health categories and their details</p>
       </div>
 
-
-      <div className="filter-category">
-        <button
-          className="add-customer-btn"
-          onClick={() => {
-            setCategoryForm({
-              name: "",
-              description: "",
-              is_active: false,
-              service_category_id: "",
-              code: "",
-              image_url: "",
-            });
-            setSubCategoryImage(null);
-
-            setShowCategoryModal(true);
-            setAddErrors({});
-          }}
-        >
-          + Add  Health  Category
-        </button>
-      </div>
-
+      {/* Stats Cards */}
       <div className="stats2-grid">
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
             <FaUsers size={24} />
           </div>
           <div className="stat2-info">
-            <h3>Total Category</h3>
-            <div className="stat2-value">0</div>
+            <h3>Total Categories</h3>
+            <div className="stat2-value">{stats.total}</div>
           </div>
         </div>
-        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+        <div className="stat2-card" style={{ borderTopColor: "#28a745" }}>
+          <div className="stat2-icon" style={{ background: "#28a74520", color: "#28a745" }}>
             <FaChartLine size={24} />
           </div>
           <div className="stat2-info">
-            <h3>This Year</h3>
-            <div className="stat2-value">0</div>
+            <h3>Active</h3>
+            <div className="stat2-value">{stats.active}</div>
           </div>
         </div>
-        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+        <div className="stat2-card" style={{ borderTopColor: "#dc3545" }}>
+          <div className="stat2-icon" style={{ background: "#dc354520", color: "#dc3545" }}>
             <FaCalendarAlt size={24} />
           </div>
           <div className="stat2-info">
-            <h3>This Month</h3>
-            <div className="stat2-value">0</div>
+            <h3>Inactive</h3>
+            <div className="stat2-value">{stats.inactive}</div>
           </div>
         </div>
       </div>
@@ -646,60 +707,85 @@ const handleUpdateCategory = async (e) => {
             setShowCategoryModal(true);
           }}
         >
-          <BiPlus/>
+          <BiPlus />
           Add Health Category
         </button>
       </div>
 
-      
+
       <div className="table-wrapper">
-        <table className="data-table" >
+        <table className="data-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name </th>
+              <th>#</th>
+              <th>Name</th>
+              <th>Service Category</th>
+              <th>Code</th>
               <th>Image</th>
-
-              <th> Status</th>
-              <th> Action</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {HealthLoading ? (
               Array(3).fill(0).map((_, i) => (
                 <tr key={i}>
-                  <td colSpan="6">
+                  <td colSpan="7">
                     <div className="skeleton-row"></div>
                   </td>
                 </tr>
               ))
             ) : HealthError ? (
               <tr>
-                <td colSpan="6" style={{ color: "red" }}>
+                <td colSpan="7" style={{ color: "red", textAlign: "center" }}>
                   {HealthError}
                 </td>
               </tr>
-            ) : HealthCategoryData?.length > 0 ? (
-              HealthCategoryData.map((item, index) => (
+            ) : FilteredData?.length > 0 ? (
+              FilteredData.map((item, index) => (
                 <tr key={item.id}>
                   <td>{index + 1}</td>
-
-
-                  <td>{item.name}</td>
                   <td>
-                    <img
-                      src={item.image_url}
-                      alt="category"
-                      width="60"
-                      height="60"
-                      style={{
-                        objectFit: "cover",
-                        borderRadius: "6px"
-                      }}
-                    />
+                    <strong>{item.name}</strong>
+                    {item.description && (
+                      <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
+                        {item.description.substring(0, 30)}
+                        {item.description.length > 30 && "..."}
+                      </div>
+                    )}
                   </td>
-
                   <td>
+                    <span className="service-category-badge">
+                      {item.service_category_name || "N/A"}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="category-code-badge">{item.code || "N/A"}</span>
+                  </td>
+                  <td>
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        width="50"
+                        height="50"
+                        style={{
+                          objectFit: "cover",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          border: "1px solid #e0e0e0",
+                        }}
+                        onClick={() => setPreviewImage(item.image_url)}
+                      />
+                    ) : (
+                      <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
+                      {item.is_active ? "Active" : "Inactive"}
+                    </span>
+                    <br />
                     <label className="switch">
                       <input
                         type="checkbox"
@@ -709,7 +795,6 @@ const handleUpdateCategory = async (e) => {
                       <span className="slider round"></span>
                     </label>
                   </td>
-
                   <td>
                     <div className="action-buttons">
                       <button
@@ -723,137 +808,120 @@ const handleUpdateCategory = async (e) => {
                             image_url: item.image_url || "",
                             is_active: item.is_active,
                           });
-
                           setEditErrors({});
+                          setEditImage(null);
                           setEditModal(true);
                         }}
+                        title="Edit"
                       >
                         <FaEdit />
                       </button>
+
                       <button
                         className="action-btn delete"
                         onClick={() => {
                           setCategoryId(item.id);
                           setDeleteModal(true);
                         }}
+                        title="Delete"
                       >
                         <FiTrash2 />
                       </button>
-
-
-
                     </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6" style={{ textAlign: "center" }}>
-                  No data found
+                <td colSpan="7" style={{ textAlign: "center", padding: "40px" }}>
+                  {searchTerm || statusFilter !== "all" ? (
+                    <div>
+                      <p>No matching categories found</p>
+                      <button className="clear-filters-btn" onClick={clearFilters}>
+                        Clear Filters
+                      </button>
+                    </div>
+                  ) : (
+                    <p>No health categories found. Click "Add Health Category" to create one.</p>
+                  )}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-
-
-
-
-
       </div>
 
       {showCategoryModal && (
-
         <div
           className="prakriti-modal-overlay"
-          onClick={() => setShowCategoryModal(false)}
+          onClick={() => {
+            setShowCategoryModal(false);
+            resetForm();
+          }}
         >
-          <div
-            className="prakriti-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
             <div className="prakriti-modal-header">
               <h2>Add Health Category</h2>
               <button
-                className="close-btn"
-                onClick={() => setShowCategoryModal(false)}
+                className="modal-close-btn"
+                onClick={() => {
+                  setShowCategoryModal(false);
+                  resetForm();
+                }}
               >
-                ×
+                <FaTimes />
               </button>
             </div>
 
-            <form
-              className="prakriti-form"
-              onSubmit={AddHealthCategory}
-            >
-
+            <form className="prakriti-form" onSubmit={AddHealthCategory}>
               <div className="form-group">
-                <label>Select Service Category</label>
-
-                <div className="category-row">
-
-                  <select
-                    name="service_category_id"
-                    value={categoryForm.service_category_id}
-                    onChange={handleCategoryChange}
-                  >
-                    <option value="">
-                      Select  Service Category
+                <label>Service Category <span className="required">*</span></label>
+                <select
+                  name="service_category_id"
+                  value={categoryForm.service_category_id}
+                  onChange={handleCategoryChange}
+                  className={addErrors.service_category_id ? "error-input" : ""}
+                >
+                  <option value="">Select Service Category</option>
+                  {ServiceCategoryData?.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name} ({cat.code})
                     </option>
-
-                    {ServiceCategoryData?.map((cat) => (
-                      <option
-                        key={cat.id}
-                        value={cat.id}
-                      >
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-
-
-                </div>
-
+                  ))}
+                </select>
                 {addErrors.service_category_id && (
-                  <p className="error-text">
-                    {addErrors.service_category_id}
-                  </p>
+                  <p className="error-text">{addErrors.service_category_id}</p>
                 )}
               </div>
 
               <div className="form-group">
-                <label>Health Category Name</label>
+                <label>Health Category Name <span className="required">*</span></label>
                 <input
                   type="text"
                   name="name"
                   value={categoryForm.name}
                   onChange={(e) => {
                     handleCategoryChange(e);
-
                     setAddErrors((prev) => ({
                       ...prev,
                       name: "",
                     }));
                   }}
-                  placeholder="Enter category name"
+                  placeholder="Enter health category name"
+                  className={addErrors.name ? "error-input" : ""}
                 />
-
-                {addErrors.name && (
-                  <p className="error-text">{addErrors.name}</p>
-                )}
+                {addErrors.name && <p className="error-text">{addErrors.name}</p>}
               </div>
 
               <div className="form-group">
-                <label> Category Code</label>
+                <label>Category Code <span className="required">*</span></label>
                 <input
                   type="text"
                   name="code"
                   value={categoryForm.code}
                   onChange={(e) => {
                     let value = e.target.value.toUpperCase();
-
-
-                    value = value.replace(/[^A-Z]/g, "");
+                    value = value.replace(/[^A-Z]/g, "").slice(0, 5);
 
                     setCategoryForm((prev) => ({
                       ...prev,
@@ -865,31 +933,25 @@ const handleUpdateCategory = async (e) => {
                       code: "",
                     }));
                   }}
-                  placeholder="Enter Category Code (A-Z, Max 5 Letters)"
+                  placeholder="Enter 5-letter category code"
+                  maxLength={5}
+                  className={addErrors.code ? "error-input" : ""}
                 />
-                {addErrors.code && (
-                  <p className="error-text">{addErrors.code}</p>
-                )}
+                {addErrors.code && <p className="error-text">{addErrors.code}</p>}
               </div>
 
               <div className="form-group">
-                <label> Upload Image</label>
+                <label>Upload Image <span className="required">*</span></label>
                 <div className="upload-box1">
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     id="categoryUpload"
                     onChange={(e) => {
                       const file = e.target.files[0];
-
-                      setSubCategoryImage(file);
-
-                      setCategoryForm((prev) => ({
-                        ...prev,
-                        image_url: file,
-                      }));
-
                       if (file) {
+                        setSubCategoryImage(file);
                         setAddErrors((prev) => ({
                           ...prev,
                           image_url: "",
@@ -897,7 +959,6 @@ const handleUpdateCategory = async (e) => {
                       }
                     }}
                   />
-
                   {SubCategoryImage ? (
                     <div className="banner-preview-wrapper">
                       <div className="banner-preview-left">
@@ -907,7 +968,6 @@ const handleUpdateCategory = async (e) => {
                           className="banner-preview-image"
                         />
                       </div>
-
                       <div className="banner-preview-actions">
                         <button
                           type="button"
@@ -917,23 +977,18 @@ const handleUpdateCategory = async (e) => {
                           }
                         >
                           <FiEye />
-
                         </button>
-
                         <button
                           type="button"
                           className="delete-btn-preview"
                           onClick={() => {
                             setSubCategoryImage(null);
-
-                            setCategoryForm((prev) => ({
-                              ...prev,
-                              image_url: null,
-                            }));
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = "";
+                            }
                           }}
                         >
                           <FiTrash2 />
-
                         </button>
                       </div>
                     </div>
@@ -941,8 +996,8 @@ const handleUpdateCategory = async (e) => {
                     <label htmlFor="categoryUpload" className="upload-label">
                       <div className="upload-content">
                         <span className="upload-icon">⬆</span>
-                        <p>Click to upload banner image</p>
-                        <small>PNG, JPG up to 2MB</small>
+                        <p>Click to upload category image</p>
+                        <span className="upload-hint">PNG, JPG, JPEG (Max 5MB)</span>
                       </div>
                     </label>
                   )}
@@ -1174,7 +1229,7 @@ const handleUpdateCategory = async (e) => {
         </div>
       )}
 
-    
+
       {deleteModal && (
         <div className="modal-overlay" onClick={() => setDeleteModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

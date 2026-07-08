@@ -1,9 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-
-import { useNavigate } from "react-router-dom";
-
 const ProtectedRoute = ({ children, permission }) => {
   const token = sessionStorage.getItem("superadmin_token");
   const role = sessionStorage.getItem("role");
