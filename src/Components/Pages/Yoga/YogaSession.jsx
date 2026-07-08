@@ -528,7 +528,7 @@ if (videoRef.current) videoRef.current.value = "";
         </div>
       </div>
 
-      <div className="session-filter">
+      {/* <div className="session-filter">
 
         <div className="session-search">
 
@@ -562,11 +562,11 @@ if (videoRef.current) videoRef.current.value = "";
 
         }
 
-        {/* <select className="session-select">
+        <select className="session-select">
 
         <option>All Category</option>
 
-    </select> */}
+    </select>
 
 
 
@@ -589,7 +589,20 @@ if (videoRef.current) videoRef.current.value = "";
 
 
 
-      </div>
+      </div> */}
+ <div className="Question-controls">
+    <div className="filter-question">
+         <button
+  className="add-session-btn"
+  onClick={() => setShowYogaVideoModal(true)}
+>
+          <BiPlus />
+          Add Yoga Session
+        </button>
+
+        </div>
+ </div>
+     
 
        <div className="table-wrapper">
               <table className="data-table">
@@ -686,15 +699,15 @@ if (videoRef.current) videoRef.current.value = "";
                         <td>
                           {new Date(item.created_at).toLocaleDateString()}
                         </td>
-                        {/* <td>
+                        <td>
                           <div className="action-buttons">
-                            <button
+                            {/* <button
                               className="action-btn edit"
                              
                               title="Edit"
                             >
                               <FaEdit />
-                            </button>
+                            </button> */}
         <button
                                                         className="action-btn delete"
                                                         onClick={() => {
@@ -708,7 +721,7 @@ if (videoRef.current) videoRef.current.value = "";
       
       
                           </div>
-                        </td> */}
+                        </td>
                       </tr>
                     ))
                   ) : (

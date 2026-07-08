@@ -17,6 +17,7 @@ const initalAdminform = {
   phone_number: '',
   roles:[],
   password: '',
+  approval_status:'pending',
 }
 const Admin = () => {
 
@@ -46,6 +47,7 @@ const [addRoleLoading, setAddRoleLoading] = useState(false);
 const [savePermissionLoading, setSavePermissionLoading] = useState(false);
 const [showRoleDropdown, setShowRoleDropdown] = useState(false);
 const [selectedRoles, setSelectedRoles] = useState([]);
+const [showEditRoleDropdown, setShowEditRoleDropdown] = useState(false);
 
 
 
@@ -100,6 +102,16 @@ const [selectedRoles, setSelectedRoles] = useState([]);
       setLoading(false)
     }
   }
+
+  const handleEditClick = (verifier) => {
+  setEditingUser(verifier);
+
+  setSelectedRoles(
+    verifier.admin_roles?.map((role) => role.id) || []
+  );
+
+  setPermissionModalOpen(true);
+};
 
   const handleinputchange = (e) => {
   const { name, value } = e.target;
@@ -419,20 +431,6 @@ if (!response.ok || data.success === false) {
 
 
 
-const handleEditClick = (verifier) => {
-  setEditingUser(verifier);
-
-  const activePermissions =
-    verifier.permissions_details
-      ?.filter((perm) => perm.is_active)
-      .map((perm) => perm.id) || [];
-
-  console.log("ACTIVE IDS =>", activePermissions);
-
-  setSelectedPermissions(activePermissions);
-
-  setPermissionModalOpen(true);
-};
 
   const handleSavePermissions = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -736,21 +734,46 @@ const handleEditClick = (verifier) => {
     <div className="modal-content">
       <h3>Edit Admin</h3>
 
-      <div className="form-group">
-        <label>Roles</label>
+   <div className="form-group">
+  <label>Roles</label>
 
+  <div className="multi-select">
+    <div
+      className="multi-select-header"
+      onClick={() =>
+        setShowEditRoleDropdown(!showEditRoleDropdown)
+      }
+    >
+      {selectedRoles.length > 0
+        ? roleData
+            .filter((role) => selectedRoles.includes(role.id))
+            .map((role) => role.name)
+            .join(", ")
+        : "Select Roles"}
+    </div>
+
+    {showEditRoleDropdown && (
+      <div className="multi-select-dropdown">
         {roleData.map((role) => (
-          <label key={role.id} className="checkbox-option">
+          <label
+            key={role.id}
+            className="checkbox-option"
+          >
             <input
               type="checkbox"
               checked={selectedRoles.includes(role.id)}
               onChange={() => {
                 if (selectedRoles.includes(role.id)) {
                   setSelectedRoles(
-                    selectedRoles.filter((id) => id !== role.id)
+                    selectedRoles.filter(
+                      (id) => id !== role.id
+                    )
                   );
                 } else {
-                  setSelectedRoles([...selectedRoles, role.id]);
+                  setSelectedRoles([
+                    ...selectedRoles,
+                    role.id,
+                  ]);
                 }
               }}
             />
@@ -759,6 +782,9 @@ const handleEditClick = (verifier) => {
           </label>
         ))}
       </div>
+    )}
+  </div>
+</div>
 
       <div className="form-group">
   <label>Status</label>
@@ -815,7 +841,16 @@ const handleEditClick = (verifier) => {
             />
             {AddError.password && <p className="error">{AddError.password}</p>}
             
-      
+      <label>Status</label>
+<select
+  name="approval_status"
+  value={AddAdminForm.approval_status}
+  onChange={handleinputchange}
+>
+  <option value="">Select Status</option>
+  <option value="pending">Pending</option>
+  <option value="approved">Approved</option>
+</select>
  <div className="form-group">
   <label>Role</label>
 

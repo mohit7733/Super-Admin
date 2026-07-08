@@ -137,7 +137,7 @@ export const SidebarData = () => [
     {
       title: "Appointment Management",
       path: "/Magement/Appointment",
-      permission: "view_mangement",
+      permission: "view_cancellation_request",
       icon: <FaCalendarCheck size={18} />,
     },
   ],

@@ -337,12 +337,13 @@ const Healthcategory = () => {
       newErrors.name = "Health category name is required";
     }
 
-    const code = categoryForm.code;
-    if (!code) {
-      newErrors.code = "Please enter category code";
-    } else if (!/^[A-Z]{1,10}$/.test(code)) {
-      newErrors.code = "Code must be 1-10 uppercase letters (A-Z)";
-    }
+   const code = categoryForm.code.trim();
+
+if (!code) {
+  newErrors.code = "Please enter category code";
+} else if (!/^[A-Z]{5}$/.test(code)) {
+  newErrors.code = "Code must be exactly 5 uppercase letters (A-Z)";
+}
 
     if (!SubCategoryImage) {
       newErrors.image_url = "Please upload an image";
@@ -915,25 +916,27 @@ const handleUpdateCategory = async (e) => {
               <div className="form-group">
                 <label>Category Code <span className="required">*</span></label>
                 <input
-                  type="text"
-                  name="code"
-                  value={categoryForm.code}
-                  onChange={(e) => {
-                    let value = e.target.value.toUpperCase();
-                    value = value.replace(/[^A-Z]/g, "");
-                    setCategoryForm((prev) => ({
-                      ...prev,
-                      code: value,
-                    }));
-                    setAddErrors((prev) => ({
-                      ...prev,
-                      code: "",
-                    }));
-                  }}
-                  placeholder="Enter category code (A-Z, max 10 letters)"
-                  maxLength="10"
-                  className={addErrors.code ? "error-input" : ""}
-                />
+  type="text"
+  name="code"
+  value={categoryForm.code}
+  onChange={(e) => {
+    let value = e.target.value.toUpperCase();
+    value = value.replace(/[^A-Z]/g, "").slice(0, 5);
+
+    setCategoryForm((prev) => ({
+      ...prev,
+      code: value,
+    }));
+
+    setAddErrors((prev) => ({
+      ...prev,
+      code: "",
+    }));
+  }}
+  placeholder="Enter 5-letter category code"
+  maxLength={5}
+  className={addErrors.code ? "error-input" : ""}
+/>
                 {addErrors.code && <p className="error-text">{addErrors.code}</p>}
               </div>
 

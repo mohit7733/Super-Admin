@@ -470,13 +470,12 @@ const uploadImage = async (file) => {
       <div className="Question-controls">
 
 
-        <div className="filter-controls">
+        <div className="filter-question">
           <button
             className="add-customer-btn"
             onClick={() => {
               setAddformModal(true);
               setAddform(initalAddForm);
-
             }}
           >
             + Add Question

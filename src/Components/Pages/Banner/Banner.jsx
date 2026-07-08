@@ -808,7 +808,7 @@ const handleUpdateBanner = async (e) => {
           onSubmit={handleUpdateBanner}
         >
 
-          {/* Category */}
+       
 
           <div className="form-group">
             <label>Select Category</label>

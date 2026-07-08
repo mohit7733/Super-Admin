@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
-;
+
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import BASE_URL from "../../../Base";
@@ -37,14 +37,20 @@ const Login = () => {
   const navigate = useNavigate();
 
  
-  const [formData, setFormData] = useState({
-    phone_number: "",
-    password: "",
-  });
+ const [formData, setFormData] = useState({
+  phone_number: "",
+  password: "",
+  role: "",
+});
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const[RoleData,setRoleData]=useState([]);
+  const[RoleLoading,setRoleLoading]=useState(false);
+  const[RoleError,setRoleError]=useState(null)
+  const [roles, setRoles] = useState([]);
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
 
  
   const formatPhoneNumber = (phone) => {
@@ -100,6 +106,38 @@ const Login = () => {
     }
   };
 
+  const getRole = async () => {
+  
+    
+  setRoleLoading(true)
+  
+      try {
+        const response = await fetch(`${BASE_URL}/user/admin/roles/`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            
+               "ngrok-skip-browser-warning": "true",
+          },
+        });
+  
+  
+        const data = await response.json();
+        console.log("Permissions List API Response 👉", data);
+        if (data.success) {
+          setRoleData(data.data);
+         
+        }
+      } catch (err) {
+        toast.error("Failed to load permissions");
+    setRoleError("something went wrong")
+      }
+      finally {
+      setRoleLoading(false);
+    }
+  
+    };
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -119,9 +157,10 @@ const Login = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phone_number: formattedPhone,
-          password: formData.password
-        }),
+  phone_number: formattedPhone,
+  password: formData.password,
+  role: formData.role,
+}),
       });
 
       // const data = await response.json();
@@ -222,6 +261,9 @@ setTimeout(() => {
       });
     }
   }, []);
+  useEffect(()=>{
+    getRole();
+  },[])
 
   
   useEffect(() => {
@@ -286,6 +328,7 @@ setTimeout(() => {
               )}
             </div>
 
+
             <div className="form-group">
               <label htmlFor="password" className="form-label">
                 Password
@@ -332,6 +375,43 @@ setTimeout(() => {
                 </span>
               )}
             </div>
+
+            <div className="form-group">
+  <label>Role</label>
+
+  <div className="multi-select">
+    <div
+      className="multi-select-header"
+      onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+    >
+      {formData.role
+        ? RoleData.find((role) => role.id === formData.role)?.name
+        : "Select Role"}
+    </div>
+
+    {showRoleDropdown && (
+      <div className="multi-select-dropdown">
+        {RoleData.map((role) => (
+          <div
+            key={role.id}
+            className="checkbox-option"
+            onClick={() => {
+              setFormData((prev) => ({
+                ...prev,
+                role: role.id,
+              }));
+              setShowRoleDropdown(false);
+            }}
+          >
+            {role.name}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+
+  {errors.role && <p className="error">{errors.role}</p>}
+</div>
 
             <div className="form-options">
               <label className="checkbox-label">
