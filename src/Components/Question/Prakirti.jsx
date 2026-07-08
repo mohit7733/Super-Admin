@@ -586,7 +586,7 @@ const uploadImage = async (file) => {
       </div>
       <div className="Question-controls">
 
-        <div className="filter-controls">
+        <div className="filter-question">
           <button
             className="add-customer-btn"
             onClick={() => {
@@ -598,9 +598,9 @@ const uploadImage = async (file) => {
             + Add Question
           </button>
 
-          <button className="btn-secondary" onClick={handleDownload}>
+          {/* <button className="btn-secondary" onClick={handleDownload}>
             Export Details
-          </button>
+          </button> */}
         </div>
       </div>
 

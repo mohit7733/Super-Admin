@@ -438,7 +438,7 @@ function App() {
         <Route
           path="/Patient"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute permission="view_patients">
               <Layout>
                 <Patient />
               </Layout>
@@ -533,7 +533,7 @@ function App() {
    <Route
           path="/Magement/Appointment"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute permission="view_cancellation_request">
               <Layout>
                 <Management/>
               </Layout>

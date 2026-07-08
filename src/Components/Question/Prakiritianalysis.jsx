@@ -302,7 +302,7 @@ const handleDelete = async (id) => {
       </div>
 
       <div className="Question-controls">
-        <div className="filter-controls">
+        <div className="filter-question">
           <button
             className="add-customer-btn"
             onClick={() => {

@@ -214,12 +214,15 @@ const ProductCategory = () => {
       newErrors.image_url = "Please upload an image";
     }
 
-    const code = categoryForm.code;
-    if (!code) {
-      newErrors.code = "Please enter product category code";
-    } else if (!/^[A-Z]{1,10}$/.test(code)) {
-      newErrors.code = "Code must be 1-10 uppercase letters (A-Z)";
-    }
+    const code = categoryForm.code.trim();
+
+if (!code) {
+  newErrors.code = "Please enter product category code";
+} else if (code.length !== 5) {
+  newErrors.code = "Code must be exactly 5 characters";
+} else if (!/^[A-Z]{5}$/.test(code)) {
+  newErrors.code = "Code must contain only uppercase letters";
+}
 
     setAddErrors(newErrors);
 
@@ -833,8 +836,8 @@ const ProductCategory = () => {
                       code: "",
                     }));
                   }}
-                  placeholder="Enter category code (A-Z, max 10 characters)"
-                  maxLength="10"
+                  placeholder="Enter category code (A-Z, max 5 characters)"
+                  maxLength="5"
                   className={addErrors.code ? "error-input" : ""}
                 />
                 {addErrors.code && <p className="error-text">{addErrors.code}</p>}

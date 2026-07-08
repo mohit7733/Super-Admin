@@ -826,7 +826,7 @@ const handleSubmitReason = async () => {
                     Email
                   </span>
 
-                  <p>{doctorData?.email}</p>
+                  <p>{doctorData?.email||"N/A"}</p>
                 </div>
 
                 <div className="info-row">
@@ -835,33 +835,35 @@ const handleSubmitReason = async () => {
                     Phone
                   </span>
 
-                  <p>{doctorData?.verified_phone_number}</p>
+                  <p>{doctorData?.verified_phone_number||"N/A"}</p>
                 </div>
-                <div className="info-row">
-                  <span>
-                    <FiPhone className="row-icon" />
-                    Secondary Number
-                  </span>
+               <div className="info-row">
+  <span>
+    <FiPhone className="row-icon" />
+    Secondary Number
+  </span>
 
-                  <p>{doctorData?.secondary_number}</p>
-                </div>
+  <p>{doctorData?.secondary_number || "N/A"}</p>
+</div>
 
-                <div className="info-row address-row">
-                  <span>
-                    <FiMapPin className="row-icon" />
-                    Address
-                  </span>
+<div className="info-row address-row">
+  <span>
+    <FiMapPin className="row-icon" />
+    Address
+  </span>
 
-                  <p>
-                    {doctorData?.address_line},{" "}
-                    {doctorData?.city},{" "}
-                    {doctorData?.state}{" "}
-                    {doctorData?.pincode},{" "}
-                    {doctorData?.country}
-                  </p>
-                </div>
-
-
+  <p>
+    {[
+      doctorData?.address_line,
+      doctorData?.city,
+      doctorData?.state,
+      doctorData?.pincode,
+      doctorData?.country,
+    ]
+      .filter(Boolean)
+      .join(", ") || "N/A"}
+  </p>
+</div>
 
               </div>
 
@@ -877,21 +879,21 @@ const handleSubmitReason = async () => {
                 <div className="info-row">
                   <span>Contact Name</span>
                   <p>
-                    {doctorData?.emergency_contact_name}
+                    {doctorData?.emergency_contact_name||"N/A"}
                   </p>
                 </div>
 
                 <div className="info-row">
                   <span>Relation</span>
                   <p>
-                    {doctorData?.emergency_contact_relation}
+                    {doctorData?.emergency_contact_relation||"N/A"}
                   </p>
                 </div>
 
                 <div className="info-row">
                   <span>Phone</span>
                   <p>
-                    {doctorData?.emergency_contact_phone}
+                    {doctorData?.emergency_contact_phone||"N/A"}
                   </p>
                 </div>
 
@@ -913,7 +915,7 @@ const handleSubmitReason = async () => {
 
                 <div className="info-row">
                   <span>Qualification</span>
-                  <p>{doctorData?.qualification}</p>
+                  <p>{doctorData?.qualification||"N/A"}</p>
                 </div>
 
                 <div className="info-row">
@@ -1007,21 +1009,21 @@ const handleSubmitReason = async () => {
                 <div className="info-row">
                   <span>Practicing Since</span>
                   <p>
-                    {doctorData?.practicing_since}
+                    {doctorData?.practicing_since ||"N/A"}
                   </p>
                 </div>
 
                 <div className="info-row">
                   <span>Consultation Fee</span>
                   <p>
-                    ₹{doctorData?.consultation_fee}
+                    ₹{doctorData?.consultation_fee||"N/A"}
                   </p>
                 </div>
 
                 <div className="info-row">
                   <span>Follow-up Fee</span>
                   <p>
-                    ₹{doctorData?.followup_fee}
+                    ₹{doctorData?.followup_fee||"N/A"}
                   </p>
                 </div>
 
@@ -1282,10 +1284,24 @@ const handleSubmitReason = async () => {
                             <td> {consultation.patient_name}</td>
                             <td>{consultation.doctor_name}</td>
                             <td>{consultation.amount}</td>
-                            <td>{consultation.appointment_date}</td>
-                            <td>{consultation.start_time}</td>
-                            <td>{consultation.end_time}</td>
-                            <td>{consultation.consultation_type}</td>
+                        <td>
+  {consultation.status_history?.[
+    consultation.status_history.length - 1
+  ]?.slot?.date || "-"}
+</td>
+
+<td>
+  {consultation.status_history?.[
+    consultation.status_history.length - 1
+  ]?.slot?.start_time || "-"}
+</td>
+
+<td>
+  {consultation.status_history?.[
+    consultation.status_history.length - 1
+  ]?.slot?.end_time || "-"}
+</td>
+                            <td>{consultation.consultation_type ||"N/A"}</td>
 <td>
   <span
     className="status-badge"

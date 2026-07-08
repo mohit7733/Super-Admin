@@ -187,11 +187,15 @@ const Category = () => {
     if (!categoryName.trim()) {
       newErrors.categoryName = "Category name is required";
     }
-    if (!CategoryCode.trim()) {
-      newErrors.CategoryCode = "Category Code is required";
-    } else if (!/^[A-Z]{1,10}$/.test(CategoryCode.toUpperCase())) {
-      newErrors.CategoryCode = "Code must be 1-10 uppercase letters (A-Z)";
-    }
+  const code = CategoryCode.trim().toUpperCase();
+
+if (!code) {
+  newErrors.CategoryCode = "Category Code is required";
+} else if (code.length !== 5) {
+  newErrors.CategoryCode = "Code must be exactly 5 characters";
+} else if (!/^[A-Z]+$/.test(code)) {
+  newErrors.CategoryCode = "Only uppercase letters are allowed";
+}
     if (!categoryImage) {
       newErrors.categoryImage = "Category image is required";
     }
@@ -696,19 +700,24 @@ const Category = () => {
 
               <div className="form-group">
                 <label>Category Code <span className="required">*</span></label>
-                <input
-                  type="text"
-                  value={CategoryCode}
-                  onChange={(e) => {
-                    setCategoryCode(e.target.value.toUpperCase());
-                    if (e.target.value.trim()) {
-                      setErrors((prev) => ({ ...prev, CategoryCode: "" }));
-                    }
-                  }}
-                  placeholder="Enter category code (e.g., MEDIC)"
-                  className={errors.CategoryCode ? "error-input" : ""}
-                  maxLength="10"
-                />
+               <input
+  type="text"
+  value={CategoryCode}
+  onChange={(e) => {
+    let value = e.target.value.toUpperCase();
+    value = value.replace(/[^A-Z]/g, "");
+
+    setCategoryCode(value);
+
+    setErrors((prev) => ({
+      ...prev,
+      CategoryCode: "",
+    }));
+  }}
+  maxLength={5}
+  placeholder="Enter category code (max 5 letters)"
+  className={errors.CategoryCode ? "error-input" : ""}
+/>
                 {errors.CategoryCode && (
                   <p className="error-text">{errors.CategoryCode}</p>
                 )}
