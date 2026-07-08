@@ -1,6 +1,18 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { toast } from 'react-toastify';
+import BASE_URL from "../../../Base";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { FaUsers } from "react-icons/fa";
+
+import {
+  FiCheckCircle,
+  FiXCircle,
+  FiClock,
+} from "react-icons/fi";
+
+
 import {
   FiPhone,
   FiMessageCircle,
@@ -15,36 +27,33 @@ import {
 import "./PatientDetails.css";
 
 const PatientDetails = () => {
-  const patient = {
-    id: "b2ccc5d9-ff69-48b6-9261-5adae30cd466",
-    first_name: "Diksha",
-    last_name: "Yadav",
-    dob: "2000-05-29",
-    gender: "Female",
-    blood_group: null,
-    relation: "Self",
-    height: null,
-    weight: null,
-    phone_number: "+91 8585920220",
-    email: "devimanjudevi038@gmail.com",
-    profile_picture: null,
-    emergency_contact_name: null,
-    emergency_contact_relation: null,
-    emergency_contact_phone: null,
-    insurance_provider: null,
-    insurance_policy_number: null,
-    insurance_valid_thru: null,
-    created_at: "2026-06-23T08:23:20.018962Z",
-    is_active: false,
-  };
-  const[activeTab,setActiveTab]=useState("Appointment");
-   const {PatientId} = useParams();
-   const[AppointmentLoading,setAppointmentLoading]=useState(false);
-   const[AppointmentError,setAppointmentError]=useState(null);
-   const[AppointmentData,setAppintmentData]=useState([]);
+ 
+  const[activeTab,setActiveTab]=useState("Consultation");
+   
+   
    const[TransactionLoading,setTransactionLoading]=useState(false);
    const[TransactionError,setTransactionError]=useState(null);
    const[TransactionData,setTransactionData]=useState([]);
+   const [patient, setPatientData] = useState([]);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState(null);
+  const [Data, setData] = useState([]);
+   const [ConsultationLoading, setConsultationLoading] = useState(false);
+    const [ConsultationError, setConsultationError] = useState(null);
+     const pagesize = 5;
+      const [totalCount, setTotalCount] = useState(0);
+      const totalPages = Math.ceil(totalCount / pagesize);
+      const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+    
+      const [currentpage, setCurrentPage] = useState(1);
+      const [Nextpage, setNextpage] = useState(null);
+    
+      const [previousPage, setPreviousPage] = useState(null);
+
+
+const { PatientId } = useParams();
+const navigate = useNavigate();
+   
    const getStatusStyle = (status) => {
   const value = status?.toLowerCase();
 
@@ -67,6 +76,7 @@ const PatientDetails = () => {
     case "failed":
     case "rejected":
     case "cancelled":
+      case "reschulded":
       return {
         background: "#fee2e2",
         color: "#dc2626",
@@ -91,28 +101,127 @@ const PatientDetails = () => {
       };
   }
 };
+ const getConsultationhistory = async (page = 1) => {
+    const token = sessionStorage.getItem("superadmin_token");
 
+    if (!token) {
+      toast.error("Session Expired , Login Again")
+      navigate("/login");
+    }
+
+    try {
+      setConsultationLoading(true);
+
+      const response = await fetch(
+       `${BASE_URL}/doctors/admin/consultation-history/?patient_id=${PatientId}&page=${page}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("Category API Response:", data);
+
+
+      setData(data.data.results);
+       setTotalCount(data.data.count);
+      setCurrentPage(page);
+      setNextpage(data.data.next);
+      setPreviousPage(data.data.previous);
+    } catch (error) {
+      console.error(error.message);
+
+      setConsultationError("Something went wrong while fetching categories");
+       
+
+      toast.error("Failed to fetch Category Data");
+    } finally {
+      setConsultationLoading(false);
+    }
+  };
+
+const getPatientDetail = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/patients/admin/patients/?id=${PatientId}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    console.log("Patient Detail:", data);
+
+    if (data.success) {
+      setPatientData(data.data);
+    } else {
+      toast.error(data.message);
+    }
+  } catch (err) {
+    console.error(err);
+    setError("Failed to fetch patient details");
+    toast.error("Failed to fetch patient details");
+  } finally {
+    setLoading(false);
+  }
+};
+useEffect(() => {
+  getPatientDetail();
+  getConsultationhistory();
+}, [PatientId]);
 
 
   return (
     <div className="patient-page">
-      {/* Header */}
+      
+
       <div className="patient-header-card">
         <div className="patient-left">
             <div className="avatar-section">
               <div className="avatar-wrapper">
-                {patient?.profile_image ? (
-                  <img
-                    src={patient.profile_image}
-                    alt="doctor"
-                    className="avatar-img"
-                  />
-                ) : (
-                  <div className="avatar-placeholder">
-                    {patient?.first_name?.charAt(0)?.toUpperCase()}
-                    {patient?.last_name?.charAt(0)?.toUpperCase()}
-                  </div>
-                )}
+             {patient?.profile_picture ? (
+  <img
+    src={patient.profile_picture}
+    alt="patient"
+    className="avatar-img"
+  />
+) : (
+  <div className="avatar-placeholder">
+    {patient?.first_name?.charAt(0)?.toUpperCase()}
+    {patient?.last_name?.charAt(0)?.toUpperCase()}
+  </div>
+)}
 
               </div>
           
@@ -121,18 +230,24 @@ const PatientDetails = () => {
           <div className="patient-info">
            
             <h2>
-              {patient.first_name} {patient.last_name}
+           <h2>
+  {patient?.first_name} {patient?.last_name}
+</h2>
             </h2>
 
           <h4>Date of Birth</h4>
                 <p>
-                  {new Date(patient.dob).toLocaleDateString("en-GB")}
+               <p>
+  {patient?.dob
+    ? new Date(patient.dob).toLocaleDateString("en-GB")
+    : "N/A"}
+</p>
                 </p>
 
             <div className="patient-meta">
               <span>
                 <FiPhone />
-                {patient.phone_number}
+          {patient?.phone_number || "N/A"}
               </span>
 
               <span>
@@ -225,7 +340,7 @@ const PatientDetails = () => {
   </div>
   <div className="item-content">
     <h4>Email Address</h4>
-    <p>{patient.email}</p>
+ <p>{patient?.email || "N/A"}</p>
   </div>
 </div>
     </div>
@@ -310,11 +425,11 @@ const PatientDetails = () => {
 
 
 
-             <button className={activeTab === "Appointment" ? "active-tab" : ""}
-            onClick={() => setActiveTab("Appointment")}
+             <button className={activeTab ==="Consultation" ? "active-tab" : ""}
+            onClick={() => setActiveTab("Consultation")}
           >
 
-      Appointment
+    Consultation
           </button>      
 
         
@@ -340,101 +455,202 @@ const PatientDetails = () => {
           
         </div>
      
-  {
-          activeTab === "Appointment" && (
-            <div className="consultation-main-card">
-
-
-              <div className="consultation-header">
-
-                <div className="consultation-title-wrap">
-
-                  <div className="consultation-line"></div>
-
-                  <div>
-                    <h2>Appointment History </h2>
-
-                    <p>
-                      Track all Appointment activities,
-                      approvals, rejections and pending requests
-                    </p>
-                  </div>
-
-                </div>
-
-              </div>
-
-
-            
-
-              <div classsName="table-wrapper1">
-                <table className="data-table" >
-                  <thead>
-                    <tr>
-                      <th>Id</th>
-                      <th>Patient Name</th>
-                      <th>Doctor Name</th>
-                      <th>Amount</th>
-                      <th>Date</th>
-                      <th>Start Time</th>
-                      <th>End Time</th>
-                      <th>Consultation Type</th>
-                      <th>Status</th>
-
-                    </tr>
-                  </thead>
-                  {AppointmentLoading ? (
-                    Array(3).fill(0).map((_, i) => (
-                      <tr key={i}>
-                        <td colSpan="10"><div className="skeleton-row"></div></td>
-                      </tr>
-                    ))
-                  ) : AppointmentError ? (
-                    <p colSpan="6" style={{ color: "red" }}>{AppointmentError}</p>
-                  ) : (
-                    <tbody>
-                      {AppointmentData && AppointmentError?.length > 0 ? (
-                        AppointmentData?.map((appointment, index) => (
-                          <tr key={appointment.id}>
-                            <td className="id1">{index + 1}</td>
-                            <td> {appointment.patient_name}</td>
-                            <td>{appointment.doctor_name}</td>
-                            <td>{appointment.amount}</td>
-                            <td>{appointment.appointment_date}</td>
-                            <td>{appointment.start_time}</td>
-                            <td>{appointment.end_time}</td>
-                            <td>{appointment.consultation_type}</td>
-<td>
-  <span
-    className="status-badge"
-    style={getStatusStyle(appointment.status)}
-  >
-    {appointment.status}
-  </span>
-</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="10" style={{ textAlign: "center" }}>
-                            No Data Found
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  )}
-                </table>
-
-
-
-
-              </div>
-
-
-
-            </div>
-          )
-        }
+    {
+           activeTab === "Consultation" && (
+             <div className="consultation-main-card">
+ 
+ 
+               <div className="consultation-header">
+ 
+                 <div className="consultation-title-wrap">
+ 
+                   <div className="consultation-line"></div>
+ 
+                   <div>
+                     <h2>Consultation History</h2>
+ 
+                     <p>
+                       Track all consultation activities,
+                       approvals, rejections and pending requests
+                     </p>
+                   </div>
+ 
+                 </div>
+ 
+               </div>
+ 
+ 
+               <div className="consultation-stats-grid">
+ 
+                 {/* TOTAL */}
+                 <div className="consultation-stat-card">
+                   <div className="consultation-icon-box">
+                     <FaUsers />
+                   </div>
+ 
+                   <div className="consultation-stat-content">
+                     <h4>TOTAL CONSULTATIONS</h4>
+                     <h2>{Data?.data?.count}</h2>
+                   </div>
+                 </div>
+ 
+ 
+                 <div className="consultation-stat-card">
+                   <div className="consultation-icon-box ">
+                     <FiCheckCircle />
+                   </div>
+ 
+                   <div className="consultation-stat-content">
+                     <h4>APPROVED</h4>
+                     <h2>0</h2>
+                   </div>
+                 </div>
+ 
+ 
+                 <div className="consultation-stat-card">
+                   <div className="consultation-icon-box ">
+                     <FiXCircle />
+                   </div>
+ 
+                   <div className="consultation-stat-content">
+                     <h4>REJECTED</h4>
+                     <h2>0</h2>
+                   </div>
+                 </div>
+ 
+ 
+                 <div className="consultation-stat-card">
+                   <div className="consultation-icon-box ">
+                     <FiClock />
+                   </div>
+ 
+                   <div className="consultation-stat-content">
+                     <h4>PENDING</h4>
+                     <h2>0</h2>
+                   </div>
+                 </div>
+ 
+               </div>
+ 
+               <div classsName="table-wrapper1">
+                 <table className="data-table" >
+                   <thead>
+                     <tr>
+                       <th>Id</th>
+                       <th>Patient Name</th>
+                       <th>Doctor Name</th>
+                       <th>Amount</th>
+                       <th>Date</th>
+                       <th>Start Time</th>
+                       <th>End Time</th>
+                       <th>Consultation Type</th>
+                       <th>Status</th>
+ 
+                     </tr>
+                   </thead>
+                   {ConsultationLoading ? (
+                     Array(3).fill(0).map((_, i) => (
+                       <tr key={i}>
+                         <td colSpan="10"><div className="skeleton-row"></div></td>
+                       </tr>
+                     ))
+                   ) : ConsultationError ? (
+                     <p colSpan="6" style={{ color: "red" }}>{ConsultationError}</p>
+                   ) : (
+                     <tbody>
+                       {Data && Data.length > 0 ? (
+                         Data.map((consultation, index) => (
+                           <tr key={consultation.id}>
+                             <td className="id1">{index + 1}</td>
+                             <td> {consultation.patient_name}</td>
+                             <td>{consultation.doctor_name}</td>
+                             <td>{consultation.amount}</td>
+                         <td>
+   {consultation.status_history?.[
+     consultation.status_history.length - 1
+   ]?.slot?.date || "-"}
+ </td>
+ 
+ <td>
+   {consultation.status_history?.[
+     consultation.status_history.length - 1
+   ]?.slot?.start_time || "-"}
+ </td>
+ 
+ <td>
+   {consultation.status_history?.[
+     consultation.status_history.length - 1
+   ]?.slot?.end_time || "-"}
+ </td>
+                             <td>{consultation.consultation_type ||"N/A"}</td>
+ <td>
+   <span
+     className="status-badge"
+     style={getStatusStyle(consultation.status)}
+   >
+     {consultation.status}
+   </span>
+ </td>
+                           </tr>
+                         ))
+                       ) : (
+                         <tr>
+                           <td colSpan="10" style={{ textAlign: "center" }}>
+                             No Data Found
+                           </td>
+                         </tr>
+                       )}
+                     </tbody>
+                   )}
+                 </table>
+ 
+ 
+ 
+ 
+               </div>
+ 
+                {totalPages > 1 && (
+           <div className="pagination">
+ 
+ 
+             <button
+              onClick={() => getConsultationhistory(currentpage - 1)}
+               disabled={!previousPage}
+             >
+               Prev
+             </button>
+ 
+ 
+             {pages.map((page) => (
+               <button
+                 key={page}
+                 onClick={() => getConsultationhistory(page)}
+                 style={{
+ 
+                   fontWeight: currentpage === page ? "bold" : "normal",
+                   background: currentpage === page ? "#0D614E" : "#fff",
+                   color: currentpage === page ? "#fff" : "#0D614E",
+                 }}
+               >
+                 {page}
+               </button>
+             ))}
+ 
+ 
+             <button
+               onClick={() => getConsultationhistory(currentpage + 1)}
+               disabled={!Nextpage}
+             >
+               Next
+             </button>
+ 
+           </div>
+         )}
+ 
+ 
+             </div>
+           )
+         }
 
 
 

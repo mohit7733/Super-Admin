@@ -71,7 +71,7 @@ const token = sessionStorage.getItem("superadmin_token");
 
   try {
     const response = await fetch(
-      `${BASE_URL}/doctors/admin/consultation-history/?status=cancellation_requested&status=cancelled&status=rescheduled`,
+      `${BASE_URL}/doctors/admin/consultation-history/?status=cancellation_requested`,
       {
         method: "GET",
         headers: {

@@ -139,82 +139,71 @@ const Login = () => {
     };
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!validateForm()) {
-      toast.error("Please fix the errors before submitting");
-      return;
+  if (!validateForm()) {
+    toast.error("Please fix the errors before submitting");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const formattedPhone = formatPhoneNumber(formData.phone_number);
+
+    // Payload
+    const payload = {
+      phone_number: formattedPhone,
+      password: formData.password,
+    };
+
+    // Sirf jab role select ho tab role bhejo
+    if (formData.role) {
+      payload.role = formData.role;
     }
 
-    setIsLoading(true);
+    const response = await fetch(`${BASE_URL}/user/admin/login/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-    try {
-      const formattedPhone = formatPhoneNumber(formData.phone_number);
+    const result = await response.json();
 
-      const response = await fetch(`${BASE_URL}/user/admin/login/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-  phone_number: formattedPhone,
-  password: formData.password,
-  role: formData.role,
-}),
-      });
-
-      // const data = await response.json();
-
-      // if (!response.ok) {
-      //   throw new Error(data.error || data.message || "Login failed");
-      // }
-
-      // sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
-      // sessionStorage.setItem(STORAGE_KEYS.ROLE, data.role);
-      // sessionStorage.setItem(STORAGE_KEYS.PERMISSIONS, JSON.stringify(data.permissions || []));
-
-     const result = await response.json();
-     console.log("")
-
-if (!response.ok) {
-  throw new Error(result.error || result.message || "Login failed");
-}
-
-const data = result.data;
-
-const userRole = data.is_super_admin
-  ? "SUPERADMIN"
-  : data.admin_role;
-
-
-sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
-
-sessionStorage.setItem(
-  STORAGE_KEYS.ROLE,
-  userRole
-);
-
-sessionStorage.setItem(
-  STORAGE_KEYS.PERMISSIONS,
-  JSON.stringify(data.permissions || [])
-);
-
-toast.success("Login Successful!");
-
-const route = getRouteByRole(userRole);
-console.log("userRole", userRole);
-console.log("route", route);
-
-setTimeout(() => {
-  navigate(route);
-}, 1000);
-} catch (err) {
-      console.error("Login error:", err);
-      toast.error(err.message || "Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error(result.error || result.message || "Login failed");
     }
-  };
+
+    const data = result.data;
+
+    const userRole = data.is_super_admin
+      ? "SUPERADMIN"
+      : data.admin_role;
+
+    sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
+    sessionStorage.setItem(STORAGE_KEYS.ROLE, userRole);
+    sessionStorage.setItem(
+      STORAGE_KEYS.PERMISSIONS,
+      JSON.stringify(data.permissions || [])
+    );
+
+    toast.success("Login Successful!");
+
+    const route = getRouteByRole(userRole);
+
+    setTimeout(() => {
+      navigate(route);
+    }, 1000);
+
+  } catch (err) {
+    console.error("Login error:", err);
+    toast.error(err.message || "Something went wrong. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // const getRouteByRole = (role) => {
   //   switch (role) {
@@ -376,7 +365,7 @@ setTimeout(() => {
               )}
             </div>
 
-            <div className="form-group">
+      <div className="form-group">
   <label>Role</label>
 
   <div className="multi-select">
@@ -392,19 +381,19 @@ setTimeout(() => {
     {showRoleDropdown && (
       <div className="multi-select-dropdown">
         {RoleData.map((role) => (
-          <div
-            key={role.id}
-            className="checkbox-option"
-            onClick={() => {
-              setFormData((prev) => ({
-                ...prev,
-                role: role.id,
-              }));
-              setShowRoleDropdown(false);
-            }}
-          >
+          <label key={role.id} className="checkbox-option">
+            <input
+              type="checkbox"
+              checked={formData.role === role.id}
+              onChange={() => {
+                setFormData((prev) => ({
+                  ...prev,
+                  role: prev.role === role.id ? "" : role.id,
+                }));
+              }}
+            />
             {role.name}
-          </div>
+          </label>
         ))}
       </div>
     )}

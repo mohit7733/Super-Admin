@@ -480,10 +480,7 @@ const uploadImage = async (file) => {
           >
             + Add Question
           </button>
-,
-          <button className="btn-secondary" >
-            Export Details
-          </button>
+
         </div>
       </div>
 
@@ -694,6 +691,136 @@ const uploadImage = async (file) => {
 
           )
         }
+
+        {AddformModal && (
+  <div className="modal">
+    <form
+      className="customer-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
+      }}
+    >
+      <h2>Add Question</h2>
+
+      <label>Question</label>
+
+      <input
+        type="text"
+        name="question"
+        placeholder="Enter Question"
+        value={Addform.question}
+        onChange={handleInputChange}
+      />
+
+      <label>Question Type</label>
+
+      <select
+        name="answer_type"
+        value={Addform.answer_type}
+        onChange={handleInputChange}
+      >
+        <option value="">Select Type</option>
+        <option value="choice">Single Choice</option>
+        <option value="multi_choice">Multiple Choice</option>
+        <option value="text">Text</option>
+      </select>
+
+      {(Addform.answer_type === "choice" ||
+        Addform.answer_type === "multi_choice") && (
+        <>
+          <div className="choice-header">
+            <h4>Choices</h4>
+
+            <button
+              type="button"
+              className="AddButton"
+              onClick={addChoice}
+            >
+              + Add Choice
+            </button>
+          </div>
+
+          {Addform.choices.map((choice, index) => (
+            <div key={index} className="choice-card">
+              <div className="choice-card-header">
+                <span className="choice-title">
+                  Choice {index + 1}
+                </span>
+
+                <button
+                  type="button"
+                  className="remove-choice-btn"
+                  onClick={() => removeChoice(index)}
+                >
+                  <FiTrash2 />
+                </button>
+              </div>
+
+              <div className="choice-fields">
+                <input
+                  type="text"
+                  placeholder={`Enter Choice ${index + 1}`}
+                  value={choice.value}
+                  onChange={(e) =>
+                    handleChoiceChange(
+                      index,
+                      "value",
+                      e.target.value
+                    )
+                  }
+                  className="choice-input"
+                />
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    handleChoiceChange(
+                      index,
+                      "image",
+                      e.target.files[0]
+                    )
+                  }
+                  className="choice-file"
+                />
+
+                {choice.image && (
+                  <img
+                    src={URL.createObjectURL(choice.image)}
+                    alt="preview"
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      <div className="form-buttons">
+        <button type="submit">
+          Add Question
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setAddformModal(false);
+            setAddform(initalAddForm);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+)}
 
       {EditformModal && (
   <div className="modal">
