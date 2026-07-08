@@ -1,8 +1,8 @@
 import * as XLSX from "xlsx";
  import { useState, useEffect, useRef, useCallback } from "react";
  import { useNavigate } from "react-router-dom";
- import { ToastContainer, toast } from "react-toastify";
- import "react-toastify/dist/ReactToastify.css";
+ import { toast } from 'react-toastify';
+ ;
  import BASE_URL from "../../../Base";
  import { apiFetch } from "../../../fetchapi";
  import { BsThreeDotsVertical, BsDownload, BsPlus, BsSearch, BsTrash, BsPencil, BsEye, BsChevronLeft, BsChevronRight } from "react-icons/bs";
@@ -648,8 +648,7 @@ const Testing = () => {
                 </div>
             )}
 
-            <ToastContainer position="top-right" autoClose={3000} theme="colored" />
-        </div>
+            </div>
     );
 };
 

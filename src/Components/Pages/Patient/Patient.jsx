@@ -1,8 +1,8 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from 'react-toastify';
 import BASE_URL from "../../../Base";
-import "react-toastify/dist/ReactToastify.css";
+;
 import { apiFetch } from "../../../fetchapi";
 import { BsSearch, BsThreeDots, BsThreeDotsVertical,BsDownload } from "react-icons/bs";
 
@@ -444,18 +444,6 @@ setSelectedPatient(null);
         </div>
       )}
 
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        closeButton
-      />
       {/* {Addform && (
 
         <div className="modal">

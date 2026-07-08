@@ -1,8 +1,7 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
-import { toast, ToastContainer } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
+import { toast } from 'react-toastify'
 import { countries, statesByCountry } from "../../data/locationData"
 import BASE_URL from "../../../Base";
 
@@ -1863,19 +1862,7 @@ const Vendor = () => {
   </div>
 )}
 
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        closeButton
-      />
-    </>
+      </>
   )
 }
 

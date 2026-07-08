@@ -13,7 +13,7 @@ import { FiEye } from "react-icons/fi";
 import { BsPlus } from "react-icons/bs";
 import { FiUpload } from "react-icons/fi";
 import BASE_URL from "../../../Base";
-import { ToastContainer, toast } from "react-toastify"
+import { toast } from 'react-toastify'
 
 const Banner = () => {
   const[BannerData,setBannerData]=useState([]);
@@ -1057,9 +1057,7 @@ const handleUpdateBanner = async (e) => {
     </div>
   </div>
 )}
-      <ToastContainer position="top-center" autoClose={1000} />
-     
-    </>
+      </>
   )
 }
 

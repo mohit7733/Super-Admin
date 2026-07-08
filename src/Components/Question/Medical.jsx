@@ -1,7 +1,7 @@
 import React from 'react';
-import { useState, useEffect, useRef, navigate } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BASE_URL from '../../Base';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
 import { FaEdit } from "react-icons/fa";
@@ -222,7 +222,7 @@ const Medical = () => {
     );
 
     if (!token) {
-      navigate("/login");
+      Navigate("/login");
       return;
     }
 
@@ -347,7 +347,7 @@ const payload = {
       if (res.status === 401 || res.status === 403) {
         sessionStorage.removeItem("superadmin_token");
         toast.error("Session expired. Please login again");
-        navigate("/login");
+        Navigate("/login");
         return;
       }
 
@@ -846,20 +846,7 @@ const uploadImage = async (file) => {
       </div>
 
 
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        closeButton
-      />
-
-    </>
+      </>
 
   )
 }

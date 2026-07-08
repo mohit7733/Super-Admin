@@ -4,8 +4,8 @@ import logo1 from "../../Assests/logo1.png";
 import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
 import BASE_URL from "../../../Base"; 
 
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer, toast } from 'react-toastify';
+;
+import { toast } from 'react-toastify';
 import Ayurmuniimages from "../../Assests/Ayurvedicimages.jpg";
 
 const ResetPassword = () => {
@@ -147,8 +147,7 @@ const formattedPhone = `+91${phoneNumber.replace(/^\+91|^0/g, "")}`
 </form>
       </div>
     </div>
-      <ToastContainer position="top-center" autoClose={1000} />
-    </>
+      </>
   );
 };
 

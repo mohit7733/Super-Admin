@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../../../Base";
 
-import { toast, ToastContainer } from "react-toastify"
+import { toast } from 'react-toastify'
 import { BsSearch } from "react-icons/bs";
 import { FaRupeeSign } from "react-icons/fa";
 import { FiEye } from "react-icons/fi";

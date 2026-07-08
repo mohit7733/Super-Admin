@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import logo1 from '../../Assests/logo1.png';
 import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
 import BASE_URL from "../../../Base";
@@ -45,7 +44,7 @@ const ForgotPassword = () => {
       }
 
       toast.success("OTP sent to your phone!");
-        sessionStorage.setItem("phone_number", formattedPhone);
+      sessionStorage.setItem("phone_number", formattedPhone);
       setLoading(false);
       navigate("/ResetPassword");
 
@@ -58,7 +57,7 @@ const ForgotPassword = () => {
   return (
     <>
       <div className="login-content1"
-      style={{
+        style={{
           backgroundImage: `linear-gradient(
             rgba(114, 123, 121, 0.55),
             rgba(141, 207, 192, 0.55)
@@ -73,13 +72,13 @@ const ForgotPassword = () => {
         <div className="login-card">
           <div className="login-header">
             <div className="logo1">
-           
-                <img
-                  src={Ayurmunilogo}
-                  alt="Logo"
-                  style={{ width: "102px", height: "81px", marginBottom: "20px" }}
-                />
-         <p className='icon'> Ayurmuni</p>
+
+              <img
+                src={Ayurmunilogo}
+                alt="Logo"
+                style={{ width: "102px", height: "81px", marginBottom: "20px" }}
+              />
+              <p className='icon'> Ayurmuni</p>
             </div>
             <p className="login-subtitle">
               Forgot your password? Enter your phone number to receive OTP.
@@ -115,7 +114,6 @@ const ForgotPassword = () => {
         </div>
       </div>
 
-      <ToastContainer position="top-center" autoClose={1000} />
     </>
   );
 };

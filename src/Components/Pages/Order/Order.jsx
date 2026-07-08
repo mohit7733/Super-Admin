@@ -2,9 +2,9 @@
 import * as XLSX from "xlsx";
 import { useRef } from "react";
 import React, { useState, useEffect } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from 'react-toastify';
 import BASE_URL from "../../../Base";
-import "react-toastify/dist/ReactToastify.css";
+;
 import { apiFetch } from "../../../fetchapi";
 import OrderModal from "./OrderModal";
 import { BsSearch, } from "react-icons/bs";
@@ -726,8 +726,7 @@ const Order = () => {
         </div>
       )}
 
-      <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover closeButton />
-    </>
+      </>
   );
 };
 

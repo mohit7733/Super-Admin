@@ -3,8 +3,7 @@ import React from 'react'
 import { useState, useEffect } from 'react';
 import BASE_URL from '../../../Base';
 import StarRating from "./StarRating";
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
+import { toast } from 'react-toastify'
 import * as XLSX from "xlsx";
 import { useNavigate } from 'react-router-dom';
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -827,20 +826,7 @@ const Wellnesscenter = () => {
       }
 
 
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        closeButton
-      />
-
-    </>
+      </>
   )
 }
 

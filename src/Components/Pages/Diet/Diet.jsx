@@ -2,8 +2,7 @@ import React from "react";
 import "./Diet.css";
 import { useState, useEffect } from "react";
 import BASE_URL from "../../../Base";
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
+import { toast } from 'react-toastify'
 import { FaSmileBeam } from "react-icons/fa";
 import { data } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -506,8 +505,7 @@ const Diet = () => {
           </div>
         </div>
       )}
-      <ToastContainer position="top-center" autoClose={1000} />
-    </>
+      </>
 
 
   );
