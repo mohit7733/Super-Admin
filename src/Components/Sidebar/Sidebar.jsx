@@ -396,7 +396,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
   const [userPermissions, setUserPermissions] = useState([]);
   const navigate = useNavigate();
 
-  // Load user data from session storage
+ 
   useEffect(() => {
     const role = sessionStorage.getItem("role");
     const permissions = JSON.parse(sessionStorage.getItem("permissions") || "[]");
@@ -404,7 +404,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     setUserPermissions(permissions);
   }, []);
 
-  // Auto-expand menus based on current path
+ 
   useEffect(() => {
     const newOpenMenus = {};
     let hasChanges = false;

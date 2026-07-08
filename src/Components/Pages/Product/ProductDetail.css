@@ -2373,7 +2373,7 @@
   }
 }
 
-.modal-content {
+/* .modal-content {
   background: white;
   border-radius: var(--radius-xl);
   max-width: 640px;
@@ -2382,7 +2382,7 @@
   overflow-y: auto;
   box-shadow: var(--shadow-2xl);
   animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+} */
 
 @keyframes modalSlideUp {
   from {
@@ -3116,7 +3116,7 @@
 }
 
 /* Filter Controls */
-.filter-category {
+/* .filter-category {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -3127,7 +3127,7 @@
   padding: 16px 20px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
+} */
 
 .filter-controls {
   display: flex;
@@ -3220,69 +3220,11 @@
   color: #333;
 }
 
-.add-customer-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: #0D614E;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
 
-.add-customer-btn:hover {
-  background: #0a4d3e;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(13, 97, 78, 0.3);
-}
 
-/* Table */
-.table-wrapper {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  overflow-x: auto;
-}
 
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
 
-.data-table thead {
-  background: #f8f9fa;
-}
 
-.data-table th {
-  padding: 12px 16px;
-  text-align: center;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #e0e0e0;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.data-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
-  vertical-align: middle;
-}
-
-.data-table tbody tr:hover {
-  background: #f8f9fa;
-}
-
-/* Status Badge */
 .status-badge {
   display: inline-block;
   padding: 4px 12px;
@@ -3305,10 +3247,10 @@
 .category-code-badge {
   display: inline-block;
   padding: 3px 10px;
-  background: #e8f0fe;
+      background: rgba(13, 97, 78, 0.125);
   color: #0D614E;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   font-family: monospace;
 }
@@ -3334,7 +3276,7 @@
 }
 
 .action-btn.edit {
-  background: #e8f0fe;
+    background: rgba(13, 97, 78, 0.125);
   color: #0D614E;
 }
 
@@ -3375,7 +3317,7 @@
   transform: scale(1.05);
 }
 
-/* Modals */
+
 .prakriti-modal-overlay,
 .modal-overlay {
   position: fixed;
@@ -3444,21 +3386,9 @@
   color: #333;
 }
 
-.prakriti-form {
-  padding: 24px;
-}
 
-.form-group {
-  margin-bottom: 20px;
-}
 
-.form-group label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 6px;
-}
+
 
 .required {
   color: #dc3545;
@@ -3505,7 +3435,7 @@
   cursor: pointer;
 }
 
-.upload-box1 {
+/* .upload-box1 {
   border: 2px dashed #d0d0d0;
   border-radius: 8px;
   padding: 20px;
@@ -3551,7 +3481,7 @@
   color: #999;
 }
 
-.banner-preview-wrapper {
+.er-preview-wrapper {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -3562,7 +3492,7 @@
 
 .banner-preview-left {
   flex: 1;
-}
+}bann
 
 .banner-preview-image {
   width: 100%;
@@ -3605,7 +3535,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-}
+} */
 
 .delete-btn-preview:hover {
   background: #fcc;

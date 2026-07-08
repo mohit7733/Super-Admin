@@ -500,9 +500,10 @@ const handleDelete = async (id) => {
         </button>
       </div>
 
-      <form onSubmit={AddProductBrand}>
+      <form onSubmit={AddProductBrand}
+      className="prakriti-form">
         <div className="form-group">
-          <label>Brand Name</label>
+          <label>Brand Name <span className="required">*</span></label>
          <input
   type="text"
   name="name"

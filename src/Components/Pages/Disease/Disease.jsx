@@ -1747,81 +1747,130 @@ const Disease = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmModal && (
-        <div className="modal-overlay" onClick={() => {
-          setDeleteConfirmModal(false);
-          setSelectedDiseaseId(null);
-        }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Are you sure you want to delete this disease?</h3>
-            <p className="modal-warning">This action cannot be undone.</p>
-            <div className="form-buttons">
-              <button
-                className="btn-danger"
-                disabled={isDeleting}
-                onClick={() => {
-                  handleDiseaseDelete(selectedDiseaseId);
-                }}
-              >
-                {isDeleting ? "Deleting..." : "Yes, Delete"}
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  setDeleteConfirmModal(false);
-                  setSelectedDiseaseId(null);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+   {deleteConfirmModal && (
+  <div className="modal">
+    <div className="modal-content">
 
-      {/* Status Change Modal */}
-      {StatusModal && SelectedDisease && (
-        <div
-          className="modal-overlay"
+      <h3>Are you sure you want to delete this disease?</h3>
+
+      <div className="form-buttons">
+        
+        <button
+          className="otp-btn verify-btn"
+          onClick={() => {
+            handleDiseaseDelete(selectedDiseaseId);
+            setDeleteConfirmModal(false);
+            setSelectedDiseaseId(null);
+          }}
+        >
+          Yes
+        </button>
+
+        <button
+          onClick={() => {
+            setDeleteConfirmModal(false);
+            setSelectedDiseaseId(null);
+          }}
+        >
+          No
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+    
+     {StatusModal && SelectedDisease && (
+   <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setStatusModal(false);
+      setSelectedDisease(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setStatusModal(false);
+          setSelectedDisease(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            SelectedDisease.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {SelectedDisease.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this category?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{SelectedDisease.name}</h4>
+     
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
           onClick={() => {
             setStatusModal(false);
             setSelectedDisease(null);
           }}
         >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Confirm Status Change</h3>
-            <p>
-              Are you sure you want to <strong>{SelectedDisease.is_active ? "deactivate" : "activate"}</strong>{" "}
-              "{SelectedDisease.name}"?
-            </p>
-            <div className="form-buttons">
-              <button
-                className={`btn-${SelectedDisease.is_active ? "danger" : "success"}`}
-                disabled={isStatusChanging}
-                onClick={() => {
-                  handleToggle(SelectedDisease.id, SelectedDisease.is_active);
-                  setStatusModal(false);
-                  setSelectedDisease(null);
-                }}
-              >
-                {isStatusChanging
-                  ? "Updating..."
-                  : `Yes, ${SelectedDisease.is_active ? "Deactivate" : "Activate"}`}
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  setStatusModal(false);
-                  setSelectedDisease(null);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          Cancel
+        </button>
+
+        <button
+          className={`activeModal-confirm ${
+            SelectedDisease.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          onClick={() => {
+        handleToggle(
+              SelectedDisease.id,
+              SelectedDisease.is_active
+            );
+
+            setStatusModal(false);
+            setSelectedDisease(null);
+          }}
+        >
+          Yes,{" "}
+          {SelectedDisease.is_active
+            ? "Deactivate"
+            : "Activate"}
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+
 
       {/* Image Preview Modal */}
       {previewModal && (

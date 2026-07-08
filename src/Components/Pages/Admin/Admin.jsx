@@ -7,6 +7,7 @@ import { BsSearch } from "react-icons/bs";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
+import { BiPlus } from "react-icons/bi";
 import {
   FaUsers,
   FaUserCheck,
@@ -14,7 +15,7 @@ import {
 } from "react-icons/fa";
 const initalAdminform = {
   phone_number: '',
-  role: '',
+  roles:[],
   password: '',
 }
 const Admin = () => {
@@ -43,6 +44,9 @@ const Admin = () => {
   const [addAdminLoading, setAddAdminLoading] = useState(false);
 const [addRoleLoading, setAddRoleLoading] = useState(false);
 const [savePermissionLoading, setSavePermissionLoading] = useState(false);
+const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+const [selectedRoles, setSelectedRoles] = useState([]);
+
 
 
   const fetchedOnce = useRef(false);
@@ -97,21 +101,39 @@ const [savePermissionLoading, setSavePermissionLoading] = useState(false);
     }
   }
 
-  
-
-
-
   const handleinputchange = (e) => {
-    const { name, value } = e.target;
-    setAddAdminForm(prev => ({
+  const { name, value } = e.target;
+
+    setAddAdminForm((prev) => ({
       ...prev,
       [name]: value,
     }));
-    setAddError(prev => ({
+ 
+  setAddError((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
+};
+
+
+const handleRoleChange = (id) => {
+  if (AddAdminForm.roles.includes(id)) {
+    setAddAdminForm((prev) => ({
       ...prev,
-      [name]: ""
+      roles: prev.roles.filter((item) => item !== id),
     }));
-  };
+  } else {
+    setAddAdminForm((prev) => ({
+      ...prev,
+      roles: [...prev.roles, id],
+    }));
+  }
+
+  setAddError((prev) => ({
+    ...prev,
+    roles: "",
+  }));
+};
 
 
 
@@ -138,10 +160,9 @@ const [savePermissionLoading, setSavePermissionLoading] = useState(false);
    } else if (!/[A-Za-z]/.test(password)) {
        errors.password = "Password must contain at least one letter";
   }
-
-    if (!AddAdminForm.role.trim()) {
-       errors.role = "please select any role"
-     }
+if (AddAdminForm.roles.length === 0) {
+  errors.roles = "Please select a role";
+}
 
    if (Object.keys(errors).length > 0) {
       setAddError(errors);
@@ -271,7 +292,7 @@ const [savePermissionLoading, setSavePermissionLoading] = useState(false);
 
     console.log("Role Response:", data);
 
-    setRoleData(data);
+    setRoleData(data.data);
   } catch (err) {
     console.error(err.message);
     setError("Something went wrong while fetching roles.");
@@ -566,11 +587,11 @@ const handleEditClick = (verifier) => {
     </div>
   </div>
 </div>
-
-      <div className="controls-section">
-        <div className="search-wrapper">
-          <BsSearch className="search-icon" />
-          <input
+  <div className="filter-category">
+          <div className="filter-controls">
+            <div className="search-wrapper">
+              <BsSearch className="search-icon" />
+             <input
             type="text"
 
             placeholder="Search Admin by their phone number"
@@ -578,28 +599,25 @@ const handleEditClick = (verifier) => {
             onChange={(e) => setVerifiersearch(e.target.value)}
             className="search-input"
           />
-        </div>
-        <div className="filter-controls">
-          <button
+           
+            </div>
+  
+  
+        
+          </div>
+  <button
             className="add-customer-btn"
             onClick={() => {
               setAddAdminForm(initalAdminform);
               setAdminModal(true);
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="10" cy="7" r="4" />
-              <path d="M4 21v-2a6 6 0 0 1 12 0v2" />
-              <line x1="19" y1="8" x2="19" y2="14" />
-              <line x1="22" y1="11" x2="16" y2="11" />
-            </svg>
+              <BiPlus/>
             Add Admin
           </button>
-
-
-
         </div>
-      </div>
+
+    
 
       <table className="data-table">
         <thead>
@@ -629,7 +647,9 @@ const handleEditClick = (verifier) => {
             AdminData.map((verifier, index) => (
               <tr key={verifier.id}>
                 <td>{index + 1}</td>
-                <td>{ verifier.admin_role}</td>
+             <td>
+  {verifier.admin_roles?.map((role) => role.name).join(", ") || "-"}
+</td>
                 <td>{verifier?.phone_number}</td>
 
              <td>
@@ -711,83 +731,63 @@ const handleEditClick = (verifier) => {
       )} 
 
 
-   {permissionModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Edit Permissions  and Status</h3>
+  {permissionModalOpen && (
+  <div className="modal">
+    <div className="modal-content">
+      <h3>Edit Admin</h3>
 
+      <div className="form-group">
+        <label>Roles</label>
 
-            {allPermissions?.map((p) => (
-              <div key={p.id} className="checkbox-row">
-                <input
-                  type="checkbox"
-                  value={p.id}
-                  checked={selectedPermissions.includes(p.id)}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (e.target.checked) {
-                      setSelectedPermissions([...selectedPermissions, val]);
-                    } else {
-                      setSelectedPermissions(
-                        selectedPermissions.filter(x => x !== val)
-                      );
-                    }
-                  }}
-                />
-                <span>{p.name}</span>
-              </div>
-            ))}
+        {roleData.map((role) => (
+          <label key={role.id} className="checkbox-option">
+            <input
+              type="checkbox"
+              checked={selectedRoles.includes(role.id)}
+              onChange={() => {
+                if (selectedRoles.includes(role.id)) {
+                  setSelectedRoles(
+                    selectedRoles.filter((id) => id !== role.id)
+                  );
+                } else {
+                  setSelectedRoles([...selectedRoles, role.id]);
+                }
+              }}
+            />
 
-            {/* <div className="permission-header">
-  <button className="add-permission-btn">
-    + Add Permissions
-  </button>
-  
-</div> */}
+            {role.name}
+          </label>
+        ))}
+      </div>
 
+      <div className="form-group">
+  <label>Status</label>
 
-            <div className="form-group">
-              <label>Status</label>
-            <select
-  className="status-select"
-  value={editingUser?.admin_approval_status || "PENDING"}
-  onChange={(e) => {
-    const newStatus = e.target.value;
-
-    if (newStatus === "REJECTED" || newStatus === "SUSPENDED") {
-      setSelectedVerifier(editingUser);
-      setRejectModalOpen(true);
-      setPermissionModalOpen(false);
-      setActionType(newStatus);
-    } else {
+  <select
+    value={editingUser?.status || "active"}
+    onChange={(e) =>
       setEditingUser((prev) => ({
         ...prev,
-        admin_approval_status: newStatus,
-      }));
+        status: e.target.value,
+      }))
     }
-  }}
->
-  <option value="PENDING">Pending</option>
-  <option value="APPROVED">Approved</option>
-  <option value="REJECTED">Rejected</option>
-  <option value="SUSPENDED">Suspended</option>
-</select>
-            </div>
+  >
+    <option value="active">Active</option>
+    <option value="inactive">Inactive</option>
+  </select>
+</div>
+      <div className="form-buttons">
+        <button onClick={handleSavePermissions}>
+          Save
+        </button>
 
-
-            <div className="form-buttons">
-             <button
-  type="submit"
-  disabled={savePermissionLoading}
-  onClick={handleSavePermissions}
->
-  {savePermissionLoading ? "Saving..." : "Save"}
-</button>
-              <button type="button" onClick={() => setPermissionModalOpen(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )} 
+        <button onClick={() => setPermissionModalOpen(false)}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       {AddAdminModal && (
         <div className="modal">
 
@@ -814,31 +814,62 @@ const handleEditClick = (verifier) => {
               onChange={handleinputchange}
             />
             {AddError.password && <p className="error">{AddError.password}</p>}
-            <label>Role</label>
-        <div className="role-select-wrapper">
-  <select
-    name="role"
-    value={AddAdminForm.role}
-    onChange={handleinputchange}
-  >
-    <option value="">Select Role</option>
+            
+      
+ <div className="form-group">
+  <label>Role</label>
 
-    {roleData?.map((role) => (
-      <option key={role.id} value={role.name}>
-        {role.name}
-      </option>
-    ))}
-  </select>
+  <div className="multi-select">
 
-  <button
-    type="button"
-    className="add-role-btn"
-    onClick={()=>setAddNewRoleModal(true)}
-  >
-    + Add Role
-  </button>
+    <div
+      className="multi-select-header"
+      onClick={() =>
+        setShowRoleDropdown(!showRoleDropdown)
+      }
+    >
+      {AddAdminForm.roles.length > 0
+        ? roleData
+            .filter((role) => AddAdminForm.roles.includes(role.id))
+            .map((role) => role.name)
+            .join(", ")
+        : "Select Roles"}
+    </div>
+
+    {showRoleDropdown && (
+      <div className="multi-select-dropdown">
+
+        {roleData.map((role) => (
+          <label
+            key={role.id}
+            className="checkbox-option"
+          >
+            <input
+              type="checkbox"
+              checked={AddAdminForm.roles.includes(role.id)}
+              onChange={() => handleRoleChange(role.id)}
+            />
+
+            {role.name}
+          </label>
+        ))}
+
+      </div>
+    )}
+  </div>
+
+  {AddError.roles && (
+    <p className="error">{AddError.roles}</p>
+  )}
 </div>
-            {AddError.role && <p className="error">{AddError.role}</p>}
+<button
+  type="button"
+  className="add-role-btn"
+  onClick={() => navigate("/admin/role")}
+>
+  + Add Role
+</button>
+
+            {AddError.roles && <p className="error">{AddError.roles}</p>}
 
             <div className="form-buttons">
          <button
@@ -865,48 +896,6 @@ const handleEditClick = (verifier) => {
 
   
 
-{
-  AddNewRoleModal && (
-    <div className="modal">
-
-      <form
-        className="customer-form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          addNewRole();
-        }}
-      >
-        <h3>Add New Role</h3>
-
-        <input
-          type="text"
-          name="name"
-          placeholder="Enter the New Role Name"
-          value={NewRole}
-          onChange={(e) => setNewRole(e.target.value)}
-        />
-
-        <div className="form-buttons">
-       <button
-  type="submit"
-  disabled={addRoleLoading}
->
-  {addRoleLoading ? "Adding..." : "Add Role"}
-</button>
-
-          <button
-            type="button"
-            onClick={() => setAddNewRoleModal(false)}
-          >
-            Cancel
-          </button>
-        </div>
-
-      </form>
-
-    </div>
-  )
-}
 
 
       {DeleteModal && (

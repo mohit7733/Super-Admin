@@ -72,6 +72,7 @@ import YogaCategory from './Components/Pages/Yoga/YogaCategory';
 import YogaSession from './Components/Pages/Yoga/YogaSession';
 import PatientDetails from './Components/Pages/Patient/PatientDetails';
 import Management from './Components/Pages/Mangement/Management';
+import AddRoles from './Components/Pages/Admin/AddRoles';
 
 
 
@@ -136,6 +137,17 @@ function App() {
             <ProtectedRoute permission="view_category">
               <Layout>
                 <Category />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+           <Route
+          path="/admin/role"
+          element={
+            <ProtectedRoute permission="view_role">
+              <Layout>
+                <AddRoles />
               </Layout>
             </ProtectedRoute>
           }

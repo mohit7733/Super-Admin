@@ -1,6 +1,6 @@
-import React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
+import { BiPlus } from 'react-icons/bi';
 import {
   FaUsers,
   FaChartLine,
@@ -27,11 +27,25 @@ const Healthcategory = () => {
   const [SubCategoryImage, setSubCategoryImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [EditImage, setEditImage] = useState(null);
-  const [IsUpdating, setIsUpdating] = useState(false);
+  const [editModal, setEditModal] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isStatusChanging, setIsStatusChanging] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+  });
+  const [previewImage, setPreviewImage] = useState("");
+  const [statusModal, setStatusModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const fileInputRef = useRef(null);
   const editFileRef = useRef(null);
-
-
-
+  const navigate = useNavigate();
 
   const [categoryForm, setCategoryForm] = useState({
     name: "",
@@ -41,10 +55,6 @@ const Healthcategory = () => {
     image_url: "",
     code: "",
   });
-
-
-
-  const [editModal, setEditModal] = useState(false);
 
   const [editForm, setEditForm] = useState({
     id: "",
@@ -458,9 +468,9 @@ const Healthcategory = () => {
   }, [])
 
 
-  const handleUpdateCategory = async (e) => {
-    e.preventDefault();
-    if (IsUpdating) return;
+const handleUpdateCategory = async (e) => {
+  e.preventDefault();
+  if(isUpdating)return;
 
     let newErrors = {};
 
@@ -481,9 +491,9 @@ const Healthcategory = () => {
     try {
       let imageUrl = editForm.image_url;
 
-      // New image selected hai to upload karo
-      if (EditImage) {
-        imageUrl = await uploadImage(EditImage);
+   
+    if (EditImage) {
+      imageUrl = await uploadImage(EditImage);
 
         if (!imageUrl) {
           toast.error("Image upload failed");
@@ -491,24 +501,24 @@ const Healthcategory = () => {
         }
       }
 
-      const response = await fetch(
-        `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify({
-            name: editForm.name,
-            description: editForm.description,
-            is_active: editForm.is_active,
-            category_id: editForm.category_id,
-            image_url: imageUrl, // updated url
-          }),
-        }
-      );
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          name: editForm.name,
+          description: editForm.description,
+          is_active: editForm.is_active,
+          category_id: editForm.category_id,
+          image_url: imageUrl,
+        }),
+      }
+    );
 
       const data = await response.json();
 
@@ -593,6 +603,55 @@ const Healthcategory = () => {
           </div>
         </div>
       </div>
+
+      <div className="filter-category">
+        <div className="filter-controls">
+          <div className="search-wrapper">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by name or code..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            {searchTerm && (
+              <button className="clear-search" onClick={() => setSearchTerm("")}>
+                <FaTimes />
+              </button>
+            )}
+          </div>
+
+          <select
+            className="status-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
+          {(searchTerm || statusFilter !== "all") && (
+            <button className="clear-filters-btn" onClick={clearFilters}>
+              Clear Filters
+            </button>
+          )}
+        </div>
+
+        <button
+          className="add-customer-btn"
+          onClick={() => {
+            resetForm();
+            setShowCategoryModal(true);
+          }}
+        >
+          <BiPlus/>
+          Add Health Category
+        </button>
+      </div>
+
+      
       <div className="table-wrapper">
         <table className="data-table" >
           <thead>
@@ -888,11 +947,9 @@ const Healthcategory = () => {
                     </label>
                   )}
                 </div>
-
-                {addErrors.image_url && (
-                  <p className="error-text">{addErrors.image_url}</p>
-                )}
+                {addErrors.image_url && <p className="error-text">{addErrors.image_url}</p>}
               </div>
+
               <div className="form-group">
                 <label>Description</label>
                 <textarea
@@ -900,61 +957,35 @@ const Healthcategory = () => {
                   value={categoryForm.description}
                   onChange={handleCategoryChange}
                   placeholder="Enter description"
-                  rows="4"
-
+                  rows="3"
                 />
               </div>
 
-
-
-
-
-
               <div className="form-group">
-                <label>Is Active</label>
-
+                <label>Status</label>
                 <div className="checkbox-row">
-
                   <input
                     type="checkbox"
                     name="is_active"
                     checked={categoryForm.is_active}
                     onChange={handleCategoryChange}
                   />
-
-
-
+                  <span>Active</span>
                 </div>
               </div>
-
 
               <div className="modal-footer">
                 <button
                   type="button"
                   className="cancel-btn"
                   onClick={() => {
-                    setCategoryForm({
-                      name: "",
-                      description: "",
-                      is_active: false,
-                      service_category_id: "",
-                      image_url: "",
-                      code: "",
-                    });
-
                     setShowCategoryModal(false);
-                    setAddErrors({});
+                    resetForm();
                   }}
-
                 >
                   Cancel
                 </button>
-
-                <button
-                  type="submit"
-                  className="save-btn"
-                  disabled={isSubmitting}
-                >
+                <button type="submit" className="save-btn" disabled={isSubmitting}>
                   {isSubmitting ? "Adding..." : "Add Health Category"}
                 </button>
               </div>
@@ -963,95 +994,63 @@ const Healthcategory = () => {
         </div>
       )}
 
+      {/* Edit Modal */}
       {editModal && (
         <div
           className="prakriti-modal-overlay"
           onClick={() => setEditModal(false)}
         >
-          <div
-            className="prakriti-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
             <div className="prakriti-modal-header">
-              <h2>Edit Product Category</h2>
-
+              <h2>Edit Health Category</h2>
               <button
-                className="close-btn"
-                onClick={() => setEditModal(false)}
+                className="modal-close-btn"
+                onClick={() => {
+                  setEditModal(false);
+                  setEditImage(null);
+                }}
               >
-                ×
+                <FaTimes />
               </button>
             </div>
 
-            <form className="prakriti-form" onSubmit={handleUpdateCategory}>
-
+            <form className="prakriti-form" onSubmit={handleUpdateHealthCategory}>
               <div className="form-group">
-                <label>Select Service Category</label>
-
-                <div className="category-row">
-
-                  <select
-                    name="category_id"
-                    value={editForm.service_category_id}
-                    onChange={handleEditChange}
-                  >
-                    <option value="">
-                      Select  Service Category
+                <label>Service Category <span className="required">*</span></label>
+                <select
+                  name="service_category_id"
+                  value={editForm.service_category_id}
+                  onChange={handleEditChange}
+                  className={editErrors.service_category_id ? "error-input" : ""}
+                >
+                  <option value="">Select Service Category</option>
+                  {ServiceCategoryData?.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name} ({cat.code})
                     </option>
-
-                    {ServiceCategoryData?.map((cat) => (
-                      <option
-                        key={cat.id}
-                        value={cat.id}
-                      >
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-
-
-                </div>
+                  ))}
+                </select>
+                {editErrors.service_category_id && (
+                  <p className="error-text">{editErrors.service_category_id}</p>
+                )}
               </div>
+
               <div className="form-group">
-
-
-                <label> Product Category Name</label>
-
+                <label>Health Category Name <span className="required">*</span></label>
                 <input
                   type="text"
                   name="name"
                   value={editForm.name}
                   onChange={handleEditChange}
-                  placeholder="Enter category name"
+                  placeholder="Enter health category name"
+                  className={editErrors.name ? "error-input" : ""}
                 />
-
-                {editErrors.name && (
-                  <p className="error-text">
-                    {editErrors.name}
-                  </p>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label>Description</label>
-
-                <textarea
-                  name="description"
-                  value={editForm.description}
-                  onChange={handleEditChange}
-                  rows="4"
-                  placeholder="Enter description"
-                />
-
-
+                {editErrors.name && <p className="error-text">{editErrors.name}</p>}
               </div>
 
               <div className="form-group">
                 <label>Upload Image</label>
-
                 <div className="upload-box1">
-
-
                   <input
                     ref={editFileRef}
                     type="file"
@@ -1060,22 +1059,13 @@ const Healthcategory = () => {
                     style={{ display: "none" }}
                     onChange={(e) => {
                       const file = e.target.files[0];
-
                       if (file) {
                         setEditImage(file);
-
-                        setEditForm((prev) => ({
-                          ...prev,
-                          image_url: URL.createObjectURL(file),
-                        }));
                       }
                     }}
                   />
-
                   {(EditImage || editForm.image_url) ? (
-
                     <div className="banner-preview-wrapper">
-
                       <div className="banner-preview-left">
                         <img
                           src={
@@ -1087,11 +1077,7 @@ const Healthcategory = () => {
                           className="banner-preview-image"
                         />
                       </div>
-
                       <div className="banner-preview-actions">
-
-
-
                         <button
                           type="button"
                           className="preview-btn"
@@ -1106,9 +1092,6 @@ const Healthcategory = () => {
                         >
                           <FiEye />
                         </button>
-
-
-
                         <button
                           type="button"
                           className="preview-btn"
@@ -1118,20 +1101,15 @@ const Healthcategory = () => {
                         >
                           <FiUpload />
                         </button>
-
-
-
                         <button
                           type="button"
                           className="delete-btn-preview"
                           onClick={() => {
                             setEditImage(null);
-
                             setEditForm((prev) => ({
                               ...prev,
                               image_url: "",
                             }));
-
                             if (editFileRef.current) {
                               editFileRef.current.value = "";
                             }
@@ -1139,58 +1117,56 @@ const Healthcategory = () => {
                         >
                           <FiTrash2 />
                         </button>
-
                       </div>
-
                     </div>
-
                   ) : (
-
-                    <label
-                      htmlFor="editBannerUpload"
-                      className="upload-label"
-                    >
+                    <label htmlFor="editBannerUpload" className="upload-label">
                       <div className="upload-content">
                         <span className="upload-icon">⬆</span>
                         <p>Click to upload category image</p>
-
                       </div>
                     </label>
-
                   )}
-
                 </div>
               </div>
 
               <div className="form-group">
-                <label>Is Active</label>
+                <label>Description</label>
+                <textarea
+                  name="description"
+                  value={editForm.description}
+                  onChange={handleEditChange}
+                  placeholder="Enter description"
+                  rows="3"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Status</label>
                 <div className="checkbox-row">
-
-
                   <input
                     type="checkbox"
                     name="is_active"
                     checked={editForm.is_active}
                     onChange={handleEditChange}
                   />
+                  <span>Active</span>
                 </div>
-
               </div>
 
               <div className="modal-footer">
                 <button
                   type="button"
                   className="cancel-btn"
-                  onClick={() => setEditModal(false)}
+                  onClick={() => {
+                    setEditModal(false);
+                    setEditImage(null);
+                  }}
                 >
                   Cancel
                 </button>
-
-                <button
-                  type="submit"
-                  className="save-btn"
-                >
-                  {IsUpdating ? "Updating" : "Update Product"}
+                <button type="submit" className="save-btn" disabled={isUpdating}>
+                  {isUpdating ? "Updating..." : "Update Category"}
                 </button>
               </div>
             </form>
@@ -1198,11 +1174,117 @@ const Healthcategory = () => {
         </div>
       )}
 
+    
+      {deleteModal && (
+        <div className="modal-overlay" onClick={() => setDeleteModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Are you sure you want to delete this category?</h3>
+            <p className="modal-warning">This action cannot be undone.</p>
+            <div className="form-buttons">
+              <button
+                className="btn-danger"
+                disabled={isDeleting}
+                onClick={() => {
+                  handleDelete(categoryId);
+                }}
+              >
+                {isDeleting ? "Deleting..." : "Yes, Delete"}
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => {
+                  setDeleteModal(false);
+                  setCategoryId(null);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Status Change Modal */}
+      {statusModal && selectedCategory && (
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            setStatusModal(false);
+            setSelectedCategory(null);
+          }}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Confirm Status Change</h3>
+            <p>
+              Are you sure you want to <strong>{selectedCategory.is_active ? "deactivate" : "activate"}</strong>{" "}
+              "{selectedCategory.name}"?
+            </p>
+            <div className="form-buttons">
+              <button
+                className={`btn-${selectedCategory.is_active ? "danger" : "success"}`}
+                disabled={isStatusChanging}
+                onClick={() => {
+                  handleToggle(selectedCategory.id, selectedCategory.is_active);
+                  setStatusModal(false);
+                  setSelectedCategory(null);
+                }}
+              >
+                {isStatusChanging
+                  ? "Updating..."
+                  : `Yes, ${selectedCategory.is_active ? "Deactivate" : "Activate"}`}
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={() => {
+                  setStatusModal(false);
+                  setSelectedCategory(null);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      <ToastContainer position="top-center" autoClose={1000} />
+      {/* Preview Image Modal */}
+      {previewImage && (
+        <div
+          className="prakriti-modal-overlay"
+          onClick={() => setPreviewImage("")}
+        >
+          <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="prakriti-modal-header">
+              <h2>Image Preview</h2>
+              <button
+                className="modal-close-btn"
+                onClick={() => setPreviewImage("")}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <img
+                src={previewImage}
+                alt="preview"
+                style={{
+                  width: "100%",
+                  maxHeight: "500px",
+                  objectFit: "contain",
+                  borderRadius: "10px",
+                }}
+              />
+            </div>
+            <div className="modal-footer">
+              <button className="cancel-btn" onClick={() => setPreviewImage("")}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
-  )
-}
+  );
+};
 
-export default Healthcategory
+export default Healthcategory;

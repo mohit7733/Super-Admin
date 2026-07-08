@@ -12,6 +12,7 @@ import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
+import { BiPlus } from "react-icons/bi";
 
 const ProductCategory = () => {
   const [HealthCategoryData, setHealthCategoryData] = useState([]);
@@ -615,12 +616,7 @@ const ProductCategory = () => {
             setShowCategoryModal(true);
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="10" cy="7" r="4" />
-            <path d="M4 21v-2a6 6 0 0 1 12 0v2" />
-            <line x1="19" y1="8" x2="19" y2="14" />
-            <line x1="22" y1="11" x2="16" y2="11" />
-          </svg>
+       <BiPlus/>
           Add Product Category
         </button>
       </div>
@@ -768,7 +764,7 @@ const ProductCategory = () => {
         </table>
       </div>
 
-      {/* Add Modal */}
+     
       {showCategoryModal && (
         <div className="prakriti-modal-overlay" onClick={() => setShowCategoryModal(false)}>
           <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
@@ -951,7 +947,7 @@ const ProductCategory = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
+    
       {editModal && (
         <div className="prakriti-modal-overlay" onClick={() => setEditModal(false)}>
           <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
@@ -1111,78 +1107,134 @@ const ProductCategory = () => {
         </div>
       )}
 
-      {/* Delete Modal */}
-      {deleteModal && (
-        <div className="modal-overlay" onClick={() => setDeleteModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Are you sure you want to delete this category?</h3>
-            <p className="modal-warning">This action cannot be undone.</p>
-            <div className="form-buttons">
-              <button
-                className="btn-danger"
-                disabled={isDeleting}
-                onClick={() => {
-                  handleDelete(categoryId);
-                }}
-              >
-                {isDeleting ? "Deleting..." : "Yes, Delete"}
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  setDeleteModal(false);
-                  setCategoryId(null);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+   
+  {deleteModal && (
+  <div
+    className="modal"
+    onClick={() => setDeleteModal(false)}
+  >
+    <div
+      className="modal-content"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3>Are you sure you want to delete this category?</h3>
+
+      <div className="form-buttons">
+       <button
+  className="otp-btn verify-btn"
+  disabled={isDeleting}
+  onClick={async () => {
+    await handleDelete(categoryId);
+    setDeleteModal(false);
+    setCategoryId(null);
+  }}
+>
+  {isDeleting ? "Deleting..." : "Yes"}
+</button>
+        <button
+          onClick={() => {
+            setDeleteModal(false);
+            setCategoryId(null);
+          }}
+        >
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Status Change Modal */}
-      {productCategoryStatusModal && selectedProductCategory && (
-        <div
-          className="modal-overlay"
+  {productCategoryStatusModal && selectedProductCategory && (
+  <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setProductCategoryStatusModal(false);
+      setSelectedProductCategory(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setProductCategoryStatusModal(false);
+          setSelectedProductCategory(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            selectedProductCategory.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {selectedProductCategory.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this Product Category?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{selectedProductCategory.name}</h4>
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
           onClick={() => {
             setProductCategoryStatusModal(false);
             setSelectedProductCategory(null);
           }}
         >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Confirm Status Change</h3>
-            <p>
-              Are you sure you want to <strong>{selectedProductCategory.is_active ? "deactivate" : "activate"}</strong>{" "}
-              "{selectedProductCategory.name}"?
-            </p>
-            <div className="form-buttons">
-              <button
-                className={`btn-${selectedProductCategory.is_active ? "danger" : "success"}`}
-                disabled={isStatusChanging}
-                onClick={() => {
-                  handleToggle(selectedProductCategory.id, selectedProductCategory.is_active);
-                  setProductCategoryStatusModal(false);
-                  setSelectedProductCategory(null);
-                }}
-              >
-                {isStatusChanging
-                  ? "Updating..."
-                  : `Yes, ${selectedProductCategory.is_active ? "Deactivate" : "Activate"}`}
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  setProductCategoryStatusModal(false);
-                  setSelectedProductCategory(null);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          Cancel
+        </button>
+
+        <button
+          disabled={isStatusChanging}
+          className={`activeModal-confirm ${
+            selectedProductCategory.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          onClick={async () => {
+            await handleToggle(
+              selectedProductCategory.id,
+              selectedProductCategory.is_active
+            );
+
+            setProductCategoryStatusModal(false);
+            setSelectedProductCategory(null);
+          }}
+        >
+          {isStatusChanging
+            ? "Updating..."
+            : `Yes, ${
+                selectedProductCategory.is_active
+                  ? "Deactivate"
+                  : "Activate"
+              }`}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Preview Image Modal */}
       {ProductPreviewImage && (

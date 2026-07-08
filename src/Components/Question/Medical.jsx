@@ -221,10 +221,10 @@ const Medical = () => {
         "superadmin_token"
       );
 
-      if (!token) {
-        Navigate("/login");
-        return;
-      }
+    if (!token) {
+      Navigate("/login");
+      return;
+    }
 
 
 

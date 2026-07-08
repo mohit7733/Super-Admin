@@ -5,6 +5,8 @@ import { FiTrash2, FiUpload, FiEye } from 'react-icons/fi';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
+import { BiPlus } from 'react-icons/bi';
+
 
 const Category = () => {
   const [Loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ const Category = () => {
   const addFileRef = useRef(null);
   const editFileRef = useRef(null);
 
-  // Calculate statistics
+  
   const calculateStats = (data) => {
     const total = data.length;
     const active = data.filter(item => item.is_active === true).length;
@@ -48,11 +50,10 @@ const Category = () => {
     setStats({ total, active, inactive });
   };
 
-  // Filter data based on search and status
+ 
   const filterData = (data, search, status) => {
     let filtered = data;
 
-    // Filter by search term
     if (search.trim()) {
       const term = search.toLowerCase().trim();
       filtered = filtered.filter(item =>
@@ -444,7 +445,7 @@ const Category = () => {
         <p className="page-paragraph">Manage categories and their details</p>
       </div>
 
-      {/* Stats Cards */}
+     
       <div className="stats2-grid">
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
@@ -475,7 +476,7 @@ const Category = () => {
         </div>
       </div>
 
-      {/* Filters and Actions */}
+      
       <div className="filter-category">
         <div className="filter-controls">
           <div className="search-wrapper">
@@ -522,17 +523,12 @@ const Category = () => {
             setIsActive(false);
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="10" cy="7" r="4" />
-            <path d="M4 21v-2a6 6 0 0 1 12 0v2" />
-            <line x1="19" y1="8" x2="19" y2="14" />
-            <line x1="22" y1="11" x2="16" y2="11" />
-          </svg>
+        <BiPlus/>
           Add Category
         </button>
       </div>
 
-      {/* Table */}
+     
       <div className="table-wrapper">
         <table className="data-table">
           <thead>
@@ -565,22 +561,29 @@ const Category = () => {
               FilteredData.map((item, index) => (
                 <tr key={item.id}>
                   <td>{index + 1}</td>
-                  <td><strong>{item.name}</strong></td>
-                  <td><span className="category-code-badge">{item.code}</span></td>
-                  <td>
-                    <img
-                      src={item.image_url}
-                      alt={item.name}
-                      width="50"
-                      height="50"
-                      style={{
-                        objectFit: "cover",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        border: "1px solid #e0e0e0"
-                      }}
-                      onClick={() => setPreviewImage(item.image_url)}
-                    />
+                  <td><strong>{item.name ||"N/A"}</strong></td>
+                
+                  <td><span className="category-code-badge">{item.code || "N/A"}</span></td>
+             
+
+                    <td>
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        width="50"
+                        height="50"
+                        style={{
+                          objectFit: "cover",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          border: "1px solid #e0e0e0",
+                        }}
+                         onClick={() => setPreviewImage(item.image_url)}
+                      />
+                    ) : (
+                      <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
+                    )}
                   </td>
                   <td>
                     <span className={`status-badge ${item.is_active ? 'status-active' : 'status-inactive'}`}>
@@ -599,7 +602,7 @@ const Category = () => {
                       <span className="slider round"></span>
                     </label>
                   </td>
-                  <td style={{ fontSize: "12px", color: "#666" }}>
+                  <td style={{ fontSize: "14px", color: "#666" }}>
                     {new Date(item.created_at).toLocaleDateString()}
                   </td>
                   <td>
@@ -629,16 +632,6 @@ const Category = () => {
                         <FiTrash2 />
                       </button>
 
-                      {/* <button
-                        className={`action-btn ${item.is_active ? 'deactivate' : 'activate'}`}
-                        onClick={() => {
-                          setSelectedCategory(item);
-                          setStatusModal(true);
-                        }}
-                        title={item.is_active ? "Deactivate" : "Activate"}
-                      >
-                        {item.is_active ? '🔴' : '🟢'}
-                      </button> */}
 
                     </div>
                   </td>
@@ -664,7 +657,7 @@ const Category = () => {
         </table>
       </div>
 
-      {/* Add Modal */}
+  
       {showModal && (
         <div className="prakriti-modal-overlay">
           <div className="prakriti-modal">
@@ -822,7 +815,7 @@ const Category = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
+     
       {editModal && (
         <div className="prakriti-modal-overlay">
           <div className="prakriti-modal">
@@ -940,30 +933,35 @@ const Category = () => {
         </div>
       )}
 
-      {/* Delete Modal */}
-      {deleteModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Are you sure you want to delete this category?</h3>
-            <p className="modal-warning">This action cannot be undone.</p>
-            <div className="form-buttons">
-              <button
-                className="btn-danger"
-                onClick={() => {
-                  handleDelete(categoryId);
-                }}
-              >
-                Yes, Delete
-              </button>
-              <button className="btn-secondary" onClick={() => setDeleteModal(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {deleteModal && (
+  <div className="modal">
+    <div className="modal-content">
+      <h3>
+        Are you sure you want to delete this Category?
+      </h3>
 
-      {/* Preview Image Modal */}
+      <div className="form-buttons">
+        <button
+          className="otp-btn verify-btn"
+          onClick={() => {
+            handleDelete(categoryId);
+            setDeleteModal(false);
+          }}
+        >
+          Yes
+        </button>
+
+        <button
+          onClick={() => setDeleteModal(false)}
+        >
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+      
       {previewImage && (
         <div className="prakriti-modal-overlay" onClick={() => setPreviewImage("")}>
           <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
@@ -994,40 +992,96 @@ const Category = () => {
         </div>
       )}
 
-      {/* Status Change Modal */}
-      {statusModal && selectedCategory && (
-        <div className="modal-overlay" onClick={() => {
+      
+   {statusModal && selectedCategory && (
+   <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setStatusModal(false);
+      setSelectedCategory(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <button
+        className="activeModal-close"
+        onClick={() => {
           setStatusModal(false);
           setSelectedCategory(null);
-        }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Confirm Status Change</h3>
-            <p>
-              Are you sure you want to <strong>{selectedCategory.is_active ? 'deactivate' : 'activate'}</strong>
-              "{selectedCategory.name}"?
-            </p>
-            <div className="form-buttons">
-              <button
-                className={`btn-${selectedCategory.is_active ? 'danger' : 'success'}`}
-                onClick={() => {
-                  updateCategoryStatus(selectedCategory.id, selectedCategory.is_active);
-                  setStatusModal(false);
-                  setSelectedCategory(null);
-                }}
-              >
-                Yes, {selectedCategory.is_active ? 'Deactivate' : 'Activate'}
-              </button>
-              <button className="btn-secondary" onClick={() => {
-                setStatusModal(false);
-                setSelectedCategory(null);
-              }}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        }}
+      >
+        ×
+      </button>
 
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            selectedCategory.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {selectedCategory.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this category?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{selectedCategory.name}</h4>
+     
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setStatusModal(false);
+            setSelectedCategory(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className={`activeModal-confirm ${
+            selectedCategory.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          onClick={() => {
+            updateCategoryStatus(
+              selectedCategory.id,
+              selectedCategory.is_active
+            );
+
+            setStatusModal(false);
+            setSelectedCategory(null);
+          }}
+        >
+          Yes,{" "}
+          {selectedCategory.is_active
+            ? "Deactivate"
+            : "Activate"}
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
       <ToastContainer position="top-center" autoClose={2000} />
     </>
   );
