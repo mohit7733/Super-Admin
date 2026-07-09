@@ -9,20 +9,16 @@ const ProtectedRoute = ({ children, permission }) => {
 
   // Redirect to login if not authenticated
   if (!token) {
-    navigate("/login", { replace: true });
-    return null;
     return <navigate to="/login" replace />;
   }
 
   // Super Admin has full access
-  if (role === "superadmin") {
+  if (role?.toLowerCase() === "superadmin") {
     return children;
   }
 
   // Check permission for other users
   if (permission && !permissions.includes(permission)) {
-    navigate("/login", { replace: true });
-    return null;
     return <navigate to="/login" replace />;
   }
 
