@@ -5,6 +5,7 @@ import BASE_URL from "../../../Base";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { FaUsers } from "react-icons/fa";
+ import Documents from "../Vendor/Documents"
 
 import {
   FiCheckCircle,
@@ -49,6 +50,9 @@ const [error, setError] = useState(null);
       const [Nextpage, setNextpage] = useState(null);
     
       const [previousPage, setPreviousPage] = useState(null);
+      const [PatientDocuments, setPatientDocuments] = useState([]);
+const [DocumentLoading, setDocumentLoading] = useState(false);
+const [DocumentError, setDocumentError] = useState(null);
 
 
 const { PatientId } = useParams();
@@ -196,9 +200,62 @@ const getPatientDetail = async () => {
     setLoading(false);
   }
 };
+const getPatientDocuments = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    setDocumentLoading(true);
+
+    const response = await fetch(
+      `${BASE_URL}/patients/admin/medical-records/?patient_id=${PatientId}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    console.log("Patient Documents:", data);
+
+    if (data.success) {
+      setPatientDocuments(data.data || []);
+    } else {
+      toast.error(data.message || "Failed to fetch documents");
+      setPatientDocuments([]);
+    }
+  } catch (err) {
+    console.error(err);
+
+    setDocumentError("Something went wrong while fetching documents.");
+    toast.error("Failed to fetch patient documents");
+  } finally {
+    setDocumentLoading(false);
+  }
+};
 useEffect(() => {
   getPatientDetail();
   getConsultationhistory();
+  getPatientDocuments();
+
 }, [PatientId]);
 
 
@@ -652,7 +709,15 @@ useEffect(() => {
            )
          }
 
-
+{activeTab === "documents" && (
+  <div className="documents-tab">
+    {DocumentLoading ? (
+      <p>Loading documents...</p>
+    ) : (
+      <Documents documentsData={PatientDocuments} />
+    )}
+  </div>
+)}
 
          {
                   activeTab === "Transaction" && (
