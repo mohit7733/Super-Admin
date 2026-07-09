@@ -86,6 +86,11 @@ const DoctorDetail = () => {
   const[TransactionData,setTransactionData]=useState([]);
 const[TransactionLoading,setTransactionLoading]=useState(false);
 const[TransactionError,setTransactionError]=useState(null);
+const[SlotData,setSlotData]=useState([]);
+const[SlotLoading,setSlotLoading]=useState(false);
+const[SlotError,setSlotError]=useState(null);
+
+
  const pagesize = 5;
   const [totalCount, setTotalCount] = useState(0);
   const totalPages = Math.ceil(totalCount / pagesize);
@@ -335,6 +340,8 @@ const handleSubmitReason = async () => {
       setTransactionLoading(false);
     }
   };
+
+
   useEffect(() => {
     getConsultationhistory();
     getTransactionlist();
@@ -707,6 +714,13 @@ const handleSubmitReason = async () => {
           >
             Documents
           </button>
+
+          {/* <button
+            className={activeTab === "Slots" ? "active-tab" : ""}
+            onClick={() => setActiveTab("Slots")}
+          >
+          Slots
+          </button> */}
 
           
 
@@ -1874,6 +1888,8 @@ const handleSubmitReason = async () => {
     </div>
   </div>
 )}
+
+<ToastContainer position="top-center" autoClose={2000} />
 
       </div>
 

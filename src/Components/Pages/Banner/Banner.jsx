@@ -23,7 +23,7 @@ const Banner = () => {
  const [bannerForm, setBannerForm] = useState({
   image_url: null,
   redirect_url: "",
-  category: "",
+  service_category_id: "",
   is_active: false,
 });
 const[CategoryData,setCategoryData]=useState([]);
@@ -43,10 +43,10 @@ const[BannerPreviewImage,setBannerPreviewImage]=useState("");
 const [editBannerForm, setEditBannerForm] = useState({
   image_url: "",
   redirect_url: "",
-  category: "",
+  service_category_id: "",
   is_active: false,
 });
-// const[BannerId,setBannerId]=useState("")
+
 
 const handleChange = (e) => {
   const { name, value, checked, type } = e.target;
@@ -77,7 +77,7 @@ const token = sessionStorage.getItem("superadmin_token");
 
   try {
     const response = await fetch(
-      `${BASE_URL}/user/admin/categories/`,
+      `${BASE_URL}/user/admin/service-category/`,
       {
         method: "GET",
         headers: {
@@ -253,12 +253,11 @@ const handleAddBanner = async (e) => {
 
    
     const payload = {
-      image_url: uploadedImageUrl,
-      redirect_url: bannerForm.redirect_url,
-      category: bannerForm.category,
-      is_active: bannerForm.is_active,
-    };
-
+  image_url: uploadedImageUrl,
+  redirect_url: bannerForm.redirect_url,
+  service_category_id: bannerForm.service_category_id,
+  is_active: bannerForm.is_active,
+};
     console.log("Banner Payload:", payload);
 
    
@@ -286,7 +285,7 @@ const handleAddBanner = async (e) => {
       setBannerForm({
         image_url: null,
         redirect_url: "",
-        category: "",
+      service_category_id: "",
         is_active: true,
       });
 
@@ -320,7 +319,7 @@ const handleUpdateBanner = async (e) => {
     const payload = {
       image_url: imageUrl,
       redirect_url: editBannerForm.redirect_url,
-      category: editBannerForm.category,
+      service_category_id: editBannerForm.service_category_id,
       is_active: editBannerForm.is_active,
     };
 
@@ -449,7 +448,7 @@ const handleUpdateBanner = async (e) => {
   setBannerForm({
     image_url: null,
     redirect_url: "",
-    category: "",
+    service_category_id: "",
     is_active: false,
   });
 
@@ -527,7 +526,7 @@ const handleUpdateBanner = async (e) => {
     setEditBannerForm({
       image_url: item.image_url,
       redirect_url: item.redirect_url || "",
-      category: item.category_id,
+      service_category_id: item.service_category_id,
       is_active: item.is_active,
     });
 
@@ -606,8 +605,8 @@ const handleUpdateBanner = async (e) => {
                                     <div className="category-row">
                         
                                       <select
-                                        name="category"
-                                        value={bannerForm.category}
+                                        name="service_category_id"
+                                        value={bannerForm.service_category_id}
                                         onChange={handleChange}
                                       >
                                         <option value="">
@@ -628,9 +627,9 @@ const handleUpdateBanner = async (e) => {
                         
                                     </div>
                         
-                                    {BannerError.category && (
+                                    {BannerError.service_category_id && (
                                       <p className="error-text">
-                                        {BannerError.category}
+                                        {BannerError.service_category_id}
                                       </p>
                                     )}
                                   </div>
@@ -764,7 +763,7 @@ const handleUpdateBanner = async (e) => {
   setBannerForm({
     image_url: null,
     redirect_url: "",
-    category: "",
+service_category_id: "",
     is_active: false,
   });
 }}
@@ -815,7 +814,7 @@ const handleUpdateBanner = async (e) => {
 
             <select
               name="category"
-              value={editBannerForm.category}
+              value={editBannerForm.service_category_id}
               onChange={handleEditChange}
             >
               <option value="">

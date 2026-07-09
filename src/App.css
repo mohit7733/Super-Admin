@@ -5937,6 +5937,32 @@ flex-direction:column;
     color:#fff;
     cursor:pointer;
 }
+
+.role-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.multi-select {
+  flex: 1;
+  position: relative;
+}
+
+.multi-select-header {
+  width: 100%;
+}
+
+.add-role-btn {
+  white-space: nowrap;
+  height: 42px;
+  padding: 0 16px;
+  background: #0D614E;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
 .multi-select {
   position: relative;
   width: 100%;

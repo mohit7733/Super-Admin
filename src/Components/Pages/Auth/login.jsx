@@ -1,8 +1,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from 'react-toastify';
+
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { ToastContainer, toast } from "react-toastify"
 
 import BASE_URL from "../../../Base";
 import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
@@ -39,7 +40,7 @@ const Login = () => {
  const [formData, setFormData] = useState({
   phone_number: "",
   password: "",
-  role: "",
+  roles: "",
 });
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -152,8 +153,9 @@ const Login = () => {
 
     // Payload
     const payload = {
-      phone_number: formattedPhone,
-      password: formData.password,
+     phone_number: formattedPhone,
+  password: formData.password,
+  roles: roles,
     };
 
     // Sirf jab role select ho tab role bhejo
@@ -368,28 +370,30 @@ const Login = () => {
   <label>Role</label>
 
   <div className="multi-select">
-    <div
-      className="multi-select-header"
-      onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-    >
-      {formData.role
-        ? RoleData.find((role) => role.id === formData.role)?.name
-        : "Select Role"}
-    </div>
-
+  <div
+  className="multi-select-header"
+  onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+>
+  {roles.length > 0
+    ? RoleData.filter((role) => roles.includes(role.id))
+        .map((role) => role.name)
+        .join(", ")
+    : "Select Role"}
+</div>
     {showRoleDropdown && (
       <div className="multi-select-dropdown">
         {RoleData.map((role) => (
           <label key={role.id} className="checkbox-option">
             <input
               type="checkbox"
-              checked={formData.role === role.id}
-              onChange={() => {
-                setFormData((prev) => ({
-                  ...prev,
-                  role: prev.role === role.id ? "" : role.id,
-                }));
-              }}
+    checked={roles.includes(role.id)}
+onChange={() => {
+  setRoles((prev) =>
+    prev.includes(role.id)
+      ? prev.filter((id) => id !== role.id)
+      : [...prev, role.id]
+  );
+}}
             />
             {role.name}
           </label>
@@ -447,7 +451,7 @@ const Login = () => {
           </form>
         </div>
       </div>
-
+<ToastContainer position="top-center" autoClose={2000} />
    </>
   );
 };

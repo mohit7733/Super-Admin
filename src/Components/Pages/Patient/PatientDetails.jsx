@@ -105,6 +105,49 @@ const navigate = useNavigate();
       };
   }
 };
+
+
+const getTransactionlist = async () => {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session Expired , Login Again")
+      navigate("/login");
+    }
+
+    try {
+      setTransactionLoading(true);
+
+      const response = await fetch(
+       `${BASE_URL}/payments/admin/transactions/?patient_id =${PatientId}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("Category API Response:", data);
+
+
+      setTransactionData(data.data.results);
+    } catch (error) {
+      console.error(error.message);
+
+      setTransactionError("Something went wrong while fetching categories");
+
+      toast.error("Failed to fetch Category Data");
+    } finally {
+      setTransactionLoading(false);
+    }
+  };
+
  const getConsultationhistory = async (page = 1) => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -213,7 +256,7 @@ const getPatientDocuments = async () => {
     setDocumentLoading(true);
 
     const response = await fetch(
-      `${BASE_URL}/patients/admin/medical-records/?patient_id=${PatientId}`,
+      `${BASE_URL}/customers/admin/medical-records/?patient_id=${PatientId}`,
       {
         method: "GET",
         headers: {
@@ -255,6 +298,7 @@ useEffect(() => {
   getPatientDetail();
   getConsultationhistory();
   getPatientDocuments();
+  getTransactionlist ();
 
 }, [PatientId]);
 
@@ -719,96 +763,147 @@ useEffect(() => {
   </div>
 )}
 
-         {
-                  activeTab === "Transaction" && (
-                    <div className="consultation-main-card">
-        
-        
-                      <div className="consultation-header">
-        
-                        <div className="consultation-title-wrap">
-        
-                          <div className="consultation-line"></div>
-        
-                          <div>
-                            <h2>Transaction </h2>
-        
-                            <p>
-                              Track all transaction activities,
-                              Completed, Failed, and pending requests
-                            </p>
-                          </div>
-        
-                        </div>
-        
-                      </div>
-        
-        
-                  
-        
-                      <div classsName="table-wrapper1">
-                        <table className="data-table" >
-                          <thead>
-                            <tr>
-                              <th>Id</th>
-                              <th>Doctor Name</th>                   
-                              <th>Amount</th>
-                              <th> Date</th>
-                              <th> Payment Method</th>
-                                 <th>Status</th>
-        
-                            </tr>
-                          </thead>
-                          { TransactionLoading? (
-                            Array(3).fill(0).map((_, i) => (
-                              <tr key={i}>
-                                <td colSpan="10"><div className="skeleton-row"></div></td>
-                              </tr>
-                            ))
-                          ) : TransactionError ? (
-                            <p colSpan="6" style={{ color: "red" }}>{TransactionError}</p>
-                          ) : (
-                            <tbody>
-                              {TransactionData && TransactionData.length > 0 ? (
-                         TransactionData.map((transaction, index) => (
-                                  <tr key={transaction.id}>
-                                    <td >{transaction.transaction_id}</td>
-                                    <td> {transaction.name}</td>
-                                    <td>{transaction.amount}</td>
-                                    <td>{transaction.date}</td>
-                                    <td>{transaction.payment_method}</td>
-                                  <td>
-          <span
-            className="status-badge"
-            style={getStatusStyle(transaction.status)}
-          >
-            {transaction.status}
-          </span>
-        </td>
-                                   
-        
-                                
-                                  </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td colSpan="10" style={{ textAlign: "center" }}>
-                                    No Data Found
-                                  </td>
-                                </tr>
-                              )}
-                            </tbody>
-                          )}
-                        </table>
-        
-        
-        
-        
-                      </div>
-        
-                    </div>
-                  )
-                }
+       {
+                 activeTab === "Transaction" && (
+                   <div className="consultation-main-card">
+       
+       
+                     <div className="consultation-header">
+       
+                       <div className="consultation-title-wrap">
+       
+                         <div className="consultation-line"></div>
+       
+                         <div>
+                           <h2>Transaction History</h2>
+       
+                           <p>
+                             Track all transaction activities,
+                             Completed, Failed, and pending requests
+                           </p>
+                         </div>
+       
+                       </div>
+       
+                     </div>
+       
+       
+                     <div className="consultation-stats-grid">
+       
+                       {/* TOTAL */}
+                       <div className="consultation-stat-card">
+                         <div className="consultation-icon-box">
+                           <FaUsers />
+                         </div>
+       
+                         <div className="consultation-stat-content">
+                           <h4>TOTAL </h4>
+                           <h2>0</h2>
+                         </div>
+                       </div>
+       
+       
+                       <div className="consultation-stat-card">
+                         <div className="consultation-icon-box ">
+                           <FiCheckCircle />
+                         </div>
+       
+                         <div className="consultation-stat-content">
+                           <h4>Completed</h4>
+                           <h2>0</h2>
+                         </div>
+                       </div>
+       
+       
+                       <div className="consultation-stat-card">
+                         <div className="consultation-icon-box ">
+                           <FiXCircle />
+                         </div>
+       
+                         <div className="consultation-stat-content">
+                           <h4>Failed</h4>
+                           <h2>0</h2>
+                         </div>
+                       </div>
+       
+       
+                       <div className="consultation-stat-card">
+                         <div className="consultation-icon-box ">
+                           <FiClock />
+                         </div>
+       
+                         <div className="consultation-stat-content">
+                           <h4>PENDING</h4>
+                           <h2>0</h2>
+                         </div>
+                       </div>
+       
+                     </div>
+       
+                     <div classsName="table-wrapper1">
+                       <table className="data-table" >
+                         <thead>
+                           <tr>
+                             <th>Id</th>
+                             <th>Patient Name</th>                   
+                             <th>Amount</th>
+                             <th> Date</th>
+                             <th> Payment Method</th>
+                           
+                                <th>Status</th>
+       
+                           </tr>
+                         </thead>
+                         { TransactionLoading? (
+                           Array(3).fill(0).map((_, i) => (
+                             <tr key={i}>
+                               <td colSpan="10"><div className="skeleton-row"></div></td>
+                             </tr>
+                           ))
+                         ) : TransactionError ? (
+                           <p colSpan="6" style={{ color: "red" }}>{TransactionError}</p>
+                         ) : (
+                           <tbody>
+                             {TransactionData && TransactionData.length > 0 ? (
+                        TransactionData.map((transaction, index) => (
+                                 <tr key={transaction.id}>
+                                   <td >{transaction.transaction_id}</td>
+                                   <td> {transaction.name}</td>
+                                   <td>{transaction.amount}</td>
+                                   <td>{transaction.date}</td>
+                                   <td>{transaction.payment_method}</td>
+                                 <td>
+         <span
+           className="status-badge"
+           style={getStatusStyle(transaction.status)}
+         >
+           {transaction.status}
+         </span>
+       </td>
+                                  
+       
+                               
+                                 </tr>
+                               ))
+                             ) : (
+                               <tr>
+                                 <td colSpan="10" style={{ textAlign: "center" }}>
+                                   No Data Found
+                                 </td>
+                               </tr>
+                             )}
+                           </tbody>
+                         )}
+                       </table>
+       
+       
+       
+       
+                     </div>
+       
+                   </div>
+                 )
+               }
      
    
     </div>

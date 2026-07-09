@@ -110,116 +110,115 @@ const Dashboard = () => {
   ], [stats]);
 
   // Dashboard Stats API Call
-  const getDashboardStats = useCallback(async () => {
-    const token = sessionStorage.getItem("superadmin_token");
-    if (!token) {
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
+  // const getDashboardStats = useCallback(async () => {
+  //   const token = sessionStorage.getItem("superadmin_token");
+  //   if (!token) {
+  //     toast.error("Session expired. Please login again");
+  //     navigate("/login");
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch(`${BASE_URL}/orders/dashboard/stats/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/orders/dashboard/stats/`, {
+  //       method: "GET",
+  //       headers: {
+  //         Accept: "application/json",
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
 
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
+  //     if (response.status === 401 || response.status === 403) {
+  //       toast.error("Session expired. Please login again");
+  //       sessionStorage.removeItem("superadmin_token");
+  //       navigate("/login");
+  //       return;
+  //     }
 
-      const data = await response.json();
-      setStats(data || {});
-    } catch (err) {
-      console.error("Stats fetch error:", err);
-      toast.error("Failed to load dashboard statistics");
-    } finally {
-      setStatsLoading(false);
-    }
-  }, [navigate]);
+  //     const data = await response.json();
+  //     setStats(data || {});
+  //   } catch (err) {
+  //     console.error("Stats fetch error:", err);
+  //     toast.error("Failed to load dashboard statistics");
+  //   } finally {
+  //     setStatsLoading(false);
+  //   }
+  // }, [navigate]);
 
-  // Orders API Call
-  const getOrderList = useCallback(async (page = 1, type = activeType, search = debouncedSearch) => {
-    setOrderLoading(true);
-    setOrderError(null);
+ 
+  // const getOrderList = useCallback(async (page = 1, type = activeType, search = debouncedSearch) => {
+  //   setOrderLoading(true);
+  //   setOrderError(null);
 
-    try {
-      const token = sessionStorage.getItem("superadmin_token");
-      if (!token) {
-        toast.error("Session expired! Please login again");
-        navigate("/login");
-        return;
-      }
+  //   try {
+  //     const token = sessionStorage.getItem("superadmin_token");
+  //     if (!token) {
+  //       toast.error("Session expired! Please login again");
+  //       navigate("/login");
+  //       return;
+  //     }
 
-      let searchParam = "";
-      if (search) {
-        if (type === "product") {
-          searchParam = `&product_name=${search}`;
-        } else {
-          searchParam = `&doctor_name=${search}&specialization=${search}`;
-        }
-      }
+  //     let searchParam = "";
+  //     if (search) {
+  //       if (type === "product") {
+  //         searchParam = `&product_name=${search}`;
+  //       } else {
+  //         searchParam = `&doctor_name=${search}&specialization=${search}`;
+  //       }
+  //     }
 
-      const url = `${BASE_URL}/orders/order/?page=${page}&order_type=${type}${searchParam}`;
+  //     const url = `${BASE_URL}/orders/order/?page=${page}&order_type=${type}${searchParam}`;
 
-      const response = await apiFetch(url, {
-        method: "GET",
-        headers: { Accept: "application/json" }
-      });
+  //     const response = await apiFetch(url, {
+  //       method: "GET",
+  //       headers: { Accept: "application/json" }
+  //     });
 
-      setOrderData(response?.data || []);
-      setNextPage(response?.next);
-      setPreviousPage(response?.previous);
-      setTotalCount(response?.count || 0);
+  //     setOrderData(response?.data || []);
+  //     setNextPage(response?.next);
+  //     setPreviousPage(response?.previous);
+  //     setTotalCount(response?.count || 0);
 
-      if (type === "product") {
-        setCurrentPage(page);
-      }
-    } catch (err) {
-      console.error("Orders fetch error:", err);
-      setOrderError("Failed to load orders. Please try again.");
-      toast.error("Failed to load orders");
-    } finally {
-      setOrderLoading(false);
-    }
-  }, [activeType, debouncedSearch, navigate]);
+  //     if (type === "product") {
+  //       setCurrentPage(page);
+  //     }
+  //   } catch (err) {
+  //     console.error("Orders fetch error:", err);
+  //     setOrderError("Failed to load orders. Please try again.");
+  //     toast.error("Failed to load orders");
+  //   } finally {
+  //     setOrderLoading(false);
+  //   }
+  // }, [activeType, debouncedSearch, navigate]);
 
-  // Debounced search
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
+  
+  // useEffect(() => {
+  //   if (searchTimeoutRef.current) {
+  //     clearTimeout(searchTimeoutRef.current);
+  //   }
     
-    searchTimeoutRef.current = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-      setCurrentPage(1);
-    }, 500);
+  //   searchTimeoutRef.current = setTimeout(() => {
+  //     setDebouncedSearch(searchTerm);
+  //     setCurrentPage(1);
+  //   }, 500);
     
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, [searchTerm]);
+  //   return () => {
+  //     if (searchTimeoutRef.current) {
+  //       clearTimeout(searchTimeoutRef.current);
+  //     }
+  //   };
+  // }, [searchTerm]);
 
-  // Initial data load
-  useEffect(() => {
-    if (apiCalled.current) return;
-    apiCalled.current = true;
-    getDashboardStats();
-  }, [getDashboardStats]);
+  
+  // useEffect(() => {
+  //   if (apiCalled.current) return;
+  //   apiCalled.current = true;
+  //   getDashboardStats();
+  // }, [getDashboardStats]);
 
-  // Load orders when dependencies change
-  useEffect(() => {
-    getOrderList(currentPage, activeType);
-  }, [activeType, currentPage, debouncedSearch, getOrderList]);
+  // useEffect(() => {
+  //   getOrderList(currentPage, activeType);
+  // }, [activeType, currentPage, debouncedSearch, getOrderList]);
 
   // Handlers
   const handleTypeChange = (type) => {
@@ -234,8 +233,8 @@ const Dashboard = () => {
   };
 
   const handleRefresh = () => {
-    getDashboardStats();
-    getOrderList(currentPage, activeType);
+    // getDashboardStats();
+    // getOrderList(currentPage, activeType);
     toast.info("Refreshing data...");
   };
 

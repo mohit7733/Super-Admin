@@ -135,6 +135,32 @@ const handleDiseaseChange = (id) => {
     setSelectedDiseases([...selectedDiseases, id]);
   }
 };
+const resetVideoModal = () => {
+  setShowYogaVideoModal(false);
+
+  setVideoForm({
+    yoga_category: "",
+    title: "",
+    duration_minutes: "",
+    difficulty: "",
+    video_url: "",
+    short_description: "",
+    description: "",
+    status: false,
+  });
+
+  setThumbnail(null);
+  setVideo(null);
+  setSelectedDiseases([]);
+
+  if (thumbnailRef.current) {
+    thumbnailRef.current.value = "";
+  }
+
+  if (videoRef.current) {
+    videoRef.current.value = "";
+  }
+};
 
   const getYogasessionlist = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -387,30 +413,7 @@ if (video) {
     if (response.ok && data.status === "success") {
       toast.success("Yoga Session Added Successfully");
 
-      setShowYogaVideoModal(false);
-
-      setVideoForm({
-        yoga_category: "",
-        title: "",
-        duration_minutes: "",
-        difficulty: "",
-        video_url: "",
-        short_description: "",
-        description: "",
-        status: false,
-      });
-
-      setThumbnail(null);
-      setSelectedDiseases([]);
-
-      if (thumbnailRef.current) {
-        thumbnailRef.current.value = "";
-      }
-     
-setVideo(null);
-
-
-if (videoRef.current) videoRef.current.value = "";
+  resetVideoModal();
 
       getYogasessionlist();
       
@@ -1058,7 +1061,7 @@ if (videoRef.current) videoRef.current.value = "";
           <button
             type="button"
             className="cancel-btn"
-            onClick={() => setShowYogaVideoModal(false)}
+        onClick={resetVideoModal}
           >
             Cancel
           </button>

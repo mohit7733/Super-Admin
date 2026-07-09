@@ -104,7 +104,10 @@ const [showEditRoleDropdown, setShowEditRoleDropdown] = useState(false);
   }
 
   const handleEditClick = (verifier) => {
-  setEditingUser(verifier);
+  setEditingUser({
+    ...verifier,
+    status: verifier.status || "active",
+  });
 
   setSelectedRoles(
     verifier.admin_roles?.map((role) => role.id) || []
@@ -432,53 +435,61 @@ if (!response.ok || data.success === false) {
 
 
 
-  const handleSavePermissions = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
-    if(!token){
-      toast.error("Session Expired, Please Login Again")
-    }
+ const handleSavePermissions = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-    if (!editingUser) {
-      toast.error("No user selected");
-      return;
-    }
+  if (!token) {
+    toast.error("Session Expired. Please Login Again");
+    navigate("/login");
+    return;
+  }
 
-    try {
-      const response = await fetch(`${BASE_URL}/user/admin/approval/`, {
+  if (!editingUser) {
+    toast.error("No admin selected");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/user/admin/${editingUser.id}/edit/`,
+      {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
+          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
-          user_id: editingUser.id,
-          approval_status: editingUser.admin_approval_status,
-          permission_ids: selectedPermissions,
-
+          roles: selectedRoles,
+          status: editingUser.status,
         }),
-      });
-        if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
       }
+    );
 
-
-      const data = await response.json();
-
-
-
-      toast.success("Permissions & Status Updated Successfully ");
-      setPermissionModalOpen(false);
-      getAdminlist();
-
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update permissions");
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
     }
-  };
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      toast.error(data.message || "Failed to update admin");
+      return;
+    }
+
+    toast.success("Admin updated successfully");
+
+    setPermissionModalOpen(false);
+    getAdminlist();
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to update admin");
+  }
+};
 
 
 
@@ -851,58 +862,49 @@ if (!response.ok || data.success === false) {
   <option value="pending">Pending</option>
   <option value="approved">Approved</option>
 </select>
- <div className="form-group">
+ 
+<div className="form-group">
   <label>Role</label>
 
-  <div className="multi-select">
+  <div className="role-input-wrapper">
+    <div className="multi-select">
+      <div
+        className="multi-select-header"
+        onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+      >
+        {AddAdminForm.roles.length > 0
+          ? roleData
+              .filter((role) => AddAdminForm.roles.includes(role.id))
+              .map((role) => role.name)
+              .join(", ")
+          : "Select Roles"}
+      </div>
 
-    <div
-      className="multi-select-header"
-      onClick={() =>
-        setShowRoleDropdown(!showRoleDropdown)
-      }
-    >
-      {AddAdminForm.roles.length > 0
-        ? roleData
-            .filter((role) => AddAdminForm.roles.includes(role.id))
-            .map((role) => role.name)
-            .join(", ")
-        : "Select Roles"}
+      {showRoleDropdown && (
+        <div className="multi-select-dropdown">
+          {roleData.map((role) => (
+            <label key={role.id} className="checkbox-option">
+              <input
+                type="checkbox"
+                checked={AddAdminForm.roles.includes(role.id)}
+                onChange={() => handleRoleChange(role.id)}
+              />
+              {role.name}
+            </label>
+          ))}
+        </div>
+      )}
     </div>
 
-    {showRoleDropdown && (
-      <div className="multi-select-dropdown">
-
-        {roleData.map((role) => (
-          <label
-            key={role.id}
-            className="checkbox-option"
-          >
-            <input
-              type="checkbox"
-              checked={AddAdminForm.roles.includes(role.id)}
-              onChange={() => handleRoleChange(role.id)}
-            />
-
-            {role.name}
-          </label>
-        ))}
-
-      </div>
-    )}
+    <button
+      type="button"
+      className="add-role-btn"
+      onClick={() => setAddNewRoleModal(true)}
+    >
+      + Add Role
+    </button>
   </div>
-
-  {AddError.roles && (
-    <p className="error">{AddError.roles}</p>
-  )}
 </div>
-<button
-  type="button"
-  className="add-role-btn"
-  onClick={() => navigate("/admin/role")}
->
-  + Add Role
-</button>
 
             {AddError.roles && <p className="error">{AddError.roles}</p>}
 
