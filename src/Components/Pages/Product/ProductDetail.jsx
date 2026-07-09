@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import './ProductDetail.css';
 import { toast } from 'react-toastify';
-;
 import { 
   BsThreeDotsVertical, 
   BsGrid, 

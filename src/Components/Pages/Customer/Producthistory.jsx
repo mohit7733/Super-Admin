@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-;
 import BASE_URL from "../../../Base";
 import { FaFileMedical } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";

@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
-
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import BASE_URL from "../../../Base";

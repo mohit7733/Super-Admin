@@ -27,7 +27,7 @@ const Medical = () => {
   const [EditformModal, setEditformModal] = useState(false);
   const [Editform, setEditform] = useState(initalAddForm);
   const fetchOnce = useRef();
-  const[AddError,setAddError]=useState({});
+  const [AddError, setAddError] = useState({});
   const Navigate = useNavigate();
   const pagesize = 5;
   const [totalCount, setTotalCount] = useState(0);
@@ -40,76 +40,76 @@ const Medical = () => {
   const [previousPage, setPreviousPage] = useState(null);
 
 
- const getAllMedicalQuestion = async (page = 1) => {
-  const token = sessionStorage.getItem("superadmin_token");
+  const getAllMedicalQuestion = async (page = 1) => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-  if (!token) {
-    toast.error("Session expired. Please login again");
-    Navigate("/login");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?experience_type=medical_history&page=${page}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
-    );
-
-
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
-      sessionStorage.removeItem("superadmin_token");
-
-      toast.error(
-        "Session expired. Please login again"
-      );
-
+    if (!token) {
+      toast.error("Session expired. Please login again");
       Navigate("/login");
-
       return;
     }
 
-    const data = await response.json();
+    setLoading(true);
 
-    console.log("Medical Questions:", data);
+    try {
+      const response = await fetch(
+        `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?experience_type=medical_history&page=${page}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
 
-    setData(data?.data?.results );
 
-    
-    setCurrentPage(page);
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem("superadmin_token");
 
-    setTotalCount(data?.data?.count || 0);
+        toast.error(
+          "Session expired. Please login again"
+        );
 
-    setNextpage(data?.data?.next);
+        Navigate("/login");
 
-    setPreviousPage(data?.data?.previous);
+        return;
+      }
 
-  } catch (error) {
-    console.error(error);
+      const data = await response.json();
 
-    setError(
-      "Something went wrong while fetching data."
-    );
+      console.log("Medical Questions:", data);
 
-    toast.error(
-      "Failed to fetch Medical Questions"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+      setData(data?.data?.results);
+
+
+      setCurrentPage(page);
+
+      setTotalCount(data?.data?.count || 0);
+
+      setNextpage(data?.data?.next);
+
+      setPreviousPage(data?.data?.previous);
+
+    } catch (error) {
+      console.error(error);
+
+      setError(
+        "Something went wrong while fetching data."
+      );
+
+      toast.error(
+        "Failed to fetch Medical Questions"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     if (!fetchOnce.current) {
       getAllMedicalQuestion();
@@ -118,32 +118,32 @@ const Medical = () => {
   }, [])
 
   const handleEditInputChange = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  setEditform((prev) => ({
-    ...prev,
-    [name]: value,
+    setEditform((prev) => ({
+      ...prev,
+      [name]: value,
 
-    ...(name === "answer_type" &&
-    value === "text"
-      ? { choices: [] }
-      : {}),
-  }));
-};
+      ...(name === "answer_type" &&
+        value === "text"
+        ? { choices: [] }
+        : {}),
+    }));
+  };
   const handleEditChoiceChange = (
-  index,
-  field,
-  value
-) => {
-  const updated = [...Editform.choices];
+    index,
+    field,
+    value
+  ) => {
+    const updated = [...Editform.choices];
 
-  updated[index][field] = value;
+    updated[index][field] = value;
 
-  setEditform({
-    ...Editform,
-    choices: updated,
-  });
-};
+    setEditform({
+      ...Editform,
+      choices: updated,
+    });
+  };
   const addEditChoice = () => {
     setEditform({
       ...Editform,
@@ -158,55 +158,55 @@ const Medical = () => {
 
 
   const handleInputChange = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  setAddform((prev) => ({
-    ...prev,
-    [name]: value,
+    setAddform((prev) => ({
+      ...prev,
+      [name]: value,
 
-    ...(name === "answer_type" &&
-    value === "text"
-      ? { choices: [] }
-      : name === "answer_type"
-      ? {
-          choices: [
-            {
-              value: "",
-              image: null,
-            },
-          ],
-        }
-      : {}),
-  }));
-};
+      ...(name === "answer_type" &&
+        value === "text"
+        ? { choices: [] }
+        : name === "answer_type"
+          ? {
+            choices: [
+              {
+                value: "",
+                image: null,
+              },
+            ],
+          }
+          : {}),
+    }));
+  };
   const handleChoiceChange = (
-  index,
-  field,
-  value
-) => {
-  const updated = [...Addform.choices];
+    index,
+    field,
+    value
+  ) => {
+    const updated = [...Addform.choices];
 
-  updated[index][field] = value;
+    updated[index][field] = value;
 
-  setAddform((prev) => ({
-    ...prev,
-    choices: updated,
-  }));
-};
+    setAddform((prev) => ({
+      ...prev,
+      choices: updated,
+    }));
+  };
 
- const addChoice = () => {
-  setAddform((prev) => ({
-    ...prev,
+  const addChoice = () => {
+    setAddform((prev) => ({
+      ...prev,
 
-    choices: [
-      ...prev.choices,
-      {
-        value: "",
-        image: null,
-      },
-    ],
-  }));
-};
+      choices: [
+        ...prev.choices,
+        {
+          value: "",
+          image: null,
+        },
+      ],
+    }));
+  };
 
   const removeChoice = (index) => {
     const updated = Addform.choices.filter((_, i) => i !== index);
@@ -215,117 +215,117 @@ const Medical = () => {
   };
 
 
- const handleSubmit = async () => {
-  try {
-    const token = sessionStorage.getItem(
-      "superadmin_token"
-    );
+  const handleSubmit = async () => {
+    try {
+      const token = sessionStorage.getItem(
+        "superadmin_token"
+      );
 
     if (!token) {
       Navigate("/login");
       return;
     }
 
-    
 
-    const updatedChoices = await Promise.all(
-      Addform.choices.map(
-        async (choice, index) => {
-          let imageUrl = "";
 
-          
-          if (choice.image instanceof File) {
-            imageUrl = await uploadImage(
-              choice.image
-            );
+      const updatedChoices = await Promise.all(
+        Addform.choices.map(
+          async (choice, index) => {
+            let imageUrl = "";
+
+
+            if (choice.image instanceof File) {
+              imageUrl = await uploadImage(
+                choice.image
+              );
+            }
+
+            return {
+              index,
+              value: choice.value,
+              image_path: imageUrl,
+            };
           }
+        )
+      );
 
-          return {
-            index,
-            value: choice.value,
-            image_path: imageUrl,
-          };
+
+
+      const payload = {
+        experience_type: "medical_history",
+
+        questions: [
+          {
+            question: Addform.question,
+
+            answer_type:
+              Addform.answer_type,
+
+            choices:
+              Addform.answer_type ===
+                "text"
+                ? []
+                : updatedChoices,
+          },
+        ],
+      };
+
+      console.log(
+        "FINAL PAYLOAD",
+        payload
+      );
+
+      const res = await fetch(
+        `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: JSON.stringify(payload),
         }
-      )
-    );
+      );
 
-  
+      const data = await res.json();
 
-const payload = {
-  experience_type: "medical_history",
+      console.log(
+        "FINAL RESPONSE",
+        data
+      );
 
-  questions: [
-    {
-      question: Addform.question,
+      if (!res.ok) {
+        // const errorMsg =
+        //   data?.errors?.questions?.[0]
+        //     ?.non_field_errors?.[0] ||
+        //   "Error adding question ❌";
 
-      answer_type:
-        Addform.answer_type,
+        toast.error("something went wrong while fetching data");
 
-      choices:
-        Addform.answer_type ===
-        "text"
-          ? []
-          : updatedChoices,
-    },
-  ],
-};
-
-    console.log(
-      "FINAL PAYLOAD",
-      payload
-    );
-
-    const res = await fetch(
-      `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-
-          Authorization: `Bearer ${token}`,
-        },
-
-        body: JSON.stringify(payload),
+        return;
       }
-    );
 
-    const data = await res.json();
+      toast.success(
+        "Question Added Successfully ✅"
+      );
 
-    console.log(
-      "FINAL RESPONSE",
-      data
-    );
+      setAddformModal(false);
 
-    if (!res.ok) {
-      // const errorMsg =
-      //   data?.errors?.questions?.[0]
-      //     ?.non_field_errors?.[0] ||
-      //   "Error adding question ❌";
+      setAddform(initalAddForm);
 
-      toast.error("something went wrong while fetching data");
+      getAllMedicalQuestion();
+    } catch (err) {
+      console.log(err);
 
-      return;
+      toast.error(
+        "Error adding question ❌"
+      );
     }
-
-    toast.success(
-      "Question Added Successfully ✅"
-    );
-
-    setAddformModal(false);
-
-    setAddform(initalAddForm);
-
-    getAllMedicalQuestion();
-  } catch (err) {
-    console.log(err);
-
-    toast.error(
-      "Error adding question ❌"
-    );
-  }
-};
+  };
 
   const handleDelete = async (id) => {
     const token = sessionStorage.getItem("superadmin_token")
@@ -370,29 +370,29 @@ const payload = {
       const token = sessionStorage.getItem("superadmin_token");
 
       const payload = {
-  experience_type:
-    Editform.experience_type,
+        experience_type:
+          Editform.experience_type,
 
-  question: Editform.question,
+        question: Editform.question,
 
-  answer_type:
-    Editform.answer_type,
+        answer_type:
+          Editform.answer_type,
 
-  choices:
-    Editform.answer_type === "text"
-      ? []
-      : Editform.choices.map(
-          (choice, index) => ({
-            index,
-            value: choice.value,
-            image_path:
-              choice.image_path || "",
-          })
-        ),
-};
+        choices:
+          Editform.answer_type === "text"
+            ? []
+            : Editform.choices.map(
+              (choice, index) => ({
+                index,
+                value: choice.value,
+                image_path:
+                  choice.image_path || "",
+              })
+            ),
+      };
 
       const res = await fetch(
-`${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?id=${SelectedQuestionId}`,
+        `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?id=${SelectedQuestionId}`,
         {
           method: "PUT",
           headers: {
@@ -423,39 +423,39 @@ const payload = {
     }
   };
 
-const uploadImage = async (file) => {
-  const token = sessionStorage.getItem("superadmin_token");
+  const uploadImage = async (file) => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-  try {
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    formData.append("image", file);
+      formData.append("image", file);
 
-    formData.append("dir", "health_issues");
+      formData.append("dir", "health_issues");
 
-    const response = await fetch(
-      `${BASE_URL}/user/upload/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      }
-    );
+      const response = await fetch(
+        `${BASE_URL}/user/upload/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    console.log("Upload Response:", data);
+      console.log("Upload Response:", data);
 
-   return data?.data?.url;
-  } catch (error) {
-    console.error(error);
-    toast.error("Image upload failed");
+      return data?.data?.url;
+    } catch (error) {
+      console.error(error);
+      toast.error("Image upload failed");
 
-    return null;
-  }
-};
+      return null;
+    }
+  };
 
   return (
     <>
@@ -517,7 +517,7 @@ const uploadImage = async (file) => {
                   <td>{index + 1}</td>
                   <td>{question.question} </td>
                   <td>{question.answer_type}</td>
-                
+
 
                   <td>
                     {question.choices && question.choices.length > 0
@@ -556,41 +556,41 @@ const uploadImage = async (file) => {
 
                         <button
                           className="action-btn1"
-                       onClick={() => {
-  setEditformModal(true);
+                          onClick={() => {
+                            setEditformModal(true);
 
-  setSelectedQuestionId(question.id);
+                            setSelectedQuestionId(question.id);
 
-  setEditform({
-    experience_type:
-      question.experience_type || "",
+                            setEditform({
+                              experience_type:
+                                question.experience_type || "",
 
-    question: question.question || "",
+                              question: question.question || "",
 
-    answer_type:
-      question.answer_type || "",
+                              answer_type:
+                                question.answer_type || "",
 
-    choices:
-      question.answer_type === "text"
-        ? []
-        : question.choices?.length
-        ? question.choices.map((c) => ({
-            value: c.value || "",
-            image_path:
-              c.image_path || "",
-            image: null,
-          }))
-        : [
-            {
-              value: "",
-              image: null,
-              image_path: "",
-            },
-          ],
-  });
-}}
+                              choices:
+                                question.answer_type === "text"
+                                  ? []
+                                  : question.choices?.length
+                                    ? question.choices.map((c) => ({
+                                      value: c.value || "",
+                                      image_path:
+                                        c.image_path || "",
+                                      image: null,
+                                    }))
+                                    : [
+                                      {
+                                        value: "",
+                                        image: null,
+                                        image_path: "",
+                                      },
+                                    ],
+                            });
+                          }}
                         >
-                          <span className='icon'> <FaEdit/> </span> 
+                          <span className='icon'> <FaEdit /> </span>
                           <span> Edit</span>
                         </button>
                         <button
@@ -605,7 +605,7 @@ const uploadImage = async (file) => {
 
                         >
                           <span className="icon-delete">
-                          <FiTrash2/> </span>
+                            <FiTrash2 /> </span>
                           <span className='delete-text'>Delete</span>
                         </button>
 
@@ -628,7 +628,7 @@ const uploadImage = async (file) => {
           </tbody>
         </table>
 
-          {totalPages > 1 && (
+        {totalPages > 1 && (
           <div className="pagination">
 
 
@@ -657,7 +657,7 @@ const uploadImage = async (file) => {
 
 
             <button
-              onClick={() => getAllMedicalQuestion(currentpage + 1 )}
+              onClick={() => getAllMedicalQuestion(currentpage + 1)}
               disabled={!Nextpage}
             >
               Next
@@ -665,7 +665,7 @@ const uploadImage = async (file) => {
 
           </div>
         )}
-        
+
 
 
 
@@ -822,157 +822,156 @@ const uploadImage = async (file) => {
   </div>
 )}
 
-      {EditformModal && (
-  <div className="modal">
-    <form
-      className="customer-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleUpdate();
-      }}
-    >
-      <h2>Edit Question</h2>
-
-      <label>Question</label>
-
-      <input
-        type="text"
-        name="question"
-        placeholder="Enter Question"
-        value={Editform.question}
-        onChange={handleEditInputChange}
-      />
-
-      <label>Question Type</label>
-
-      <select
-        name="answer_type"
-        value={Editform.answer_type}
-        onChange={handleEditInputChange}
-      >
-        <option value="">Select Type</option>
-
-        <option value="choice">
-          Single Choice
-        </option>
-
-        <option value="multi_choice">
-          Multiple Choice
-        </option>
-
-        <option value="text">
-          Text
-        </option>
-      </select>
-
-      {(Editform.answer_type === "choice" ||
-        Editform.answer_type === "multi_choice") && (
-        <>
-          <div className="choice-header">
-            <h4>Choices</h4>
-
-            <button
-              type="button"
-              onClick={addEditChoice}
-              className="AddButton"
+        {EditformModal && (
+          <div className="modal">
+            <form
+              className="customer-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpdate();
+              }}
             >
-              + Add Choice
-            </button>
-          </div>
+              <h2>Edit Question</h2>
 
-          {Editform.choices.map((choice, index) => (
-            <div
-              key={index}
-              className="choice-card"
-            >
-              <div className="choice-card-header">
+              <label>Question</label>
 
-                <span className="choice-title">
-                  Choice {index + 1}
-                </span>
+              <input
+                type="text"
+                name="question"
+                placeholder="Enter Question"
+                value={Editform.question}
+                onChange={handleEditInputChange}
+              />
+
+              <label>Question Type</label>
+
+              <select
+                name="answer_type"
+                value={Editform.answer_type}
+                onChange={handleEditInputChange}
+              >
+                <option value="">Select Type</option>
+
+                <option value="choice">
+                  Single Choice
+                </option>
+
+                <option value="multi_choice">
+                  Multiple Choice
+                </option>
+
+                <option value="text">
+                  Text
+                </option>
+              </select>
+
+              {(Editform.answer_type === "choice" ||
+                Editform.answer_type === "multi_choice") && (
+                  <>
+                    <div className="choice-header">
+                      <h4>Choices</h4>
+
+                      <button
+                        type="button"
+                        onClick={addEditChoice}
+                        className="AddButton"
+                      >
+                        + Add Choice
+                      </button>
+                    </div>
+
+                    {Editform.choices.map((choice, index) => (
+                      <div
+                        key={index}
+                        className="choice-card"
+                      >
+                        <div className="choice-card-header">
+
+                          <span className="choice-title">
+                            Choice {index + 1}
+                          </span>
+
+                          <button
+                            type="button"
+                            className="remove-choice-btn"
+                            onClick={() =>
+                              removeEditChoice(index)
+                            }
+                          >
+                            <FiTrash2 />
+                          </button>
+                        </div>
+
+                        <div className="choice-fields">
+
+                          <input
+                            type="text"
+                            placeholder={`Enter Choice ${index + 1
+                              }`}
+                            value={choice.value}
+                            onChange={(e) =>
+                              handleEditChoiceChange(
+                                index,
+                                "value",
+                                e.target.value
+                              )
+                            }
+                            className="choice-input"
+                          />
+
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleEditChoiceChange(
+                                index,
+                                "image",
+                                e.target.files[0]
+                              )
+                            }
+                            className="choice-file"
+                          />
+
+                          {choice.image_path && (
+                            <img
+                              src={choice.image_path}
+                              alt="choice"
+                              style={{
+                                width: "70px",
+                                height: "70px",
+                                objectFit: "cover",
+                                borderRadius: "8px",
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+
+              <div className="form-buttons">
+                <button type="submit">
+                  Update
+                </button>
 
                 <button
                   type="button"
-                  className="remove-choice-btn"
                   onClick={() =>
-                    removeEditChoice(index)
+                    setEditformModal(false)
                   }
                 >
-                  <FiTrash2 />
+                  Cancel
                 </button>
               </div>
-
-              <div className="choice-fields">
-
-                <input
-                  type="text"
-                  placeholder={`Enter Choice ${
-                    index + 1
-                  }`}
-                  value={choice.value}
-                  onChange={(e) =>
-                    handleEditChoiceChange(
-                      index,
-                      "value",
-                      e.target.value
-                    )
-                  }
-                  className="choice-input"
-                />
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    handleEditChoiceChange(
-                      index,
-                      "image",
-                      e.target.files[0]
-                    )
-                  }
-                  className="choice-file"
-                />
-
-                {choice.image_path && (
-                  <img
-                    src={choice.image_path}
-                    alt="choice"
-                    style={{
-                      width: "70px",
-                      height: "70px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-
-      <div className="form-buttons">
-        <button type="submit">
-          Update
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            setEditformModal(false)
-          }
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
-  </div>
-)}
+            </form>
+          </div>
+        )}
 
       </div>
 
 
-      </>
+    </>
 
   )
 }

@@ -337,13 +337,13 @@ const Healthcategory = () => {
       newErrors.name = "Health category name is required";
     }
 
-   const code = categoryForm.code.trim();
+    const code = categoryForm.code.trim();
 
-if (!code) {
-  newErrors.code = "Please enter category code";
-} else if (!/^[A-Z]{5}$/.test(code)) {
-  newErrors.code = "Code must be exactly 5 uppercase letters (A-Z)";
-}
+    if (!code) {
+      newErrors.code = "Please enter category code";
+    } else if (!/^[A-Z]{5}$/.test(code)) {
+      newErrors.code = "Code must be exactly 5 uppercase letters (A-Z)";
+    }
 
     if (!SubCategoryImage) {
       newErrors.image_url = "Please upload an image";
@@ -551,81 +551,81 @@ if (!code) {
   };
 
 
-const handleUpdateCategory = async (e) => {
-  e.preventDefault();
-  if(isUpdating)return;
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    if (isUpdating) return;
 
-  let newErrors = {};
+    let newErrors = {};
 
-  if (!editForm.name.trim()) {
-    newErrors.name = " Service Category name is required";
-  }
-
-  setEditErrors(newErrors);
-
-  if (Object.keys(newErrors).length > 0) {
-    toast.error(Object.values(newErrors)[0]);
-    return;
-  }
-
-  const token = sessionStorage.getItem("superadmin_token");
-  setIsUpdating(false);
-
-  try {
-    let imageUrl = editForm.image_url;
-
-   
-    if (EditImage) {
-      imageUrl = await uploadImage(EditImage);
-
-      if (!imageUrl) {
-        toast.error("Image upload failed");
-        return;
-      }
+    if (!editForm.name.trim()) {
+      newErrors.name = " Service Category name is required";
     }
 
-    const response = await fetch(
-      `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify({
-          name: editForm.name,
-          description: editForm.description,
-          is_active: editForm.is_active,
-          category_id: editForm.category_id,
-          image_url: imageUrl,
-        }),
-      }
-    );
+    setEditErrors(newErrors);
 
-    const data = await response.json();
-
-    if (response.ok) {
-      toast.success("Product Category Updated Successfully");
-
-      setEditModal(false);
-      setEditImage(null);
-      getHealthCategoryList();
-    } else {
-      toast.error(
-        data?.errors?.name?.[0] ||
-        data?.message ||
-        "Failed to update category"
-      );
+    if (Object.keys(newErrors).length > 0) {
+      toast.error(Object.values(newErrors)[0]);
+      return;
     }
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong");
-  }
-  finally{
+
+    const token = sessionStorage.getItem("superadmin_token");
     setIsUpdating(false);
-  }
-};
+
+    try {
+      let imageUrl = editForm.image_url;
+
+
+      if (EditImage) {
+        imageUrl = await uploadImage(EditImage);
+
+        if (!imageUrl) {
+          toast.error("Image upload failed");
+          return;
+        }
+      }
+
+      const response = await fetch(
+        `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({
+            name: editForm.name,
+            description: editForm.description,
+            is_active: editForm.is_active,
+            category_id: editForm.category_id,
+            image_url: imageUrl,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Product Category Updated Successfully");
+
+        setEditModal(false);
+        setEditImage(null);
+        getHealthCategoryList();
+      } else {
+        toast.error(
+          data?.errors?.name?.[0] ||
+          data?.message ||
+          "Failed to update category"
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    }
+    finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <>
@@ -707,12 +707,12 @@ const handleUpdateCategory = async (e) => {
             setShowCategoryModal(true);
           }}
         >
-          <BiPlus/>
+          <BiPlus />
           Add Health Category
         </button>
       </div>
 
-      
+
       <div className="table-wrapper">
         <table className="data-table">
           <thead>
@@ -916,27 +916,27 @@ const handleUpdateCategory = async (e) => {
               <div className="form-group">
                 <label>Category Code <span className="required">*</span></label>
                 <input
-  type="text"
-  name="code"
-  value={categoryForm.code}
-  onChange={(e) => {
-    let value = e.target.value.toUpperCase();
-    value = value.replace(/[^A-Z]/g, "").slice(0, 5);
+                  type="text"
+                  name="code"
+                  value={categoryForm.code}
+                  onChange={(e) => {
+                    let value = e.target.value.toUpperCase();
+                    value = value.replace(/[^A-Z]/g, "").slice(0, 5);
 
-    setCategoryForm((prev) => ({
-      ...prev,
-      code: value,
-    }));
+                    setCategoryForm((prev) => ({
+                      ...prev,
+                      code: value,
+                    }));
 
-    setAddErrors((prev) => ({
-      ...prev,
-      code: "",
-    }));
-  }}
-  placeholder="Enter 5-letter category code"
-  maxLength={5}
-  className={addErrors.code ? "error-input" : ""}
-/>
+                    setAddErrors((prev) => ({
+                      ...prev,
+                      code: "",
+                    }));
+                  }}
+                  placeholder="Enter 5-letter category code"
+                  maxLength={5}
+                  className={addErrors.code ? "error-input" : ""}
+                />
                 {addErrors.code && <p className="error-text">{addErrors.code}</p>}
               </div>
 
@@ -1229,7 +1229,7 @@ const handleUpdateCategory = async (e) => {
         </div>
       )}
 
-    
+
       {deleteModal && (
         <div className="modal-overlay" onClick={() => setDeleteModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
