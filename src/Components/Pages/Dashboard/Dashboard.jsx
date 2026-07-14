@@ -233,13 +233,12 @@ const Dashboard = () => {
   };
 
   const handleRefresh = () => {
-    // getDashboardStats();
-    // getOrderList(currentPage, activeType);
+   
     toast.info("Refreshing data...");
   };
 
   const handleExport = () => {
-    // Export functionality
+
     const exportData = orderData.map(order => ({
       ID: order.id,
       Customer: order.customer_name,

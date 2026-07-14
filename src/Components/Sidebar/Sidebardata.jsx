@@ -210,12 +210,12 @@ icon: <ShoppingCartIcon sx={{ fontSize: 20 }} />,
       path: "/tax-class",
       permission: "manage_tax_class",
     },
-    {
-      title: "Tax Rates",
-      icon: <MdPercent style={{ fontSize: 20 }} />,
-      path: "/tax-rates",
-      permission: "manage_tax_rates",
-    },
+    // {
+    //   title: "Tax Rates",
+    //   icon: <MdPercent style={{ fontSize: 20 }} />,
+    //   path: "/tax-rates",
+    //   permission: "manage_tax_rates",
+    // },
   ],
 },
   {
@@ -246,12 +246,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
     path: "#",
     
     children: [
-      {
-        title: "Add Roles",
-        path: "/admin/role",
-        permission: "view_role",
-        icon: <MdReviews size={18} />
-      },
+      // {
+      //   title: "Add Roles",
+      //   path: "/admin/role",
+      //   permission: "view_role",
+      //   icon: <MdReviews size={18} />
+      // },
      {
         title: "Add Admin",
         path: "/Admin",

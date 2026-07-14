@@ -6,7 +6,7 @@ import { BsPlus, BsDownload, BsSearch } from "react-icons/bs";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
 import BASE_URL from "../../../Base";
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import './Disease.css';
@@ -84,7 +84,7 @@ const Disease = () => {
     code: "",
   });
 
-  // Calculate statistics
+  
   const calculateStats = (data) => {
     const total = data?.length || 0;
     const active = data?.filter((item) => item.is_active === true).length || 0;
@@ -92,7 +92,7 @@ const Disease = () => {
     setStats({ total, active, inactive });
   };
 
-  // Filter data based on search and status
+ 
   const filterData = (data, search, status) => {
     if (!data) return [];
 
@@ -176,18 +176,18 @@ const Disease = () => {
     if (!formData.prakriti) {
       errors.prakriti = "Prakriti is required";
     }
+if (!formData.name || !formData.name.trim()) {
+  errors.name = "Disease name is required";
+}
+const code = formData.code;
 
-    if (!formData.name.trim()) {
-      errors.name = "Disease name is required";
-    }
-
-    const code = formData.code;
-    if (!code) {
-      errors.code = "Please enter category code";
-    } else if (!/^[A-Z]{1,10}$/.test(code)) {
-      errors.code = "Code must be 1-10 uppercase letters (A–Z only)";
-    }
-
+if (!code) {
+  errors.code = "Disease code is required";
+} 
+else if (!/^[A-Z]{5}$/.test(code)) {
+  errors.code = "Disease code must be exactly 5 uppercase letters";
+}
+   
     if (!imageFile) {
       errors.image = "Disease image is required";
     }
@@ -202,29 +202,36 @@ const Disease = () => {
   };
 
   const validateCategoryForm = () => {
-    let errors = {};
-    if (!ServicecategoryId) {
-      errors.ServicecategoryId = "Please select service category";
-    }
+  let errors = {};
 
-    if (!healthcategoryname.trim()) {
-      errors.healthcategoryname = "Category name is required";
-    }
+  if (!ServicecategoryId) {
+    errors.ServicecategoryId = "Please select service category";
+  }
 
-    const code = CategoryCode;
-    if (!code) {
-      errors.code = "Please enter category code";
-    } else if (!/^[A-Z]{1,10}$/.test(code)) {
-      errors.code = "Code must be 1-10 uppercase letters (A-Z only)";
-    }
+  if (!healthcategoryname.trim()) {
+    errors.healthcategoryname = "Category name is required";
+  }
 
-    if (!HealthCategoryImage) {
-      errors.HealthCategoryImage = "Category image is required";
-    }
+  const code = CategoryCode;
 
-    setCategoryErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  if (!code) {
+    errors.code = "Disease Code is required";
+  } 
+  else if (code.length > 10) {
+    errors.code = "Code maximum 10 characters allowed";
+  } 
+  else if (!/^[A-Z]+$/.test(code)) {
+    errors.code = "Only uppercase letters are allowed";
+  }
+
+  if (!HealthCategoryImage) {
+    errors.HealthCategoryImage = "Category image is required";
+  }
+
+  setCategoryErrors(errors);
+
+  return Object.keys(errors).length === 0;
+};
 
   const getServiceCategoryList = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -594,17 +601,23 @@ const Disease = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        toast.success("Category Added Successfully");
-        setHealthcategory("");
-        setCategoryCode("");
-        setDescription("");
-        setHealthCategoryImage(null);
-        setAddCategoryModal(false);
-        getHealthCategoryList();
-      } else {
-        toast.error(data.message || "Failed to add category");
-      }
+if (response.ok) {
+  toast.success("Category Added Successfully");
+  setHealthcategory("");
+  setCategoryCode("");
+  setDescription("");
+  setHealthCategoryImage(null);
+  setAddCategoryModal(false);
+  getHealthCategoryList();
+} else {
+  if (data?.errors) {
+    Object.values(data.errors).forEach((err) => {
+      toast.error(Array.isArray(err) ? err[0] : err);
+    });
+  } else {
+    toast.error(data?.message || "Failed to add category");
+  }
+}
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
@@ -679,8 +692,14 @@ const Disease = () => {
         setAddDiseaseformModal(false);
         getDiseaseList(1);
       } else {
-        toast.error(data?.message || "Failed to add disease");
-      }
+  if (data?.errors) {
+    Object.values(data.errors).forEach((err) => {
+      toast.error(Array.isArray(err) ? err[0] : err);
+    });
+  } else {
+    toast.error(data?.message || "Failed to add disease");
+  }
+}
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
@@ -741,15 +760,21 @@ const Disease = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        toast.success("Disease updated successfully");
-        setEditModal(false);
-        setEditDiseaseId(null);
-        setImageFile(null);
-        getDiseaseList(currentpage);
-      } else {
-        toast.error(data?.message || "Update failed");
-      }
+    if (response.ok) {
+  toast.success("Disease updated successfully");
+  setEditModal(false);
+  setEditDiseaseId(null);
+  setImageFile(null);
+  getDiseaseList(currentpage);
+} else {
+  if (data?.errors) {
+    Object.values(data.errors).forEach((err) => {
+      toast.error(Array.isArray(err) ? err[0] : err);
+    });
+  } else {
+    toast.error(data?.message || "Update failed");
+  }
+}
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong");
@@ -1180,25 +1205,31 @@ const Disease = () => {
               </div>
 
               <div className="form-group">
-                <label>Category Code <span className="required">*</span></label>
+                <label>Disease Code <span className="required">*</span></label>
                 <input
                   type="text"
                   name="code"
                   value={formData.code}
-                  onChange={(e) => {
-                    let value = e.target.value.toUpperCase();
-                    value = value.replace(/[^A-Z]/g, "");
-                    setFormData((prev) => ({
-                      ...prev,
-                      code: value,
-                    }));
-                    setDiseaseErrors((prev) => ({
-                      ...prev,
-                      code: "",
-                    }));
-                  }}
-                  placeholder="Enter Category Code (A-Z, Max 10 Letters)"
-                  maxLength="10"
+                onChange={(e) => {
+  const value = e.target.value.toUpperCase();
+
+  if (/[^A-Z]/.test(value)) {
+    toast.error("Disease code should contain only letters (A-Z)");
+    return;
+  }
+
+  setFormData((prev) => ({
+    ...prev,
+   code: value.slice(0, 5),
+  }));
+
+  setDiseaseErrors((prev) => ({
+    ...prev,
+    code: "",
+  }));
+}}
+                  placeholder="Enter Category Code (A-Z, Max 5 Letters)"
+                  maxLength="5"
                   className={diseaseErrors.code ? "error-input" : ""}
                 />
                 {diseaseErrors.code && (
@@ -1904,7 +1935,10 @@ const Disease = () => {
             </div>
           </div>
         </div>
+        
       )}
+
+        <ToastContainer position="top-center" autoClose={2000} />
     </>
   );
 };

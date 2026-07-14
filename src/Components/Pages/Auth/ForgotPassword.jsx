@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+
 import logo1 from '../../Assests/logo1.png';
 import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
 import BASE_URL from "../../../Base";
 import Ayurmuniimages from "../../Assests/Ayurvedicimages.jpg";
+import { ToastContainer, toast } from "react-toastify";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -37,11 +38,12 @@ const ForgotPassword = () => {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        setLoading(false);
-        toast.error(data.message || "Something went wrong!");
-        return;
-      }
+   if (!response.ok || !data.success) {
+     setLoading(false);
+    toast.error(data?.message || "Something went wrong!");
+    return;
+  }
+
 
       toast.success("OTP sent to your phone!");
       sessionStorage.setItem("phone_number", formattedPhone);
@@ -113,7 +115,7 @@ const ForgotPassword = () => {
           </form>
         </div>
       </div>
-
+ <ToastContainer position="top-center" autoClose={2000} />
     </>
   );
 };

@@ -51,7 +51,23 @@ const [video, setVideo] = useState(null);
 const videoRef = useRef(null);
 const[deleteModal,setDeleteModal]=useState(false);
 const[YogaSessionId,setYogaSessionId]=useState(null);
+const [addSessionLoading, setAddSessionLoading] = useState(false);
+const[ SelectedYogasession, setSelectedYogasession]=useState();
+const[statusModal,setStatusModal]=useState(false);
+const pagesize = 5;
+  const [totalCount, setTotalCount] = useState(0);
+  const totalPages = Math.ceil(totalCount / pagesize);
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
+  const [currentpage, setCurrentPage] = useState(1);
+  const [Nextpage, setNextpage] = useState(null);
+
+  const [previousPage, setPreviousPage] = useState(null);
+  const [stats, setStats] = useState({
+  total: 0,
+  active: 0,
+  inactive: 0,
+});
 
 
   
@@ -146,7 +162,7 @@ const resetVideoModal = () => {
     video_url: "",
     short_description: "",
     description: "",
-    status: false,
+    status:"inactive",
   });
 
   setThumbnail(null);
@@ -162,7 +178,7 @@ const resetVideoModal = () => {
   }
 };
 
-  const getYogasessionlist = async () => {
+  const getYogasessionlist = async (page = 1) => {
     const token = sessionStorage.getItem("superadmin_token");
 
     if (!token) {
@@ -176,7 +192,7 @@ const resetVideoModal = () => {
 
     try {
       const response = await fetch(
-        `${BASE_URL}/yoga/admin/sessions/`,
+        `${BASE_URL}/yoga/admin/sessions/?page=${page}`,
         {
           method: "GET",
           headers: {
@@ -199,6 +215,21 @@ console.log(data);
 
 if (data.status === "success") {
   setYogaSessionData(data.data);
+
+  setStats({
+    total: data.count,
+    active: data.data.filter(
+      item => item.status === "active"
+    ).length,
+    inactive: data.data.filter(
+      item => item.status === "inactive"
+    ).length,
+  });
+
+  setTotalCount(data.count);
+  setCurrentPage(page);
+  setNextpage(data.next);
+  setPreviousPage(data.previous);
 } else {
   toast.error(data.message || "Failed to fetch yoga sessions");
   setYogaSessionError(data.message);
@@ -353,6 +384,10 @@ if (data.success) {
   };
  const handleAddYogaSession = async (e) => {
   e.preventDefault();
+   if (addSessionLoading) return;
+
+  setAddSessionLoading(true);
+
 
   const token = sessionStorage.getItem("superadmin_token");
 
@@ -361,6 +396,8 @@ if (data.success) {
     navigate("/login");
     return;
   }
+
+   
 
   try {
   let thumbnailUrl = "";
@@ -416,6 +453,8 @@ if (video) {
   resetVideoModal();
 
       getYogasessionlist();
+      setShowYogaVideoModal(false);
+    
       
     } else {
       toast.error(data.message || "Failed to add session");
@@ -424,7 +463,70 @@ if (video) {
     console.error(error);
     toast.error("Something went wrong");
   }
+  finally{
+    setAddSessionLoading(false);
+  }
 };
+
+   const updateCategoryStatus = async (id, currentStatus) => {
+    const token = sessionStorage.getItem("superadmin_token");
+    if (!token) {
+      toast.error("Session Expired, please login Again");
+      navigate("/login");
+      return;
+    }
+
+ const newStatus =
+  currentStatus === "active"
+    ? "inactive"
+    : "active";
+
+try {
+  const response = await fetch(
+    `${BASE_URL}/yoga/admin/sessions/?id=${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true",
+      },
+      body: JSON.stringify({
+        status: newStatus,
+      }),
+    }
+  );
+
+  if (response.status === 401 || response.status === 403) {
+    sessionStorage.removeItem("superadmin_token");
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  const data = await response.json();
+
+  if (response.ok) {
+    toast.success(
+      newStatus === "ACTIVE"
+        ? "Yoga Session Activated Successfully"
+        : "Yoga Session Deactivated Successfully"
+    );
+
+    getYogasessionlist();
+  } else {
+    toast.error(data.message || "Failed to update yoga session status");
+  }
+} catch (error) {
+  console.error(error);
+  toast.error("Failed to update yoga session status");
+}
+
+   }
+
+
+
 
   const handleDelete = async (id) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -508,7 +610,9 @@ if (video) {
           </div>
           <div className="stat2-info">
             <h3>Total Yoga Sesssion</h3>
-            <div className="stat2-value">0 </div>
+           <div className="stat2-value">{stats.total}</div>
+
+
           </div>
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#28a745" }}>
@@ -517,7 +621,8 @@ if (video) {
           </div>
           <div className="stat2-info">
             <h3>Active</h3>
-            <div className="stat2-value"> 0</div>
+           <div className="stat2-value">{stats.active}</div>
+
           </div>
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#dc3545" }}>
@@ -526,73 +631,13 @@ if (video) {
           </div>
           <div className="stat2-info">
             <h3>Inactive</h3>
-            <div className="stat2-value">0</div>
+      
+<div className="stat2-value">{stats.inactive}</div>
           </div>
         </div>
       </div>
 
-      {/* <div className="session-filter">
-
-        <div className="session-search">
-
-          <FaSearch className="session-search-icon" />
-
-          <input
-            type="text"
-            placeholder="Search session..."
-          />
-
-        </div>
-
-        {
-          isFilterApplied ?
-<button
-  className="clear-filter-btn"
-  onClick={clearFilters}
->
-  <MdFilterAltOff size={18} />
-  Remove Filters
-</button>
-            :
-
-            <button
-              className="session-filter-btn"
-              onClick={handleFilter}
-            >
-              <HiOutlineFilter />
-              Filter
-            </button>
-
-        }
-
-        <select className="session-select">
-
-        <option>All Category</option>
-
-    </select>
-
-
-
-        <select className="session-select">
-
-          <option>All Status</option>
-
-          <option>Active</option>
-
-          <option>Inactive</option>
-
-        </select>
-       <button
-  className="add-session-btn"
-  onClick={() => setShowYogaVideoModal(true)}
->
-          <BiPlus />
-          Add Yoga Session
-        </button>
-
-
-
-      </div> */}
+      
  <div className="Question-controls">
     <div className="filter-question">
          <button
@@ -686,16 +731,27 @@ if (video) {
       
                        
                         <td>
-                          <span className={`status-badge ${item.is_active ? 'status-active' : 'status-inactive'}`}>
-                            {item.is_active ? 'Active' : 'Inactive'}
-                          </span>
+           <span
+  className={`status-badge ${
+    item.status === "active"
+      ? "status-active"
+      : "status-inactive"
+  }`}
+>
+  {item.status === "active" ? "Active" : "Inactive"}
+</span>
                           <br />
                           <label className="switch">
-                            <input
-                              type="checkbox"
-                              checked={item.is_active}
-                            
-                            />
+                          
+                          <input
+  type="checkbox"
+  checked={item.status === "active"}
+  onChange={() => {
+    setSelectedYogasession(item);
+    setStatusModal(true);
+  }}
+/>
+                      
                             <span className="slider round"></span>
                           </label>
                         </td>
@@ -736,6 +792,45 @@ if (video) {
                   )}
                 </tbody>
               </table>
+
+               {totalPages > 1 && (
+          <div className="pagination">
+
+
+            <button
+             onClick={() =>   getYogasessionlist(currentpage - 1)}
+              disabled={!previousPage}
+            >
+              Prev
+            </button>
+
+
+            {pages.map((page) => (
+              <button
+                key={page}
+                onClick={() =>   getYogasessionlist(page)}
+                style={{
+
+                  fontWeight: currentpage === page ? "bold" : "normal",
+                  background: currentpage === page ? "#0D614E" : "#fff",
+                  color: currentpage === page ? "#fff" : "#0D614E",
+                }}
+              >
+                {page}
+              </button>
+            ))}
+
+
+            <button
+              onClick={() =>   getYogasessionlist(currentpage + 1)}
+              disabled={!Nextpage}
+            >
+              Next
+            </button>
+
+          </div>
+        )}
+
             </div>
 {showYogaVideoModal && (
   <div className="prakriti-modal-overlay">
@@ -1038,9 +1133,7 @@ if (video) {
 
           <div className="checkbox-row">
 
-           
-
-          <input
+           <input
   type="checkbox"
   checked={videoForm.status === "active"}
   onChange={(e) =>
@@ -1052,6 +1145,9 @@ if (video) {
 />
 
 <span>{videoForm.status === "active" ? "Active" : "Inactive"}</span>
+
+      
+
 
           </div>
         </div>
@@ -1065,13 +1161,14 @@ if (video) {
           >
             Cancel
           </button>
-
-          <button
-            type="submit"
-            className="save-btn"
-          >
-            Add Session
-          </button>
+<button
+  type="submit"
+  className="save-btn"
+  disabled={addSessionLoading}
+>
+  {addSessionLoading ? "Adding..." : "Add Session"}
+</button>
+        
 
         </div>
 
@@ -1108,9 +1205,96 @@ if (video) {
     </div>
   </div>
 )}
+{statusModal && SelectedYogasession && (
+  <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setStatusModal(false);
+      setSelectedYogasession(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setStatusModal(false);
+          setSelectedYogasession(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            SelectedYogasession.status === "active"
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {SelectedYogasession.status === "active"
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this Session?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{SelectedYogasession.title}</h4>
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setStatusModal(false);
+            setSelectedYogasession(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className={`activeModal-confirm ${
+            SelectedYogasession.status === "active"
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          onClick={() => {
+            updateCategoryStatus(
+              SelectedYogasession.id,
+              SelectedYogasession.status
+            );
+
+            setStatusModal(false);
+            setSelectedYogasession(null);
+          }}
+        >
+          Yes,{" "}
+          {SelectedYogasession.status === "active"
+            ? "Deactivate"
+            : "Activate"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
 
 
+  <ToastContainer position="top-center" autoClose={2000} />     
 
     </>
   )
