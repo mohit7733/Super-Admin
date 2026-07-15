@@ -588,7 +588,7 @@ if (!code) {
                             </div>
 
                                  <div className="table-wrapper">
-                                                    <table className="data-table" >
+                                                    <table className="data-table">
                                                       <thead>
                                                         <tr>
                                                           <th>ID</th>
@@ -605,7 +605,7 @@ if (!code) {
                                         {Loading ? (
                                           Array(3).fill(0).map((_, i) => (
                                             <tr key={i}>
-                                              <td colSpan="6">
+                                              <td colSpan="7">
                                                 <div className="skeleton-row"></div>
                                               </td>
                                             </tr>

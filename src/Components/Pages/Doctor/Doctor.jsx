@@ -1022,7 +1022,7 @@ const submitRejection = async (e) => {
 
             ) : error ? (
               <tr>
-                <td colSpan="11" style={{ color: "red" }}>
+                <td colSpan="13" style={{ color: "red" }}>
                   {error}
                 </td>
               </tr>

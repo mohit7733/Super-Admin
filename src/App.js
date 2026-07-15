@@ -73,6 +73,7 @@ import YogaSession from './Components/Pages/Yoga/YogaSession';
 import PatientDetails from './Components/Pages/Patient/PatientDetails';
 import Management from './Components/Pages/Mangement/Management';
 import AddRoles from './Components/Pages/Admin/AddRoles';
+import Unicommerece from './Components/Pages/Unicomerece/Unicommerece';
 
 
 
@@ -372,6 +373,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+          <Route
+          path="/tax-class"
+          element={
+            <ProtectedRoute permission="manage_tax_class" >
+              <Layout>
+                <Unicommerece/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/vendor"
           element={
@@ -524,6 +535,29 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <CustomerDetailPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/CustomerDetailPage/:customerId"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CustomerDetailPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        
+         <Route
+          path="/CustomerDetailPage/:customerId"
+          element={
+            <ProtectedRoute>
+              <Layout>
+              
               </Layout>
             </ProtectedRoute>
           }

@@ -56,7 +56,8 @@ const [editForm, setEditForm] = useState({
 });
 const [editErrors, setEditErrors] = useState({});
 
-     const handleToggle = async (id, currentStatus) => {
+
+ const handleToggle = async (id, currentStatus) => {
   const token = sessionStorage.getItem("superadmin_token");
   if(!token){
     toast.error("Session Expired,please login Again");
@@ -100,6 +101,8 @@ const handleBrandChange = (e) => {
     [name]: type === "checkbox" ? checked : value,
   }));
 };
+
+
 
 const getbrandlist = async () => {
   const token = sessionStorage.getItem("superadmin_token");
@@ -592,7 +595,8 @@ const handleDelete = async (id) => {
         </button>
       </div>
 
-      <form onSubmit={handleUpdateBrand}>
+      <form onSubmit={handleUpdateBrand}
+      className='prakriti-form'>
         <div className="form-group">
           <label>Category Name</label>
 

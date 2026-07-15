@@ -53,7 +53,7 @@ const Patient = () => {
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
- const getAllpatientList = async (page = 1) => {
+ const getAllpatientList = async (page = 1 ,search = searchTerm) => {
   const token = sessionStorage.getItem("superadmin_token");
 
   if (!token) {
@@ -66,7 +66,7 @@ const Patient = () => {
 
   try {
     const response = await fetch(
-      `${BASE_URL}/patients/admin/patients/?page=${page}`,
+      `${BASE_URL}/patients/admin/patients/?page=${page}&search=${encodeURIComponent(search)}`,
       {
         method: "GET",
         headers: {
@@ -111,12 +111,12 @@ const Patient = () => {
 };
 
   useEffect(() => {
-    if (!fetchOnce.current) {
-      getAllpatientList();
-      fetchOnce.current = false;
-    }
+  const delay = setTimeout(() => {
+    getAllpatientList(1, searchTerm);
+  }, 500); // 
 
-  }, [])
+  return () => clearTimeout(delay);
+}, [searchTerm]);
 
  const handleToggle = async (id, currentStatus) => {
   const token = sessionStorage.getItem("superadmin_token");
@@ -410,7 +410,7 @@ setSelectedPatient(null);
 
 
           <button
-            onClick={() => getAllpatientList(Currentpage - 1)}
+            onClick={() => getAllpatientList(Currentpage - 1,searchTerm)}
             disabled={!previousPage}
           >
             Prev
@@ -420,7 +420,7 @@ setSelectedPatient(null);
           {pages.map((page) => (
             <button
               key={page}
-              onClick={() => getAllpatientList(page)}
+              onClick={() => getAllpatientList(page,searchTerm)}
               style={{
 
                 fontWeight: Currentpage === page ? "bold" : "normal",
@@ -434,7 +434,7 @@ setSelectedPatient(null);
 
 
           <button
-            onClick={() => getAllpatientList(Currentpage + 1)}
+            onClick={() => getAllpatientList(Currentpage + 1,searchTerm)}
             disabled={!Nextpage}
           >
             Next

@@ -760,13 +760,7 @@ try {
                         </td>
                         <td>
                           <div className="action-buttons">
-                            {/* <button
-                              className="action-btn edit"
-                             
-                              title="Edit"
-                            >
-                              <FaEdit />
-                            </button> */}
+                            
         <button
                                                         className="action-btn delete"
                                                         onClick={() => {
