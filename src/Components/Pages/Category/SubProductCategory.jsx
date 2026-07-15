@@ -9,7 +9,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { BiPlus } from "react-icons/bi";
@@ -253,6 +253,9 @@ const SubProductCategory = () => {
     if (!EditForm.name || !EditForm.name.trim()) {
       errors.name = "Name is required";
     }
+     if (!EditImage && !EditForm.image_url) {
+    errors.image_url = "Please upload image";
+  }
 
     setEditErrors(errors);
     return Object.keys(errors).length === 0;
@@ -301,9 +304,31 @@ const SubProductCategory = () => {
         toast.success("Updated successfully");
         setShowEditModal(false);
         getSubSubProductCategoryList();
-      } else {
-        toast.error(data.message);
-      }
+      }else {
+
+  if (data.errors) {
+
+    const apiErrors = {};
+
+    Object.keys(data.errors).forEach((key) => {
+
+      const message = data.errors[key][0];
+
+      apiErrors[key] = message;
+
+      toast.error(message);
+
+    });
+
+    setEditErrors(apiErrors);
+
+  } else {
+
+    toast.error(data.message || "Failed to update category");
+
+  }
+
+}
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
@@ -383,13 +408,15 @@ const SubProductCategory = () => {
     } else if (hsnCode.length !== 8) {
       errors.hsn_code = "HSN Code must be exactly 8 digits";
     }
+    const code = SubCategoryForm.code.trim();
 
-    const code = SubCategoryForm.code;
-    if (!code) {
-      errors.code = "Please enter category code";
-    } else if (!/^[A-Z]{1,10}$/.test(code)) {
-      errors.code = "Code must be 1-10 uppercase letters (A-Z)";
-    }
+if (!code) {
+ errors.code = "Please enter product category code";
+} else if (code.length !== 5) {
+  errors.code = "Code must be exactly 5 characters";
+} else if (!/^[A-Z]{5}$/.test(code)) {
+  errors.code = "Code must contain only uppercase letters";
+}
 
     setAddError(errors);
 
@@ -444,8 +471,27 @@ const SubProductCategory = () => {
         resetForm();
         getSubSubProductCategoryList();
       } else {
-        toast.error(data.message || "Failed to add category");
-      }
+
+  if (data.errors) {
+
+    const apiErrors = {};
+
+    Object.keys(data.errors).forEach((key) => {
+      const message = data.errors[key][0];
+
+      apiErrors[key] = message;
+
+      // toast bhi show hoga
+      toast.error(message);
+    });
+
+    setAddError(apiErrors);
+
+  } else {
+    toast.error(data.message || "Failed to add category");
+  }
+
+}
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
@@ -947,18 +993,26 @@ const SubProductCategory = () => {
                   type="text"
                   name="hsn_code"
                   value={SubCategoryForm.hsn_code}
-                  onChange={(e) => {
-                    let value = e.target.value.replace(/\D/g, "");
-                    value = value.slice(0, 8);
-                    setSubCategoryForm((prev) => ({
-                      ...prev,
-                      hsn_code: value,
-                    }));
-                    setAddError((prev) => ({
-                      ...prev,
-                      hsn_code: "",
-                    }));
-                  }}
+               onChange={(e) => {
+  const input = e.target.value;
+
+  if (/[^0-9]/.test(input)) {
+    toast.error("HSN Code must contain only numbers");
+    return;
+  }
+
+  const value = input.slice(0, 8);
+
+  setSubCategoryForm((prev) => ({
+    ...prev,
+    hsn_code: value,
+  }));
+
+  setAddError((prev) => ({
+    ...prev,
+    hsn_code: "",
+  }));
+}}
                   placeholder="Enter HSN Code (8 digits)"
                   maxLength="8"
                   className={AddError.hsn_code ? "error-input" : ""}
@@ -966,30 +1020,43 @@ const SubProductCategory = () => {
                 {AddError.hsn_code && <p className="error-text">{AddError.hsn_code}</p>}
               </div>
 
-              <div className="form-group">
-                <label>Sub Category Code <span className="required">*</span></label>
-                <input
-                  type="text"
-                  name="code"
-                  value={SubCategoryForm.code}
-                  onChange={(e) => {
-                    let value = e.target.value.toUpperCase();
-                    value = value.replace(/[^A-Z]/g, "");
-                    setSubCategoryForm((prev) => ({
-                      ...prev,
-                      code: value,
-                    }));
-                    setAddError((prev) => ({
-                      ...prev,
-                      code: "",
-                    }));
-                  }}
-                  placeholder="Enter category code (A-Z, max 10 letters)"
-                  maxLength="10"
-                  className={AddError.code ? "error-input" : ""}
-                />
-                {AddError.code && <p className="error-text">{AddError.code}</p>}
-              </div>
+            <div className="form-group">
+  <label>
+    Sub Category Code <span className="required">*</span>
+  </label>
+
+  <input
+    type="text"
+    name="code"
+    value={SubCategoryForm.code}
+    onChange={(e) => {
+      const value = e.target.value.toUpperCase();
+
+      // Number ya special character enter kare to toast
+      if (/[^A-Z]/.test(value)) {
+        toast.error("Only letters (A-Z) are allowed in sub category code");
+        return;
+      }
+
+      setSubCategoryForm((prev) => ({
+        ...prev,
+        code: value.slice(0, 5),
+      }));
+
+      setAddError((prev) => ({
+        ...prev,
+        code: "",
+      }));
+    }}
+    placeholder="Enter sub category code (A-Z, max 5 letters)"
+    maxLength={5}
+    className={AddError.code ? "error-input" : ""}
+  />
+
+  {AddError.code && (
+    <p className="error-text">{AddError.code}</p>
+  )}
+</div>
 
               <div className="form-group">
                 <label>Upload Image <span className="required">*</span></label>
@@ -1048,7 +1115,7 @@ const SubProductCategory = () => {
                       <div className="upload-content">
                         <span className="upload-icon">⬆</span>
                         <p>Click to upload sub product category image</p>
-                        <span className="upload-hint">PNG, JPG, JPEG (Max 5MB)</span>
+                        <span className="upload-hint">PNG, JPG, JPEG</span>
                       </div>
                     </label>
                   )}
@@ -1261,6 +1328,7 @@ const SubProductCategory = () => {
                     </label>
                   )}
                 </div>
+
                 {editErrors.image_url && (
                   <p className="error-text">{editErrors.image_url}</p>
                 )}
@@ -1503,6 +1571,7 @@ const SubProductCategory = () => {
           </div>
         </div>
       )}
+        <ToastContainer position="top-center" autoClose={2000} />
     </>
   );
 };

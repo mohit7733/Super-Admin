@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import BASE_URL from "../../../Base";
 import { useNavigate } from "react-router-dom";
+import { BiPlus } from "react-icons/bi";
 
 import { toast } from 'react-toastify'
 import { BsSearch } from "react-icons/bs";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
-import { FaEye } from "react-icons/fa";
-import { BiPlus } from "react-icons/bi";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
+import { FiShield } from "react-icons/fi";
 import {
   FaUsers,
   FaUserCheck,
@@ -15,9 +17,8 @@ import {
 } from "react-icons/fa";
 const initalAdminform = {
   phone_number: '',
-  roles:[],
+  role: '',
   password: '',
-  approval_status:'pending',
 }
 const Admin = () => {
 
@@ -45,16 +46,24 @@ const Admin = () => {
   const [addAdminLoading, setAddAdminLoading] = useState(false);
 const [addRoleLoading, setAddRoleLoading] = useState(false);
 const [savePermissionLoading, setSavePermissionLoading] = useState(false);
-const [showRoleDropdown, setShowRoleDropdown] = useState(false);
-const [selectedRoles, setSelectedRoles] = useState([]);
-const [showEditRoleDropdown, setShowEditRoleDropdown] = useState(false);
-
-
+const [editPermissionSearch, setEditPermissionSearch] = useState("");
+const [showPermissionModal, setShowPermissionModal] = useState(false);
+const [permissionName, setPermissionName] = useState("");
+const [permissionCode, setPermissionCode] = useState("");
+const [permissionDescription, setPermissionDescription] = useState("");
+const [permissionIsSubmitting, setPermissionIsSubmitting] = useState(false);
+const [showPassword, setShowPassword] = useState(false);
 
   const fetchedOnce = useRef(false);
   const navigate = useNavigate();
  
-
+const generateCode = (value) => {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, "_");
+};
  
   const Status = {
     APPROVED: "Approved",
@@ -103,52 +112,88 @@ const [showEditRoleDropdown, setShowEditRoleDropdown] = useState(false);
     }
   }
 
-  const handleEditClick = (verifier) => {
-  setEditingUser({
-    ...verifier,
-    status: verifier.status || "active",
-  });
+  
+ const handleCreatePermission = async (e) => {
+  e.preventDefault();
 
-  setSelectedRoles(
-    verifier.admin_roles?.map((role) => role.id) || []
-  );
+  if (!permissionName.trim()) {
+    toast.error("Permission name is required");
+    return;
+  }
 
-  setPermissionModalOpen(true);
+  if (!permissionDescription.trim()) {
+    toast.error("Description is required");
+    return;
+  }
+
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired");
+    navigate("/login");
+    return;
+  }
+
+  setPermissionIsSubmitting(true);
+
+  try {
+    const payload = {
+      name: permissionName.trim(),
+      codename: permissionCode,
+      description: permissionDescription.trim(),
+    };
+
+    console.log("Permission Payload =>", payload);
+
+    const response = await fetch(
+      `${BASE_URL}/user/admin/permissions/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      toast.success("Permission created successfully");
+
+      setPermissionName("");
+      setPermissionCode("");
+      setPermissionDescription("");
+
+      setShowPermissionModal(false);
+
+      getAllPermissions();
+    } else {
+      toast.error(data.message || "Failed to create permission");
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error("Something went wrong");
+  } finally {
+    setPermissionIsSubmitting(false);
+  }
 };
 
-  const handleinputchange = (e) => {
-  const { name, value } = e.target;
 
-    setAddAdminForm((prev) => ({
+
+  const handleinputchange = (e) => {
+    const { name, value } = e.target;
+    setAddAdminForm(prev => ({
       ...prev,
       [name]: value,
     }));
- 
-  setAddError((prev) => ({
-    ...prev,
-    [name]: "",
-  }));
-};
-
-
-const handleRoleChange = (id) => {
-  if (AddAdminForm.roles.includes(id)) {
-    setAddAdminForm((prev) => ({
+    setAddError(prev => ({
       ...prev,
-      roles: prev.roles.filter((item) => item !== id),
+      [name]: ""
     }));
-  } else {
-    setAddAdminForm((prev) => ({
-      ...prev,
-      roles: [...prev.roles, id],
-    }));
-  }
-
-  setAddError((prev) => ({
-    ...prev,
-    roles: "",
-  }));
-};
+  };
 
 
 
@@ -175,9 +220,10 @@ const handleRoleChange = (id) => {
    } else if (!/[A-Za-z]/.test(password)) {
        errors.password = "Password must contain at least one letter";
   }
-if (AddAdminForm.roles.length === 0) {
-  errors.roles = "Please select a role";
-}
+
+    if (!AddAdminForm.role.trim()) {
+       errors.role = "please select any role"
+     }
 
    if (Object.keys(errors).length > 0) {
       setAddError(errors);
@@ -311,9 +357,7 @@ if (AddAdminForm.roles.length === 0) {
   } catch (err) {
     console.error(err.message);
     setError("Something went wrong while fetching roles.");
-  } finally {
-    setLoading(false);
-  }
+  } 
 };
 
 useEffect(() => {
@@ -434,62 +478,68 @@ if (!response.ok || data.success === false) {
 
 
 
+const handleEditClick = (verifier) => {
+  setEditingUser(verifier);
 
- const handleSavePermissions = async () => {
-  const token = sessionStorage.getItem("superadmin_token");
+  const activePermissions =
+    verifier.permissions_details
+      ?.filter((perm) => perm.is_active)
+      .map((perm) => perm.id) || [];
 
-  if (!token) {
-    toast.error("Session Expired. Please Login Again");
-    navigate("/login");
-    return;
-  }
+  console.log("ACTIVE IDS =>", activePermissions);
 
-  if (!editingUser) {
-    toast.error("No admin selected");
-    return;
-  }
+  setSelectedPermissions(activePermissions);
 
-  try {
-    const response = await fetch(
-      `${BASE_URL}/user/admin/${editingUser.id}/edit/`,
-      {
+  setPermissionModalOpen(true);
+};
+
+  const handleSavePermissions = async () => {
+    const token = sessionStorage.getItem("superadmin_token");
+    if(!token){
+      toast.error("Session Expired, Please Login Again")
+    }
+
+    if (!editingUser) {
+      toast.error("No user selected");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BASE_URL}/user/admin/approval/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
+            "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
-          roles: selectedRoles,
-          status: editingUser.status,
+          user_id: editingUser.id,
+          approval_status: editingUser.admin_approval_status,
+          permission_ids: selectedPermissions,
+
         }),
+      });
+        if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
       }
-    );
 
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
+
+      const data = await response.json();
+
+
+
+      toast.success("Permissions & Status Updated Successfully ");
+      setPermissionModalOpen(false);
+      getAdminlist();
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update permissions");
     }
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      toast.error(data.message || "Failed to update admin");
-      return;
-    }
-
-    toast.success("Admin updated successfully");
-
-    setPermissionModalOpen(false);
-    getAdminlist();
-
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to update admin");
-  }
-};
+  };
 
 
 
@@ -596,11 +646,11 @@ if (!response.ok || data.success === false) {
     </div>
   </div>
 </div>
-  <div className="filter-category">
-          <div className="filter-controls">
-            <div className="search-wrapper">
-              <BsSearch className="search-icon" />
-             <input
+
+      <div className="controls-section">
+        <div className="search-wrapper">
+          <BsSearch className="search-icon" />
+          <input
             type="text"
 
             placeholder="Search Admin by their phone number"
@@ -608,25 +658,23 @@ if (!response.ok || data.success === false) {
             onChange={(e) => setVerifiersearch(e.target.value)}
             className="search-input"
           />
-           
-            </div>
-  
-  
-        
-          </div>
-  <button
+        </div>
+        <div className="filter-controls">
+          <button
             className="add-customer-btn"
             onClick={() => {
               setAddAdminForm(initalAdminform);
               setAdminModal(true);
             }}
           >
-              <BiPlus/>
+           <BiPlus/>
             Add Admin
           </button>
-        </div>
 
-    
+
+
+        </div>
+      </div>
 
       <table className="data-table">
         <thead>
@@ -656,9 +704,7 @@ if (!response.ok || data.success === false) {
             AdminData.map((verifier, index) => (
               <tr key={verifier.id}>
                 <td>{index + 1}</td>
-             <td>
-  {verifier.admin_roles?.map((role) => role.name).join(", ") || "-"}
-</td>
+            <td>{verifier.role?.name || "-"}</td>
                 <td>{verifier?.phone_number}</td>
 
              <td>
@@ -741,87 +787,182 @@ if (!response.ok || data.success === false) {
 
 
   {permissionModalOpen && (
-  <div className="modal">
-    <div className="modal-content">
-      <h3>Edit Admin</h3>
+  <div className="prakriti-modal-overlay">
+    <div className="prakriti-modal role-modal">
 
-   <div className="form-group">
-  <label>Roles</label>
+      <div className="prakriti-modal-header">
+        <h2>Edit Permissions & Status</h2>
 
-  <div className="multi-select">
-    <div
-      className="multi-select-header"
-      onClick={() =>
-        setShowEditRoleDropdown(!showEditRoleDropdown)
-      }
-    >
-      {selectedRoles.length > 0
-        ? roleData
-            .filter((role) => selectedRoles.includes(role.id))
-            .map((role) => role.name)
-            .join(", ")
-        : "Select Roles"}
-    </div>
+        <button
+          className="modal-close-btn"
+          onClick={() => {
+            setPermissionModalOpen(false);
+            setEditPermissionSearch("");
+          }}
+        >
+          <FaTimes />
+        </button>
+      </div>
 
-    {showEditRoleDropdown && (
-      <div className="multi-select-dropdown">
-        {roleData.map((role) => (
-          <label
-            key={role.id}
-            className="checkbox-option"
-          >
+      <div className="prakriti-form">
+
+        {/* Search Permission */}
+
+        <div className="form-group3">
+          <label>Search Permission</label>
+
+          <div className="permission-search1">
+            <BsSearch />
+
             <input
-              type="checkbox"
-              checked={selectedRoles.includes(role.id)}
-              onChange={() => {
-                if (selectedRoles.includes(role.id)) {
-                  setSelectedRoles(
-                    selectedRoles.filter(
-                      (id) => id !== role.id
-                    )
-                  );
-                } else {
-                  setSelectedRoles([
-                    ...selectedRoles,
-                    role.id,
-                  ]);
-                }
-              }}
+              type="text"
+              placeholder="Search permission..."
+              value={editPermissionSearch}
+              onChange={(e) =>
+                setEditPermissionSearch(e.target.value)
+              }
             />
+          </div>
+        </div>
 
-            {role.name}
-          </label>
-        ))}
+        {/* Header */}
+
+        <div className="permission-header">
+          <h4>Permissions</h4>
+
+          <div className="permission-header-right">
+            <span className="selected-count">
+              {selectedPermissions.length} selected
+            </span>
+            <button
+              type="button"
+              className="add-permission-btn"
+              onClick={() => setShowPermissionModal(true)}
+            >
+              <BiPlus size={18} />
+              Add Permission
+            </button>
+          </div>
+        </div>
+
+        {/* Permission List */}
+
+        <div className="permission-list">
+
+          {allPermissions
+            ?.filter(
+              (item) =>
+                item.name
+                  .toLowerCase()
+                  .includes(editPermissionSearch.toLowerCase()) ||
+                item.codename
+                  .toLowerCase()
+                  .includes(editPermissionSearch.toLowerCase())
+            )
+            .map((item) => (
+              <div className="permission-card" key={item.id}>
+
+                <input
+                  type="checkbox"
+                  checked={selectedPermissions.includes(item.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedPermissions([
+                        ...selectedPermissions,
+                        item.id,
+                      ]);
+                    } else {
+                      setSelectedPermissions(
+                        selectedPermissions.filter(
+                          (id) => id !== item.id
+                        )
+                      );
+                    }
+                  }}
+                />
+
+                <div className="permission-info">
+
+                  <div className="permission-title">
+                    <h5>{item.name}</h5>
+                    <span>{item.codename}</span>
+                  </div>
+
+                  <p>{item.description}</p>
+
+                </div>
+
+              </div>
+            ))}
+
+        </div>
+
+        {/* Status */}
+
+        <div className="form-group">
+          <label>Status</label>
+
+          <select
+            className="status-select"
+            value={editingUser?.admin_approval_status || "PENDING"}
+            onChange={(e) => {
+              const newStatus = e.target.value;
+
+              if (
+                newStatus === "REJECTED" ||
+                newStatus === "SUSPENDED"
+              ) {
+                setSelectedVerifier(editingUser);
+                setActionType(newStatus);
+                setPermissionModalOpen(false);
+                setRejectModalOpen(true);
+              } else {
+                setEditingUser((prev) => ({
+                  ...prev,
+                  admin_approval_status: newStatus,
+                }));
+              }
+            }}
+          >
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+            <option value="SUSPENDED">Suspended</option>
+          </select>
+        </div>
+
+        {/* Footer */}
+
+        <div className="modal-footer">
+
+          <button
+            type="button"
+            className="cancel-btn"
+            onClick={() => {
+              setPermissionModalOpen(false);
+              setEditPermissionSearch("");
+            }}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            className="save-btn"
+            disabled={savePermissionLoading}
+            onClick={handleSavePermissions}
+          >
+            <FiShield />
+
+            {savePermissionLoading
+              ? "Saving..."
+              : "Save Changes"}
+          </button>
+
+        </div>
+
       </div>
-    )}
-  </div>
-</div>
 
-      <div className="form-group">
-  <label>Status</label>
-
-  <select
-    value={editingUser?.status || "active"}
-    onChange={(e) =>
-      setEditingUser((prev) => ({
-        ...prev,
-        status: e.target.value,
-      }))
-    }
-  >
-    <option value="active">Active</option>
-    <option value="inactive">Inactive</option>
-  </select>
-</div>
-      <div className="form-buttons">
-        <button onClick={handleSavePermissions}>
-          Save
-        </button>
-
-        <button onClick={() => setPermissionModalOpen(false)}>
-          Cancel
-        </button>
-      </div>
     </div>
   </div>
 )}
@@ -842,71 +983,48 @@ if (!response.ok || data.success === false) {
               maxLength="10"
             />
             {AddError.phone_number && <p className="error">{AddError.phone_number}</p>}
-            <label>Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={AddAdminForm.password}
-              onChange={handleinputchange}
-            />
-            {AddError.password && <p className="error">{AddError.password}</p>}
-            
-      <label>Status</label>
-<select
-  name="approval_status"
-  value={AddAdminForm.approval_status}
-  onChange={handleinputchange}
->
-  <option value="">Select Status</option>
-  <option value="pending">Pending</option>
-  <option value="approved">Approved</option>
-</select>
- 
-<div className="form-group">
-  <label>Role</label>
+              <label>password</label>
+         <div className="password-wrapper">
+  <input
+    type={showPassword ? "text" : "password"}
+    name="password"
+    placeholder="Enter your password"
+    value={AddAdminForm.password}
+    onChange={handleinputchange}
+  />
 
-  <div className="role-input-wrapper">
-    <div className="multi-select">
-      <div
-        className="multi-select-header"
-        onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-      >
-        {AddAdminForm.roles.length > 0
-          ? roleData
-              .filter((role) => AddAdminForm.roles.includes(role.id))
-              .map((role) => role.name)
-              .join(", ")
-          : "Select Roles"}
-      </div>
-
-      {showRoleDropdown && (
-        <div className="multi-select-dropdown">
-          {roleData.map((role) => (
-            <label key={role.id} className="checkbox-option">
-              <input
-                type="checkbox"
-                checked={AddAdminForm.roles.includes(role.id)}
-                onChange={() => handleRoleChange(role.id)}
-              />
-              {role.name}
-            </label>
-          ))}
-        </div>
-      )}
-    </div>
-
-    <button
-      type="button"
-      className="add-role-btn"
-      onClick={() => setAddNewRoleModal(true)}
-    >
-      + Add Role
-    </button>
-  </div>
+  <span
+    className="password-toggle"
+    onClick={() => setShowPassword(!showPassword)}
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </span>
 </div>
+            <label>Role</label>
+        <div className="role-select-wrapper">
+  <select
+    name="role"
+    value={AddAdminForm.role}
+    onChange={handleinputchange}
+  >
+    <option value="">Select Role</option>
 
-            {AddError.roles && <p className="error">{AddError.roles}</p>}
+    {roleData?.map((role) => (
+      <option key={role.id} value={role.id}>
+        {role.name}
+      </option>
+    ))}
+  </select>
+
+  <button
+    type="button"
+    className="add-role-btn"
+    onClick={()=>setAddNewRoleModal(true)}
+  >
+    + Add Role
+  </button>
+</div>
+            {AddError.role && <p className="error">{AddError.role}</p>}
 
             <div className="form-buttons">
          <button
@@ -933,7 +1051,145 @@ if (!response.ok || data.success === false) {
 
   
 
+{
+  AddNewRoleModal && (
+    <div className="modal">
 
+      <form
+        className="customer-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          addNewRole();
+        }}
+      >
+        <h3>Add New Role</h3>
+
+        <input
+          type="text"
+          name="name"
+          placeholder="Enter the New Role Name"
+          value={NewRole}
+          onChange={(e) => setNewRole(e.target.value)}
+        />
+
+        <div className="form-buttons">
+       <button
+  type="submit"
+  disabled={addRoleLoading}
+>
+  {addRoleLoading ? "Adding..." : "Add Role"}
+</button>
+
+          <button
+            type="button"
+            onClick={() => setAddNewRoleModal(false)}
+          >
+            Cancel
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  )
+}
+{showPermissionModal && (
+  <div className="prakriti-modal-overlay">
+    <div className="prakriti-modal">
+
+      <div className="prakriti-modal-header">
+        <h2>Add Permission</h2>
+
+        <button
+          className="modal-close-btn"
+          onClick={() => {
+            setShowPermissionModal(false);
+            setPermissionName("");
+            setPermissionCode("");
+            setPermissionDescription("");
+          }}
+        >
+          <FaTimes />
+        </button>
+      </div>
+
+      <form
+        className="prakriti-form"
+        onSubmit={handleCreatePermission}
+      >
+
+        <div className="form-group">
+          <label>
+            Permission Name <span className="required">*</span>
+          </label>
+
+          <input
+            type="text"
+            placeholder="Enter permission name"
+            value={permissionName}
+            onChange={(e) => {
+              const value = e.target.value;
+
+              setPermissionName(value);
+              setPermissionCode(generateCode(value));
+            }}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Code Name</label>
+
+          <input
+            type="text"
+            value={permissionCode}
+            readOnly
+          />
+        </div>
+
+        <div className="form-group">
+          <label>
+            Description <span className="required">*</span>
+          </label>
+
+          <textarea
+            rows={4}
+            placeholder="Enter description"
+            value={permissionDescription}
+            onChange={(e) =>
+              setPermissionDescription(e.target.value)
+            }
+          />
+        </div>
+
+        <div className="modal-footer">
+
+          <button
+            type="button"
+            className="cancel-btn"
+            onClick={() => setShowPermissionModal(false)}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            className="save-btn"
+            disabled={permissionIsSubmitting}
+          >
+            <FiShield />
+
+            {permissionIsSubmitting
+              ? "Creating..."
+              : "Create Permission"}
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+)}
 
       {DeleteModal && (
         <div className="modal">

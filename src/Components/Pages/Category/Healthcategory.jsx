@@ -10,7 +10,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 
@@ -400,8 +400,25 @@ const Healthcategory = () => {
         resetForm();
         getHealthCategoryList();
       } else {
-        toast.error(data?.message || "Failed to add category");
-      }
+
+  if (data?.errors) {
+
+    Object.keys(data.errors).forEach((key) => {
+      const errorMessage = data.errors[key][0];
+
+      toast.error(errorMessage);
+
+      setAddErrors((prev) => ({
+        ...prev,
+        [key]: errorMessage,
+      }));
+    });
+
+  } else {
+    toast.error(data?.message || "Failed to add category");
+  }
+
+}
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
@@ -440,6 +457,10 @@ const Healthcategory = () => {
     if (!editForm.service_category_id) {
       newErrors.service_category_id = "Please select a service category";
     }
+
+    if (!EditImage && !editForm.image_url) {
+    newErrors.image_url = "Please upload an image";
+  }
 
     setEditErrors(newErrors);
 
@@ -915,28 +936,35 @@ const Healthcategory = () => {
 
               <div className="form-group">
                 <label>Category Code <span className="required">*</span></label>
-                <input
-                  type="text"
-                  name="code"
-                  value={categoryForm.code}
-                  onChange={(e) => {
-                    let value = e.target.value.toUpperCase();
-                    value = value.replace(/[^A-Z]/g, "").slice(0, 5);
+            <input
+  type="text"
+  name="code"
+  value={categoryForm.code}
+  onChange={(e) => {
+    let value = e.target.value.toUpperCase();
 
-                    setCategoryForm((prev) => ({
-                      ...prev,
-                      code: value,
-                    }));
+    // Check number or special character
+    if (/[^A-Z]/.test(value)) {
+      toast.error("Only uppercase letters (A-Z) are allowed");
+    }
 
-                    setAddErrors((prev) => ({
-                      ...prev,
-                      code: "",
-                    }));
-                  }}
-                  placeholder="Enter 5-letter category code"
-                  maxLength={5}
-                  className={addErrors.code ? "error-input" : ""}
-                />
+    // Remove invalid characters
+    value = value.replace(/[^A-Z]/g, "").slice(0, 5);
+
+    setCategoryForm((prev) => ({
+      ...prev,
+      code: value,
+    }));
+
+    setAddErrors((prev) => ({
+      ...prev,
+      code: "",
+    }));
+  }}
+  placeholder="Enter 5-letter category code"
+  maxLength={5}
+  className={addErrors.code ? "error-input" : ""}
+/>
                 {addErrors.code && <p className="error-text">{addErrors.code}</p>}
               </div>
 
@@ -1183,6 +1211,11 @@ const Healthcategory = () => {
                     </label>
                   )}
                 </div>
+                {editErrors.image_url && (
+   <p className="error-text">
+      {editErrors.image_url}
+   </p>
+)}
               </div>
 
               <div className="form-group">
@@ -1338,6 +1371,7 @@ const Healthcategory = () => {
           </div>
         </div>
       )}
+           <ToastContainer position="top-center" autoClose={2000} />
     </>
   );
 };

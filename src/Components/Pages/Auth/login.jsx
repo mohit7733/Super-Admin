@@ -1,9 +1,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { ToastContainer, toast } from "react-toastify"
 
 import BASE_URL from "../../../Base";
 import Ayurmunilogo from "../../Assests/ayurmunilogo1.png"
@@ -37,20 +37,14 @@ const Login = () => {
   const navigate = useNavigate();
 
  
- const [formData, setFormData] = useState({
-  phone_number: "",
-  password: "",
-  roles: "",
-});
+  const [formData, setFormData] = useState({
+    phone_number: "",
+    password: "",
+  });
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const[RoleData,setRoleData]=useState([]);
-  const[RoleLoading,setRoleLoading]=useState(false);
-  const[RoleError,setRoleError]=useState(null)
-  const [roles, setRoles] = useState([]);
-  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
 
  
   const formatPhoneNumber = (phone) => {
@@ -106,105 +100,82 @@ const Login = () => {
     }
   };
 
-  const getRole = async () => {
-  
-    
-  setRoleLoading(true)
-  
-      try {
-        const response = await fetch(`${BASE_URL}/user/admin/roles/`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            
-               "ngrok-skip-browser-warning": "true",
-          },
-        });
-  
-  
-        const data = await response.json();
-        console.log("Permissions List API Response 👉", data);
-        if (data.success) {
-          setRoleData(data.data);
-         
-        }
-      } catch (err) {
-        toast.error("Failed to load permissions");
-    setRoleError("something went wrong")
-      }
-      finally {
-      setRoleLoading(false);
-    }
-  
-    };
-
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!validateForm()) {
-    toast.error("Please fix the errors before submitting");
-    return;
-  }
-
-  setIsLoading(true);
-
-  try {
-    const formattedPhone = formatPhoneNumber(formData.phone_number);
-
-    // Payload
-    const payload = {
-     phone_number: formattedPhone,
-  password: formData.password,
-  roles: roles,
-    };
-
-    // Sirf jab role select ho tab role bhejo
-    if (formData.role) {
-      payload.role = formData.role;
+    if (!validateForm()) {
+      toast.error("Please fix the errors before submitting");
+      return;
     }
 
-    const response = await fetch(`${BASE_URL}/user/admin/login/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    setIsLoading(true);
 
-    const result = await response.json();
+    try {
+      const formattedPhone = formatPhoneNumber(formData.phone_number);
 
-    if (!response.ok) {
-      throw new Error(result.error || result.message || "Login failed");
+      const response = await fetch(`${BASE_URL}/user/admin/login/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone_number: formattedPhone,
+          password: formData.password
+        }),
+      });
+
+      // const data = await response.json();
+
+      // if (!response.ok) {
+      //   throw new Error(data.error || data.message || "Login failed");
+      // }
+
+      // sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
+      // sessionStorage.setItem(STORAGE_KEYS.ROLE, data.role);
+      // sessionStorage.setItem(STORAGE_KEYS.PERMISSIONS, JSON.stringify(data.permissions || []));
+
+     const result = await response.json();
+     console.log("")
+
+if (!response.ok) {
+  throw new Error(result.error || result.message || "Login failed");
+}
+
+const data = result.data;
+
+const userRole = data.is_super_admin
+  ? "SUPERADMIN"
+  : data.admin_role;
+
+
+sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
+
+sessionStorage.setItem(
+  STORAGE_KEYS.ROLE,
+  userRole
+);
+
+sessionStorage.setItem(
+  STORAGE_KEYS.PERMISSIONS,
+  JSON.stringify(data.permissions || [])
+);
+
+toast.success("Login Successful!");
+
+const route = getRouteByRole(userRole);
+console.log("userRole", userRole);
+console.log("route", route);
+
+setTimeout(() => {
+  navigate(route);
+}, 1000);
+} catch (err) {
+      console.error("Login error:", err);
+      toast.error(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-
-    const data = result.data;
-
-    const userRole = data.is_super_admin
-      ? "SUPERADMIN"
-      : data.admin_role;
-
-    sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
-    sessionStorage.setItem(STORAGE_KEYS.ROLE, userRole);
-    sessionStorage.setItem(
-      STORAGE_KEYS.PERMISSIONS,
-      JSON.stringify(data.permissions || [])
-    );
-
-    toast.success("Login Successful!");
-
-    const route = getRouteByRole(userRole);
-
-    setTimeout(() => {
-      navigate(route);
-    }, 1000);
-
-  } catch (err) {
-    console.error("Login error:", err);
-    toast.error(err.message || "Something went wrong. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   // const getRouteByRole = (role) => {
   //   switch (role) {
@@ -251,9 +222,6 @@ const Login = () => {
       });
     }
   }, []);
-  useEffect(()=>{
-    getRole();
-  },[])
 
   
   useEffect(() => {
@@ -318,7 +286,6 @@ const Login = () => {
               )}
             </div>
 
-
             <div className="form-group">
               <label htmlFor="password" className="form-label">
                 Password
@@ -366,45 +333,6 @@ const Login = () => {
               )}
             </div>
 
-      <div className="form-group">
-  <label>Role</label>
-
-  <div className="multi-select">
-  <div
-  className="multi-select-header"
-  onClick={() => setShowRoleDropdown(!showRoleDropdown)}
->
-  {roles.length > 0
-    ? RoleData.filter((role) => roles.includes(role.id))
-        .map((role) => role.name)
-        .join(", ")
-    : "Select Role"}
-</div>
-    {showRoleDropdown && (
-      <div className="multi-select-dropdown">
-        {RoleData.map((role) => (
-          <label key={role.id} className="checkbox-option">
-            <input
-              type="checkbox"
-    checked={roles.includes(role.id)}
-onChange={() => {
-  setRoles((prev) =>
-    prev.includes(role.id)
-      ? prev.filter((id) => id !== role.id)
-      : [...prev, role.id]
-  );
-}}
-            />
-            {role.name}
-          </label>
-        ))}
-      </div>
-    )}
-  </div>
-
-  {errors.role && <p className="error">{errors.role}</p>}
-</div>
-
             <div className="form-options">
               <label className="checkbox-label">
                 <input
@@ -451,7 +379,7 @@ onChange={() => {
           </form>
         </div>
       </div>
-<ToastContainer position="top-center" autoClose={2000} />
+    <ToastContainer position="top-center" autoClose={2000} />
    </>
   );
 };

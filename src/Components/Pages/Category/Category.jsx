@@ -33,6 +33,8 @@ const Category = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [editCategoryCode, setEditCategoryCode] = useState("");
+const [editErrors, setEditErrors] = useState({});
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -108,7 +110,10 @@ const Category = () => {
       const data = await response.json();
 
       if (data.success) {
-        setData(data.data);
+        const sortedData = [...data.data].sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+  );
+        setData(sortedData);
         calculateStats(data.data);
         setFilteredData(filterData(data.data, searchTerm, statusFilter));
       } else {
@@ -257,9 +262,31 @@ if (!code) {
         setErrors({});
         getCategoryList();
       } else {
-        const errorMessage = data?.message || "Failed to add category";
-        toast.error(errorMessage);
+  let apiErrors = {};
+
+  if (data.errors) {
+    Object.keys(data.errors).forEach((key) => {
+      if (key === "name") {
+        apiErrors.categoryName = data.errors[key][0];
       }
+
+      if (key === "code") {
+        apiErrors.CategoryCode = data.errors[key][0];
+      }
+
+      if (key === "image_url") {
+        apiErrors.categoryImage = data.errors[key][0];
+      }
+    });
+
+    setErrors(apiErrors);
+
+    
+    Object.values(apiErrors).forEach((msg) => toast.error(msg));
+  } else {
+    toast.error(data.message || "Failed to add category");
+  }
+}
     } catch (error) {
       console.error("Add Category Error:", error);
       toast.error("Something went wrong");
@@ -278,10 +305,23 @@ if (!code) {
       return;
     }
 
-    if (!editCategoryName.trim()) {
-      toast.error("Category name is required");
-      return;
-    }
+    let newErrors = {};
+
+if (!editCategoryName.trim()) {
+  newErrors.categoryName = "Category name is required";
+}
+
+
+
+if (!editCategoryImage && !existingImage) {
+  newErrors.categoryImage = "Category image is required";
+}
+
+setEditErrors(newErrors);
+
+if (Object.keys(newErrors).length > 0) {
+  return;
+}
 
     try {
       setSubmitLoading(true);
@@ -323,17 +363,41 @@ if (!code) {
 
       const data = await response.json();
 
-      if (response.ok) {
-        toast.success("Category updated successfully");
-        setEditModal(false);
-        setEditCategoryName("");
-        setEditCategoryImage(null);
-        setEditCategoryId(null);
-        setExistingImage("");
-        getCategoryList();
-      } else {
-        toast.error(data.message || "Failed to update category");
+    if (response.ok) {
+  toast.success("Category updated successfully");
+  setEditModal(false);
+  setEditCategoryName("");
+  setEditCategoryCode("");
+  setEditCategoryImage(null);
+  setEditCategoryId(null);
+  setExistingImage("");
+  setEditErrors({});
+  getCategoryList();
+} else {
+  let apiErrors = {};
+
+  if (data.errors) {
+    Object.keys(data.errors).forEach((key) => {
+      if (key === "name") {
+        apiErrors.categoryName = data.errors.name[0];
       }
+
+      if (key === "code") {
+        apiErrors.CategoryCode = data.errors.code[0];
+      }
+
+      if (key === "image_url") {
+        apiErrors.categoryImage = data.errors.image_url[0];
+      }
+    });
+
+    setEditErrors(apiErrors);
+
+    Object.values(apiErrors).forEach((msg) => toast.error(msg));
+  } else {
+    toast.error(data.message || "Failed to update category");
+  }
+}
     } catch (error) {
       console.error("Update Category Error:", error);
       toast.error("Something went wrong");
@@ -619,6 +683,8 @@ if (!code) {
                           setExistingImage(item.image_url);
                           setIsActive(item.is_active);
                           setEditModal(true);
+                          setEditCategoryCode(item.code || "");
+                          setEditErrors({});
                         }}
                         title="Edit"
                       >
@@ -663,8 +729,20 @@ if (!code) {
 
   
       {showModal && (
-        <div className="prakriti-modal-overlay">
-          <div className="prakriti-modal">
+        <div
+    className="prakriti-modal-overlay"
+    onClick={() => {
+      setShowModal(false);
+      setCategoryName("");
+      setCategoryCode("");
+      setCategoryImage(null);
+      setErrors({});
+    }}
+  >
+    <div
+      className="prakriti-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
             <div className="prakriti-modal-header">
               <h2>Add Category</h2>
               <button className="modal-close-btn" onClick={() => {
@@ -700,14 +778,19 @@ if (!code) {
 
               <div className="form-group">
                 <label>Category Code <span className="required">*</span></label>
-               <input
+              <input
   type="text"
   value={CategoryCode}
   onChange={(e) => {
-    let value = e.target.value.toUpperCase();
-    value = value.replace(/[^A-Z]/g, "");
+    const value = e.target.value.toUpperCase();
 
-    setCategoryCode(value);
+   
+    if (/[^A-Z]/.test(value)) {
+      toast.error("Category code should contain only letters (A-Z)");
+      return;
+    }
+
+    setCategoryCode(value.slice(0, 5));
 
     setErrors((prev) => ({
       ...prev,
@@ -715,7 +798,7 @@ if (!code) {
     }));
   }}
   maxLength={5}
-  placeholder="Enter category code (max 5 letters)"
+  placeholder="Enter category code"
   className={errors.CategoryCode ? "error-input" : ""}
 />
                 {errors.CategoryCode && (
@@ -775,7 +858,7 @@ if (!code) {
                       <div className="upload-content">
                         <span className="upload-icon">⬆</span>
                         <p>Click to upload category image</p>
-                        <span className="upload-hint">PNG, JPG, JPEG (Max 5MB)</span>
+                        <span className="upload-hint">PNG, JPG, JPEG</span>
                       </div>
                     </label>
                   )}
@@ -826,8 +909,22 @@ if (!code) {
 
      
       {editModal && (
-        <div className="prakriti-modal-overlay">
-          <div className="prakriti-modal">
+       <div
+    className="prakriti-modal-overlay"
+    onClick={() => {
+      setEditModal(false);
+      setEditCategoryName("");
+      setEditCategoryCode("");
+      setEditCategoryImage(null);
+      setExistingImage("");
+      setEditCategoryId(null);
+      setEditErrors({});
+    }}
+  >
+    <div
+      className="prakriti-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
             <div className="prakriti-modal-header">
               <h2>Edit Category</h2>
               <button className="modal-close-btn" onClick={() => setEditModal(false)}>
@@ -838,13 +935,29 @@ if (!code) {
             <form onSubmit={handleUpdateCategory} className="prakriti-form">
               <div className="form-group">
                 <label>Category Name <span className="required">*</span></label>
-                <input
-                  type="text"
-                  value={editCategoryName}
-                  onChange={(e) => setEditCategoryName(e.target.value)}
-                  placeholder="Enter category name"
-                />
+               <input
+  type="text"
+  value={editCategoryName}
+  onChange={(e) => {
+    setEditCategoryName(e.target.value);
+
+    if (e.target.value.trim()) {
+      setEditErrors((prev) => ({
+        ...prev,
+        categoryName: "",
+      }));
+    }
+  }}
+  className={editErrors.categoryName ? "error-input" : ""}
+  placeholder="Enter category name"
+/>
+                {editErrors.categoryName && (
+  <p className="error-text">
+    {editErrors.categoryName}
+  </p>
+)}
               </div>
+
 
               <div className="form-group">
                 <label>Category Image</label>
@@ -915,6 +1028,10 @@ if (!code) {
                     </label>
                   )}
                 </div>
+{editErrors.categoryImage && (
+  <p className="error-text">{editErrors.categoryImage}</p>
+)}
+
               </div>
 
               <div className="form-group">
@@ -981,16 +1098,21 @@ if (!code) {
               </button>
             </div>
             <div style={{ textAlign: "center", padding: "20px" }}>
-              <img
-                src={previewImage}
-                alt="preview"
-                style={{
-                  width: "100%",
-                  maxHeight: "500px",
-                  objectFit: "contain",
-                  borderRadius: "10px",
-                }}
-              />
+             <img
+  src={previewImage}
+  alt="Preview"
+  style={{
+    display: "block",
+    maxWidth: "100%",
+    maxHeight: "80vh",
+    width: "auto",
+    height: "auto",
+    margin: "0 auto",
+    objectFit: "contain",
+    borderRadius: "10px",
+  }}
+/>
+       
             </div>
             <div className="modal-footer">
               <button className="cancel-btn" onClick={() => setPreviewImage("")}>

@@ -9,7 +9,8 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { BiPlus } from "react-icons/bi";
@@ -75,7 +76,7 @@ const ProductCategory = () => {
     setStats({ total, active, inactive });
   };
 
-  // Filter data based on search and status
+ 
   const filterData = (data, search, status) => {
     let filtered = data;
 
@@ -272,9 +273,29 @@ if (!code) {
         setShowCategoryModal(false);
         resetForm();
         getProductCategoryList();
-      } else {
-        toast.error(data?.message || "Failed to add category");
-      }
+      }  else {
+  let apiErrors = {};
+
+  if (data.errors) {
+    if (data.errors.name) {
+      apiErrors.categoryName = data.errors.name[0];
+    }
+
+    if (data.errors.code) {
+      apiErrors.CategoryCode = data.errors.code[0];
+    }
+
+    if (data.errors.image_url) {
+      apiErrors.categoryImage = data.errors.image_url[0];
+    }
+
+    setEditErrors(apiErrors);
+
+    Object.values(apiErrors).forEach((msg) => toast.error(msg));
+  } else {
+    toast.error(data.message || "Failed to update category");
+  }
+}
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
@@ -471,16 +492,25 @@ if (!code) {
     if (IsUpdating) return;
 
     let newErrors = {};
-    if (!editForm.name.trim()) {
-      newErrors.name = "Category name is required";
-    }
 
-    setEditErrors(newErrors);
+if (!editForm.service_category_id) {
+  newErrors.service_category_id = "Please select a service category";
+}
 
-    if (Object.keys(newErrors).length > 0) {
-      toast.error(Object.values(newErrors)[0]);
-      return;
-    }
+if (!editForm.name.trim()) {
+  newErrors.name = "Product category name is required";
+}
+
+if (!editForm.image_url && !EditImage) {
+  newErrors.image_url = "Please upload an image";
+}
+
+setEditErrors(newErrors);
+
+if (Object.keys(newErrors).length > 0) {
+  Object.values(newErrors).forEach((msg) => toast.error(msg));
+  return;
+}
 
     const token = sessionStorage.getItem("superadmin_token");
     setIsUpdating(true);
@@ -522,9 +552,29 @@ if (!code) {
         setEditModal(false);
         setEditImage(null);
         getProductCategoryList();
-      } else {
-        toast.error(data?.message || "Failed to update category");
-      }
+      }  else {
+  let apiErrors = {};
+
+  if (data.errors) {
+    if (data.errors.name) {
+      apiErrors.categoryName = data.errors.name[0];
+    }
+
+    if (data.errors.code) {
+      apiErrors.CategoryCode = data.errors.code[0];
+    }
+
+    if (data.errors.image_url) {
+      apiErrors.categoryImage = data.errors.image_url[0];
+    }
+
+    setEditErrors(apiErrors);
+
+    Object.values(apiErrors).forEach((msg) => toast.error(msg));
+  } else {
+    toast.error(data.message || "Failed to update category");
+  }
+}
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
@@ -817,32 +867,43 @@ if (!code) {
                 />
                 {addErrors.name && <p className="error-text">{addErrors.name}</p>}
               </div>
+<div className="form-group">
+  <label>
+    Product Category Code <span className="required">*</span>
+  </label>
 
-              <div className="form-group">
-                <label>Product Category Code <span className="required">*</span></label>
-                <input
-                  type="text"
-                  name="code"
-                  value={categoryForm.code}
-                  onChange={(e) => {
-                    let value = e.target.value.toUpperCase();
-                    value = value.replace(/[^A-Z]/g, "");
-                    setCategoryForm((prev) => ({
-                      ...prev,
-                      code: value,
-                    }));
-                    setAddErrors((prev) => ({
-                      ...prev,
-                      code: "",
-                    }));
-                  }}
-                  placeholder="Enter category code (A-Z, max 5 characters)"
-                  maxLength="5"
-                  className={addErrors.code ? "error-input" : ""}
-                />
-                {addErrors.code && <p className="error-text">{addErrors.code}</p>}
-              </div>
+  <input
+    type="text"
+    name="code"
+    value={categoryForm.code}
+    onChange={(e) => {
+      const input = e.target.value.toUpperCase();
 
+      // Show toast if invalid character is entered
+      if (/[^A-Z]/.test(input)) {
+        toast.error("Only uppercase letters (A-Z) are allowed");
+        return;
+      }
+
+      setCategoryForm((prev) => ({
+        ...prev,
+        code: input.slice(0, 5),
+      }));
+
+      setAddErrors((prev) => ({
+        ...prev,
+        code: "",
+      }));
+    }}
+    placeholder="Enter category code (A-Z, max 5 characters)"
+    maxLength={5}
+    className={addErrors.code ? "error-input" : ""}
+  />
+
+  {addErrors.code && (
+    <p className="error-text">{addErrors.code}</p>
+  )}
+</div>
               <div className="form-group">
                 <label>Upload Image <span className="required">*</span></label>
                 <div className="upload-box1">
@@ -898,7 +959,7 @@ if (!code) {
                       <div className="upload-content">
                         <span className="upload-icon">⬆</span>
                         <p>Click to upload category image</p>
-                        <span className="upload-hint">PNG, JPG, JPEG (Max 5MB)</span>
+                        <span className="upload-hint">PNG, JPG, JPEG </span>
                       </div>
                     </label>
                   )}
@@ -976,6 +1037,9 @@ if (!code) {
                     </option>
                   ))}
                 </select>
+                {editErrors.service_category_id && (
+  <p className="error-text">{editErrors.service_category_id}</p>
+)}
               </div>
 
               <div className="form-group">
@@ -1082,6 +1146,9 @@ if (!code) {
                     </label>
                   )}
                 </div>
+                {editErrors.image_url && (
+  <p className="error-text">{editErrors.image_url}</p>
+)}
               </div>
 
               <div className="form-group">
@@ -1269,6 +1336,8 @@ if (!code) {
           </div>
         </div>
       )}
+
+         <ToastContainer position="top-center" autoClose={2000} />
     </>
   );
 };
