@@ -105,7 +105,7 @@ const Vendor = () => {
 
 
 
-  const getVendorList = async (page = 1) => {
+ const getVendorList = async (page = 1,search = searchTerm) => {
     const token = sessionStorage.getItem("superadmin_token");
 
     if (!token) {
@@ -115,7 +115,7 @@ const Vendor = () => {
     }
 
     try {
-      const response = await fetch(`${BASE_URL}/vendors/admin/vendors-list/?${page}`, {
+      const response = await fetch(`${BASE_URL}/vendors/admin/vendors-list/?page=${page}&search=${encodeURIComponent(search)}`, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -151,7 +151,7 @@ const Vendor = () => {
       setLoading(false);
     }
   };
-
+ 
   const handleApproveClick = (vendor) => {
   setSelectedVendorId(vendor.id);
   setSelectedVendor(vendor);      
@@ -159,11 +159,21 @@ const Vendor = () => {
 };
 
  useEffect(() => {
-    if (!fetchedOnce.current) {
-      getVendorList();
-      fetchedOnce.current = true;
+  const delay = setTimeout(() => {
+    if (searchTerm.trim() === "") {
+      getVendorList(1, "");
+      return;
     }
-  }, [])
+
+    if (searchTerm.trim().length >= 2) {
+      getVendorList(1, searchTerm);
+    }
+  }, 1000);
+
+  return () => clearTimeout(delay);
+}, [searchTerm]);
+
+
   const handleDocumentUpload = (e) => {
     const file = e.target.files[0];
     setForm({ ...form, documentFile: file });
@@ -487,146 +497,7 @@ const Vendor = () => {
     }
   }
 
-  // const handleAddressSubmit = async (e) => {
-  //   e.preventDefault()
-
-  //   if (!validateAddressForm()) {
-  //     toast.error("Please Enter valid Input")
-  //     return
-  //   }
-
-  //   const { ...rest } = Addform
-  //   const finalData = {
-  //     vendor: addressVendorId,
-  //     ...rest,
-  //   }
-
-  //   if (!addressVendorId) {
-  //     toast.error("Vendor not selected for address")
-  //     return
-  //   }
-  //   const token = sessionStorage.getItem("superadmin_token");
-
-
-
-  //   const method = addressEditingId ? "PUT" : "POST";
-  //   const url = addressEditingId
-  //     ? `${BASE_URL}/vendors/vendoraddress/${addressEditingId}/`
-  //     : `${BASE_URL}/vendors/vendoraddress/`;
-
-  //   try {
-  //     const response = await fetch(url, {
-  //       method,
-  //       headers: {
-  //         Accept: "application/json",
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //       body: JSON.stringify(finalData),
-  //     })
-
-  //     if (response.status === 401 || response.status === 403) {
-  //       sessionStorage.removeItem("superadmin_token");
-  //       toast.error("Session expired. Please login again");
-  //       navigate("/login");
-  //       return;
-  //     }
-
-  //     if (!response.ok) throw new Error("Server responded with an error.")
-
-  //     await getVendorList()
-  //     handleCloseAdddModal()
-  //     toast.success(`Address ${addressEditingId ? "updated" : "added"} successfully`)
-  //   } catch (err) {
-  //     console.error("Submit Error:", err)
-  //     toast.error("Failed to save address")
-  //     handleCloseAdddModal()
-  //     setAddform(intialAddressform)
-  //   }
-  // }
-
-
-  // const handleFormSubmit = async (e) => {
-  //   e.preventDefault();
-  //   const isValid = validateVendorForm();
-  //   if (!isValid) return;
-  //   const token = sessionStorage.getItem("superadmin_token");
-
-  //   const formData = new FormData();
-  //   formData.append("first_name", form.first_name);
-  //   formData.append("last_name", form.last_name);
-  //   formData.append("store_name", form.store_name);
-  //   formData.append("secondary_number", `+91${form.verified_phone_number}`);
-  //   formData.append("gst_number", form.gst_number);
-
-
-  //   if (form.profile_picture && typeof form.profile_picture !== "string") {
-  //     formData.append("profile_picture", form.profile_picture);
-  //   }
-
-
-  //   let docIndex = 0;
-  //   uploadedDocs.forEach((item) => {
-  //     if (item.file) {
-  //       formData.append(`document_types[${docIndex}]`, item.type);
-  //       formData.append(`documents[${docIndex}]`, item.file);
-
-  //       docIndex++;
-  //     }
-  //   });
-
-  //   const method = editingId ? "PUT" : "POST";
-
-  //   if (method === "POST") {
-  //     const uid = userId || localStorage.getItem("USER_ID");
-  //     if (uid) formData.append("user_id", uid);
-  //   }
-
-  //   const url = editingId
-  //     ? `${BASE_URL}/vendors/vendor/${editingId}/`
-  //     : `${BASE_URL}/vendors/vendor/`;
-
-  //   try {
-  //     const response = await fetch(url, {
-  //       method,
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-
-  //       },
-  //       body: formData,
-  //     });
-
-  //     if (response.status === 401 || response.status === 403) {
-  //       toast.error("Session expired. Please login again.");
-  //       sessionStorage.removeItem("superadmin_token");
-  //       navigate("/login");
-  //       return;
-  //     }
-
-  //     if (!response.ok) {
-  //       throw new Error("Server error");
-  //     }
-
-  //     const data = await response.json();
-
-  //     if (editingId) {
-  //       updateVendor(data);
-  //     } else {
-  //       setVendorData((prev) => [...prev, data]);
-  //     }
-
-  //     await getVendorList();
-  //     handleCloseModal();
-
-  //     toast.success(`Vendor ${editingId ? "updated" : "added"} successfully`);
-  //   } catch (err) {
-  //     console.error("Submit Error:", err);
-  //     toast.error("Failed to save vendor");
-  //     handleCloseModal();
-  //     setForm(initialFormState);
-  //   }
-  // };
-
+  
 
   const handleRemoveDocument = (type) => {
     setUploadedDocs((prev) => prev.filter((doc) => doc.type !== type));
@@ -859,10 +730,6 @@ const Vendor = () => {
             Add Vendor
           </button> */}
 
-          <button className="btn-secondary">
-            <BsDownload size={16} />
-            Export Details
-          </button>
         </div>
       </div>
       <div classsName="table-wrapper">

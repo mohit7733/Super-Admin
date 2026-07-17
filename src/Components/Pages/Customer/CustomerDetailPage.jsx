@@ -1,6 +1,6 @@
 import React from "react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import "./CustomerDetailpage.css";
 import { FaFileMedical } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -14,55 +14,82 @@ import ActivityLog from "./ActivityLog";
 import aayushi from "../../Assests/aayushi.jpeg";
 import { FaDownload } from "react-icons/fa";
 import OrderModal from "../Order/OrderModal";
+import { ToastContainer, toast } from "react-toastify";
+import BASE_URL from "../../../Base";
 
 
 
 
 const CustomerDetailPage = () => {
+  const { customerId } = useParams();
   const[Loading,setLoading]=useState(false);
   const[Error,setError]=useState(null);
-  const Navigate =useNavigate();
+  const navigate =useNavigate();
   const [activeTab,setActiveTab] =useState("overview");
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
-  const ordersData = [
-  {
-    id: "#ORD001",
-    date: "08 May 2026",
-    items: 3,
-    amount: "₹1,250",
-    status: "Pending",
-  },
-  {
-    id: "#ORD002",
-    date: "07 May 2026",
-    items: 1,
-    amount: "₹599",
-    status: "Delivered",
-  },
-  {
-    id: "#ORD003",
-    date: "06 May 2026",
-    items: 5,
-    amount: "₹2,340",
-    status: "Packing",
-  },
-  {
-    id: "#ORD004",
-    date: "05 May 2026",
-    items: 2,
-    amount: "₹899",
-    status: "Shipped",
-  },
-  {
-    id: "#ORD005",
-    date: "04 May 2026",
-    items: 4,
-    amount: "₹1,780",
-    status: "Cancelled",
-  },
-];
+ const [customer, setCustomer] = useState(null);
+const [summary, setSummary] = useState(null);
+const [healthOverview, setHealthOverview] = useState(null);
+const [ordersData, setOrdersData] = useState([]);
+const [prescriptions, setPrescriptions] = useState([]);
+ 
+ const getCustomerDetail = async () => {
 
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired");
+      navigate("/login");
+      return;
+    }
+
+    try {
+
+      setLoading(true);
+
+
+      const response = await fetch(
+        `${BASE_URL}/doctors/admin/doctor?id=${customerId}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+
+      const data = await response.json();
+     
+    if (data.success) {
+  setCustomer(data.data.customer);
+
+  setSummary(data.data.summary);
+
+  setHealthOverview(data.data.overview.health_overview);
+
+  setOrdersData(data.data.history.product_orders.results);
+
+  setPrescriptions(data.data.history.prescriptions.results);
+}
+    } catch (err) {
+
+      console.error(err);
+
+      setError("Failed to fetch doctor");
+
+      toast.error("Failed to fetch doctor");
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  };
   return (
     <>
       

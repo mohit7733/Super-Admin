@@ -110,14 +110,20 @@ const Patient = () => {
   }
 };
 
-  useEffect(() => {
+useEffect(() => {
   const delay = setTimeout(() => {
-    getAllpatientList(1, searchTerm);
-  }, 500); // 
+    if (searchTerm.trim() === "") {
+      getAllpatientList(1, "");
+      return;
+    }
+
+    if (searchTerm.trim().length >= 3) {
+      getAllpatientList(1, searchTerm);
+    }
+  }, 500);
 
   return () => clearTimeout(delay);
 }, [searchTerm]);
-
  const handleToggle = async (id, currentStatus) => {
   const token = sessionStorage.getItem("superadmin_token");
   if(!token){
@@ -152,7 +158,7 @@ setIsUpdating(true);
     setPatientStatusModal(false);
 setSelectedPatient(null);
 
-    getAllpatientList();
+    getAllpatientList(Currentpage, searchTerm);
     
   } catch (error) {
     console.error(error);
@@ -162,127 +168,6 @@ setSelectedPatient(null);
     setIsUpdating(false)
   }
 };
-
-  // const handleAddPatient = async (e) => {
-  //   e.preventDefault();
-
-  //   try {
-  //     const addedPatient = await apiFetch(`${BASE_URL}/healthcare/patient/`, {
-  //       method: "POST",
-  //       body: JSON.stringify(newPatient),
-  //     });
-
-  //     setPatientData((prev) => [...prev, addedPatient]);
-  //     setNewPatient({ name: "", gender: "", age: "", description: "", relation: "" });
-  //     setAddform(false);
-
-  //     toast.success("Patient added successfully!", {
-  //       position: "top-center",
-  //       autoClose: 2000,
-  //     });
-  //   } catch (err) {
-  //     toast.error("Failed to add patient");
-  //   }
-  // };
-
-
-  // const handleEditClick = (patient) => {
-  //   setSelectedPatient(patient);
-  //   setEditForm(true);
-  // };
-
-  // const handleDownload = () => {
-  //   const exportData = patientdata.map((p, index) => ({
-  //     ID: index + 1,
-  //     Name: p.name,
-  //     Gender: p.gender,
-  //     Age: p.age,
-  //     Description: p.description,
-  //     Relation: p.relation,
-  //   }));
-
-
-
-  //   const ws = XLSX.utils.json_to_sheet(exportData);
-  //   const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
-  //     wch: key.length + 20,
-  //   }));
-  //   ws["!cols"] = colWidths;
-  //   const wb = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(wb, ws, "Patients");
-  //   XLSX.writeFile(wb, "patient_data.xlsx");
-  // };
-
-
-  // const handlePatientDelete = async (id) => {
-  //   try {
-  //     await apiFetch(`${BASE_URL}/healthcare/patient/${id}/`, {
-  //       method: "DELETE",
-  //     });
-
-
-  //     setPatientData((prev) => prev.filter((p) => p?.id !== id));
-
-  //     toast.success("Patient deleted successfully!", {
-  //       position: "top-center",
-  //       autoClose: 2000,
-  //     });
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error("Failed to delete patient", {
-  //       position: "top-center",
-  //       autoClose: 2000,
-  //     });
-  //   }
-  // };
-
-
-  // const handleEditInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setSelectedPatient((prev) => ({ ...prev, [name]: value }));
-  // };
-
-
-
-  // const handleEditPatient = async (e) => {
-  //   e.preventDefault();
-
-  //   try {
-
-  //     const updatedPatient = await apiFetch(
-  //       `${BASE_URL}/healthcare/patient/${selectedPatient?.id}/`,
-  //       {
-  //         method: "PUT",
-  //         body: JSON.stringify(selectedPatient),
-  //       }
-  //     );
-
-
-  //     setPatientData((prev) =>
-  //       prev.map((patient) =>
-  //         patient?.id === updatedPatient?.id ? updatedPatient : patient
-  //       )
-  //     );
-
-  //     setEditForm(false);
-
-  //     toast.success("Patient updated successfully!", {
-  //       position: "top-center",
-  //       autoClose: 2000,
-  //     });
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error("Failed to update patient", {
-  //       position: "top-center",
-  //       autoClose: 2000,
-  //     });
-  //   }
-  // };
-
-
-
-
-
 
   return (
     <>
