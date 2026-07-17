@@ -28,11 +28,21 @@ const CustomerDetailPage = () => {
   const [activeTab,setActiveTab] =useState("overview");
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
- const [customer, setCustomer] = useState(null);
+const [customerData, setCustomerData] = useState(null);
 const [summary, setSummary] = useState(null);
 const [healthOverview, setHealthOverview] = useState(null);
 const [ordersData, setOrdersData] = useState([]);
 const [prescriptions, setPrescriptions] = useState([]);
+
+const formatDate = (date) => {
+  if (!date) return "N/A";
+
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
  
  const getCustomerDetail = async () => {
 
@@ -50,7 +60,7 @@ const [prescriptions, setPrescriptions] = useState([]);
 
 
       const response = await fetch(
-        `${BASE_URL}/doctors/admin/doctor?id=${customerId}`,
+        `${BASE_URL}/customers/admin/customers/?id=${customerId}`,
         {
           method: "GET",
           headers: {
@@ -66,7 +76,7 @@ const [prescriptions, setPrescriptions] = useState([]);
       const data = await response.json();
      
     if (data.success) {
-  setCustomer(data.data.customer);
+  setCustomerData(data.data.customer);
 
   setSummary(data.data.summary);
 
@@ -90,93 +100,130 @@ const [prescriptions, setPrescriptions] = useState([]);
 
     }
   };
+
+  useEffect(() => {
+  getCustomerDetail();
+}, [customerId]);
   return (
     <>
-      
-      <div className="customer-details-wrapper">
+     <div className="customer-details-wrapper">
 
-        <div className="customer-profile-card">
+  <div className="customer-profile-card">
 
-          <div className="customer-left">
-            <div className="customer-avatar1">
-              <div className="avatar-circle"></div>
+    <div className="customer-left">
+       <div className="avatar-section">
+              <div className="avatar-wrapper">
+                {customerData?.profile_image ? (
+                  <img
+                    src={customerData.profile_image}
+                    alt="doctor"
+                    className="avatar-img"
+                  />
+                ) : (
+                  <div className="avatar-placeholder">
+                    {customerData?.first_name?.charAt(0)?.toUpperCase()}
+                    {customerData?.last_name?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
+
+              </div>
+              <div className="status-badges">
+             
+
+
+              </div>
             </div>
 
-            <div className="customer-info">
+      <div className="customer-info">
 
-              <div className="customer-top">
-                <h2>Amit Sharma</h2>
-              </div>
-
-              <div className="customer-contact">
-                <span>amitsharma95@gmail.com</span>
-                <span>•</span>
-                <span>+91 98765 43210</span>
-              </div>
-
-              <div className="customer-meta">
-                <span>Male</span>
-                <span>•</span>
-                <span>29 Years</span>
-                <span>•</span>
-                <span>Blood Group O+</span>
-              </div>
-
-              <div className="registered-date">
-                Registered on: 12 Feb 2024 • 10:30 AM
-              </div>
-
-              <button className="patient-btn">Patient</button>
-            </div>
-          </div>
-
-          <div className="customer-id">
-            <p>Customer ID</p>
-            <h4>CUS100245</h4>
-          </div>
+        <div className="customer-top">
+          <h2>
+            {customerData?.first_name} {customerData?.last_name}
+          </h2>
         </div>
 
-       
-        <div className="customer-stats-card">
-
-          <div className="stat-box">
-            <div className="stat-icon1 green">🛍</div>
-
-            <div>
-              <p>Total Orders</p>
-              <h3>12</h3>
-            </div>
-          </div>
-
-          <div className="stat-box">
-            <div className="stat-icon1 green">₹</div>
-
-            <div>
-              <p>Total Spent</p>
-              <h3>₹18,450</h3>
-            </div>
-          </div>
-
-          <div className="stat-box">
-            <div className="stat-icon1 green"><FaFileMedical/></div>
-
-            <div>
-              <p>Total Prescriptions</p>
-              <h3>8</h3>
-            </div>
-          </div>
-
-          <div className="stat-box">
-            <div className="stat-icon1 green"><FaCalendarAlt/></div>
-
-            <div>
-              <p>Last Order Date</p>
-              <h3>18 May 2024</h3>
-            </div>
-          </div>
+        <div className="customer-contact">
+          <span>{customerData?.email || "N/A"}</span>
+          <span>•</span>
+          <span>{customerData?.phone_number || "N/A"}</span>
         </div>
+
+        <div className="customer-meta">
+          <span>{customerData?.gender || "N/A"}</span>
+          <span>•</span>
+          <span>{customerData?.age ? `${customerData.age} Years` : "N/A"}</span>
+          <span>•</span>
+          <span>
+            Blood Group {customerData?.blood_group || "N/A"}
+          </span>
+        </div>
+
+        <div className="registered-date">
+          Registered on:{" "}
+          {customerData?.created_at
+            ? formatDate(customerData.created_at)
+            : "N/A"}
+        </div>
+
+        <button className="patient-btn">
+          {customerData?.role || "Patient"}
+        </button>
+
       </div>
+    </div>
 
+    <div className="customer-id">
+      <p>Customer ID</p>
+      <h4>{customerData?.id|| "N/A"}</h4>
+    </div>
+
+  </div>
+
+  <div className="customer-stats-card">
+
+    <div className="stat-box">
+      <div className="stat-icon1 green">🛍</div>
+      <div>
+        <p>Total Orders</p>
+        <h3>{customerData?.total_orders ?? 0}</h3>
+      </div>
+    </div>
+
+    <div className="stat-box">
+      <div className="stat-icon1 green">₹</div>
+      <div>
+        <p>Total Spent</p>
+        <h3>₹{customerData?.total_spent ?? 0}</h3>
+      </div>
+    </div>
+
+    <div className="stat-box">
+      <div className="stat-icon1 green">
+        <FaFileMedical />
+      </div>
+      <div>
+        <p>Total Prescriptions</p>
+        <h3>{customerData?.total_prescriptions ?? 0}</h3>
+      </div>
+    </div>
+
+    <div className="stat-box">
+      <div className="stat-icon1 green">
+        <FaCalendarAlt />
+      </div>
+      <div>
+        <p>Last Order Date</p>
+        <h3>
+          {customerData?.last_order_date
+            ? formatDate(customerData.last_order_date)
+            : "N/A"}
+        </h3>
+      </div>
+    </div>
+
+  </div>
+
+</div>
       
    <div className="tabs">
 

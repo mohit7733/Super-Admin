@@ -5078,12 +5078,33 @@ textarea {
 .reason-box {
   width: 100%;
   min-height: 120px;
-  border: 1px solid #ddd;
   border-radius: 12px;
   padding: 12px;
   resize: none;
+  outline: none;
+  transition: border-color 0.3s ease;
 }
 
+
+.reject-reason-box {
+     border: 1px solid #fecaca;
+}
+
+.reject-reason-box:focus {
+    border: 1px solid #fecaca;
+  box-shadow: none;
+}
+
+
+.suspend-reason-box {
+   
+      border: 1px solid #fed7aa;
+}
+
+.suspend-reason-box:focus {
+     border: 1px solid #fed7aa;
+  box-shadow: none;
+}
 .info-box {
   margin-top: 15px;
   padding: 12px;

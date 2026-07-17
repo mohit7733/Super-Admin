@@ -1132,7 +1132,7 @@ const Healthcategory = () => {
               </div>
 
               <div className="form-group">
-                <label>Upload Image</label>
+                <label>Upload Image  <span className="required">*</span></label>
                 <div className="upload-box1">
                   <input
                     ref={editFileRef}

@@ -253,7 +253,7 @@ function ProductDetail() {
     }
 
     const response = await fetch(
-      `${BASE_URL}/vendors/admin/product/?id=${productId}`,
+         `${BASE_URL}/vendors/admin/variant/${variantId}/review-status/`,
       {
         method: "PATCH",
         headers: {

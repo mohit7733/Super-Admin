@@ -173,10 +173,10 @@
     background: rgba(231, 76, 60, 0.1);
 }
 
-.stat-icon {
+/* .stat-icon {
     font-size: 40px;
     color: rgba(13, 97, 78, 0.15);
-}
+} */
 
 .stat-card.purple .stat-icon {
     color: rgba(155, 89, 182, 0.5);
