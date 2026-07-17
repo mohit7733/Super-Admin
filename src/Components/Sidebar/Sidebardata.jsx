@@ -24,6 +24,10 @@ import { MdAdminPanelSettings } from "react-icons/md";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { MdReceiptLong, MdPercent } from "react-icons/md";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { GiMeal } from "react-icons/gi";
+
+import { MdOutlineRestaurantMenu } from "react-icons/md";
+import { BiPlusCircle } from "react-icons/bi";
 
 
 
@@ -178,18 +182,13 @@ export const SidebarData = () => [
           },
         ],
       },
-      {
-        title: "Diet Plans",
-        icon: <MdRestaurantMenu style={{ fontSize: 20 }} />,
-        path: "/Dietplans",
-        permission: "view_dietplans",
-      },
-      {
-        title: "Wellness Centers",
-        icon: <MdSpa style={{ fontSize: 20 }} />,
-        path: "/Wellnesscenter",
-        permission: "view_wellness_center",
-      },
+    
+      // {
+      //   title: "Wellness Centers",
+      //   icon: <MdSpa style={{ fontSize: 20 }} />,
+      //   path: "/Wellnesscenter",
+      //   permission: "view_wellness_center",
+      // },
       {
         title: "Banner Management",
         icon: <MdPhotoSizeSelectActual style={{ fontSize: 18 }} />,
@@ -246,12 +245,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
     path: "#",
     
     children: [
-      // {
-      //   title: "Add Roles",
-      //   path: "/admin/role",
-      //   permission: "view_role",
-      //   icon: <MdReviews size={18} />
-      // },
+      {
+        title: "Add Roles",
+        path: "/admin/role",
+        permission: "view_role",
+        icon: <MdReviews size={18} />
+      },
      {
         title: "Add Admin",
         path: "/Admin",
@@ -281,12 +280,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
         permission: "manage_brand_name",
         icon: <MdBrandingWatermark size={18} />
       },
-      {
-        title: "Stock Management",
-        path: "/Product/Stock",
-        permission: "manage_stock",
-        icon: <MdInventory size={18} />
-      },
+      // {
+      //   title: "Stock Management",
+      //   path: "/Product/Stock",
+      //   permission: "manage_stock",
+      //   icon: <MdInventory size={18} />
+      // },
     ],
   },
 
@@ -311,6 +310,34 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
       }
     ]
   },
+
+
+  {
+  title: "Diet Management",
+  icon: <GiMeal size={20} />,
+  path: "#",
+  permission: "manage_diet",
+  children: [
+    {
+      title: "All Diet Plans",
+      path: "/diet/all",
+      permission: "view_diet_plans",
+      icon: <FaListAlt size={18} />
+    },
+    {
+      title: "Add Diet Plan",
+      path: "/diet/add",
+      permission: "add_diet_plan",
+      icon: <BiPlusCircle size={18} />
+    },
+    // {
+    //   title: "Diet Categories",
+    //   path: "/diet/categories",
+    //   permission: "view_diet_categories",
+    //   icon: <MdOutlineRestaurantMenu size={18} />
+    // }
+  ]
+},
 
   // ========== ORDER MANAGEMENT ==========
   {
@@ -388,12 +415,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
         permission: "manage_settings",
         icon: <FaCogs size={18} />
       },
-      {
-        title: "Role Management",
-        path: "/Roles",
-        permission: "manage_roles",
-        icon: <FaUserShield size={18} />
-      },
+      // {
+      //   title: "Role Management",
+      //   path: "/Roles",
+      //   permission: "manage_roles",
+      //   icon: <FaUserShield size={18} />
+      // },
       {
         title: "Backup & Restore",
         path: "/Backup",

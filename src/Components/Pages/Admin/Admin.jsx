@@ -19,6 +19,7 @@ const initalAdminform = {
   phone_number: '',
   role: '',
   password: '',
+  approval_status:'',
 }
 const Admin = () => {
 
@@ -45,13 +46,10 @@ const Admin = () => {
   const[NewRole,setNewRole]=useState();
   const [addAdminLoading, setAddAdminLoading] = useState(false);
 const [addRoleLoading, setAddRoleLoading] = useState(false);
-const [savePermissionLoading, setSavePermissionLoading] = useState(false);
+const[SaveStatusLoading,setSaveStatusLoading]=useState(false);
 const [editPermissionSearch, setEditPermissionSearch] = useState("");
 const [showPermissionModal, setShowPermissionModal] = useState(false);
-const [permissionName, setPermissionName] = useState("");
-const [permissionCode, setPermissionCode] = useState("");
-const [permissionDescription, setPermissionDescription] = useState("");
-const [permissionIsSubmitting, setPermissionIsSubmitting] = useState(false);
+
 const [showPassword, setShowPassword] = useState(false);
 
   const fetchedOnce = useRef(false);
@@ -79,6 +77,7 @@ const generateCode = (value) => {
       navigate("/login");
       return;
     }
+    setLoading(true);
     try {
       const response = await fetch(`${BASE_URL}/user/superadmin/admins/`, {
         method: 'GET',
@@ -112,74 +111,25 @@ const generateCode = (value) => {
     }
   }
 
+
+  const filteredAdmins = AdminData.filter((admin) => {
   
- const handleCreatePermission = async (e) => {
-  e.preventDefault();
+  let phone = (admin.phone_number || "").replace(/\D/g, "");
 
-  if (!permissionName.trim()) {
-    toast.error("Permission name is required");
-    return;
+ 
+  if (phone.length === 12 && phone.startsWith("91")) {
+    phone = phone.slice(2);
   }
 
-  if (!permissionDescription.trim()) {
-    toast.error("Description is required");
-    return;
-  }
+  const search = verifiersearch.replace(/\D/g, "");
 
-  const token = sessionStorage.getItem("superadmin_token");
+  if (!search) return true;
 
-  if (!token) {
-    toast.error("Session expired");
-    navigate("/login");
-    return;
-  }
+  return phone.includes(search);
+});
 
-  setPermissionIsSubmitting(true);
-
-  try {
-    const payload = {
-      name: permissionName.trim(),
-      codename: permissionCode,
-      description: permissionDescription.trim(),
-    };
-
-    console.log("Permission Payload =>", payload);
-
-    const response = await fetch(
-      `${BASE_URL}/user/admin/permissions/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify(payload),
-      }
-    );
-
-    const data = await response.json();
-
-    if (response.ok) {
-      toast.success("Permission created successfully");
-
-      setPermissionName("");
-      setPermissionCode("");
-      setPermissionDescription("");
-
-      setShowPermissionModal(false);
-
-      getAllPermissions();
-    } else {
-      toast.error(data.message || "Failed to create permission");
-    }
-  } catch (err) {
-    console.error(err);
-    toast.error("Something went wrong");
-  } finally {
-    setPermissionIsSubmitting(false);
-  }
-};
+  
+ 
 
 
 
@@ -280,45 +230,7 @@ const generateCode = (value) => {
   };
 
 
-  const getAllPermissions = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
-    if (!token) {
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
-
-
-    try {
-      const response = await fetch(`${BASE_URL}/user/admin/permissions/`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-             "ngrok-skip-browser-warning": "true",
-        },
-      });
-
-         if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
-
-      const data = await response.json();
-      console.log("Permissions List API Response 👉", data);
-      setAllPermissions(data);
-
-    } catch (err) {
-      toast.error("Failed to load permissions");
-    }
-    finally {
-    setAddAdminLoading(false);
-  }
-
-  };
-
+ 
   const getRole = async () => {
   const token = sessionStorage.getItem("superadmin_token");
   if(!token){
@@ -364,184 +276,116 @@ useEffect(() => {
     if (!fetchedOnce.current) {
       getAdminlist();
       getRole();
-      getAllPermissions();
+      
       fetchedOnce.current = true;
     }
   }, []);
 
-const addNewRole = async () => {
-  const token = sessionStorage.getItem("superadmin_token");
-  if(!token){
-    toast.error("Session Expired,Login Again")
-  };
-   if (addRoleLoading) return;
-
-  setAddRoleLoading(true);
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/user/admin/roles/`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify({
-          name: NewRole,
-        }),
-      }
-    );
 
 
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
-
-
-const data = await response.json();
-
-if (!response.ok || data.success === false) {
-  toast.error(
-    data?.errors?.name ||
-    data?.message ||
-    "Failed to add role"
-  );
-  return; 
-}
-    setRoleData((prev) => [...prev, data]);
-
-    setNewRole("");
-    setAddNewRoleModal(false);
-
-    toast.success("Role added successfully");
-
-  } catch (err) {
-    console.error(err.message);
-    toast.error(err.message);
-  }
-  finally{
-    setAddRoleLoading(false);
-  }
-};
-
-  const updateStatus = async (id, status, reason = "") => {
-    const token = sessionStorage.getItem("superadmin_token");
-    if(!token){
-      toast.error("Session Expired, Please Login Again")
-    }
-
-     if (savePermissionLoading) return;
-
-  setSavePermissionLoading(true);
-    try {
-      const response = await fetch(`${BASE_URL}/user/`, {
-        method: 'PUT',
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          user_id: id,
-          action: status,
-          reason: reason,
-        })
-      });
-
-        if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
-
-      const data = await response.json();
-      toast.success("Status Updated");
-      getAdminlist();
-    }
-    catch (err) {
-      toast.error("Failed to update status");
-
-    }
-    finally {
-    setSavePermissionLoading(false);
-  }
-    
-  }
-
+ 
 
 
 
 
 const handleEditClick = (verifier) => {
   setEditingUser(verifier);
-
-  const activePermissions =
-    verifier.permissions_details
-      ?.filter((perm) => perm.is_active)
-      .map((perm) => perm.id) || [];
-
-  console.log("ACTIVE IDS =>", activePermissions);
-
-  setSelectedPermissions(activePermissions);
-
   setPermissionModalOpen(true);
+  
 };
 
-  const handleSavePermissions = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
-    if(!token){
-      toast.error("Session Expired, Please Login Again")
-    }
+ const handleSavePermissions = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-    if (!editingUser) {
-      toast.error("No user selected");
-      return;
-    }
+  if (!token) {
+    toast.error("Session Expired. Please Login Again");
+    return;
+  }
 
-    try {
-      const response = await fetch(`${BASE_URL}/user/admin/approval/`, {
+  if (!editingUser) {
+    toast.error("No user selected");
+    return;
+  }
+
+  // Suspended ke liye save button se call mat karo
+  if (editingUser.admin_approval_status === "SUSPENDED") {
+    setSelectedVerifier(editingUser);
+    setActionType("SUSPENDED");
+    setPermissionModalOpen(false);
+    setRejectModalOpen(true);
+    return;
+  }
+
+  try {
+   
+setSaveStatusLoading(true);
+    const response = await fetch(
+      `${BASE_URL}/user/admin/${editingUser.id}/review-status/`,
+      {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
+          "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
-          user_id: editingUser.id,
-          approval_status: editingUser.admin_approval_status,
-          permission_ids: selectedPermissions,
-
+          status: editingUser.admin_approval_status,
         }),
-      });
-        if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
       }
+    );
 
+    const data = await response.json();
 
-      const data = await response.json();
-
-
-
-      toast.success("Permissions & Status Updated Successfully ");
-      setPermissionModalOpen(false);
-      getAdminlist();
-
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update permissions");
+    if (!response.ok) {
+      toast.error(data.message || "Failed to update status");
+      return;
     }
-  };
 
+    toast.success("Status Updated Successfully");
+    setPermissionModalOpen(false);
+    getAdminlist();
+  } catch (err) {
+    toast.error("Failed to update status");
+  } 
+  finally{
+    setSaveStatusLoading(false);
+  }
+};
 
+const updateStatus = async (id, status, reason = "") => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/user/admin/${id}/review-status/`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          status: status,
+          reason: reason,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      toast.error(data.message || "Failed to update status");
+      return;
+    }
+
+    toast.success("Status Updated Successfully");
+    getAdminlist();
+  } catch (err) {
+    toast.error("Failed to update status");
+  }
+  
+};
 
 
   
@@ -588,6 +432,16 @@ const handleEditClick = (verifier) => {
   }
 };
 
+const totalAdmins = AdminData.length;
+
+const approvedAdmins = AdminData.filter(
+  (item) => item.admin_approval_status === "APPROVED"
+).length;
+
+const pendingAdmins = AdminData.filter(
+  (item) => item.admin_approval_status === "PENDING"
+).length;
+
 
 
   return (
@@ -610,7 +464,7 @@ const handleEditClick = (verifier) => {
     </div>
     <div className="stat2-info">
       <h3>Total Admin</h3>
-      <div className="stat2-value">0</div>
+  <div className="stat2-value">{totalAdmins}</div>
     </div>
   </div>
 
@@ -626,7 +480,7 @@ const handleEditClick = (verifier) => {
     </div>
     <div className="stat2-info">
       <h3>Approve  Admin</h3>
-      <div className="stat2-value">0</div>
+    <div className="stat2-value">{approvedAdmins}</div>
     </div>
   </div>
 
@@ -642,39 +496,36 @@ const handleEditClick = (verifier) => {
     </div>
     <div className="stat2-info">
       <h3>Pending Admin</h3>
-      <div className="stat2-value">0</div>
+<div className="stat2-value">{pendingAdmins}</div>
     </div>
   </div>
 </div>
 
-      <div className="controls-section">
-        <div className="search-wrapper">
-          <BsSearch className="search-icon" />
-          <input
-            type="text"
+      <div className="filter-category">
+  <div className="filter-controls">
+    <div className="search-wrapper">
+      <BsSearch className="search-icon" />
+      <input
+        type="text"
+        placeholder="Search Admin by their phone number"
+        value={verifiersearch}
+        onChange={(e) => setVerifiersearch(e.target.value)}
+        className="search-input"
+      />
+    </div>
+  </div>
 
-            placeholder="Search Admin by their phone number"
-            value={verifiersearch}
-            onChange={(e) => setVerifiersearch(e.target.value)}
-            className="search-input"
-          />
-        </div>
-        <div className="filter-controls">
-          <button
-            className="add-customer-btn"
-            onClick={() => {
-              setAddAdminForm(initalAdminform);
-              setAdminModal(true);
-            }}
-          >
-           <BiPlus/>
-            Add Admin
-          </button>
-
-
-
-        </div>
-      </div>
+  <button
+    className="add-customer-btn"
+    onClick={() => {
+      setAddAdminForm(initalAdminform);
+      setAdminModal(true);
+    }}
+  >
+    <BiPlus />
+    Add Admin
+  </button>
+</div>
 
       <table className="data-table">
         <thead>
@@ -700,8 +551,8 @@ const handleEditClick = (verifier) => {
                 {Error}
               </td>
             </tr>
-          ) : AdminData?.length > 0 ? (
-            AdminData.map((verifier, index) => (
+          ) : filteredAdmins?.length > 0 ? (
+            filteredAdmins.map((verifier, index) => (
               <tr key={verifier.id}>
                 <td>{index + 1}</td>
             <td>{verifier.role?.name || "-"}</td>
@@ -770,7 +621,11 @@ const handleEditClick = (verifier) => {
                     return;
 
                   }
-                  updateStatus(selectedVerifier.id, "REJECTED", "reason");
+              updateStatus(
+  selectedVerifier.id,
+  actionType,
+  rejectReason
+);
                   setRejectModalOpen(false);
                   setRejectReason("");
                 }}
@@ -791,7 +646,7 @@ const handleEditClick = (verifier) => {
     <div className="prakriti-modal role-modal">
 
       <div className="prakriti-modal-header">
-        <h2>Edit Permissions & Status</h2>
+        <h2>Edit  Status</h2>
 
         <button
           className="modal-close-btn"
@@ -806,127 +661,39 @@ const handleEditClick = (verifier) => {
 
       <div className="prakriti-form">
 
-        {/* Search Permission */}
+  
 
-        <div className="form-group3">
-          <label>Search Permission</label>
+       
 
-          <div className="permission-search1">
-            <BsSearch />
-
-            <input
-              type="text"
-              placeholder="Search permission..."
-              value={editPermissionSearch}
-              onChange={(e) =>
-                setEditPermissionSearch(e.target.value)
-              }
-            />
-          </div>
-        </div>
-
-        {/* Header */}
-
-        <div className="permission-header">
-          <h4>Permissions</h4>
-
-          <div className="permission-header-right">
-            <span className="selected-count">
-              {selectedPermissions.length} selected
-            </span>
-            <button
-              type="button"
-              className="add-permission-btn"
-              onClick={() => setShowPermissionModal(true)}
-            >
-              <BiPlus size={18} />
-              Add Permission
-            </button>
-          </div>
-        </div>
-
-        {/* Permission List */}
-
-        <div className="permission-list">
-
-          {allPermissions
-            ?.filter(
-              (item) =>
-                item.name
-                  .toLowerCase()
-                  .includes(editPermissionSearch.toLowerCase()) ||
-                item.codename
-                  .toLowerCase()
-                  .includes(editPermissionSearch.toLowerCase())
-            )
-            .map((item) => (
-              <div className="permission-card" key={item.id}>
-
-                <input
-                  type="checkbox"
-                  checked={selectedPermissions.includes(item.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedPermissions([
-                        ...selectedPermissions,
-                        item.id,
-                      ]);
-                    } else {
-                      setSelectedPermissions(
-                        selectedPermissions.filter(
-                          (id) => id !== item.id
-                        )
-                      );
-                    }
-                  }}
-                />
-
-                <div className="permission-info">
-
-                  <div className="permission-title">
-                    <h5>{item.name}</h5>
-                    <span>{item.codename}</span>
-                  </div>
-
-                  <p>{item.description}</p>
-
-                </div>
-
-              </div>
-            ))}
-
-        </div>
-
-        {/* Status */}
-
+      
         <div className="form-group">
           <label>Status</label>
 
           <select
             className="status-select"
             value={editingUser?.admin_approval_status || "PENDING"}
-            onChange={(e) => {
-              const newStatus = e.target.value;
+          onChange={(e) => {
+  const newStatus = e.target.value;
 
-              if (
-                newStatus === "REJECTED" ||
-                newStatus === "SUSPENDED"
-              ) {
-                setSelectedVerifier(editingUser);
-                setActionType(newStatus);
-                setPermissionModalOpen(false);
-                setRejectModalOpen(true);
-              } else {
-                setEditingUser((prev) => ({
-                  ...prev,
-                  admin_approval_status: newStatus,
-                }));
-              }
-            }}
+  setEditingUser((prev) => ({
+    ...prev,
+    admin_approval_status: newStatus,
+  }));
+
+  if (newStatus === "SUSPENDED") {
+    setSelectedVerifier({
+      ...editingUser,
+      admin_approval_status: newStatus,
+    });
+    setActionType("SUSPENDED");
+    setPermissionModalOpen(false);
+    setRejectModalOpen(true);
+  }
+}}
           >
             <option value="PENDING">Pending</option>
             <option value="APPROVED">Approved</option>
-            <option value="REJECTED">Rejected</option>
+            {/* <option value="REJECTED">Rejected</option> */}
             <option value="SUSPENDED">Suspended</option>
           </select>
         </div>
@@ -949,12 +716,12 @@ const handleEditClick = (verifier) => {
           <button
             type="button"
             className="save-btn"
-            disabled={savePermissionLoading}
-            onClick={handleSavePermissions}
+            disabled={loading}
+            onClick={SaveStatusLoading}
           >
             <FiShield />
 
-            {savePermissionLoading
+            {SaveStatusLoading
               ? "Saving..."
               : "Save Changes"}
           </button>
@@ -999,6 +766,9 @@ const handleEditClick = (verifier) => {
   >
     {showPassword ? <FaEyeSlash /> : <FaEye />}
   </span>
+  
+  {AddError.password && <p className="error">{AddError.password}</p>}  
+          
 </div>
             <label>Role</label>
         <div className="role-select-wrapper">
@@ -1017,14 +787,28 @@ const handleEditClick = (verifier) => {
   </select>
 
   <button
-    type="button"
-    className="add-role-btn"
-    onClick={()=>setAddNewRoleModal(true)}
-  >
-    + Add Role
-  </button>
+  type="button"
+  className="add-role-btn"
+  onClick={() => navigate("/admin/role")}
+>
+  + Add Role
+</button>
+
 </div>
             {AddError.role && <p className="error">{AddError.role}</p>}
+
+
+                     
+      <label>Status</label>
+<select
+  name="approval_status"
+  value={AddAdminForm.approval_status}
+  onChange={handleinputchange}
+>
+  <option value="">Select Status</option>
+  <option value="pending">Pending</option>
+  <option value="approved">Approved</option>
+</select>
 
             <div className="form-buttons">
          <button
@@ -1051,145 +835,8 @@ const handleEditClick = (verifier) => {
 
   
 
-{
-  AddNewRoleModal && (
-    <div className="modal">
 
-      <form
-        className="customer-form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          addNewRole();
-        }}
-      >
-        <h3>Add New Role</h3>
 
-        <input
-          type="text"
-          name="name"
-          placeholder="Enter the New Role Name"
-          value={NewRole}
-          onChange={(e) => setNewRole(e.target.value)}
-        />
-
-        <div className="form-buttons">
-       <button
-  type="submit"
-  disabled={addRoleLoading}
->
-  {addRoleLoading ? "Adding..." : "Add Role"}
-</button>
-
-          <button
-            type="button"
-            onClick={() => setAddNewRoleModal(false)}
-          >
-            Cancel
-          </button>
-        </div>
-
-      </form>
-
-    </div>
-  )
-}
-{showPermissionModal && (
-  <div className="prakriti-modal-overlay">
-    <div className="prakriti-modal">
-
-      <div className="prakriti-modal-header">
-        <h2>Add Permission</h2>
-
-        <button
-          className="modal-close-btn"
-          onClick={() => {
-            setShowPermissionModal(false);
-            setPermissionName("");
-            setPermissionCode("");
-            setPermissionDescription("");
-          }}
-        >
-          <FaTimes />
-        </button>
-      </div>
-
-      <form
-        className="prakriti-form"
-        onSubmit={handleCreatePermission}
-      >
-
-        <div className="form-group">
-          <label>
-            Permission Name <span className="required">*</span>
-          </label>
-
-          <input
-            type="text"
-            placeholder="Enter permission name"
-            value={permissionName}
-            onChange={(e) => {
-              const value = e.target.value;
-
-              setPermissionName(value);
-              setPermissionCode(generateCode(value));
-            }}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Code Name</label>
-
-          <input
-            type="text"
-            value={permissionCode}
-            readOnly
-          />
-        </div>
-
-        <div className="form-group">
-          <label>
-            Description <span className="required">*</span>
-          </label>
-
-          <textarea
-            rows={4}
-            placeholder="Enter description"
-            value={permissionDescription}
-            onChange={(e) =>
-              setPermissionDescription(e.target.value)
-            }
-          />
-        </div>
-
-        <div className="modal-footer">
-
-          <button
-            type="button"
-            className="cancel-btn"
-            onClick={() => setShowPermissionModal(false)}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="submit"
-            className="save-btn"
-            disabled={permissionIsSubmitting}
-          >
-            <FiShield />
-
-            {permissionIsSubmitting
-              ? "Creating..."
-              : "Create Permission"}
-          </button>
-
-        </div>
-
-      </form>
-
-    </div>
-  </div>
-)}
 
       {DeleteModal && (
         <div className="modal">

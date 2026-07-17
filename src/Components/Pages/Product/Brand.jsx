@@ -1,4 +1,5 @@
-import React, { useState ,useEffect } from 'react'
+import React, { useState ,useEffect,useRef } from 'react'
+import { FiEye ,FiUpload} from 'react-icons/fi';
 import {
   FaChartLine,
   FaCalendarAlt,
@@ -10,26 +11,50 @@ import {
 
 import { BsSearch,BsPlus } from "react-icons/bs";
 import { FiTrash2 } from "react-icons/fi";
-import { toast } from 'react-toastify'
+
 import BASE_URL from "../../../Base";
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from "react-toastify";
 
 const Brand = () => {
-    const[BrandData,setBrandData]=useState([]);
+   
     const[Error,setError]=useState(null);
     const[Loading,setLoading]=useState(false);
     const[BrandModal,setBrandModal]=useState(false);
     const[addErrors,setAddErrors]=useState({});
     const navigate = useNavigate();
-
+    const [addLoading, setAddLoading] = useState(false);
+    const[UpdateLoading,setUpdateLoading]=useState(false);
+    
+const [allBrandData, setAllBrandData] = useState([]);
 const [ BrandForm, setBrandForm] = useState({
   name: "",
   description: "",
   is_active: false,
+   logo: null,
 });
+const [searchTerm, setSearchTerm] = useState("");
+const [existingLogo, setExistingLogo] = useState("");
+const editLogoRef = useRef(null);
+
 
   const [deleteModal, setDeleteModal] = useState(false);
 const [BrandId, setBrandId] = useState(null);
+const brandLogoRef = useRef(null);
+const resetBrandForm = () => {
+  setBrandForm({
+    name: "",
+    description: "",
+    is_active: false,
+    logo: null,
+  });
+
+  setAddErrors({});
+
+  if (brandLogoRef.current) {
+    brandLogoRef.current.value = "";
+  }
+};
 
 
 const handleEditChange = (e) => {
@@ -53,10 +78,46 @@ const [editForm, setEditForm] = useState({
   name: "",
   description: "",
   is_active: true,
+
 });
 const [editErrors, setEditErrors] = useState({});
 
-     const handleToggle = async (id, currentStatus) => {
+const filteredBrands = allBrandData.filter((item) => {
+  const keyword = searchTerm.trim().toLowerCase();
+
+  return (
+    item.name?.toLowerCase().includes(keyword) 
+  
+  );
+});
+const uploadImage = async (file) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("dir", "health_issues");
+
+    const response = await fetch(`${BASE_URL}/user/upload/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    console.log("Upload Response:", data);
+
+    return data?.data?.url;
+  } catch (error) {
+    console.log(error);
+    toast.error("Image upload failed");
+    return null;
+  }
+};
+
+ const handleToggle = async (id, currentStatus) => {
   const token = sessionStorage.getItem("superadmin_token");
   if(!token){
     toast.error("Session Expired,please login Again");
@@ -101,6 +162,16 @@ const handleBrandChange = (e) => {
   }));
 };
 
+const totalBrands = allBrandData.length;
+
+const activeBrands = allBrandData.filter(
+  (item) => item.is_active
+).length;
+
+const inactiveBrands = allBrandData.filter(
+  (item) => !item.is_active
+).length;
+
 const getbrandlist = async () => {
   const token = sessionStorage.getItem("superadmin_token");
 
@@ -126,41 +197,48 @@ const getbrandlist = async () => {
       }
     );
 
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
-
     const data = await response.json();
 
-    console.log("Product Category API Response:", data);
+    console.log("Brand List:", data);
 
-    setBrandData(data.data);
-    
-
+    if (response.ok) {
+      setAllBrandData(data.data || []);
+    } else {
+      toast.error("Failed to fetch brands");
+    }
   } catch (err) {
-    console.error("Product Category Fetch Error:", err);
-    setError("Something went wrong while fetching categories.");
-    toast.error("Failed to fetch product categories");
+    console.error(err);
+    toast.error("Something went wrong");
   } finally {
     setLoading(false);
   }
 };
-useEffect(()=>{
-    getbrandlist();
-},{})
+
+useEffect(() => {
+  getbrandlist();
+}, []);
+
 
 
 const AddProductBrand = async (e) => {
   e.preventDefault();
+ 
     let newErrors = {};
 
   if (!BrandForm.name.trim()) {
     newErrors.name = "Brand name is required";
   }
 
+  let logoUrl = "";
+
+if (BrandForm.logo) {
+  logoUrl = await uploadImage(BrandForm.logo);
+
+  if (!logoUrl) {
+    toast.error("Logo upload failed");
+    return;
+  }
+}
   
 
   setAddErrors(newErrors);
@@ -171,8 +249,9 @@ const AddProductBrand = async (e) => {
     });
     return;
   }
-
+ setAddLoading(true);
   const token = sessionStorage.getItem("superadmin_token");
+
 
   try {
     const response = await fetch(
@@ -184,7 +263,12 @@ const AddProductBrand = async (e) => {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "true",
         },
-        body: JSON.stringify(BrandForm),
+       body: JSON.stringify({
+  name: BrandForm.name.trim(),
+  description: BrandForm.description,
+  is_active: BrandForm.is_active,
+  logo: logoUrl,
+})
       }
     );
 
@@ -222,6 +306,9 @@ const AddProductBrand = async (e) => {
     console.error(error);
     toast.error("Something went wrong");
   }
+  finally{
+    setAddLoading(false);
+  }
 };
 
 const handleUpdateBrand = async (e) => {
@@ -230,20 +317,31 @@ const handleUpdateBrand = async (e) => {
   let newErrors = {};
 
   if (!editForm.name.trim()) {
-    newErrors.name = "Category name is required";
+    newErrors.name = "Brand name is required";
   }
 
-  
   setEditErrors(newErrors);
 
   if (Object.keys(newErrors).length > 0) {
     toast.error(Object.values(newErrors)[0]);
     return;
   }
-
+setUpdateLoading(true);
   const token = sessionStorage.getItem("superadmin_token");
 
   try {
+    let logoUrl = existingLogo;
+
+    // Agar naya logo select hua hai to upload karo
+    if (editForm.logo instanceof File) {
+      logoUrl = await uploadImage(editForm.logo);
+
+      if (!logoUrl) {
+        toast.error("Logo upload failed");
+        return;
+      }
+    }
+
     const response = await fetch(
       `${BASE_URL}/vendors/admin/brand-name/?id=${editForm.id}`,
       {
@@ -254,9 +352,10 @@ const handleUpdateBrand = async (e) => {
           "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
-          name: editForm.name,
+          name: editForm.name.trim(),
           description: editForm.description,
           is_active: editForm.is_active,
+          logo: logoUrl, // URL send hoga
         }),
       }
     );
@@ -264,26 +363,22 @@ const handleUpdateBrand = async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-      toast.success("Product Brand Updated Successfully");
-
+      toast.success("Brand Updated Successfully");
       setEditModal(false);
-
       getbrandlist();
     } else {
-      const errorMessage =
+      toast.error(
         data?.errors?.name?.[0] ||
         data?.message ||
-        "Failed to update category";
-
-      setEditErrors({
-        name: data?.errors?.name?.[0] || "",
-      });
-
-      toast.error(errorMessage);
+        "Failed to update brand"
+      );
     }
   } catch (error) {
     console.error(error);
     toast.error("Something went wrong");
+  }
+  finally{
+    setUpdateLoading(false);
   }
 };
 const handleDelete = async (id) => {
@@ -317,7 +412,7 @@ const handleDelete = async (id) => {
     }
 
   
-    setBrandData((prev) =>
+    setAllBrandData((prev) =>
       prev.filter((item) => item.id !== id)
     );
 
@@ -343,7 +438,7 @@ const handleDelete = async (id) => {
                   </div>
                   <div className="stat2-info">
                     <h3>Total Brand</h3>
-                    <div className="stat2-value">0</div>
+                    <div className="stat2-value">{totalBrands}</div>
                   </div>
                 </div>
         
@@ -352,8 +447,8 @@ const handleDelete = async (id) => {
                     <FaChartLine size={24} />
                   </div>
                   <div className="stat2-info">
-                    <h3>New This Year</h3>
-                    <div className="stat2-value">0</div>
+                   <h3>Active Brands</h3>
+<div className="stat2-value">{activeBrands}</div>
                   </div>
                 </div>
         
@@ -362,8 +457,8 @@ const handleDelete = async (id) => {
                   <FaCalendarAlt size={24} />
                   </div>
                   <div className="stat2-info">
-                    <h3>New This Week</h3>
-                    <div className="stat2-value">0</div>
+               <h3>InActive Brands</h3>
+<div className="stat2-value">{inactiveBrands}</div>
                   </div>
                 </div>
         
@@ -371,18 +466,23 @@ const handleDelete = async (id) => {
       <div className="controls-section">
             <div className="search-wrapper">
               <BsSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search by brand name..."
-                className="search-input"
-              />
+             <input
+  type="text"
+  placeholder="Search by brand name..."
+  className="search-input"
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+/>
             </div>
     
             <div className="action-buttons">
             
     
               <button className="btn-primary"
-              onClick={() => setBrandModal(true)}
+             onClick={() => {
+    resetBrandForm();
+    setBrandModal(true);
+  }}
               > 
                 <BsPlus size={18} />
                 Add Brand
@@ -395,7 +495,7 @@ const handleDelete = async (id) => {
                                  <tr>
                                    <th>ID</th>
                                    <th>Name </th>
-                                   <th>Description</th>               
+                                   <th>Logo</th>              
                                    <th> Status</th>
 <th> Action</th>
                                  </tr>
@@ -415,14 +515,33 @@ const handleDelete = async (id) => {
                        {Error}
                      </td>
                    </tr>
-                 ) :BrandData?.length > 0 ? (
-                   BrandData.map((item, index) => (
+                 ) :filteredBrands?.length > 0 ? (
+                   filteredBrands.map((item, index) => (
                      <tr key={item.id}>
                        <td>{index + 1}</td>
                
                       
                        <td>{item.name}</td>  
-                       <td>{item.description}</td>
+                     
+                       
+                    <td>
+                    {item.logo ? (
+                      <img
+                        src={item.logo}
+                        alt={item.name}
+                        width="50"
+                        height="50"
+                        style={{
+                          objectFit: "cover",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          border: "1px solid #e0e0e0",
+                        }}
+                      />
+                    ) : (
+                      <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
+                    )}
+                  </td>
                         <td>
           <label className="switch">
             <input
@@ -439,16 +558,18 @@ const handleDelete = async (id) => {
           <button
           className="action-btn edit"
           onClick={() => {
-            setEditForm({
-              id: item.id,
-              name: item.name || "",
-              description: item.description || "",
-              is_active: item.is_active,
-            });
-        
-            setEditErrors({});
-            setEditModal(true);
-          }}
+  setEditForm({
+    id: item.id,
+    name: item.name || "",
+    description: item.description || "",
+    is_active: item.is_active,
+    logo: null,
+  });
+
+  setExistingLogo(item.logo || "");
+  setEditErrors({});
+  setEditModal(true);
+}}
         >
           <FaEdit />
         </button>
@@ -494,7 +615,10 @@ const handleDelete = async (id) => {
         <h2>Add New Brand</h2>
         <button
           className="close-btn"
-          onClick={() => setBrandModal(false)}
+          onClick={() => {
+    resetBrandForm();
+    setBrandModal(false);
+  }}
         >
           ×
         </button>
@@ -524,6 +648,8 @@ const handleDelete = async (id) => {
 )}
         </div>
 
+      
+
         <div className="form-group">
           <label>Description</label>
           <textarea
@@ -535,6 +661,89 @@ const handleDelete = async (id) => {
         
           />
         </div>
+
+          <div className="form-group">
+  <label>
+    Brand Logo <span className="required">*</span>
+  </label>
+
+  <div className="upload-box1">
+    <input
+      ref={brandLogoRef}
+      type="file"
+      accept="image/*"
+      id="brandLogoUpload"
+      onChange={(e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+          setBrandForm((prev) => ({
+            ...prev,
+            logo: file,
+          }));
+
+          setAddErrors((prev) => ({
+            ...prev,
+            logo: "",
+          }));
+        }
+      }}
+    />
+
+    {BrandForm.logo ? (
+      <div className="banner-preview-wrapper">
+        <div className="banner-preview-left">
+          <img
+            src={URL.createObjectURL(BrandForm.logo)}
+            alt="Brand Logo"
+            className="banner-preview-image"
+          />
+        </div>
+
+        <div className="banner-preview-actions">
+          <button
+            type="button"
+            className="preview-btn"
+            onClick={() =>
+              window.open(URL.createObjectURL(BrandForm.logo), "_blank")
+            }
+          >
+            <FiEye />
+          </button>
+
+          <button
+            type="button"
+            className="delete-btn-preview"
+            onClick={() => {
+              setBrandForm((prev) => ({
+                ...prev,
+                logo: null,
+              }));
+
+              if (brandLogoRef.current) {
+                brandLogoRef.current.value = "";
+              }
+            }}
+          >
+            <FiTrash2 />
+          </button>
+        </div>
+      </div>
+    ) : (
+      <label htmlFor="brandLogoUpload" className="upload-label">
+        <div className="upload-content">
+          <span className="upload-icon">⬆</span>
+          <p>Click to upload brand logo</p>
+          <span className="upload-hint">PNG, JPG, JPEG</span>
+        </div>
+      </label>
+    )}
+  </div>
+
+  {addErrors.logo && (
+    <p className="error-text">{addErrors.logo}</p>
+  )}
+</div>
 
         <div className="form-group">
           <label>Is Active</label>
@@ -555,17 +764,27 @@ const handleDelete = async (id) => {
 
 
         <div className="modal-footer">
-          <button
-            type="button"
-            className="cancel-btn"
-            onClick={() => setBrandModal(false)}
-          >
-            Cancel
-          </button>
+         
+        <button
+  type="button"
+  className="cancel-btn"
+  onClick={() => {
+    resetBrandForm();
+    setBrandModal(false);
+  }}
+>
+  Cancel
+</button>
+        
+          
 
-          <button type="submit" className="save-btn">
-            Add Brand
-          </button>
+          <button
+  type="submit"
+  className="save-btn"
+  disabled={addLoading}
+>
+  {addLoading ? "Adding Brand..." : "Add Brand"}
+</button>
         </div>
       </form>
     </div>
@@ -582,7 +801,7 @@ const handleDelete = async (id) => {
       onClick={(e) => e.stopPropagation()}
     >
       <div className="prakriti-modal-header">
-        <h2>Edit Product Category</h2>
+        <h2>Edit Brand </h2>
 
         <button
           className="close-btn"
@@ -592,7 +811,8 @@ const handleDelete = async (id) => {
         </button>
       </div>
 
-      <form onSubmit={handleUpdateBrand}>
+      <form onSubmit={handleUpdateBrand}
+      className='prakriti-form'>
         <div className="form-group">
           <label>Category Name</label>
 
@@ -621,7 +841,96 @@ const handleDelete = async (id) => {
             rows="4"
             placeholder="Enter description"
           />
+<div className="form-group">
+  <label>Brand Logo</label>
 
+  <div className="upload-box1">
+    <input
+      ref={editLogoRef}
+      type="file"
+      accept="image/*"
+      id="editBrandLogoUpload"
+      style={{ display: "none" }}
+      onChange={(e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+          setEditForm((prev) => ({
+            ...prev,
+            logo: file,
+          }));
+        }
+      }}
+    />
+
+    {(editForm.logo || existingLogo) ? (
+      <div className="banner-preview-wrapper">
+        <div className="banner-preview-left">
+          <img
+            src={
+              editForm.logo
+                ? URL.createObjectURL(editForm.logo)
+                : existingLogo
+            }
+            alt="Brand Logo"
+            className="banner-preview-image"
+          />
+        </div>
+
+        <div className="banner-preview-actions">
+          <button
+            type="button"
+            className="preview-btn"
+            onClick={() =>
+              window.open(
+                editForm.logo
+                  ? URL.createObjectURL(editForm.logo)
+                  : existingLogo,
+                "_blank"
+              )
+            }
+          >
+            <FiEye />
+          </button>
+
+          <label
+            htmlFor="editBrandLogoUpload"
+            className="preview-btn"
+            style={{ cursor: "pointer" }}
+          >
+            <FiUpload />
+          </label>
+
+          <button
+            type="button"
+            className="delete-btn-preview"
+            onClick={() => {
+              setEditForm((prev) => ({
+                ...prev,
+                logo: null,
+              }));
+
+              setExistingLogo("");
+
+              if (editLogoRef.current) {
+                editLogoRef.current.value = "";
+              }
+            }}
+          >
+            <FiTrash2 />
+          </button>
+        </div>
+      </div>
+    ) : (
+      <label htmlFor="editBrandLogoUpload" className="upload-label">
+        <div className="upload-content">
+          <span className="upload-icon">⬆</span>
+          <p>Click to upload brand logo</p>
+        </div>
+      </label>
+    )}
+  </div>
+</div>
        
         </div>
 
@@ -653,7 +962,7 @@ const handleDelete = async (id) => {
             type="submit"
             className="save-btn"
           >
-            Update Category
+            {UpdateLoading ? "Updating Brand..." : "Update Brand"}
           </button>
         </div>
       </form>
@@ -696,6 +1005,7 @@ const handleDelete = async (id) => {
     </div>
   </div>
 )}
+ <ToastContainer position="top-center" autoClose={2000} />
 
 </>
   )

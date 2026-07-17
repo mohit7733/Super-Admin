@@ -162,12 +162,14 @@ const resetVideoModal = () => {
     video_url: "",
     short_description: "",
     description: "",
-    status:"inactive",
+    status: "inactive",
+    health_diseases: [],
   });
 
+  setSelectedDiseases([]);
   setThumbnail(null);
   setVideo(null);
-  setSelectedDiseases([]);
+  setShowDiseaseDropdown(false);
 
   if (thumbnailRef.current) {
     thumbnailRef.current.value = "";
@@ -177,7 +179,6 @@ const resetVideoModal = () => {
     videoRef.current.value = "";
   }
 };
-
   const getYogasessionlist = async (page = 1) => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -640,14 +641,16 @@ try {
       
  <div className="Question-controls">
     <div className="filter-question">
-         <button
+    <button
   className="add-session-btn"
-  onClick={() => setShowYogaVideoModal(true)}
+  onClick={() => {
+    resetVideoModal();
+    setShowYogaVideoModal(true);
+  }}
 >
-          <BiPlus />
-          Add Yoga Session
-        </button>
-
+  <BiPlus />
+  Add Yoga Session
+</button>
         </div>
  </div>
      
@@ -760,13 +763,7 @@ try {
                         </td>
                         <td>
                           <div className="action-buttons">
-                            {/* <button
-                              className="action-btn edit"
-                             
-                              title="Edit"
-                            >
-                              <FaEdit />
-                            </button> */}
+                            
         <button
                                                         className="action-btn delete"
                                                         onClick={() => {
@@ -840,11 +837,13 @@ try {
         <h2>Add Yoga Session</h2>
 
         <button
-          className="modal-close-btn"
-          onClick={() => setShowYogaVideoModal(false)}
-        >
-          <FaTimes />
-        </button>
+  type="button"
+  className="modal-close-btn"
+  onClick={resetVideoModal}
+>
+  <FaTimes />
+</button>
+          
       </div>
 
       <form

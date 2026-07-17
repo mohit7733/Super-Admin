@@ -20,6 +20,9 @@ const Banner = () => {
   const[BannerLoading,setBannerLoading]=useState(false);
  const[Error,setError]=useState(null)
   const[showBannerModal,setShowBannerModal]=useState(false);
+  const intialbannerform ={
+    
+  }
  const [bannerForm, setBannerForm] = useState({
   image_url: null,
   redirect_url: "",

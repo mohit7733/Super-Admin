@@ -72,6 +72,7 @@ const Doctor = () => {
   const[approvedoctorModal,setDoctorApproveModal]=useState(false);
  const [isApproving, setIsApproving] = useState(false);
   const [uploadedDocs, setUploadedDocs] = useState([]);
+  const [allDoctorData, setAllDoctorData] = useState([]);
 
   const [showReasonModal, setShowReasonModal] = useState(false);
 
@@ -332,7 +333,50 @@ const submitRejection = async (e) => {
  []
 )
    
+const filterDoctors = () => {
+  let filtered = [...allDoctorData];
 
+  // Search
+  if (doctorsearch.trim()) {
+    const search = doctorsearch.toLowerCase();
+
+    filtered = filtered.filter((doctor) => {
+      const fullName =
+        `${doctor.first_name || ""} ${doctor.last_name || ""}`.toLowerCase();
+
+      const email = (doctor.email || "").toLowerCase();
+
+      const specialization =
+        doctor.specializations
+          ?.map((s) => s.name.toLowerCase())
+          .join(" ") || "";
+
+      return (
+        fullName.includes(search) ||
+        email.includes(search) ||
+        specialization.includes(search)
+      );
+    });
+  }
+
+  // Status Filter
+  if (statusFilter !== "All") {
+    filtered = filtered.filter(
+      (doctor) => doctor.approval_status === statusFilter
+    );
+  }
+
+  // Specialization Filter
+  if (specializationfilter !== "All") {
+    filtered = filtered.filter((doctor) =>
+      doctor.specializations?.some(
+        (s) => s.name === specializationfilter
+      )
+    );
+  }
+
+  setDoctorData(filtered);
+};
 
   const openDocumentModal = (i) => {
     setOpenModal(true);
@@ -1022,7 +1066,7 @@ const submitRejection = async (e) => {
 
             ) : error ? (
               <tr>
-                <td colSpan="11" style={{ color: "red" }}>
+                <td colSpan="13" style={{ color: "red" }}>
                   {error}
                 </td>
               </tr>
@@ -1847,8 +1891,15 @@ const submitRejection = async (e) => {
       )}
 
 {approvedoctorModal && (
-  <div className="confirm-overlay">
-    <div className="confirm-modal">
+  <div className="confirm-overlay"
+   onClick={() => {
+    setDoctorApproveModal(false);
+    setSelectedDoctorId(null);
+  }}
+  >
+    <div className="confirm-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
 
       <button
         className="closes-modal"

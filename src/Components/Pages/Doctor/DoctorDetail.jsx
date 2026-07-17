@@ -1823,8 +1823,16 @@ const handleSubmitReason = async () => {
   
 )}
 {approveModal && (
-  <div className="confirm-overlay">
-    <div className="confirm-modal">
+  <div className="confirm-overlay"
+   onClick={() => {
+    setApproveModal(false);
+  
+   
+  }}
+  >
+    <div className="confirm-modal"
+        onClick={(e) => e.stopPropagation()}
+    >
 
       <button
         className="closes-modal"

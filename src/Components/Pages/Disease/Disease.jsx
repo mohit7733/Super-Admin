@@ -166,40 +166,57 @@ const Disease = () => {
     }));
   };
 
-  const validateDiseaseForm = () => {
-    let errors = {};
+const validateDiseaseForm = () => {
+  let errors = {};
 
-    if (!formData.health_category_id) {
-      errors.health_category_id = "Category is required";
-    }
+  if (!formData.health_category_id) {
+    errors.health_category_id = "Category is required";
+  }
 
-    if (!formData.prakriti) {
-      errors.prakriti = "Prakriti is required";
-    }
-if (!formData.name || !formData.name.trim()) {
-  errors.name = "Disease name is required";
-}
-const code = formData.code;
+  if (!formData.prakriti) {
+    errors.prakriti = "Prakriti is required";
+  }
 
-if (!code) {
-  errors.code = "Disease code is required";
-} 
-else if (!/^[A-Z]{5}$/.test(code)) {
-  errors.code = "Disease code must be exactly 5 uppercase letters";
-}
-   
-    if (!imageFile) {
-      errors.image = "Disease image is required";
-    }
+  if (!formData.name || !formData.name.trim()) {
+    errors.name = "Disease name is required";
+  }
 
-    const validSymptoms = formData.symptoms.filter((item) => item.trim() !== "");
-    if (validSymptoms.length === 0) {
-      errors.symptoms = "At least one symptom is required";
-    }
+  const code = formData.code;
 
-    setDiseaseErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  if (!code) {
+    errors.code = "Disease code is required";
+  } else if (!/^[A-Z]{5}$/.test(code)) {
+    errors.code = "Disease code must be exactly 5 uppercase letters";
+  }
+
+  if (!imageFile) {
+    errors.image = "Disease image is required";
+  }
+
+  const validSymptoms = formData.symptoms.filter(
+    (item) => item.trim() !== ""
+  );
+
+  if (validSymptoms.length === 0) {
+    errors.symptoms = "At least one symptom is required";
+  }
+
+  setDiseaseErrors(errors);
+
+  if (Object.keys(errors).length > 0) {
+    toast.dismiss();
+
+    Object.values(errors).forEach((message, index) => {
+      setTimeout(() => {
+        toast.error(message);
+      }, index * 100);
+    });
+
+    return false;
+  }
+
+  return true;
+};
 
   const validateCategoryForm = () => {
   let errors = {};

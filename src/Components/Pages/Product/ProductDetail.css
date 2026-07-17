@@ -3137,12 +3137,12 @@
   flex: 1;
 }
 
-.search-wrapper {
+/* .search-wrapper {
   position: relative;
   flex: 1;
   min-width: 200px;
   max-width: 400px;
-}
+} */
 
 .search-icon {
   position: absolute;

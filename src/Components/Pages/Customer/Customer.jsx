@@ -517,10 +517,10 @@ setSelectedCustomer(null);
             <BsPlus size={18} />
             Add Customer
           </button> */}
-          <button className="btn-secondary">
+          {/* <button className="btn-secondary">
             <BsDownload size={16} />
             Export
-          </button>
+          </button> */}
         </div>
       </div>
 
