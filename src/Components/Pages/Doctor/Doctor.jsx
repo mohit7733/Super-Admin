@@ -132,10 +132,6 @@ const Doctor = () => {
     return errors
   }
 
-
-
-
-
   const validateDoctorForm = (formData, phoneNum) => {
     const errors = {};
 
@@ -885,9 +881,6 @@ const filterDoctors = () => {
 
     return `${firstInitial}${lastInitial}` || "?";
   };
-
-
-
 
  const handleStatusChange = async (doctorId, newStatus, reason = "") => {
     const token = sessionStorage.getItem("superadmin_token")
@@ -1992,8 +1985,15 @@ const filterDoctors = () => {
 )}
 
    {RejectionDoctorModal && (
-  <div className="confirm-overlay">
-    <div className="reason-modal modern-reason-modal">
+  <div className="confirm-overlay"
+    onClick={() => {
+          setRejectionDoctorModal(false);
+          setRejectReason("");
+        }}
+  >
+    <div className="reason-modal modern-reason-modal"
+        onClick={(e) => e.stopPropagation()}
+    >
 
       <button
         className="closes-modal"
@@ -2054,9 +2054,12 @@ const filterDoctors = () => {
         <label>
           Reason <span>*</span>
         </label>
-
-      <textarea
-  className="reason-box"
+<textarea
+  className={`reason-box ${
+    selectedStatus === "rejected"
+      ? "reject-reason-box"
+      : "suspend-reason-box"
+  }`}
   value={rejectReason}
   onChange={(e) => setRejectReason(e.target.value)}
   placeholder={

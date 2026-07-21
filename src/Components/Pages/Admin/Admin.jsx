@@ -713,18 +713,15 @@ const pendingAdmins = AdminData.filter(
             Cancel
           </button>
 
-          <button
-            type="button"
-            className="save-btn"
-            disabled={loading}
-            onClick={SaveStatusLoading}
-          >
-            <FiShield />
-
-            {SaveStatusLoading
-              ? "Saving..."
-              : "Save Changes"}
-          </button>
+         <button
+  type="button"
+  className="save-btn"
+  disabled={SaveStatusLoading}
+  onClick={handleSavePermissions}
+>
+  <FiShield />
+  {SaveStatusLoading ? "Saving..." : "Save Changes"}
+</button>
 
         </div>
 

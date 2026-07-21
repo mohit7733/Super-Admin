@@ -935,28 +935,28 @@ const handleSubmitReason = async () => {
                 <div className="info-row">
                   <span>Experience</span>
                   <p>
-                    {doctorData?.experience_years} Years
+                    {doctorData?.experience_years||"N/A"} Years
                   </p>
                 </div>
 
                 <div className="info-row">
                   <span>Registration Number</span>
                   <p>
-                    {doctorData?.registration_number}
+                    {doctorData?.registration_number||"N/A"}
                   </p>
                 </div>
 
                 <div className="info-row">
                   <span>Registration Council</span>
                   <p>
-                    {doctorData?.registration_council}
+                    {doctorData?.registration_council||"N/A"}
                   </p>
                 </div>
 
                 <div className="info-row">
                   <span>Registration Year</span>
                   <p>
-                    {doctorData?.registration_year}
+                    {doctorData?.registration_year||"N/A"}
                   </p>
                 </div>
 
@@ -973,14 +973,14 @@ const handleSubmitReason = async () => {
                 <div className="info-row">
                   <span>Primary Dosha Expertise</span>
                   <p>
-                    {doctorData?.primary_dosha_expertise}
+                    {doctorData?.primary_dosha_expertise||"N/A"}
                   </p>
                 </div>
 
                 <div className="info-row">
                   <span>Therapies</span>
                   <p>
-                    {doctorData?.specialized_therapies?.join(", ")}
+                    {doctorData?.specialized_therapies?.join(", ")||"N/A"}
                   </p>
                 </div>
 
@@ -996,7 +996,7 @@ const handleSubmitReason = async () => {
                 <div className="info-row">
                   <span>Ayurvedic Council ID</span>
                   <p>
-                    {doctorData?.ayurvedic_council_id}
+                    {doctorData?.ayurvedic_council_id||"N/A"}
                   </p>
                 </div>
 
@@ -1013,13 +1013,14 @@ const handleSubmitReason = async () => {
                   Practice Details
                 </h3>
 
-                <div className="info-row">
-                  <span>Years of Practice</span>
-                  <p>
-                    {doctorData?.years_of_practice} Years
-                  </p>
-                </div>
-
+             <div className="info-row">
+  <span>Years of Practice</span>
+  <p>
+    {doctorData?.years_of_practice
+      ? `${doctorData.years_of_practice} Years`
+      : "N/A"}
+  </p>
+</div>
                 <div className="info-row">
                   <span>Practicing Since</span>
                   <p>
@@ -1044,7 +1045,7 @@ const handleSubmitReason = async () => {
                 <div className="info-row">
                   <span>Consultation Modes</span>
                   <p>
-                    {doctorData?.consultation_modes?.join(", ")}
+                    {doctorData?.consultation_modes?.join(", ")||"N/A"}
                   </p>
                 </div>
 
@@ -1683,8 +1684,15 @@ const handleSubmitReason = async () => {
 
     {(actionType === "rejected" ||
   actionType === "suspended") && (
-  <div className="confirm-overlay">
-    <div className="reason-modal modern-reason-modal">
+  <div className="confirm-overlay"
+   onClick={() => {
+          setActionType(null);
+          setReason("");
+        }}
+  >
+    <div className="reason-modal modern-reason-modal"
+     onClick={(e) => e.stopPropagation()}
+    >
 
       <button
         className="closes-modal"
@@ -1745,16 +1753,21 @@ const handleSubmitReason = async () => {
           Reason <span>*</span>
         </label>
 
-        <textarea
-          className="reason-box"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder={
-            actionType === "rejected"
-              ? "Enter reason for rejection..."
-              : "Enter reason for suspension..."
-          }
-        />
+      <textarea
+  className={`reason-box ${
+    actionType === "rejected"
+      ? "reject-reason-box"
+      : "suspend-reason-box"
+  }`}
+  value={reason}
+  onChange={(e) => setReason(e.target.value)}
+  placeholder={
+    actionType === "rejected"
+      ? "Enter reason for rejection..."
+      : "Enter reason for suspension..."
+  }
+/>
+  
       </div>
 
       <div

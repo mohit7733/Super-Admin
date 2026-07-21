@@ -20,15 +20,16 @@ const Banner = () => {
   const[BannerLoading,setBannerLoading]=useState(false);
  const[Error,setError]=useState(null)
   const[showBannerModal,setShowBannerModal]=useState(false);
+  const[addbannerLoading,setaddbannerloading]=useState(false);
   const intialbannerform ={
-    
-  }
- const [bannerForm, setBannerForm] = useState({
-  image_url: null,
+     image_url: null,
   redirect_url: "",
   service_category_id: "",
   is_active: false,
-});
+  }
+ const [bannerForm, setBannerForm] = useState(intialbannerform );
+ const [editBannerError, setEditBannerError] = useState({});
+
 const[CategoryData,setCategoryData]=useState([]);
 const[CategoryLoading,setCategoryLoading]=useState(false);
 const[CategoryError,setCategoryError]=useState(null);
@@ -43,12 +44,31 @@ const[DeleteBannerModal,setDeleteBannerModal]=useState(false);
 const[SelectedBanner,setSelectedBanner]=useState(null);
 const[BannerPreviewImage,setBannerPreviewImage]=useState("");
 
-const [editBannerForm, setEditBannerForm] = useState({
+
+const initialEditBannerForm = {
   image_url: "",
   redirect_url: "",
   service_category_id: "",
   is_active: false,
-});
+};
+
+// const resetEditBannerForm = () => {
+//   setEditBannerForm(initialEditBannerForm);
+//   setEditBannerImage(null);
+//   setEditBannerId(null);
+//   setEditErrors({}); 
+
+//   if (editFileRef.current) {
+//     editFileRef.current.value = "";
+//   }
+// };
+const[editBannerForm,setEditBannerForm]=useState(initialEditBannerForm)
+
+const resetBannerForm = () => {
+  setBannerForm(intialbannerform);
+  setBannerImage(null);
+  setBannerError({});
+};
 
 
 const handleChange = (e) => {
@@ -238,15 +258,40 @@ const handleEditChange = (e) => {
     ...prev,
     [name]: type === "checkbox" ? checked : value,
   }));
-};
 
+  setEditBannerError((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
+};
 const handleAddBanner = async (e) => {
   e.preventDefault();
 
   const token = sessionStorage.getItem("superadmin_token");
 
+    const errors = {};
+
+  if (!bannerForm.service_category_id) {
+    errors.service_category_id = "Please select a category";
+  }
+
+  if (!bannerForm.redirect_url.trim()) {
+    errors.redirect_url = "Redirect URL is required";
+  } 
   
 
+  if (!BannerImage) {
+    errors.image_url = "Banner image is required";
+  }
+
+  if (Object.keys(errors).length > 0) {
+    setBannerError(errors);
+    return;
+  }
+
+  setBannerError({});
+
+setaddbannerloading(true);
   try {
  setBannerLoading(true);
     let uploadedImageUrl = null;    
@@ -303,12 +348,33 @@ const handleAddBanner = async (e) => {
     console.error(error);
     toast.error("Something went wrong");
   } finally {
-    setBannerLoading(false);
+    setaddbannerloading(false);
   }
 };
 
 const handleUpdateBanner = async (e) => {
   e.preventDefault();
+
+  const errors = {};
+
+if (!editBannerForm.service_category_id) {
+  errors.service_category_id = "Please select a category";
+}
+
+if (!editBannerForm.redirect_url.trim()) {
+  errors.redirect_url = "Redirect URL is required";
+}
+
+if (!editBannerImage && !editBannerForm.image_url) {
+  errors.image_url = "Banner image is required";
+}
+
+if (Object.keys(errors).length > 0) {
+  setEditBannerError(errors);
+  return;
+}
+
+setEditBannerError({});
 
   const token = sessionStorage.getItem("superadmin_token");
 
@@ -445,16 +511,8 @@ const handleUpdateBanner = async (e) => {
               <div className="filter-controls">
                 <button
                   className="add-customer-btn"
-                  onClick={() => {
-  setBannerImage(null);
-
-  setBannerForm({
-    image_url: null,
-    redirect_url: "",
-    service_category_id: "",
-    is_active: false,
-  });
-
+           onClick={() => {
+  resetBannerForm();
   setShowBannerModal(true);
 }}
                 >
@@ -576,8 +634,18 @@ const handleUpdateBanner = async (e) => {
                  
                                 {
                          showBannerModal && (
-                            <div className="prakriti-modal-overlay">
-                              <div className="prakriti-modal">
+                            <div className="prakriti-modal-overlay" 
+                                                 onClick={() => {
+  resetBannerForm();
+  setShowBannerModal(false);
+}}
+                  
+                            >
+                              <div className="prakriti-modal"
+                  onClick={(e) => {
+          e.stopPropagation();
+        }}
+                              >
                         
                                 
                                 <div className="prakriti-modal-header">
@@ -586,9 +654,9 @@ const handleUpdateBanner = async (e) => {
                                   <button
                                     className="close-btn"
                                     onClick={() => {
-                                      setShowBannerModal(false);
-                                   
-                                    }}
+  resetBannerForm();
+  setShowBannerModal(false);
+}}
                                   >
                                     ✕
                                   </button>
@@ -637,13 +705,7 @@ const handleUpdateBanner = async (e) => {
                                     )}
                                   </div>
                         
-                                
-                              
-                        
-                                 
-           
-                        
-                              
+                                                   
                                 
              <div className="form-group">
   <label>Redirect URL</label>
@@ -655,6 +717,10 @@ const handleUpdateBanner = async (e) => {
     placeholder="https://www.example.com/product/vitamins"
     className="form-control"
   />
+
+   {BannerError.redirect_url && (
+    <p className="error-text">{BannerError.redirect_url}</p>
+  )}
 </div>   
 
     
@@ -726,6 +792,9 @@ const handleUpdateBanner = async (e) => {
       </label>
     )}
   </div>
+   {BannerError.image_url && (
+    <p className="error-text">{BannerError.image_url}</p>
+  )}
 </div>
   
                             
@@ -758,17 +827,9 @@ const handleUpdateBanner = async (e) => {
                                     <button
                                       type="button"
                                       className="cancel-btn"
-                                     onClick={() => {
+                              onClick={() => {
+  resetBannerForm();
   setShowBannerModal(false);
-
-  setBannerImage(null);
-
-  setBannerForm({
-    image_url: null,
-    redirect_url: "",
-service_category_id: "",
-    is_active: false,
-  });
 }}
                                     >
                                       Cancel
@@ -778,7 +839,7 @@ service_category_id: "",
                                       type="submit"
                                       className="save-btn"
                                     >
-                                      Add Banner
+                                   {addbannerLoading ? "Adding..." : "Add Category"}
                                     </button>
                         
                                   </div>
@@ -816,7 +877,7 @@ service_category_id: "",
             <label>Select Category</label>
 
             <select
-              name="category"
+              name="service-category_id"
               value={editBannerForm.service_category_id}
               onChange={handleEditChange}
             >
@@ -833,6 +894,12 @@ service_category_id: "",
                 </option>
               ))}
             </select>
+
+            {editBannerError.service_category_id && (
+  <p className="error-text">
+    {editBannerError.service_category_id}
+  </p>
+)}
           </div>
 
           {/* Redirect URL */}
@@ -846,6 +913,11 @@ service_category_id: "",
               value={editBannerForm.redirect_url}
               onChange={handleEditChange}
             />
+            {editBannerError.redirect_url && (
+  <p className="error-text">
+    {editBannerError.redirect_url}
+  </p>
+)}
           </div>
 
         
@@ -945,13 +1017,18 @@ service_category_id: "",
         <div className="upload-content">
           <span className="upload-icon">⬆</span>
           <p>Click to upload banner image</p>
-          <small>PNG, JPG up to 2MB</small>
+          <small>PNG, JPG </small>
         </div>
       </label>
 
     )}
 
   </div>
+  {editBannerError.image_url && (
+  <p className="error-text">
+    {editBannerError.image_url}
+  </p>
+)}
 </div>
  
       

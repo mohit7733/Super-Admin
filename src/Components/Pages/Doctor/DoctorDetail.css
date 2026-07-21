@@ -374,9 +374,9 @@ p {
   font-weight: 500;
   display: flex;
   align-items: center;
-  /* Added */
+ 
   gap: 4px;
-  /* Added */
+ 
 }
 
 .badge-success {
@@ -429,7 +429,7 @@ p {
 }
 
 .stat-icon {
-  background: #f0fdf4;
+  background: #d6efde;
   color: #0D614E;
   width: 36px;
   height: 36px;
