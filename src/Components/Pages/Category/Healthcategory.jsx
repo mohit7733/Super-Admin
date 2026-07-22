@@ -1267,32 +1267,34 @@ const Healthcategory = () => {
         <div className="modal-overlay" onClick={() => setDeleteModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Are you sure you want to delete this category?</h3>
-            <p className="modal-warning">This action cannot be undone.</p>
-            <div className="form-buttons">
-              <button
-                className="btn-danger"
-                disabled={isDeleting}
-                onClick={() => {
-                  handleDelete(categoryId);
-                }}
-              >
-                {isDeleting ? "Deleting..." : "Yes, Delete"}
-              </button>
-              <button
-                className="btn-secondary"
-                onClick={() => {
-                  setDeleteModal(false);
-                  setCategoryId(null);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
+        
+          
+
+              <div className="form-buttons">
+        <button
+          className="otp-btn verify-btn"
+             disabled={isDeleting}
+          onClick={() => {
+            handleDelete(categoryId);
+            setDeleteModal(false);
+          }}
+        >
+        {isDeleting ? "Deleting..." : "Yes"}
+        </button>
+
+        <button
+          onClick={() => setDeleteModal(false)}
+        >
+          No
+        </button>
+      </div>
           </div>
         </div>
       )}
 
-      {/* Status Change Modal */}
+ 
+
+     
       {statusModal && selectedCategory && (
         <div
           className="modal-overlay"

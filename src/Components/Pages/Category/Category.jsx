@@ -524,8 +524,8 @@ if (Object.keys(newErrors).length > 0) {
             <div className="stat2-value">{stats.total}</div>
           </div>
         </div>
-        <div className="stat2-card" style={{ borderTopColor: "#28a745" }}>
-          <div className="stat2-icon" style={{ background: "#28a74520", color: "#28a745" }}>
+        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
             <FaChartLine size={24} />
           </div>
           <div className="stat2-info">
@@ -533,8 +533,8 @@ if (Object.keys(newErrors).length > 0) {
             <div className="stat2-value">{stats.active}</div>
           </div>
         </div>
-        <div className="stat2-card" style={{ borderTopColor: "#dc3545" }}>
-          <div className="stat2-icon" style={{ background: "#dc354520", color: "#dc3545" }}>
+    <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
             <FaCalendarAlt size={24} />
           </div>
           <div className="stat2-info">

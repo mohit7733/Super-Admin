@@ -21,6 +21,9 @@ const [EditTaxClassModal, setEditTaxClassModal] = useState(false);
 const [editingTaxClass, setEditingTaxClass] = useState(null);
   const [errors, setErrors] = useState({});
 const [submitLoading, setSubmitLoading] = useState(false);
+const[deleteModal,setDeleteModal] = useState(false);
+ const [isDeleting, setIsDeleting] = useState(false);
+ const [classId, setClassId] = useState(null);
   const initialTaxForm = {
   tax_type: "",
   name: "",
@@ -330,6 +333,52 @@ useEffect(() => {
     }
   }, []);
 
+  const handleDelete = async (id) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/unicommerce-tax-class/?id=${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    if (response.ok && data.success) {
+      toast.success(data.message || "Tax Class deleted successfully");
+      setDeleteModal(false);
+      setClassId(null);
+      getTaxClaslist();
+    } else {
+      toast.error(data.message || "Failed to delete Tax Class");
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+  }
+};
+
   return (
     <>
         <div className="page-header">
@@ -433,7 +482,7 @@ useEffect(() => {
                        <td>{item.name}</td>
                           <td><span className="category-code-badge">{item.code || "N/A"}</span></td>
                     <td>{item.tax_type_display}</td>
-                    <td>{item.percentage}</td>
+                    <td>{item.percentage} %</td>
 
 <td>{item.tax_calculated_on_display}</td>
 
@@ -449,9 +498,17 @@ useEffect(() => {
 >
   <FaEdit />
 </button>
-    {/* <button className="action-btn delete">
-      <FiTrash2 />
-    </button> */}
+  
+<button
+  className="action-btn delete"
+  onClick={() => {
+    setClassId(item.id);
+    setDeleteModal(true);
+  }}
+>
+  <FiTrash2 />
+</button>
+
   </div>
 </td>
                     
@@ -854,6 +911,37 @@ useEffect(() => {
     </div>
   </div>
 )}
+
+   {deleteModal && (
+        <div className="modal-overlay" onClick={() => setDeleteModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Are you sure you want to delete this category?</h3>
+        
+          
+
+              <div className="form-buttons">
+        <button
+          className="otp-btn verify-btn"
+             disabled={isDeleting}
+          onClick={() => {
+            handleDelete(classId);
+            setDeleteModal(false);
+          }}
+        >
+        {isDeleting ? "Deleting..." : "Yes"}
+        </button>
+
+        <button
+          onClick={() => setDeleteModal(false)}
+        >
+          No
+        </button>
+      </div>
+          </div>
+        </div>
+      )}
+
+
         <ToastContainer position="top-center" autoClose={2000} />                
     </>
   )

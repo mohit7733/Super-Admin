@@ -1,7 +1,7 @@
 // ProductDetail.js - Updated with Product Details Section First
 import React, { useState, useEffect } from 'react';
 import './ProductDetail.css';
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
 import { 
   BsThreeDotsVertical, 
   BsGrid, 
@@ -77,7 +77,7 @@ function ProductDetail() {
   const navigate = useNavigate();
   const { productId } = useParams();
   
-  // State variables
+ 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [productData, setProductData] = useState(null);
@@ -108,28 +108,10 @@ function ProductDetail() {
   });
    const [openMenuId, setOpenMenuId] = useState(null);
 
-  // Mock data
-  const mockOrders = [
-    { id: 'ORD-001', customer: 'John Doe', email: 'john@email.com', date: '2024-06-15', amount: 299.00, status: 'Delivered', variant: '500ml', qty: 2, paymentMethod: 'Card' },
-    { id: 'ORD-002', customer: 'Jane Smith', email: 'jane@email.com', date: '2024-06-14', amount: 598.00, status: 'Shipped', variant: '1L', qty: 1, paymentMethod: 'UPI' },
-    { id: 'ORD-003', customer: 'Mike Johnson', email: 'mike@email.com', date: '2024-06-13', amount: 449.00, status: 'Processing', variant: '250ml', qty: 3, paymentMethod: 'COD' },
-    { id: 'ORD-004', customer: 'Sarah Wilson', email: 'sarah@email.com', date: '2024-06-12', amount: 299.00, status: 'Delivered', variant: '500ml', qty: 1, paymentMethod: 'Card' },
-    { id: 'ORD-005', customer: 'David Brown', email: 'david@email.com', date: '2024-06-11', amount: 897.00, status: 'Cancelled', variant: '100ml', qty: 4, paymentMethod: 'UPI' },
-  ];
-
-  const mockReviews = [
-    { id: 1, customer: 'Alice Cooper', rating: 5, comment: 'Excellent product! Works great for my skin. Highly recommend to everyone.', date: '2024-06-14', variant: '500ml', helpful: 12 },
-    { id: 2, customer: 'Bob Martin', rating: 4, comment: 'Good quality, but price could be better. Overall satisfied with the purchase.', date: '2024-06-12', variant: '250ml', helpful: 8 },
-    { id: 3, customer: 'Carol White', rating: 5, comment: 'Amazing results! My skin feels so fresh and clean. Will buy again.', date: '2024-06-10', variant: '500ml', helpful: 15 },
-    { id: 4, customer: 'Dan Thompson', rating: 3, comment: 'Average product, nothing special. Works fine but not worth the hype.', date: '2024-06-08', variant: '1L', helpful: 3 },
-    { id: 5, customer: 'Emma Davis', rating: 5, comment: 'Best face wash I\'ve ever used! My skin has improved dramatically.', date: '2024-06-05', variant: '500ml', helpful: 20 },
-  ];
-
-  // Fetch data
+  
   useEffect(() => {
     fetchProductDetails();
-    fetchOrders();
-    fetchReviews();
+  
   }, [productId]);
 
   useEffect(() => {
@@ -180,10 +162,8 @@ function ProductDetail() {
     }
   };
 
-  const fetchOrders = async () => setOrders(mockOrders);
-  const fetchReviews = async () => setReviews(mockReviews);
 
-  // Filter and Sort
+ 
   const applyFilters = () => {
     let filtered = [...variants];
     if (searchTerm) {
@@ -276,33 +256,27 @@ function ProductDetail() {
     const newStatus = payload.status;
 
     
-    setVariants((prev) =>
-      prev.map((item) =>
-        item.id === variantId
-          ? {
-              ...item,
-              status: newStatus,
-              reason:
-                action === "reject"
-                  ? reasonText
-                  : item.reason,
-            }
-          : item
-      )
-    );
 
    
-    if (selectedVariant?.id === variantId) {
-      setSelectedVariant((prev) => ({
-        ...prev,
-        status: newStatus,
-        reason:
-          action === "reject"
-            ? reasonText
-            : prev.reason,
-      }));
-    }
+   setVariants((prev) =>
+  prev.map((item) =>
+    item.id === variantId
+      ? {
+          ...item,
+          approval_status: newStatus,
+          reason: action === "reject" ? reasonText : item.reason,
+        }
+      : item
+  )
+);
 
+if (selectedVariant?.id === variantId) {
+  setSelectedVariant((prev) => ({
+    ...prev,
+    approval_status: newStatus,
+    reason: action === "reject" ? reasonText : prev.reason,
+  }));
+}
     toast.success(
       `Variant ${
         action === "approve"
@@ -317,9 +291,10 @@ function ProductDetail() {
     setSelectedVariantForAction(null);
     setReason("");
     setOpenMenuId(null);
-  } catch (error) {
-    toast.error(error.message);
-  }
+  } 
+ catch (error) {
+  toast.error("Server Error. Please try again later.");
+}
 };
 
   const handleBulkAction = async (action) => {
@@ -523,28 +498,14 @@ function ProductDetail() {
     <>
     <div className="product-detail-container">
      
-      <nav className="top-nav">
-        <div className="nav-left">
-          <button className="back-button" onClick={() => navigate(-1)}>
-            <FaArrowLeft />
-          </button>
-          {/* <div className="breadcrumb">
-            <span>Products</span>
-            <span className="separator">/</span>
-            <span className="active">{productData.name}</span>
-          </div> */}
-        </div>
-      
-      </nav>
+ 
 
    
       <div className="product-header">
         <div className="product-header-left">
           <h1 className="product-title">{productData.name}</h1>
           <div className="product-meta-tags">
-            <span className="meta-tag">
-              <FiTag /> ID: {productData.id?.substring(0, 8)}...
-            </span>
+          
             <span className="meta-tag">
               <FiCalendar /> {new Date(productData.created_at).toLocaleDateString('en-US', { 
                 year: 'numeric', 
@@ -647,10 +608,7 @@ function ProductDetail() {
                 <span className="details-label">Phone</span>
                 <span className="details-value">{productData.vendor_phone_number || 'N/A'}</span>
               </div>
-              {/* <div className="details-row">
-                <span className="details-label">Vendor ID</span>
-                <span className="details-value id-text">{productData.vendor_id?.substring(0, 12)}...</span>
-              </div> */}
+             
               <div className="details-row">
                 <span className="details-label">Added On</span>
                 <span className="details-value">{new Date(productData.created_at).toLocaleDateString('en-US', {
@@ -833,7 +791,7 @@ function ProductDetail() {
                     <FaBoxOpen className="title-icon" />
                     <h4>Selected Variant</h4>
                     <span className="variant-name-badge">{selectedVariant.title}</span>
-                    <span className="variant-status-inline">{getStatusBadge(selectedVariant.status)}</span>
+                    <span className="variant-status-inline">{getStatusBadge(selectedVariant.approval_status)}</span>
                   </div>
                   <button className="btn-outline-small" onClick={() => setSelectedVariant(null)}>
                     <BsX /> Clear
@@ -886,7 +844,7 @@ function ProductDetail() {
                             <img 
                               src={media.media_url}
                               alt={`Thumbnail ${idx + 1}`}
-                              onError={(e) => e.target.src = 'https://via.placeholder.com/80'}
+                           
                             />
                           </div>
                         ))}
@@ -1075,21 +1033,18 @@ function ProductDetail() {
               setSelectedImage(null);
             }}
           >
-            {/* Variant Info */}
+       
             <td>
               <div className="variant-info">
                 <img
                   src={
                     variant.media?.find((m) => m.is_cover)?.media_url ||
-                    variant.media?.[0]?.media_url ||
-                    "https://via.placeholder.com/50"
+                    variant.media?.[0]?.media_url
+              
                   }
                   alt={variant.title}
                   className="variant-image-small"
-                  onError={(e) =>
-                    (e.target.src =
-                      "https://via.placeholder.com/50")
-                  }
+                
                 />
 
                 <div className="variant-details">
@@ -1357,7 +1312,7 @@ function ProductDetail() {
           </div>
         </div>
       )}
-
+<ToastContainer position="top-center" autoClose={2000} />
     
     </div>
     </>

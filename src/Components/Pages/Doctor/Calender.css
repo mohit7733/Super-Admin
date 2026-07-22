@@ -1,9 +1,47 @@
+/* ==========================================================================
+   Booked Slots Calendar — design system
+   ========================================================================== */
+
 :root {
+  /* Brand */
   --primary: #0d614e;
-  --primary-light: #f0fdf9;
-  --border: #edf2f7;
-  --text: #1f2937;
-  --danger: #ef4444;
+  --primary-dark: #094a3b;
+  --primary-light: #eefaf6;
+  --primary-soft: #dcf3ea;
+
+  /* Status */
+  --available: #16a34a;
+  --available-bg: #e9f9ef;
+  --booked: #dc2626;
+  --booked-bg: #fdecec;
+  --completed: #2563eb;
+  --completed-bg: #eaf1fe;
+  --confirmed: #d97706;
+  --confirmed-bg: #fef3e2;
+  --rescheduled: #7c3aed;
+  --rescheduled-bg: #f3ecfe;
+  --expired: #6b7280;
+  --expired-bg: #f1f2f4;
+
+  /* Neutrals */
+  --surface: #ffffff;
+  --bg: #f6f8f9;
+  --border: #e8edf0;
+  --border-strong: #d8dfe4;
+  --text: #16201e;
+  --text-secondary: #667085;
+  --text-muted: #98a2b3;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 24, 0.04);
+  --shadow-md: 0 4px 16px rgba(16, 24, 24, 0.06);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 24, 0.08);
+
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
 }
 
 * {
@@ -14,27 +52,54 @@
 
 .slot-calendar-page {
   width: 100%;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
+
+
 
 .filters {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 20px;
+  margin-top: 10px;
 }
 
 .filters select,
 .today-btn {
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 12px;
-  border: 1px solid #dbe2ea;
-  background: white;
-  font-size: 14px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: 13.5px;
   font-weight: 500;
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filters select {
+  min-width: 130px;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23667085' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.filters select:focus,
+.today-btn:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.12);
 }
 
 .today-btn {
   background: var(--primary);
+  border-color: var(--primary);
   color: white;
   cursor: pointer;
   display: flex;
@@ -42,76 +107,77 @@
   gap: 8px;
 }
 
+.today-btn:hover {
+  background: var(--primary-dark);
+}
+
+/* ---------- Loader ---------- */
+
+.calendar-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 80px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.calendar-loader p {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Layout ---------- */
+
 .calendar-layout {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
-}
-.available-dot {
-  width: 10px;
-  height: 10px;
-  background: #16a34a;
-  border-radius: 50%;
-  display: inline-block;
-  margin: 2px;
+  align-items: start;
 }
 
-.booked-dot {
-  width: 10px;
-  height: 10px;
-  background: #dc2626;
-  border-radius: 50%;
-  display: inline-block;
-  margin: 2px;
-}
-
-.calendar-cell.active {
-  border: 2px solid #0d614e;
-  background: #e8f8f3;
-}
+/* ---------- Calendar card ---------- */
 
 .calendar-section {
-  background: #fff;
-  border-radius: 20px;
+  background: var(--surface);
+  border-radius: var(--r-xl);
   overflow: hidden;
   border: 1px solid var(--border);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background: linear-gradient(
-    90deg,
-    #0d614e,
-    #14866b
-  );
-
+  background: linear-gradient(90deg, var(--primary), #14866b);
   color: white;
   font-weight: 600;
-  padding: 16px;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 14px 0;
 }
 
-
-.slot-item {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.slot-item.booked {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.slot-item.available {
-  background: #dcfce7;
-  color: #16a34a;
-}
 .weekdays div {
   text-align: center;
 }
@@ -121,303 +187,358 @@
   grid-template-columns: repeat(7, 1fr);
 }
 
-.calendar-cell {
-  min-height: 110px;
+.empty-cell {
+  background: var(--bg);
   border: 1px solid var(--border);
-  padding: 14px;
+}
+
+.calendar-cell {
+  position: relative;
+  min-height: 112px;
+  border: 1px solid var(--border);
+  padding: 10px 10px 8px;
   cursor: pointer;
-  background: white;
-  transition: all 0.3s ease;
+  background: var(--surface);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .calendar-cell:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  z-index: 1;
 }
 
 .calendar-cell.active {
   background: var(--primary-light);
-  border: 2px solid var(--primary);
+  border: 1px solid var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
 }
 
 .calendar-cell h4 {
-  color: var(--text);
-  margin-bottom: 10px;
-}
-
-.booking-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #fee2e2;
-  color: var(--danger);
-  padding: 6px 10px;
-  border-radius: 20px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
 }
 
-.booking-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--danger);
+.calendar-cell.active h4 {
+  color: var(--primary-dark);
 }
 
-.details-panel {
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  border: 1px solid var(--border);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.05);
-}
+/* Individual slot chip inside a day cell */
 
-.selected-date-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px;
-  background: #f8fafc;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-}
-
-.selected-date-card h2 {
-  font-size: 24px;
-  color: var(--text);
-}
-
-.selected-date-card span {
-  color: #64748b;
-}
-
-.date-icon {
-  font-size: 34px;
-  color: var(--primary);
-}
-
-.stat-card {
-  margin: 20px 0;
-  text-align: center;
-  padding: 24px;
-  border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    #0d614e,
-    #14866b
-  );
-  color: white;
-}
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 10px;
-  margin: 20px 0;
-}
-
-.mini-card {
-  background: #fff;
-  border: 1px solid #edf2f7;
-  border-radius: 12px;
-  padding: 14px;
-  text-align: center;
-}
-
-.mini-card span {
-  font-size: 12px;
-  color: #64748b;
-}
-
-.mini-card h3 {
-  margin-top: 5px;
-  color: #0d614e;
-}
-
-.view-all-btn {
-  width: 100%;
-  height: 48px;
-  margin-top: 15px;
-  border-radius: 12px;
-  border: 1px solid #0d614e;
-  background: white;
-  color: #0d614e;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.view-all-btn:hover {
-  background: #0d614e;
-  color: white;
-}
-.stat-card h1 {
-  font-size: 42px;
+.calendar-slot {
   margin-bottom: 5px;
 }
 
-.booked-slots-list h3 {
-  margin-bottom: 15px;
-  color: var(--primary);
-}
-
-.slot-card{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:14px;
-margin-bottom:12px;
-background:#fff;
-border-radius:12px;
-border:1px solid #ececec;
-}
-.slot-time{
-font-weight:700;
-margin-bottom:4px;
-}
-
-.slot-time.booked{
-color:#dc2626;
-}
-
-.slot-time.available{
-color:#16a34a;
-}
-
-.slot-right{
-display:flex;
-align-items:center;
-gap:10px;
-}
-
-.status{
-padding:6px 14px;
-border-radius:20px;
-font-size:12px;
-font-weight:600;
-text-transform:capitalize;
-}
-
-.status.booked{
-background:#fee2e2;
-color:#dc2626;
-}
-
-.status.available{
-background:#dcfce7;
-color:#15803d;
-}
-
-.status.completed{
-background:#dbeafe;
-color:#2563eb;
-}
-
-.status.rescheduled{
-background:#ede9fe;
-color:#7c3aed;
-}
-.booking-left {
+.slot-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 6px;
 }
 
-.booking-time {
-  min-width: 85px;
-  font-weight: 700;
-  color: var(--danger);
+.slot-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.booking-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.slot-dot.available { background: var(--available); }
+.slot-dot.booked { background: var(--booked); }
+.slot-dot.completed { background: var(--completed); }
+.slot-dot.expired { background: var(--expired); }
+.slot-dot.confirmed { background: var(--confirmed); }
+.slot-dot.rescheduled { background: var(--rescheduled); }
 
-.booking-user svg {
-  color: var(--primary);
-}
-
-.booking-user h4 {
-  margin-bottom: 4px;
-  color: var(--text);
-}
-
-.booking-user p {
-  font-size: 12px;
-  color: #64748b;
-}
-
-.status {
-  background: #dcfce7;
-  color: #16a34a;
-  padding: 7px 14px;
-  border-radius: 999px;
-  font-size: 12px;
+.slot-time {
+  font-size: 16px;
   font-weight: 600;
+  line-height: 1.4;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 30px;
-  color: #64748b;
+.slot-time.available { color: var(--available); }
+.slot-time.booked { color: var(--booked); }
+.slot-time.completed { color: var(--completed); }
+.slot-time.confirmed { color: var(--confirmed); }
+.slot-time.rescheduled { color: var(--rescheduled); }
+.slot-time.expired { color: var(--expired); }
+
+.patient-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+.patient-icon {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.more-count {
+  margin-top: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.no-slots {
+  font-size: 16px;
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+/* ---------- Legend ---------- */
 
 .calendar-legend {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 24px;
-  padding: 18px;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  gap: 22px;
+  padding: 16px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #374151;
+  gap: 7px;
+  font-size: 16px;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .legend-dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
 }
 
-.legend-dot.available {
-  background: #22c55e;
+.legend-dot.available { background: var(--available); }
+.legend-dot.booked { background: var(--booked); }
+.legend-dot.completed { background: var(--completed); }
+.legend-dot.confirmed { background: var(--confirmed); }
+.legend-dot.rescheduled { background: var(--rescheduled); }
+.legend-dot.expired { background: var(--expired); }
+.legend-dot.no-slots { background: var(--text-muted); }
+
+/* ---------- Details panel ---------- */
+
+.details-panel {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  padding: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 20px;
 }
 
-.legend-dot.booked {
-  background: #ef4444;
+.selected-date-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
 }
 
-.legend-dot.completed {
-  background: #3b82f6;
+.date-icon {
+  font-size: 26px;
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
-.legend-dot.confirmed {
-  background: #f59e0b;
+.selected-date-card h2 {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
 }
 
-.legend-dot.rescheduled {
-  background: #8b5cf6;
+.selected-date-card span {
+  font-size: 15px;
+  color: var(--text-secondary);
 }
 
-.legend-dot.expired {
-  background: #9ca3af;
+/* Summary mini stat cards */
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 18px 0;
 }
 
-.legend-dot.no-slots {
-  background: #d1d5db;
+.mini-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 10px;
+  text-align: center;
+  border-top: 3px solid var(--border-strong);
 }
+
+.mini-card span {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.mini-card h3 {
+  margin-top: 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mini-card.booked {
+  border-top-color: var(--booked);
+}
+.mini-card.booked h3 {
+  color: var(--booked);
+}
+
+.mini-card.available {
+  border-top-color: var(--available);
+}
+.mini-card.available h3 {
+  color: var(--available);
+}
+
+/* Stat hero card (kept for reuse elsewhere) */
+
+.stat-card {
+  margin: 20px 0;
+  text-align: center;
+  padding: 24px;
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, var(--primary), #14866b);
+  color: white;
+}
+
+.stat-card h1 {
+  font-size: 40px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* Time slots list */
+
+.booked-slots-list h3 {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.slot-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 14px;
+  margin-bottom: 10px;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  transition: box-shadow 0.15s ease;
+}
+
+.slot-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.slot-card p {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.slot-card-patient {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.slot-card-patient .patient-icon {
+  font-size: 13px;
+  color: var(--primary);
+}
+
+.slot-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.status.booked { background: var(--booked-bg); color: var(--booked); }
+.status.available { background: var(--available-bg); color: var(--available); }
+.status.completed { background: var(--completed-bg); color: var(--completed); }
+.status.rescheduled { background: var(--rescheduled-bg); color: var(--rescheduled); }
+.status.confirmed { background: var(--confirmed-bg); color: var(--confirmed); }
+.status.expired { background: var(--expired-bg); color: var(--expired); }
+
+.empty-state {
+  text-align: center;
+  padding: 36px 20px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  background: var(--bg);
+  border-radius: var(--r-md);
+  border: 1px dashed var(--border-strong);
+}
+
+.view-all-btn {
+  width: 100%;
+  height: 46px;
+  margin-top: 16px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--primary);
+  background: var(--surface);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 17px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.view-all-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* ---------- Responsive ---------- */
 
 @media (max-width: 992px) {
   .calendar-layout {
     grid-template-columns: 1fr;
+  }
+
+  .details-panel {
+    position: static;
   }
 
   .calendar-cell {
@@ -430,12 +551,8 @@ color:#7c3aed;
     flex-wrap: wrap;
   }
 
-  .booking-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .booking-left {
-    width: 100%;
+  .summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 }
