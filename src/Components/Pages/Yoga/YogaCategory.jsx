@@ -975,8 +975,8 @@ if (!code) {
                       code: "",
                     }));
                   }}
-                  placeholder="Enter category code (A-Z, max 10 letters)"
-                  maxLength="10"
+                  placeholder="Enter category code (A-Z, max 5 letters)"
+                  maxLength="5"
                   className={editErrors.code ? "error-input" : ""}
                 />
                 {editErrors.code && <p className="error-text">{editErrors.code}</p>}

@@ -154,14 +154,14 @@ useEffect(() => {
                 { key: 'activity', label: 'Activity Log' },
             ];
 
-const handleVendorAction = async (status, reason = "") => {
+const handleVendorAction = async ( vendorId,status, reason = "") => {
   setVendorLoadingAction(true);
 
   try {
     const token = sessionStorage.getItem("superadmin_token");
 
     const payload = {
-      vendor_id: vendorId,
+    
       status,
     };
 
@@ -170,7 +170,8 @@ const handleVendorAction = async (status, reason = "") => {
     }
 
     const res = await fetch(
-      `${BASE_URL}/vendors/admin/vendor/status/`,
+        `${BASE_URL}/vendors/admin/vendor/${vendorId}/review-status/`,
+    
       {
         method: "PUT",
         headers: {
@@ -201,55 +202,7 @@ const handleVendorAction = async (status, reason = "") => {
   }
 };
 
-// const handleVendorReasonSubmit = async () => {
-//   if (!vendorReason.trim()) {
-//     toast.error("Reason required");
-//     return;
-//   }
 
-//   setVendorLoadingAction(true);
-
-//   try {
-//     const token = sessionStorage.getItem("superadmin_token");
-
-//     const res = await fetch(
-//       `${BASE_URL}/vendors/admin/vendor/status/`,
-//       {
-//         method: "PUT",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`,
-//           "ngrok-skip-browser-warning": "true",
-//         },
-//         body: JSON.stringify({
-//           vendor_id: vendorId,
-//           status: vendorActionType,
-//           reason: vendorReason,
-//         }),
-//       }
-//     );
-
-//     const data = await res.json();
-
-//     if (data.success) {
-//       toast.success(`Vendor ${vendorActionType} successfully`);
-
-//       setVendorData((prev) => ({
-//         ...prev,
-//         approval_status: vendorActionType,
-//       }));
-
-//       setVendorActionType(null);
-//       setVendorReason("");
-//     } else {
-//       toast.error(data.message);
-//     }
-//   } catch (err) {
-//     toast.error("Error occurred");
-//   } finally {
-//     setVendorLoadingAction(false);
-//   }
-// };
 const handleVendorReasonSubmit = async () => {
   if (!vendorReason.trim()) {
     toast.error(
@@ -261,8 +214,9 @@ const handleVendorReasonSubmit = async () => {
   }
 
   await handleVendorAction(
-    vendorActionType,
-    vendorReason
+    vendorData?.id,          // Vendor ID
+    vendorActionType,        // rejected/suspended
+    vendorReason             // reason
   );
 
   setVendorActionType(null);
@@ -796,11 +750,13 @@ const handleVendorReasonSubmit = async () => {
           Cancel
         </button>
 
+
+
         <button
           className="approve-btn"
           disabled={vendorLoadingAction}
           onClick={async () => {
-            await handleVendorAction("approved");
+            await    handleVendorAction(vendorData?.id, "approved")
             setApproveModal(false);
           }}
         >
@@ -880,7 +836,11 @@ const handleVendorReasonSubmit = async () => {
         </label>
 
         <textarea
-          className="reason-box"
+        className={`reason-box ${
+    vendorActionType === "rejected"
+      ? "reject-reason-box"
+      : "suspend-reason-box"
+  }`}
           value={vendorReason}
           onChange={(e) =>
             setVendorReason(e.target.value)

@@ -294,10 +294,6 @@
   justify-content: flex-start;
 }
 
-.form-group1.full-width {
-  /* grid-column: 1 / -1; */
-}
-
 .form-group1 label {
   font-weight: 600;
   color: #374151;

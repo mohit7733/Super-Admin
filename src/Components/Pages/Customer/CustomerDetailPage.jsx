@@ -75,16 +75,13 @@ const formatDate = (date) => {
 
       const data = await response.json();
      
-    if (data.success) {
+  if (data.success) {
   setCustomerData(data.data.customer);
-
   setSummary(data.data.summary);
-
   setHealthOverview(data.data.overview.health_overview);
 
-  setOrdersData(data.data.history.product_orders.results);
-
-  setPrescriptions(data.data.history.prescriptions.results);
+  setOrdersData(data.data.recent_orders || []);
+  setPrescriptions(data.data.prescriptions || []);
 }
     } catch (err) {
 
@@ -166,7 +163,7 @@ const formatDate = (date) => {
         </div>
 
         <button className="patient-btn">
-          {customerData?.role || "Patient"}
+          {customerData?.role || "Customer"}
         </button>
 
       </div>
@@ -179,50 +176,49 @@ const formatDate = (date) => {
 
   </div>
 
-  <div className="customer-stats-card">
+ <div className="customer-stats-card">
 
-    <div className="stat-box">
-      <div className="stat-icon1 green">🛍</div>
-      <div>
-        <p>Total Orders</p>
-        <h3>{customerData?.total_orders ?? 0}</h3>
-      </div>
+  <div className="stat-box">
+    <div className="stat-icon1 green">🛍</div>
+    <div>
+      <p>Total Orders</p>
+      <h3>{summary?.total_orders ?? 0}</h3>
     </div>
-
-    <div className="stat-box">
-      <div className="stat-icon1 green">₹</div>
-      <div>
-        <p>Total Spent</p>
-        <h3>₹{customerData?.total_spent ?? 0}</h3>
-      </div>
-    </div>
-
-    <div className="stat-box">
-      <div className="stat-icon1 green">
-        <FaFileMedical />
-      </div>
-      <div>
-        <p>Total Prescriptions</p>
-        <h3>{customerData?.total_prescriptions ?? 0}</h3>
-      </div>
-    </div>
-
-    <div className="stat-box">
-      <div className="stat-icon1 green">
-        <FaCalendarAlt />
-      </div>
-      <div>
-        <p>Last Order Date</p>
-        <h3>
-          {customerData?.last_order_date
-            ? formatDate(customerData.last_order_date)
-            : "N/A"}
-        </h3>
-      </div>
-    </div>
-
   </div>
 
+  <div className="stat-box">
+    <div className="stat-icon1 green">₹</div>
+    <div>
+      <p>Total Spent</p>
+      <h3>₹{summary?.total_spent ?? 0}</h3>
+    </div>
+  </div>
+
+  <div className="stat-box">
+    <div className="stat-icon1 green">
+      <FaFileMedical />
+    </div>
+    <div>
+      <p>Total Prescriptions</p>
+      <h3>{summary?.total_prescriptions ?? 0}</h3>
+    </div>
+  </div>
+
+  <div className="stat-box">
+    <div className="stat-icon1 green">
+      <FaCalendarAlt />
+    </div>
+    <div>
+      <p>Last Order Date</p>
+      <h3>
+        {summary?.last_order_date
+          ? formatDate(summary.last_order_date)
+          : "N/A"}
+      </h3>
+    </div>
+  </div>
+
+</div>
 </div>
       
    <div className="tabs">
@@ -241,12 +237,6 @@ const formatDate = (date) => {
     Orders History
   </button>
 
-  <button
-    className={activeTab === "consultation" ? "active-tab" : ""}
-    onClick={() => setActiveTab("consultation")}
-  >
-    Consultation Order
-  </button>
 
   <button
     className={activeTab === "payment" ? "active-tab" : ""}
@@ -273,108 +263,103 @@ const formatDate = (date) => {
           <div className="info-grid">
 
            
-            <div className="info-card">
+      <div className="info-card">
+  <h3>About Customer</h3>
 
-              <h3>About Customer</h3>
+  <div className="info-row">
+    <span>Full Name</span>
+    <p>{customerData?.full_name || "N/A"}</p>
+  </div>
 
-              <div className="info-row">
-                <span>Full Name</span>
-                <p>Amit Sharma</p>
-              </div>
+  <div className="info-row">
+    <span>Email</span>
+    <p>{customerData?.email || "N/A"}</p>
+  </div>
 
-              <div className="info-row">
-                <span>Email</span>
-                <p>amitsharma95@gmail.com</p>
-              </div>
+  <div className="info-row">
+    <span>Phone</span>
+    <p>{customerData?.phone_number || "N/A"}</p>
+  </div>
 
-              <div className="info-row">
-                <span>Phone</span>
-                <p>+91 98765 43210</p>
-              </div>
+  <div className="info-row">
+    <span>Date of Birth</span>
+    <p>{formatDate(customerData?.date_of_birth)}</p>
+  </div>
 
-              <div className="info-row">
-                <span>Date of Birth</span>
-                <p>15 Aug 1994</p>
-              </div>
+  <div className="info-row">
+    <span>Age</span>
+    <p>{customerData?.age || "N/A"}</p>
+  </div>
 
-              <div className="info-row">
-                <span>Gender</span>
-                <p>Male</p>
-              </div>
+  <div className="info-row">
+    <span>Gender</span>
+    <p>{customerData?.gender || "N/A"}</p>
+  </div>
 
-              <div className="info-row">
-                <span>Blood Group</span>
-                <p>O+</p>
-              </div>
+  
 
-              <div className="info-row">
-                <span>Address</span>
-                <p>123, Green Park, Indore</p>
-              </div>
-            </div>
+  
+
+ 
+
+  <div className="info-row">
+    <span>Address</span>
+ <p>
+  {customerData?.address
+    ? `${customerData.address.address_line_1},
+       ${customerData.address.address_line_2},
+       ${customerData.address.city},
+       ${customerData.address.state},
+       ${customerData.address.zipcode},
+       ${customerData.address.country}`
+    : "N/A"}
+</p>
+  </div>
+</div>
+
 
           
-            <div className="info-card">
+       <div className="info-card">
+  <h3>Health Overview</h3>
 
-              <h3>Health Overview</h3>
-
-             <div className="info-row">
-  <span>
- 
-    Prakriti (Body Type)
-  </span>
-  <p>Pitta-Vata</p>
+ <div className="info-row">
+  <span>Prakriti (Body Type)</span>
+  <p>{healthOverview?.prakriti_analysis?.result || "N/A"}</p>
 </div>
 
-<div className="info-row">
-  <span>
- 
-    Current Health Concern
-  </span>
-  <p>Acidity, Hair Fall, Stress</p>
+ <div className="info-row">
+  <span>Current Health Concern</span>
+  <p>
+    {healthOverview?.current_health_concerns?.length
+      ? healthOverview.current_health_concerns.join(", ")
+      : "N/A"}
+  </p>
 </div>
+  <div className="info-row">
+    <span>Allergies</span>
+    <p>{healthOverview?.allergies || "N/A"}</p>
+  </div>
 
-<div className="info-row">
-  <span>
-  
-    Allergies
-  </span>
-  <p>Dust, Pollen</p>
-</div>
+  <div className="info-row">
+    <span>Lifestyle</span>
+    <p>{healthOverview?.lifestyle || "N/A"}</p>
+  </div>
 
-<div className="info-row">
-  <span>
-  
-    Lifestyle
-  </span>
-  <p>Sedentary</p>
-</div>
-<div className="info-row">
-  <span>
-  
-    Lifestyle
-  </span>
-  <p>Sedentary</p>
-</div>
+  <div className="info-row">
+    <span>Diet Preference</span>
+    <p>{healthOverview?.diet_preference || "N/A"}</p>
+  </div>
 
-<div className="info-row">
-  <span>
-    Diet Preference
-  </span>
-  <p>Vegetarian</p>
-</div>
-<div className="info-row">
-  <span>
-  
-    Allergies
-  </span>
-  <p>Dust, Pollen</p>
-</div>
+  <div className="info-row">
+    <span>Sleep Duration</span>
+    <p>{healthOverview?.sleep_duration || "N/A"}</p>
+  </div>
 
-              {/* <button className="medical-btn">
-                View Full Medical History
-              </button> */}
-            </div>
+  <div className="info-row">
+    <span>Sleep Quality</span>
+    <p>{healthOverview?.sleep_quality || "N/A"}</p>
+  </div>
+</div>
           </div>
 
          
@@ -839,11 +824,7 @@ const formatDate = (date) => {
 
   
 }
-    {
-      activeTab==="consultation" &&(
-        <ConsultationOrder/>
-      )
-    } 
+    
 
     {
       activeTab==="payment" &&(
