@@ -565,9 +565,7 @@ function ProductDetail() {
           </div>
         </div>
         <div className="product-header-right">
-          <button className="btns-outline"  onClick={() => navigate(-1)}>
-            <FaStore /> View Vendor
-          </button>
+         
           {/* <button className="btn-primary">
             <FaEdit /> Edit Product
           </button> */}
@@ -849,10 +847,10 @@ function ProductDetail() {
                       {selectedVariant.media?.length > 0 ? (
                         <>
                           <img 
-                            src={selectedImage || 'https://via.placeholder.com/400'}
+                            src={selectedImage }
                             alt={selectedVariant.title}
                             className="main-gallery-image"
-                            onError={(e) => e.target.src = 'https://via.placeholder.com/400'}
+                       
                           />
                           {selectedVariant.media.length > 1 && (
                             <>
@@ -902,11 +900,15 @@ function ProductDetail() {
                       <h5 className="detail-section-title">Variant Information</h5>
                       <div className="detail-row">
                         <span className="detail-label">Variant Name</span>
-                        <span className="detail-value highlight">{selectedVariant.title}</span>
+                        <span className="detail-value highlight">{selectedVariant.title||"N/A"}</span>
                       </div>
                       <div className="detail-row">
                         <span className="detail-label">SKU</span>
-                        <span className="detail-value sku-code">{selectedVariant.variant_code}</span>
+                        <span className="detail-value sku-code">{selectedVariant.sku_code||"N/A"}</span>
+                      </div>
+                      <div className="detail-row">
+                        <span className="detail-label">Vendor SKU</span>
+                        <span className="detail-value">{selectedVariant.vendor_sku_code||"N/A"} </span>
                       </div>
                       <div className="detail-row">
                         <span className="detail-label">Size</span>
@@ -914,7 +916,7 @@ function ProductDetail() {
                       </div>
                       <div className="detail-row">
                         <span className="detail-label">HSN Code</span>
-                        <span className="detail-value">{selectedVariant.hsn_code}</span>
+                        <span className="detail-value">{selectedVariant.hsn_code || "N/A"}</span>
                       </div>
                     </div>
 
@@ -1139,7 +1141,7 @@ function ProductDetail() {
             </td>
 
             
-            <td>{getStatusBadge(variant.status)}</td>
+            <td>{getStatusBadge(variant.approval_status)}</td>
 
             
             {/* <td
@@ -1224,186 +1226,7 @@ function ProductDetail() {
           </div>
         )}
 
-        {/* ===== ORDERS TAB =====
-        {activeTab === 'orders' && (
-          <div className="tab-content">
-            <div className="orders-section">
-              <div className="section-header">
-                <h4><FiShoppingBag className="section-icon" /> Order History</h4>
-                <div className="orders-summary">
-                  <span className="summary-item">
-                    <span className="summary-label">Total Orders</span>
-                    <strong>{orders.length}</strong>
-                  </span>
-                  <span className="summary-item">
-                    <span className="summary-label">Revenue</span>
-                    <strong className="revenue">{formatCurrency(orders.reduce((sum, o) => sum + o.amount, 0))}</strong>
-                  </span>
-                  <button className="btn-outline-small" onClick={() => exportData('orders')}>
-                    <BsDownload /> Export
-                  </button>
-                </div>
-              </div>
-              <div className="table-responsive">
-                <table className="data-table orders-table">
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Customer</th>
-                      <th>Variant</th>
-                      <th>Qty</th>
-                      <th>Amount</th>
-                      <th>Date</th>
-                      <th>Payment</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order) => (
-                      <tr key={order.id} className="order-row">
-                        <td><span className="order-id">{order.id}</span></td>
-                        <td>
-                          <div className="customer-info">
-                            <span className="customer-name">{order.customer}</span>
-                            <span className="customer-email">{order.email}</span>
-                          </div>
-                        </td>
-                        <td>{order.variant}</td>
-                        <td className="qty-cell">{order.qty}x</td>
-                        <td className="amount-cell">{formatCurrency(order.amount)}</td>
-                        <td>{new Date(order.date).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}</td>
-                        <td><span className="payment-badge">{order.paymentMethod}</span></td>
-                        <td>{getOrderStatusBadge(order.status)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )} */}
-
-        {/* ===== REVIEWS TAB ===== */}
-        {/* {activeTab === 'reviews' && (
-          <div className="tab-content">
-            <div className="reviews-section">
-              <div className="section-header">
-                <h4><FaStar className="section-icon" /> Customer Reviews</h4>
-                <div className="reviews-summary">
-                  <span className="summary-item">
-                    <span className="summary-label">Average Rating</span>
-                    <div className="rating-display">
-                      <strong>{reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : 0}</strong>
-                      <div className="stars-display">
-                        {renderStars(reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0)}
-                      </div>
-                    </div>
-                  </span>
-                  <span className="summary-item">
-                    <span className="summary-label">Total Reviews</span>
-                    <strong>{reviews.length}</strong>
-                  </span>
-                  <button className="btn-outline-small" onClick={() => exportData('reviews')}>
-                    <BsDownload /> Export
-                  </button>
-                </div>
-              </div>
-              <div className="reviews-list">
-                {reviews.map((review) => (
-                  <div key={review.id} className="review-card">
-                    <div className="review-header">
-                      <div className="reviewer-info">
-                        <div className="reviewer-avatar">
-                          {review.customer.charAt(0)}
-                        </div>
-                        <div>
-                          <span className="reviewer-name">{review.customer}</span>
-                          <span className="review-variant">{review.variant}</span>
-                        </div>
-                      </div>
-                      <div className="review-actions">
-                        <div className="review-rating">
-                          {renderStars(review.rating)}
-                        </div>
-                        <span className="review-date">{new Date(review.date).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}</span>
-                      </div>
-                    </div>
-                    <p className="review-comment">"{review.comment}"</p>
-                    <div className="review-footer">
-                      <span className="helpful-count">
-                        <FaCheckCircle className="helpful-icon" /> {review.helpful} people found this helpful
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )} */}
-
-        {/* ===== ANALYTICS TAB ===== */}
-        {/* {activeTab === 'analytics' && (
-          <div className="tab-content">
-            <div className="analytics-section">
-              <div className="analytics-grid">
-                <div className="analytics-card">
-                  <div className="analytics-header">
-                    <h4>Revenue Overview</h4>
-                    <span className="analytics-period">Last 7 days</span>
-                  </div>
-                  <div className="analytics-chart-placeholder">
-                    <div className="chart-bars">
-                      <div className="chart-bar" style={{ height: '60%' }}><span>Mon</span></div>
-                      <div className="chart-bar" style={{ height: '80%' }}><span>Tue</span></div>
-                      <div className="chart-bar" style={{ height: '45%' }}><span>Wed</span></div>
-                      <div className="chart-bar" style={{ height: '90%' }}><span>Thu</span></div>
-                      <div className="chart-bar" style={{ height: '70%' }}><span>Fri</span></div>
-                      <div className="chart-bar" style={{ height: '55%' }}><span>Sat</span></div>
-                      <div className="chart-bar" style={{ height: '75%' }}><span>Sun</span></div>
-                    </div>
-                  </div>
-                  <div className="analytics-stats">
-                    <div className="analytics-stat">
-                      <span className="stat-label">Revenue</span>
-                      <span className="stat-value">{formatCurrency(12500)}</span>
-                    </div>
-                    <div className="analytics-stat">
-                      <span className="stat-label">Orders</span>
-                      <span className="stat-value">42</span>
-                    </div>
-                    <div className="analytics-stat">
-                      <span className="stat-label">Conversion</span>
-                      <span className="stat-value">3.2%</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="analytics-card">
-                  <div className="analytics-header">
-                    <h4>Top Selling Variants</h4>
-                    <span className="analytics-period">This month</span>
-                  </div>
-                  <div className="top-variants-list">
-                    {variants.slice(0, 5).map((v, idx) => (
-                      <div key={v.id} className="top-variant-item">
-                        <span className="rank">#{idx + 1}</span>
-                        <span className="variant-name">{v.title}</span>
-                        <span className="variant-sales">{v.stock || 0} units</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )} */}
+ 
       </div>
 
       {/* ===== ACTION MODAL ===== */}

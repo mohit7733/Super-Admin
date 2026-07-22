@@ -229,33 +229,69 @@ useEffect(() => {
       >
         <h4>{day}</h4>
 
-        {dateData?.slots?.length > 0 ? (
-          <>
-            {dateData.slots
-              .slice(0, 2)
-              .map((slot) => (
-                <div
-                  key={slot.id}
-                  className={`slot-item ${slot.status}`}
-                >
-                  {slot.start_time}
-                </div>
-              ))}
+   {dateData?.slots?.length ? (
+  <>
+    {dateData.slots.slice(0, 2).map((slot) => (
+      <div
+        key={slot.id}
+        className={`calendar-slot ${slot.status}`}
+      >
+        {slot.start_time}
+      </div>
+    ))}
 
-            {dateData.slots.length > 2 && (
-              <div className="more-slots">
-                +{dateData.slots.length - 2} more
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="no-slots">
-            No Slots
-          </div>
-        )}
+    {dateData.slots.length > 2 && (
+      <div className="more-count">
+        +{dateData.slots.length - 2} more
+      </div>
+    )}
+  </>
+) : (
+  <div className="no-slots">
+    No Slots
+  </div>
+)}
       </div>
     );
   })}
+</div>
+
+
+<div className="calendar-legend">
+  <div className="legend-item">
+    <span className="legend-dot available"></span>
+    Available
+  </div>
+
+  <div className="legend-item">
+    <span className="legend-dot booked"></span>
+    Booked
+  </div>
+
+  <div className="legend-item">
+    <span className="legend-dot completed"></span>
+    Completed
+  </div>
+
+  <div className="legend-item">
+    <span className="legend-dot confirmed"></span>
+    Confirmed
+  </div>
+
+  <div className="legend-item">
+    <span className="legend-dot rescheduled"></span>
+    Rescheduled
+  </div>
+
+  <div className="legend-item">
+    <span className="legend-dot expired"></span>
+    Expired
+  </div>
+
+  <div className="legend-item">
+    <span className="legend-dot no-slots"></span>
+    No Slots
+  </div>
 </div>
         </div>
 
@@ -287,71 +323,59 @@ useEffect(() => {
   </div>
 </div>
 
+<div>
 
-        <div className="booked-slots-list">
-  <h3>Booked Slots</h3>
+<h3 style={{ marginBottom: "10px" }}>
+  Time Slots ({selectedDayData?.slots?.length || 0})
+</h3>
 
-  {bookedSlots.length ? (
-    bookedSlots.map((slot) => (
-      <div
-        key={slot.id}
-        className="booking-card"
-      >
-        <div>
-          <div className="booking-time">
-            {slot.start_time} - {slot.end_time}
-          </div>
+{selectedDayData?.slots?.length ? (
 
-          <p>
-            {slot.consultation_type}
-          </p>
-        </div>
+selectedDayData.slots.map((slot)=>(
 
-        <span className="status booked">
-          Booked
-        </span>
-      </div>
-    ))
-  ) : (
-    <div className="empty-state">
-      No booked slots on this date
-    </div>
-  )}
+<div
+key={slot.id}
+className="slot-card"
+>
+
+<div>
+
+<div className={`slot-time ${slot.status}`}>
+{slot.start_time} - {slot.end_time}
 </div>
-<div className="available-slots-list">
-  <h3>Available Slots</h3>
 
+<p>
+{slot.consultation_type}
+</p>
 
-
-
-
-  {availableSlots.length ? (
-    availableSlots.map((slot) => (
-      <div
-        key={slot.id}
-        className="booking-card available-card"
-      >
-        <div>
-          <div className="booking-time">
-            {slot.start_time} - {slot.end_time}
-          </div>
-
-          <p>
-            {slot.consultation_type}
-          </p>
-        </div>
-
-        <span className="status available">
-          Available
-        </span>
-      </div>
-    ))
-  ) : (
-    <div className="empty-state">
-      No available slots
-    </div>
-  )}
 </div>
+
+<div className="slot-right">
+
+<span className={`status ${slot.status}`}>
+{slot.status}
+</span>
+
+</div>
+
+</div>
+
+))
+
+):(
+
+<div className="empty-state">
+No Slots
+</div>
+
+)}
+
+</div>
+    
+
+
+
+
           <button className="view-all-btn">
   View All Booked Slots
 </button>

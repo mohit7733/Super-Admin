@@ -1,6 +1,6 @@
 
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify"
 
@@ -31,7 +31,19 @@ import {
   FiXCircle,
   FiInfo,
   FiClock
+  
 } from "react-icons/fi";
+
+import {
+  FaCalendarCheck,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaSyncAlt,
+  FaExclamationTriangle,
+  FaUserClock,
+  FaClock
+} from "react-icons/fa";
+import { FaUndoAlt } from "react-icons/fa";
 
 import {
   BiShieldAlt2,
@@ -70,6 +82,7 @@ const DoctorDetail = () => {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("personal");
+  const hasFetched = useRef(false);
 
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -100,38 +113,56 @@ const[SlotError,setSlotError]=useState(null);
   const [Nextpage, setNextpage] = useState(null);
 
   const [previousPage, setPreviousPage] = useState(null);
+  const [AppointmentStats, setAppointmentStats] = useState({
+   "total": 0,
+            "pending": 0,
+            "confirmed": 0,
+            "completed": 0,
+            "cancelled": 0,
+            "rescheduled": 0,
+            "cancellation_requested": 0
+});
   
 const getStatusStyle = (status) => {
   const value = status?.toLowerCase();
 
   switch (value) {
+    
     case "success":
     case "completed":
     case "approved":
+       case "confirmed":
       return {
-        background: "#dcfce7",
-        color: "#15803d",
+    background: "#0D614E20", color: "#0D614E" 
       };
 
+  
     case "pending":
     case "processing":
+    case "cancellation_requested":
       return {
         background: "#fef3c7",
         color: "#b45309",
       };
 
+   
+   
+    case "reschedule":
+    case "rescheduled":
+      return {
+        background: "#dbeafe",
+        color: "#2563eb",
+      };
+
+    // Red
     case "failed":
     case "rejected":
     case "cancelled":
+    case "expired":
+    case "missed":
       return {
         background: "#fee2e2",
         color: "#dc2626",
-      };
-
-    case "confirmed":
-      return {
-        background: "#f3f4f6",
-        color: "#6b7280",
       };
 
     case "refunded":
@@ -147,7 +178,6 @@ const getStatusStyle = (status) => {
       };
   }
 };
-
 
 
   const getApprovalBadge = (status) => {
@@ -289,6 +319,7 @@ const handleSubmitReason = async () => {
       setCurrentPage(page);
       setNextpage(data.data.next);
       setPreviousPage(data.data.previous);
+      setAppointmentStats(data.data.total_counts)
     } catch (error) {
       console.error(error.message);
 
@@ -342,76 +373,23 @@ const handleSubmitReason = async () => {
   };
 
 
-  useEffect(() => {
-    getConsultationhistory();
-    getTransactionlist();
-  }, [])
+ useEffect(() => {
+  if (hasFetched.current) return;
 
-  //   const token = sessionStorage.getItem("superadmin_token");
+  hasFetched.current = true;
 
-  //   if (!token) {
-  //     toast.error("Session expired. Please login again");
-  //     navigate("/login");
-  //     return;
-  //   }
+  const fetchData = async () => {
+    await Promise.all([
+      getConsultationhistory(),
+      getTransactionlist(),
+      getDoctorDetail(),
+    ]);
+  };
 
-  //   setLoading(true);
+  fetchData();
+}, []);
 
-  //   try {
-
-  //     const response = await fetch(
-  //       `${BASE_URL}/admin/consultation-history/?page=${page}`,
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           Accept: "application/json",
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //           "ngrok-skip-browser-warning": "true",
-  //         },
-  //       }
-  //     );
-
-  //     if (response.status === 401 || response.status === 403) {
-  //       sessionStorage.removeItem("superadmin_token");
-
-  //       toast.error("Session expired. Please login again");
-
-  //       navigate("/login");
-
-  //       return;
-  //     }
-
-  //     const data = await response.json();
-
-  //     console.log("Consultation History:", data);
-
-  //     if (data.success) {
-
-  //       setData(data?.data?.results || []);
-
-
-
-  //     } else {
-
-  //       toast.error(data.message || "Failed to fetch consultation history");
-
-  //     }
-
-  //   } catch (err) {
-
-  // console.error(err);
-
-  //     setError("Something went wrong while fetching consultation history.");
-
-  //     toast.error("Failed to fetch consultation history");
-
-  //   } finally {
-
-  //     setLoading(false);
-
-  //   }
-  // }
+  
   const getDoctorDetail = async () => {
 
     const token = sessionStorage.getItem("superadmin_token");
@@ -500,9 +478,6 @@ const handleSubmitReason = async () => {
     }
   };
 
-  useEffect(() => {
-    getDoctorDetail();
-  }, []);
 
   if (Loading) {
     return (
@@ -1214,58 +1189,94 @@ const handleSubmitReason = async () => {
               </div>
 
 
-              <div className="consultation-stats-grid">
+         <div className="vendors-stats stats2-grid">
+  {/* Total Appointment */}
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+      style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaCalendarCheck size={24} />
+    </div>
+    <div className="stat2-info">
+      <h3>Appointment</h3>
+      <div className="stat2-value">{AppointmentStats?.total || 0}</div>
+    </div>
+  </div>
 
-                {/* TOTAL */}
-                <div className="consultation-stat-card">
-                  <div className="consultation-icon-box">
-                    <FaUsers />
-                  </div>
+  {/* Confirmed */}
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+     style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaCheckCircle size={24} />
+    </div>
+    <div className="stat2-info">
+      <h3>Confirmed</h3>
+      <div className="stat2-value">{AppointmentStats?.confirmed || 0}</div>
+    </div>
+  </div>
 
-                  <div className="consultation-stat-content">
-                    <h4>TOTAL CONSULTATIONS</h4>
-                    <h2>{Data?.data?.count}</h2>
-                  </div>
-                </div>
+  {/* Cancelled */}
+  
 
+  {/* Rescheduled */}
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+  style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaSyncAlt size={24} />
+    </div>
+    <div className="stat2-info">
+      <h3>Rescheduled</h3>
+      <div className="stat2-value">{AppointmentStats?.rescheduled || 0}</div>
+    </div>
+  </div>
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+     style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaUserClock size={24} />
+    </div>
+    <div className="stat2-info">
+      <h3>Patient Reschedule</h3>
+      <div className="stat2-value">
+             {AppointmentStats?.patient_rescheduled || 0}
+      </div>
+    </div>
+  </div>
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+      style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaExclamationTriangle size={24} />
+    </div>
+    <div className="stat2-info">
+      <h3>Missed</h3>
+      <div className="stat2-value">{AppointmentStats?.missed || 0}</div>
+    </div>
+  </div>
 
-                <div className="consultation-stat-card">
-                  <div className="consultation-icon-box ">
-                    <FiCheckCircle />
-                  </div>
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+     style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaTimesCircle size={24} />
+    </div>
+    <div className="stat2-info">
+      <h3>Cancelled</h3>
+      <div className="stat2-value">{AppointmentStats?.cancelled || 0}</div>
+    </div>
+  </div>
 
-                  <div className="consultation-stat-content">
-                    <h4>APPROVED</h4>
-                    <h2>0</h2>
-                  </div>
-                </div>
+  
 
-
-                <div className="consultation-stat-card">
-                  <div className="consultation-icon-box ">
-                    <FiXCircle />
-                  </div>
-
-                  <div className="consultation-stat-content">
-                    <h4>REJECTED</h4>
-                    <h2>0</h2>
-                  </div>
-                </div>
-
-
-                <div className="consultation-stat-card">
-                  <div className="consultation-icon-box ">
-                    <FiClock />
-                  </div>
-
-                  <div className="consultation-stat-content">
-                    <h4>PENDING</h4>
-                    <h2>0</h2>
-                  </div>
-                </div>
-
-              </div>
-
+</div>
               <div classsName="table-wrapper1">
                 <table className="data-table" >
                   <thead>
@@ -1316,7 +1327,8 @@ const handleSubmitReason = async () => {
     consultation.status_history.length - 1
   ]?.slot?.end_time || "-"}
 </td>
-                            <td>{consultation.consultation_type ||"N/A"}</td>
+                           
+                                    <td><span className="category-code-badge">{consultation.consultation_type ||"N/A"}</span></td>
 <td>
   <span
     className="status-badge"
@@ -1402,7 +1414,7 @@ const handleSubmitReason = async () => {
 
                     <p>
                       Track all transaction activities,
-                      Completed, Failed, and pending requests
+                      Completed, Failed, and Pending requests
                     </p>
                   </div>
 
@@ -1411,57 +1423,55 @@ const handleSubmitReason = async () => {
               </div>
 
 
-              <div className="consultation-stats-grid">
+             
 
-                {/* TOTAL */}
-                <div className="consultation-stat-card">
-                  <div className="consultation-icon-box">
-                    <FaUsers />
-                  </div>
+               
+               
+      <div className="vendors-stats stats2-grid">
+        <div className="stat2-card">
+          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+        <FaClock size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Pending</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
 
-                  <div className="consultation-stat-content">
-                    <h4>TOTAL </h4>
-                    <h2>0</h2>
-                  </div>
-                </div>
+        <div className="stat2-card">
+          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+            <FaCheckCircle size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Success</h3>
+            <div className="stat2-value"> 0</div>
+          </div>
+        </div>
 
+        <div className="stat2-card">
+          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+            <FaTimesCircle size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Failed</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
 
-                <div className="consultation-stat-card">
-                  <div className="consultation-icon-box ">
-                    <FiCheckCircle />
-                  </div>
-
-                  <div className="consultation-stat-content">
-                    <h4>Completed</h4>
-                    <h2>0</h2>
-                  </div>
-                </div>
-
-
-                <div className="consultation-stat-card">
-                  <div className="consultation-icon-box ">
-                    <FiXCircle />
-                  </div>
-
-                  <div className="consultation-stat-content">
-                    <h4>Failed</h4>
-                    <h2>0</h2>
-                  </div>
-                </div>
-
-
-                <div className="consultation-stat-card">
-                  <div className="consultation-icon-box ">
-                    <FiClock />
-                  </div>
-
-                  <div className="consultation-stat-content">
-                    <h4>PENDING</h4>
-                    <h2>0</h2>
-                  </div>
-                </div>
-
-              </div>
+<div className="stat2-card">
+  <div
+    className="stat2-icon"
+    style={{ background: "#0D614E20", color: "#0D614E" }}
+  >
+    <FaUndoAlt size={24} />
+  </div>
+  <div className="stat2-info">
+    <h3>Refunded</h3>
+    <div className="stat2-value">0</div>
+  </div>
+</div>
+      </div>
+              
 
               <div classsName="table-wrapper1">
                 <table className="data-table" >

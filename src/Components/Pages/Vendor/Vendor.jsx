@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
-import { toast } from 'react-toastify'
+import { ToastContainer, toast } from "react-toastify";
 import { countries, statesByCountry } from "../../data/locationData"
 import BASE_URL from "../../../Base";
 
@@ -79,25 +79,19 @@ const Vendor = () => {
   const [Reason, setReason] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
-  const [vendorStats, setVendorStats] = useState(null);
+  
   const pageSize = 5;
+ const [vendorStats, setVendorStats] = useState({
+  vendors: 0,
+  approved: 0,
+  pending: 0,
+  suspended: 0,
+  rejected: 0,
+});
 
   const [totalCount, setTotalCount] = useState(0);
   const totalPages = Math.ceil(totalCount / pageSize);
   const [approveModal, setApproveModal] = useState(false);
-
-
-
-
-
-
-  // const documentOptions = [
-  //   { value: "gst_certificate", label: "GST Certificate" },
-  //   { value: "shop_license", label: " Shop License" },
-  //   { value: "owner_id_proof", label: "Government ID Proof" },
-  // ];
-
-
 
 
   const navigate = useNavigate();
@@ -140,6 +134,7 @@ const Vendor = () => {
       setPreviousPage(data.data.previous);
       setNextPage(data.data.next);
       setcurentpage(page)
+      setVendorStats(data.data.total_counts);
 
 
 
@@ -183,26 +178,6 @@ const Vendor = () => {
  
 
 
-  // const getVendorStats = async () => {
-  //   const token = sessionStorage.getItem("superadmin_token");
-
-  //   try {
-  //     const res = await fetch(`${BASE_URL}/vendors/vendorstats/`, {
-  //       method: "GET",
-  //       headers: {
-  //         "Authorization": `Bearer ${token}`,
-  //         "Content-Type": "application/json"
-  //       }
-  //     });
-
-  //     const data = await res.json();
-  //     setVendorStats(data);
-  //   } catch (error) {
-  //     console.error("Error fetching doctor stats:", error);
-  //   }
-  // };
-
-  // 
   const openDocumentModal = (i) => {
 
     setVendorModal(true);
@@ -214,71 +189,7 @@ const Vendor = () => {
     navigate(`/VendorDetail/${id}`)
   }
 
-  // const validateAddressForm = () => {
-  //   const errors = {}
-
-  //   if (!Addform.pincode || !/^\d{6}$/.test(Addform.pincode)) {
-  //     errors.pincode = "Pincode must be exactly 6 digits"
-  //   }
-
-  //   if (!Addform.country) {
-  //     errors.country = "Please select a country"
-  //   }
-
-  //   if (!Addform.state) {
-  //     errors.state = "Please select a state"
-  //   }
-
-  //   if (!Addform.city) {
-  //     errors.city = "Please select a city"
-  //   }
-
-  //   if (!Addform.address_line1 || Addform.address_line1.trim()?.length < 5) {
-  //     errors.address_line1 = "Address line 1 must be at least 5 characters long"
-  //   }
-
-  //   setAddressErrors(errors)
-  //   return Object.keys(errors)?.length === 0
-  // }
-
-
-  // const validateVendorForm = () => {
-  //   const errors = {};
-
-  //   if (!form.first_name.trim()) {
-  //     errors.first_name = "First Name is Required"
-  //   }
-
-
-  //   if (!form.store_name.trim()?.length < 2) {
-  //     errors.store_name = "Store name must be required";
-  //   }
-
-  //   if (!form.profile_picture) {
-  //     errors.profile_picture = "Profile picture is required";
-  //   }
-
-  //   if (!form.gst_number || form.gst_number.trim() === "") {
-  //     errors.gst_number = "GST number is required";
-  //   } else {
-  //     const gst = form.gst_number.trim().toUpperCase();
-
-
-  //     if (gst?.length !== 15) {
-  //       errors.gst_number = "GST number must be exactly 15 characters";
-  //     }
-
-
-  //     const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
-
-  //     if (!gstRegex.test(gst)) {
-  //       errors.gst_number = "Invalid GST format. Example: 27ABCDE1234F1Z5";
-  //     }
-  //   }
-
-  //   setFormErrors(errors);
-  //   return Object.keys(errors)?.length === 0;
-  // };
+  
 
   const handleStatusChange = async (vendorId, newStatus, Reason = "") => {
   const token = sessionStorage.getItem("superadmin_token");
@@ -296,9 +207,9 @@ const Vendor = () => {
     };
 
     const response = await fetch(
-      `${BASE_URL}/vendors/admin/vendor/status/`,
+        `${BASE_URL}/vendors/admin/vendor/${vendorId}/review-status/`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -320,6 +231,7 @@ const Vendor = () => {
       return;
     }
 
+
     setVendorData((prev) =>
       prev.map((vendor) =>
         vendor.id === vendorId
@@ -327,6 +239,9 @@ const Vendor = () => {
           : vendor
       )
     );
+
+await getVendorList();
+console.log("Vendor list fetched");
 
     if (newStatus === "approved") {
       toast.success("Vendor approved successfully ✅");
@@ -351,47 +266,7 @@ const Vendor = () => {
   }
 
 
-  // const handleDelete = async (id) => {
-  //   const token = sessionStorage.getItem("superadmin_token");
-
-
-  //   if (!token) {
-  //     toast.error("Session expired. Please login again");
-  //     navigate("/login");
-  //     return;
-  //   }
-
-  //   try {
-  //     const res = await fetch(`${BASE_URL}/vendors/vendor/${id}/`, {
-  //       method: "DELETE",
-  //       headers: {
-  //         Accept: "application/json",
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-
-  //     if (res.status === 401 || res.status === 403) {
-  //       sessionStorage.removeItem("superadmin_token");
-  //       toast.error("Session expired. Please login again");
-  //       navigate("/login");
-  //       return;
-  //     }
-
-  //     if (!res.ok) {
-  //       toast.error("Failed to delete vendor");
-  //       return;
-  //     }
-  //     setVendorData((prev) => prev.filter((v) => v.id !== id));
-  //     toast.success("Vendor deleted successfully");
-
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error("Something went wrong while deleting vendor");
-  //   }
-  // };
-
+  
   const submitRejection = async (e) => {
   e.preventDefault();
 
@@ -670,7 +545,8 @@ const Vendor = () => {
           </div>
           <div className="stat2-info">
             <h3>Total Vendors</h3>
-            <div className="stat2-value">{vendorStats?.total_vendors || 0}</div>
+      <div className="stat2-value">{vendorStats.vendors}</div>
+
           </div>
         </div>
 
@@ -680,7 +556,8 @@ const Vendor = () => {
           </div>
           <div className="stat2-info">
             <h3>Approved Vendors</h3>
-            <div className="stat2-value">{vendorStats?.approved_vendors || 0}</div>
+          
+<div className="stat2-value">{vendorStats.approved || 0}</div>
           </div>
         </div>
 
@@ -690,7 +567,8 @@ const Vendor = () => {
           </div>
           <div className="stat2-info">
             <h3>Pending Vendors</h3>
-            <div className="stat2-value">{vendorStats?.pending_vendors || 0}</div>
+        
+<div className="stat2-value">{vendorStats.pending || 0}</div>
           </div>
         </div>
 
@@ -700,7 +578,7 @@ const Vendor = () => {
           </div>
           <div className="stat2-info">
             <h3>Rejected Vendors</h3>
-            <div className="stat2-value">{vendorStats?.rejected_vendors || 0}</div>
+           <div className="stat2-value">{vendorStats.rejected || 0}</div>
           </div>
         </div>
       </div>
@@ -732,289 +610,193 @@ const Vendor = () => {
 
         </div>
       </div>
-      <div classsName="table-wrapper">
-        <table className="data-table" ref={bulktableRef}>
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Profile</th>
-              <th>Store Name</th>   
-              <th>Gst Number</th>
-              <th>Location</th>
-              <th>Phone Number</th>
-              <th>Status</th>
-              <th>Document</th>
-              <th>Action</th>
+     <div className="table-wrapper">
+  <table className="data-table" ref={bulktableRef}>
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Profile</th>
+        <th>Store Name</th>
+        <th>Gst Number</th>
+        <th>Location</th>
+        <th>Phone Number</th>
+        <th>Status</th>
+        <th>Document</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {loading ? (
+        Array(3)
+          .fill(0)
+          .map((_, i) => (
+            <tr key={i}>
+              <td colSpan="9">
+                <div className="skeleton-row"></div>
+              </td>
             </tr>
-          </thead>
-          {loading ? (
-            Array(3).fill(0).map((_, i) => (
-              <tr key={i}>
-                <td colSpan="10"><div className="skeleton-row"></div></td>
-              </tr>
-            ))
-          ) : error ? (
-            <p colSpan="6" style={{ color: "red" }}>{error}</p>
-          ) : (
-            <tbody>
-              {vendorData && vendorData.length > 0 ? (
-                vendorData.map((vendor, index) => (
-                  <tr key={vendor.id}>
-                    <td className="id1">{index + 1}</td>
+          ))
+      ) : error ? (
+        <tr>
+          <td
+            colSpan="9"
+            style={{ color: "red", textAlign: "center" }}
+          >
+            {error}
+          </td>
+        </tr>
+      ) : vendorData && vendorData.length > 0 ? (
+        vendorData.map((vendor, index) => (
+          <tr key={vendor.id}>
+            <td className="id1">{index + 1}</td>
 
-                    <td>
-                      <div className="customer-avatar-wrapper">
-                      {vendor?.documents?.company_logo ? (
-  <img
-    src={vendor?.documents?.company_logo}
-    alt="company logo"
-    className="customer-avatar-img"
-    onClick={() => {
-      setPreviewImage(vendor?.documents?.company_logo);
-      setimageModal(true);
-    }}
-  />
-) : (
-  <div className="customer-avatar">
-    {getInitials(vendor?.business_name)}
-  </div>
-)}
-                      </div>
-                    </td>
+            <td>
+              <div className="customer-avatar-wrapper">
+                {vendor?.documents?.company_logo ? (
+                  <img
+                    src={vendor.documents.company_logo}
+                    alt="company logo"
+                    className="customer-avatar-img"
+                    onClick={() => {
+                      setPreviewImage(vendor.documents.company_logo);
+                      setimageModal(true);
+                    }}
+                  />
+                ) : (
+                  <div className="customer-avatar">
+                    {getInitials(vendor?.business_name)}
+                  </div>
+                )}
+              </div>
+            </td>
 
-                    <td>
-                     {vendor?.business_name}
-                    </td>
+            <td>{vendor?.business_name}</td>
 
-                    <td>{vendor.gst_number ?? "NA"}</td>
+            <td>{vendor?.gst_number ?? "NA"}</td>
 
-                  <td>
-  {vendor?.street_address}, {vendor?.city}, {vendor?.state} -{" "}
-  {vendor?.pincode}
-</td>
+            <td>
+              {vendor?.street_address}, {vendor?.city},{" "}
+              {vendor?.state} - {vendor?.pincode}
+            </td>
 
- 
-                
+            <td>{vendor?.verified_phone_number}</td>
 
-                    <td>{vendor.verified_phone_number}</td>
+            <td>
+              <select
+                value={vendor.approval_status}
+                className="status-dropdown"
+                onChange={(e) => {
+                  const newStatus = e.target.value;
 
-                    <td>
-                  <select
-  value={vendor.approval_status}
-  className="status-dropdown"
-  onChange={(e) => {
-    const newStatus = e.target.value;
-
-    if (newStatus === "approved") {
-      handleApproveClick(vendor);
-    } else if (
-      newStatus === "rejected" ||
-      newStatus === "suspended"
-    ) {
-      handleRejectClick(vendor, newStatus);
-    }
-  }}
->
-  <option value="pending">Pending</option>
-  <option value="approved">Approved</option>
-  <option value="rejected">Rejected</option>
-  <option value="suspended">Suspended</option>
-</select>
-                    </td>
-
-                    <td style={{ textAlign: "center" }}>
-                      <FiFileText
-                        size={20}
-                        color="#0D614E"
-                        onClick={() => openDocumentModal(vendor)}
-                      />
-                    </td>
-
-
-                    <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
-                      <button
-                        className="action-menu-toggle"
-                        onClick={() =>
-                          setOpenMenuId(openMenuId === vendor.id ? null : vendor.id)
-                        }
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          cursor: "pointer",
-                          fontSize: "20px",
-                        }}
-                      >
-                        <BsThreeDotsVertical />
-                      </button>
-
-                      {openMenuId === vendor.id && (
-                        <div className="action-buttons-modal">
-
-                        
-                            <button
-                              className="action-btn1"
-                              title="View vendor product"
-                              onClick={() => handleNavigate(vendor.id)}
-                            >
-                              <span className="icon"><FaEye/></span>
-                              <span>Detail Page</span>
-                            </button>
-                      
-
-                          {/* <button
-                            title="Edit Vendor Details"
-                            className="action-btn1"
-                            onClick={() => {
-                              setForm({
-                                first_name: vendor.first_name || "",
-                                last_name: vendor.last_name || "",
-                                store_name: vendor.store_name || "",
-                                gst_number: vendor.gst_number || "",
-                                verified_phone_number: vendor.verified_phone_number
-                                  ? vendor.verified_phone_number.startsWith("+91")
-                                    ? vendor.verified_phone_number.slice(3)
-                                    : vendor.verified_phone_number
-                                  : "",
-                                profile_picture: vendor.profile_picture || null,
-                                documentType: "",
-                                documentFile: null,
-                              });
-
-                              setUploadedDocs(
-                                vendor.documents?.map((doc) => ({
-                                  type: doc.document_type,
-                                  file: null,
-                                  existingUrl: doc.file_url,
-                                })) || []
-                              );
-
-                              setEditingId(vendor.id);
-                              setModalOpen(true);
-                            }}
-                          >
-                            <span className="icon"><FaEdit/></span>
-                            <span>Edit Detail</span>
-                          </button> */}
-
-{/*                         
-                            <button
-                              className="action-btn1"
-                              title="Add Address"
-                              onClick={() => {
-                                setAddModal(true)
-                                setAddressVendorId(vendor.id)
-                                setAddform(intialAddressform)
-                                setAddressEditingId(null)
-                              }}
-                            >
-                              <span className="icon"><FaPlusCircle/></span>
-                              <span>Add Address</span>
-
-                            </button> */}
-                       
-
-
-                      
-                            {/* <button
-                              title="Edit Address Details"
-                              className="action-btn1"
-                              onClick={() => {
-                                const addr = vendor.pickup_locations?.[0];
-
-                                setAddModal(true);
-                                setAddressVendorId(vendor.id);
-
-                                if (addr) {
-                                  setAddressEditingId(addr.id);
-                                  setAddform({
-                                    pincode: addr.pincode ?? "",
-                                    country: addr.country ?? "",
-                                    state: addr.state ?? "",
-                                    city: addr.city ?? "",
-                                    address_line1: addr.address_line1 ?? "",
-                                    address_line2: addr.address_line2 ?? "",
-                                  });
-                                } else {
-                                  setAddressEditingId(null);
-                                  setAddform(intialAddressform);
-                                  setAddressErrors({});
-                                }
-                              }}
-                            >
-                              <span className="icon">
-                                <FaMapMarkerAlt />
-                              </span>
-                              <span>Edit Address</span>
-                            </button>
-                         */}
-  {/* <button
-                            className="action-btn1"
-                            title="Delete vendor"
-                            onClick={() => {
-                              setSelectedVendorId(vendor.id);
-                              setDeleteConfirmModal(true);
-                            }}
-                          >
-                            <span className="icon-delete"><FiTrash2/></span>
-                            <span className="delete-text">Delete</span>
-                          </button> */}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="10" style={{ textAlign: "center" }}>
-                    No Data Found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          )}
-        </table>
-
-        {totalPages > 1 && (
-          <div className="pagination">
-
-
-            <button
-              onClick={() => getVendorList(currentpage)}
-              disabled={!previousPage}
-            >
-              Prev
-            </button>
-
-
-            {pages.map((page) => (
-              <button
-                key={page}
-                onClick={() => getVendorList(page, searchTerm)}
-                style={{
-
-                  fontWeight: currentpage === page ? "bold" : "normal",
-                  background: currentpage === page ? "#0D614E" : "#fff",
-                  color: currentpage === page ? "#fff" : "#0D614E",
+                  if (newStatus === "approved") {
+                    handleApproveClick(vendor);
+                  } else if (
+                    newStatus === "rejected" ||
+                    newStatus === "suspended"
+                  ) {
+                    handleRejectClick(vendor, newStatus);
+                  }
                 }}
               >
-                {page}
-              </button>
-            ))} 
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </td>
 
+            <td style={{ textAlign: "center" }}>
+              <FiFileText
+                size={20}
+                color="#0D614E"
+                onClick={() => openDocumentModal(vendor)}
+                style={{ cursor: "pointer" }}
+              />
+            </td>
 
-            <button
-              onClick={() => getVendorList(currentpage + 1, searchTerm)}
-              disabled={!Nextpage}
+            <td
+              style={{ position: "relative" }}
+              onClick={(e) => e.stopPropagation()}
             >
-              Next
-            </button>
+              <button
+                className="action-menu-toggle"
+                onClick={() =>
+                  setOpenMenuId(
+                    openMenuId === vendor.id ? null : vendor.id
+                  )
+                }
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "20px",
+                }}
+              >
+                <BsThreeDotsVertical />
+              </button>
 
-          </div>
-        )}
+              {openMenuId === vendor.id && (
+                <div className="action-buttons-modal">
+                  <button
+                    className="action-btn1"
+                    title="View Vendor Product"
+                    onClick={() => handleNavigate(vendor.id)}
+                  >
+                    <span className="icon">
+                      <FaEye />
+                    </span>
+                    <span>Detail Page</span>
+                  </button>
+                </div>
+              )}
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan="9" style={{ textAlign: "center" }}>
+            No Data Found
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
 
+  {totalPages > 1 && (
+    <div className="pagination">
+      <button
+        onClick={() => getVendorList(currentpage - 1, searchTerm)}
+        disabled={!previousPage}
+      >
+        Prev
+      </button>
 
-      </div>
+      {pages.map((page) => (
+        <button
+          key={page}
+          onClick={() => getVendorList(page, searchTerm)}
+          style={{
+            fontWeight: currentpage === page ? "bold" : "normal",
+            background:
+              currentpage === page ? "#0D614E" : "#fff",
+            color:
+              currentpage === page ? "#fff" : "#0D614E",
+          }}
+        >
+          {page}
+        </button>
+      ))}
 
+      <button
+        onClick={() => getVendorList(currentpage + 1, searchTerm)}
+        disabled={!Nextpage}
+      >
+        Next
+      </button>
+    </div>
+  )}
+</div>
       {/* {modalOpen && (
         <div className="modal">
           <form className="product-form" onSubmit={handleFormSubmit}>
@@ -1563,7 +1345,11 @@ const Vendor = () => {
         </label>
 
         <textarea
-          className="reason-box"
+ className={`reason-box ${
+    selectedStatus === "rejected"
+      ? "reject-reason-box"
+      : "suspend-reason-box"
+  }`}
           value={Reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder={
@@ -1728,7 +1514,7 @@ const Vendor = () => {
     </div>
   </div>
 )}
-
+   <ToastContainer position="top-center" autoClose={2000} />
       </>
   )
 }

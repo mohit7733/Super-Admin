@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
-import { toast } from 'react-toastify'
+
 
 import { data, useNavigate } from "react-router-dom"
 import BASE_URL from "../../../Base";
@@ -13,6 +13,7 @@ import { FaEye } from "react-icons/fa";
 import Calender from "./Calendar"
 import { FaCheckCircle } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
+import { ToastContainer, toast } from "react-toastify";
 
 
 const userId = localStorage.getItem("USER_ID")
@@ -91,9 +92,15 @@ const Doctor = () => {
   const [Nextpage, setNextpage] = useState(null);
 
   const [previousPage, setPreviousPage] = useState(null);
-  const [doctorStats, setDoctorStats] = useState(null);
-  const[RejectionDoctorModal,setRejectionDoctorModal]=useState(false);
 
+  const[RejectionDoctorModal,setRejectionDoctorModal]=useState(false);
+   const [doctorStats, setdoctorStats] = useState({
+  vendors: 0,
+  approved: 0,
+  pending: 0,
+  suspended: 0,
+  rejected: 0,
+});
 
 
 
@@ -314,6 +321,7 @@ const submitRejection = async (e) => {
       setCurrentPage(page);
       setNextpage(data.data.next);
       setPreviousPage(data.data.previous);
+        setdoctorStats(data.data.total_counts);
 
     } catch (err) {
       console.error(err.message);
@@ -328,7 +336,7 @@ const submitRejection = async (e) => {
  },
  []
 )
-   
+const modalRef = useRef(null);
 const filterDoctors = () => {
   let filtered = [...allDoctorData];
 
@@ -611,25 +619,7 @@ const filterDoctors = () => {
   //   }
   // };
 
-  const getDoctorStats = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
-
-    try {
-      const res = await fetch(`${BASE_URL}/healthcare/doctorstats/`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      const data = await res.json();
-      setDoctorStats(data);
-
-    } catch (error) {
-      console.error("Error fetching doctor stats:", error);
-    }
-  };
+  
 
   // const hasFetched = useRef(false);
 
@@ -945,7 +935,7 @@ const filterDoctors = () => {
           </div>
           <div className="stat2-info">
             <h3>Total Doctors</h3>
-            <div className="stat2-value"> 0</div>
+            <div className="stat2-value">{doctorStats?.doctors}</div>
           </div>
         </div>
 
@@ -955,7 +945,7 @@ const filterDoctors = () => {
           </div>
           <div className="stat2-info">
             <h3>Approved Doctors</h3>
-            <div className="stat2-value">{doctorStats?.approved_doctors || 0}</div>
+            <div className="stat2-value">{doctorStats?.approved || 0}</div>
           </div>
         </div>
 
@@ -965,7 +955,7 @@ const filterDoctors = () => {
           </div>
           <div className="stat2-info">
             <h3>Pending Approval</h3>
-            <div className="stat2-value">{doctorStats?.pending_doctors || 0}</div>
+            <div className="stat2-value">{doctorStats?.pending || 0}</div>
           </div>
         </div>
 
@@ -975,7 +965,7 @@ const filterDoctors = () => {
           </div>
           <div className="stat2-info">
             <h3>Rejected Doctors</h3>
-            <div className="stat2-value">{doctorStats?.rejected_doctors || 0}</div>
+            <div className="stat2-value">{doctorStats?.rejected || 0}</div>
           </div>
         </div>
       </div>
@@ -1151,14 +1141,7 @@ const filterDoctors = () => {
   <td>{item.experience_years || 0} years</td>
 
  
-  {/* <td style={{ textAlign: "center" }}>
-    <FiFileText
-      size={20}
-      color="#0D614E"
-      onClick={() => openDocumentModal(item)}
-      style={{ cursor: "pointer" }}
-    />
-  </td> */}
+
 
 
   <td
@@ -1200,46 +1183,6 @@ const filterDoctors = () => {
           </button>
         
 
-       
-        {/* <button
-          className="action-btn1"
-          title="Edit Doctor Details"
-          onClick={() => {
-            setDoctorform({
-              profile_image: item.profile_image || "",
-              first_name: item.first_name || "",
-              last_name: item.last_name || "",
-              email: item.email || "",
-              experience_years: item.experience_years || "",
-              consultation_fee: item.consultation_fee || "",
-              qualification: item.qualification || "",
-              practice_license_number:
-                item.registration_number || "",
-            });
-
-            setEditingDoctorId(item.id);
-            setDoctorformModal(true);
-          }}
-        >
-          <span className="icon">
-            <FaEdit />
-          </span>
-          <span>Edit Detail</span>
-        </button>
-
-        <button
-          className="action-btn1"
-          title="Delete"
-          onClick={() => {
-            setSelectedDoctorId(item.id);
-            setDeleteConfirmModal(true);
-          }}
-        >
-          <span className="icon-delete">
-            <FiTrash2 />
-          </span>
-          <span className="delete-text">Delete</span>
-        </button> */}
       </div>
     )}
   </td>
@@ -2131,34 +2074,7 @@ const filterDoctors = () => {
     </div>
   </div>
 )}
-
-       {/* {showReasonModal && (
-        <div className=" modal">
-
-          <form className="customer-form">
-            <h3>
-              {selectedStatus === "rejected"
-                ? "Enter Rejected Reason"
-                : "Enter Suspended Reason"}
-            </h3>
-            <textarea
-              value={rejectReason}
-              placeholder={
-                selectedStatus === "rejected"
-                  ? "Enter the reason for rejection..."
-                  : "Enter the reason for suspension..."
-              }
-              onChange={(e) => setRejectReason(e.target.value)}
-            />
-            <div className="form-buttons">
-              <button onClick={submitRejection} type="submit">   Submit  </button>
-              <button type="button" onClick={() => setShowReasonModal(false)}> Cancel </button>
-            </div>
-
-          </form>
-        </div>
-
-      )}  */}
+  <ToastContainer position="top-center" autoClose={2000} />
       </>
   )
 }
