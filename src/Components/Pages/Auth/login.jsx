@@ -138,7 +138,10 @@ const Login = () => {
      console.log("")
 
 if (!response.ok) {
-  throw new Error(result.error || result.message || "Login failed");
+  throw new Error(
+    `[${result?.error?.code}] ${result?.error?.message}` ||
+    "Something went wrong."
+  );
 }
 
 const data = result.data;

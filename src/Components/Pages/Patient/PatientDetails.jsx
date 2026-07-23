@@ -4,7 +4,18 @@ import { toast } from 'react-toastify';
 import BASE_URL from "../../../Base";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { FaUsers } from "react-icons/fa";
+
+import {
+  FaUsers,
+  FaClock,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaUndoAlt,
+  FaCalendarCheck,
+  FaSyncAlt,
+  FaUserClock,
+  FaExclamationTriangle,
+} from "react-icons/fa";
  import Documents from "../Vendor/Documents"
 
 import {
@@ -25,6 +36,7 @@ import {
   FiActivity,
   FiMapPin,
 } from "react-icons/fi";
+import { MdTimerOff } from "react-icons/md";
 import "./PatientDetails.css";
 
 const PatientDetails = () => {
@@ -53,6 +65,7 @@ const [error, setError] = useState(null);
       const [PatientDocuments, setPatientDocuments] = useState([]);
 const [DocumentLoading, setDocumentLoading] = useState(false);
 const [DocumentError, setDocumentError] = useState(null);
+const [AppointmentStats, setAppointmentStats] = useState({});
 
 
 const { PatientId } = useParams();
@@ -106,6 +119,7 @@ const navigate = useNavigate();
   }
 };
 
+const fetchedOnce = useRef(false);
 
 const getTransactionlist = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -182,6 +196,7 @@ const getTransactionlist = async () => {
       setCurrentPage(page);
       setNextpage(data.data.next);
       setPreviousPage(data.data.previous);
+      setAppointmentStats(data.data.total_counts || {});
     } catch (error) {
       console.error(error.message);
 
@@ -294,12 +309,16 @@ const getPatientDocuments = async () => {
     setDocumentLoading(false);
   }
 };
-useEffect(() => {
-  getPatientDetail();
-  getConsultationhistory();
-  getPatientDocuments();
-  getTransactionlist ();
 
+useEffect(() => {
+  if (!fetchedOnce.current && PatientId) {
+    getPatientDetail();
+    getConsultationhistory();
+    getPatientDocuments();
+    getTransactionlist();
+
+    fetchedOnce.current = true;
+  }
 }, [PatientId]);
 
 
@@ -581,57 +600,94 @@ useEffect(() => {
                </div>
  
  
-               <div className="consultation-stats-grid">
- 
-                 {/* TOTAL */}
-                 <div className="consultation-stat-card">
-                   <div className="consultation-icon-box">
-                     <FaUsers />
-                   </div>
- 
-                   <div className="consultation-stat-content">
-                     <h4>TOTAL CONSULTATIONS</h4>
-                     <h2>{Data?.data?.count}</h2>
-                   </div>
-                 </div>
- 
- 
-                 <div className="consultation-stat-card">
-                   <div className="consultation-icon-box ">
-                     <FiCheckCircle />
-                   </div>
- 
-                   <div className="consultation-stat-content">
-                     <h4>APPROVED</h4>
-                     <h2>0</h2>
-                   </div>
-                 </div>
- 
- 
-                 <div className="consultation-stat-card">
-                   <div className="consultation-icon-box ">
-                     <FiXCircle />
-                   </div>
- 
-                   <div className="consultation-stat-content">
-                     <h4>REJECTED</h4>
-                     <h2>0</h2>
-                   </div>
-                 </div>
- 
- 
-                 <div className="consultation-stat-card">
-                   <div className="consultation-icon-box ">
-                     <FiClock />
-                   </div>
- 
-                   <div className="consultation-stat-content">
-                     <h4>PENDING</h4>
-                     <h2>0</h2>
-                   </div>
-                 </div>
- 
-               </div>
+               <div className="vendors-stats stats2-grid">
+              {/* Total Appointment */}
+              <div className="stat2-card">
+                <div
+                  className="stat2-icon"
+                  style={{ background: "#0D614E20", color: "#0D614E" }}
+                >
+                  <FaCalendarCheck size={24} />
+                </div>
+                <div className="stat2-info">
+                  <h3>Appointment</h3>
+                  <div className="stat2-value">{AppointmentStats?.total || 0}</div>
+                </div>
+              </div>
+            
+              {/* Confirmed */}
+              <div className="stat2-card">
+                <div
+                  className="stat2-icon"
+                 style={{ background: "#0D614E20", color: "#0D614E" }}
+                >
+                  <FaCheckCircle size={24} />
+                </div>
+                <div className="stat2-info">
+                  <h3>Confirmed</h3>
+                  <div className="stat2-value">{AppointmentStats?.confirmed || 0}</div>
+                </div>
+              </div>
+            
+              {/* Cancelled */}
+              
+            
+              {/* Rescheduled */}
+              <div className="stat2-card">
+                <div
+                  className="stat2-icon"
+              style={{ background: "#0D614E20", color: "#0D614E" }}
+                >
+                  <FaSyncAlt size={24} />
+                </div>
+                <div className="stat2-info">
+                  <h3>Rescheduled</h3>
+                  <div className="stat2-value">{AppointmentStats?.rescheduled || 0}</div>
+                </div>
+              </div>
+              <div className="stat2-card">
+                <div
+                  className="stat2-icon"
+                 style={{ background: "#0D614E20", color: "#0D614E" }}
+                >
+                  <FaUserClock size={24} />
+                </div>
+                <div className="stat2-info">
+                  <h3>Patient Reschedule</h3>
+                  <div className="stat2-value">
+                         {AppointmentStats?.patient_rescheduled || 0}
+                  </div>
+                </div>
+              </div>
+              <div className="stat2-card">
+                <div
+                  className="stat2-icon"
+                  style={{ background: "#0D614E20", color: "#0D614E" }}
+                >
+                  <FaExclamationTriangle size={24} />
+                </div>
+                <div className="stat2-info">
+                  <h3>Missed</h3>
+                  <div className="stat2-value">{AppointmentStats?.missed || 0}</div>
+                </div>
+              </div>
+            
+              <div className="stat2-card">
+                <div
+                  className="stat2-icon"
+                 style={{ background: "#0D614E20", color: "#0D614E" }}
+                >
+                  <FaTimesCircle size={24} />
+                </div>
+                <div className="stat2-info">
+                  <h3>Cancelled</h3>
+                  <div className="stat2-value">{AppointmentStats?.cancelled || 0}</div>
+                </div>
+              </div>
+            
+              
+            
+            </div>
  
                <div classsName="table-wrapper1">
                  <table className="data-table" >
@@ -788,57 +844,61 @@ useEffect(() => {
                      </div>
        
        
-                     <div className="consultation-stats-grid">
-       
-                       {/* TOTAL */}
-                       <div className="consultation-stat-card">
-                         <div className="consultation-icon-box">
-                           <FaUsers />
-                         </div>
-       
-                         <div className="consultation-stat-content">
-                           <h4>TOTAL </h4>
-                           <h2>0</h2>
-                         </div>
-                       </div>
-       
-       
-                       <div className="consultation-stat-card">
-                         <div className="consultation-icon-box ">
-                           <FiCheckCircle />
-                         </div>
-       
-                         <div className="consultation-stat-content">
-                           <h4>Completed</h4>
-                           <h2>0</h2>
-                         </div>
-                       </div>
-       
-       
-                       <div className="consultation-stat-card">
-                         <div className="consultation-icon-box ">
-                           <FiXCircle />
-                         </div>
-       
-                         <div className="consultation-stat-content">
-                           <h4>Failed</h4>
-                           <h2>0</h2>
-                         </div>
-                       </div>
-       
-       
-                       <div className="consultation-stat-card">
-                         <div className="consultation-icon-box ">
-                           <FiClock />
-                         </div>
-       
-                         <div className="consultation-stat-content">
-                           <h4>PENDING</h4>
-                           <h2>0</h2>
-                         </div>
-                       </div>
-       
-                     </div>
+                    <div className="vendors-stats stats2-grid">
+                          <div className="stat2-card">
+                            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                          <FaClock size={24} />
+                            </div>
+                            <div className="stat2-info">
+                              <h3>Pending</h3>
+                              <div className="stat2-value">0</div>
+                            </div>
+                          </div>
+
+                          <div className="stat2-card">
+                            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                    <MdTimerOff size={24} />
+                            </div>
+                            <div className="stat2-info">
+                              <h3>Expired</h3>
+                              <div className="stat2-value">0</div>
+                            </div>
+                          </div>
+                          
+                  
+                          <div className="stat2-card">
+                            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                              <FaCheckCircle size={24} />
+                            </div>
+                            <div className="stat2-info">
+                              <h3>Success</h3>
+                              <div className="stat2-value"> 0</div>
+                            </div>
+                          </div>
+                  
+                          <div className="stat2-card">
+                            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                              <FaTimesCircle size={24} />
+                            </div>
+                            <div className="stat2-info">
+                              <h3>Failed</h3>
+                              <div className="stat2-value">0</div>
+                            </div>
+                          </div>
+                  
+                  <div className="stat2-card">
+                    <div
+                      className="stat2-icon"
+                      style={{ background: "#0D614E20", color: "#0D614E" }}
+                    >
+                      <FaUndoAlt size={24} />
+                    </div>
+                    <div className="stat2-info">
+                      <h3>Refunded</h3>
+                      <div className="stat2-value">0</div>
+                    </div>
+                  </div>
+                        </div>
        
                      <div classsName="table-wrapper1">
                        <table className="data-table" >
@@ -849,7 +909,7 @@ useEffect(() => {
                              <th>Amount</th>
                              <th> Date</th>
                              <th> Payment Method</th>
-                           
+                           <th> Doctor name</th>
                                 <th>Status</th>
        
                            </tr>
@@ -868,10 +928,15 @@ useEffect(() => {
                         TransactionData.map((transaction, index) => (
                                  <tr key={transaction.id}>
                                    <td >{transaction.transaction_id}</td>
-                                   <td> {transaction.name}</td>
+                                  <td>{transaction.patient?.name || "N/A"}</td>
                                    <td>{transaction.amount}</td>
-                                   <td>{transaction.date}</td>
+                               <td>
+  {transaction.paid_at
+    ? new Date(transaction.paid_at).toLocaleDateString("en-GB")
+    : "-"}
+</td>
                                    <td>{transaction.payment_method}</td>
+                                   <td>{transaction.doctor?.name || "N/A"}</td>
                                  <td>
          <span
            className="status-badge"
