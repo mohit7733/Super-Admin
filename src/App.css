@@ -7,7 +7,7 @@
 
 .main-content {
   min-height: 100vh;
-  padding: 80px 20px 20px 20px;
+  padding: 60px 20px 20px 20px;
   transition: margin-left 0.3s ease;
   margin-top: 30px;
 
@@ -1929,10 +1929,6 @@ textarea:focus {
   background: #0056b3;
 }
 
-.doctor-page {
-  padding: 20px;
-  color: #333;
-}
 
 .page-title {
   font-size: 24px;

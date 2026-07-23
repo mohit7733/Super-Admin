@@ -111,7 +111,9 @@ const[SlotError,setSlotError]=useState(null);
 
   const [currentpage, setCurrentPage] = useState(1);
   const [Nextpage, setNextpage] = useState(null);
-
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+const [availabilityError, setAvailabilityError] = useState("");
+const [availabilityData, setAvailabilityData] = useState([]);
   const [previousPage, setPreviousPage] = useState(null);
   const [AppointmentStats, setAppointmentStats] = useState({
    "total": 0,
@@ -129,6 +131,7 @@ const getStatusStyle = (status) => {
   switch (value) {
     
     case "success":
+      case "booked":
     case "completed":
     case "approved":
        case "confirmed":
@@ -383,13 +386,58 @@ const handleSubmitReason = async () => {
       getConsultationhistory(),
       getTransactionlist(),
       getDoctorDetail(),
+          getAvailability(),
     ]);
   };
 
   fetchData();
 }, []);
 
-  
+
+
+
+const getAvailability = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again.");
+    navigate("/login");
+    return;
+  }
+
+  setAvailabilityLoading(true);
+  setAvailabilityError("");
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/doctors/admin/availability/?doctor_id=${DoctorId}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      setAvailabilityData(result.data.availability);
+    } else {
+      setAvailabilityError(result.message || "Failed to fetch availability");
+      toast.error(result.message || "Failed to fetch availability");
+    }
+  } catch (error) {
+    console.error(error);
+    setAvailabilityError("Something went wrong");
+    toast.error("Something went wrong");
+  } finally {
+    setAvailabilityLoading(false);
+  }
+};
   const getDoctorDetail = async () => {
 
     const token = sessionStorage.getItem("superadmin_token");
@@ -651,22 +699,7 @@ const handleSubmitReason = async () => {
           >
             Overview
           </button>
-
-
- <button
-            className={activeTab === "bank" ? "active-tab" : ""}
-            onClick={() => setActiveTab("bank")}
-          >
- Bank Detail
-          </button>
-             <button className={activeTab === "Availability" ? "active-tab" : ""}
-            onClick={() => setActiveTab("Availability")}
-          >
-
-       Availability
-          </button>      
-
-          <button className={activeTab === "Consultation" ? "active-tab" : ""}
+   <button className={activeTab === "Consultation" ? "active-tab" : ""}
             onClick={() => setActiveTab("Consultation")}
           >
 
@@ -683,6 +716,28 @@ const handleSubmitReason = async () => {
          Transaction
           </button>
 
+ <button
+            className={activeTab === "bank" ? "active-tab" : ""}
+            onClick={() => setActiveTab("bank")}
+          >
+ Bank Detail
+          </button>
+             <button className={activeTab === "Availability" ? "active-tab" : ""}
+            onClick={() => setActiveTab("Availability")}
+          >
+
+       Availability
+          </button>      
+
+          
+ <button
+            className={activeTab === "Slot" ? "active-tab" : ""}
+            onClick={() => setActiveTab("Slot")}
+          >
+ Slot
+          </button>
+
+    
   <button
             className={activeTab === "documents" ? "active-tab" : ""}
             onClick={() => setActiveTab("documents")}
@@ -702,57 +757,7 @@ const handleSubmitReason = async () => {
           
         </div>
 
-        {/* {showAddModal && (
-
-          <div className="document-modal-overlay">
-
-            <div className="document-modal">
-
-              <div className="modal-top">
-
-                <h2>Add Document</h2>
-
-                <button
-                  className="close-modal-btn"
-                  onClick={() =>
-                    setShowAddModal(false)
-                  }
-                >
-                  ×
-                </button>
-
-              </div>
-
-              <div className="form-group">
-
-                <label>Document Name</label>
-
-                <input
-                  type="text"
-                  placeholder="Enter document name"
-                />
-
-              </div>
-
-              <div className="form-group">
-
-                <label>Upload File</label>
-
-                <div className="upload-box">
-                  <FiUpload />
-                  <span>Choose File</span>
-                </div>
-
-              </div>
-
-              <button className="save-document-btn">
-                Save Document
-              </button>
-
-            </div>
-
-          </div>
-        )} */}
+      
 
         {activeTab === "personal" && (
 
@@ -1673,6 +1678,9 @@ const handleSubmitReason = async () => {
   <FiCheckCircle size={16} /> Approve
 </button>
 
+
+
+
                 </div>
               </div>
 </div>
@@ -1684,13 +1692,164 @@ const handleSubmitReason = async () => {
 }
 
 
+{
+  activeTab === "Slot" && (
+    <div className="consultation-main-card">
 
-        {
-          activeTab === "Availability" && (
-           
-            < Calendar/>
-          )
-        }
+      <div className="consultation-header">
+        <div className="consultation-title-wrap">
+          <div className="consultation-line"></div>
+
+          <div>
+            <h2>Doctor Slots</h2>
+            <p>
+              View all doctor slots, booking status, and consultation details.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="vendors-stats stats2-grid">
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaClock size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Pending</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaCheckCircle size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Booked</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaTimesCircle size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Expired</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaUndoAlt size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Rescheduled</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
+      </div>
+
+   
+        <div className="table-wrapper1">
+  <table className="data-table">
+    <thead>
+      <tr>
+        <th>Slot ID</th>
+        <th>Patient</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Consultation</th>
+        <th>Amount</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {availabilityLoading ? (
+        Array(5)
+          .fill(0)
+          .map((_, i) => (
+            <tr key={i}>
+              <td colSpan="7">
+                <div className="skeleton-row"></div>
+              </td>
+            </tr>
+          ))
+      ) : availabilityError ? (
+        <tr>
+          <td
+            colSpan="7"
+            style={{ color: "red", textAlign: "center" }}
+          >
+            {availabilityError}
+          </td>
+        </tr>
+      ) : availabilityData?.length > 0 ? (
+        availabilityData.flatMap((day) =>
+          day.slots.map((slot) => (
+            <tr key={slot.id}>
+              <td>{slot.id.slice(0, 8)}</td>
+
+              <td>
+                {slot.booked_by?.patient_name || "-"}
+              </td>
+
+              <td>{slot.date}</td>
+
+              <td>
+                {slot.start_time} - {slot.end_time}
+              </td>
+
+              <td style={{ textTransform: "capitalize" }}>
+                {slot.consultation_type}
+              </td>
+
+              <td>₹{slot.amount}</td>
+
+              <td>
+                <span
+                  className="status-badge"
+                  style={getStatusStyle(slot.status)}
+                >
+                  {slot.status}
+                </span>
+              </td>
+            </tr>
+          ))
+        )
+      ) : (
+        <tr>
+          <td colSpan="7" style={{ textAlign: "center" }}>
+            No Slots Found
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+      </div>
+
+  )
+}
+     {
+  activeTab === "Availability" && (
+    <Calendar setActiveTab={setActiveTab} />
+  )
+}
 
     {(actionType === "rejected" ||
   actionType === "suspended") && (

@@ -5,6 +5,7 @@ import BASE_URL from "../../../Base";
 import { apiFetch } from "../../../fetchapi";
 import { BsSearch, BsThreeDots, BsThreeDotsVertical,BsDownload } from "react-icons/bs";
 
+import { FaUsers, FaChartLine, FaCalendarAlt,  } from 'react-icons/fa';
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -174,6 +175,36 @@ setSelectedPatient(null);
       <div className="page-header">
         <h1>Patient</h1>
       </div>
+
+         <div className="stats2-grid">
+              <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+                <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                  <FaUsers size={24} />
+                </div>
+                <div className="stat2-info">
+                  <h3>Total Patient</h3>
+                  <div className="stat2-value">0</div>
+                </div>
+              </div>
+              <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+                <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                  <FaChartLine size={24} />
+                </div>
+                <div className="stat2-info">
+                  <h3>Active Patient</h3>
+                  <div className="stat2-value">0</div>
+                </div>
+              </div>
+              <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+                <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+                  <FaCalendarAlt size={24} />
+                </div>
+                <div className="stat2-info">
+                  <h3> Inactive Patient</h3>
+                  <div className="stat2-value">0</div>
+                </div>
+              </div>
+            </div>
 
       <div className="controls-section">
         <div className="search-wrapper">
