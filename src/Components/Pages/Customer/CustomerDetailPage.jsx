@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 import ConsultationOrder from "../../Pages/Customer/ConsultationOrder";
 import Paymenthistory from "./Paymenthistory";
-import Producthistory from "./Producthistory";
+
 import ActivityLog from "./ActivityLog";
 import aayushi from "../../Assests/aayushi.jpeg";
 import { FaDownload } from "react-icons/fa";
@@ -229,12 +229,19 @@ const formatDate = (date) => {
   >
     Overview
   </button>
-
+{/* 
   <button
     className={activeTab === "orders" ? "active-tab" : ""}
     onClick={() => setActiveTab("orders")}
   >
-    Orders History
+    Orders 
+  </button> */}
+
+  <button
+    className={activeTab === "Consultation" ? "active-tab" : ""}
+    onClick={() => setActiveTab("Consultation")}
+  >
+  Consultation
   </button>
 
 
@@ -242,7 +249,7 @@ const formatDate = (date) => {
     className={activeTab === "payment" ? "active-tab" : ""}
     onClick={() => setActiveTab("payment")}
   >
-    Payment History
+   Transaction
   </button>
 
   <button
@@ -818,13 +825,13 @@ const formatDate = (date) => {
   
 )}
 {
-  activeTab==="orders"&&(
-    <Producthistory/>
+  activeTab==="Consultation"&&(
+    <ConsultationOrder/>
   )
 
-  
 }
-    
+
+ 
 
     {
       activeTab==="payment" &&(

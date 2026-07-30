@@ -1,273 +1,357 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
-import { FaFileMedical } from "react-icons/fa";
-import { FaCalendarAlt } from "react-icons/fa";
-import { BsSearch, BsDownload } from "react-icons/bs";
-
-
+import {
+  FaCalendarCheck,
+  FaCheckCircle,
+  FaSyncAlt,
+  FaUserClock,
+  FaExclamationTriangle,
+  FaTimesCircle,
+} from "react-icons/fa";
 
 const ConsultationOrder = () => {
-  const params = useParams();
-  const { customerId } = params;
+  const { customerId } = useParams();
 
-  const [SearchOrderlistTerm, setSearchOrderlistTerm] = useState("");
-  const [OrderlistData, setOrderlistData] = useState([]);
-  const [error, setError] = useState(null);
-  const [orderlistloading, setOrderlistloading] = useState(true);
-  const [Customererror, setCustomererror] = useState(null);
-  const [Customerloading, setCustomerloading] = useState(true);
-  const [ActiveOrderType, setActiveOrderType] = useState("product")
-  const [ProductOrderperpage, setProductOrderperpage] = useState(5)
-  const [CurrentProductOrder, setCurrentProductOrder] = useState(1)
-  const [consultationperpage, setconsultationperpage] = useState(5)
-  const [currentConsultationpage, setCurrentconsultationpage] = useState(1)
-  const [previewImage, setPreviewImage] = useState(null);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [showCustomerDetail, setShowCustomerDetail] = useState([])
-  const navigate = useNavigate();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const[Error,setError]=useState(null);
 
-
-  const handleNavigate = (id) => {
-    navigate(`/Items/${id}`);
-  };
-
-  const searchPlaceholder =
-    ActiveOrderType === "product"
-      ? "Search by product name..."
-      : "Search by doctor name or specialization...";
-
-  const fetchOrderlist = async () => {
-    const token = sessionStorage.getItem("superadmin_token")
+  const fetchConsultationOrders = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/orders/getorderbycustomerid/${customerId}/`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
-      }
-      const data = await response.json();
-      setOrderlistData(data.orders);
-      setShowCustomerDetail(data.customer)
+      setLoading(true);
 
-    }
-    catch (err) {
-      console.error(err.message);
-      setError('Something went wrong while fetching data.');
-    }
-    finally {
-      setOrderlistloading(false);
-    }
-  }
-  useEffect(() => {
-    fetchOrderlist();
-  }, [])
+      const token = sessionStorage.getItem("superadmin_token");
 
-
-  const handlecancelorder = async (orderId) => {
-    const token = sessionStorage.getItem("superadmin_token")
-
-    try {
       const response = await fetch(
-        `${BASE_URL}/orders/cancelorder/`,
+        `${BASE_URL}/customers/admin/customers/?id=${customerId}&type=consultation`,
         {
-          method: "POST",
+          method: "GET",
           headers: {
-            Accept: "application/json",
+           Accept: "application/json",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-
+            "ngrok-skip-browser-warning": "true",
           },
-          body: JSON.stringify({ order_id: orderId }),
         }
       );
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Session expired. Please login again");
-        sessionStorage.removeItem("superadmin_token");
-        navigate("/login");
-        return;
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setOrders(data?.data?.consultation_orders?.results || []);
+      } else {
+        toast.error(data.message || "Failed to fetch consultation orders");
       }
-
-      if (!response.ok) {
-        throw new Error("Failed to cancel order");
-      }
-
-      const result = await response.json();
-      console.log("Cancel Order Response:", result);
-      toast.success("Order cancelled successfully ")
-      fetchOrderlist();
-
-
-
     } catch (error) {
-      console.error("Error cancelling order:", error);
-      toast.error("Failed to cancel the order. Please try again.");
+      console.log(error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(()=>{
+    fetchConsultationOrders();
+  },[])
 
-  console.log(OrderlistData, "orderlist");
+  const formatTime = (time) => {
+    if (!time) return "-";
 
-  const filteredOrders = OrderlistData?.filter(order => {
-    const matchesType = order.order_type === ActiveOrderType;
-
-
-    if (!SearchOrderlistTerm.trim()) {
-      return matchesType;
-    }
-
-    const searchTerm = SearchOrderlistTerm.toLowerCase().trim();
-
-    if (order.order_type === "product" && Array.isArray(order.items) && order?.items?.length > 0) {
-      return (
-        matchesType &&
-        order.items.some(item =>
-          item.product_name?.toLowerCase().includes(searchTerm)
-        )
-      );
-    }
-
-
-    if (order.order_type === "consultation") {
-      const doctorName = order.doctor_name?.toLowerCase() || "";
-      const specializations = Array.isArray(order.doctor_specializations)
-        ? order.doctor_specializations.map(s => s.toLowerCase()).join(" ")
-        : (order.doctor_specializations?.toLowerCase() || "");
-
-      return (
-        matchesType &&
-        (doctorName.includes(searchTerm) || specializations.includes(searchTerm))
-      );
-    }
-
-    return false;
-  });
-
-
-  const showOrders = SearchOrderlistTerm.trim()
-    ? filteredOrders
-    : OrderlistData;
-
-
-
-
-  const indexoflastorder = CurrentProductOrder * ProductOrderperpage;
-  const indexoffirstorder = indexoflastorder - ProductOrderperpage;
-  const totalPages = Math.ceil(showOrders?.length / ProductOrderperpage);
-  const currentOrder = showOrders?.slice(indexoffirstorder, indexoflastorder);
-  const handlePageChange = (pagenumber) => setCurrentProductOrder(pagenumber);
-
-  const indexoflastconsultationorder = currentConsultationpage * consultationperpage;
-  const indexoffirstconsultationorder = indexoflastconsultationorder - consultationperpage;
-  const currentConsultation = showOrders?.slice(indexoffirstconsultationorder, indexoflastconsultationorder);
-
-  const totalpage = Math.ceil(showOrders?.length / consultationperpage);
-  const handlePagechanges = (pageNumber) => setCurrentconsultationpage(pageNumber);
-
+    return new Date(`1970-01-01T${time}`).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <>
 
-      <div className='table-wrapper1'>
+      <div className="consultation-main-card">
+    
+    
+                  <div className="consultation-header">
+    
+                    <div className="consultation-title-wrap">
+    
+                      <div className="consultation-line"></div>
+    
+                      <div>
+                        <h2>Consultation History</h2>
+    
+                        <p>
+                          Track all consultation activities,
+                       
+                        </p>
+                      </div>
+    
+                    </div>
+    
+                  </div>
+    
+    
+             <div className="vendors-stats stats2-grid">
+      {/* Total Appointment */}
+      <div className="stat2-card">
+        <div
+          className="stat2-icon"
+          style={{ background: "#0D614E20", color: "#0D614E" }}
+        >
+          <FaCalendarCheck size={24} />
+        </div>
+        <div className="stat2-info">
+          <h3>Appointment</h3>
+          {/* <div className="stat2-value">{AppointmentStats?.total || 0}</div> */}
+        </div>
+      </div>
+    
+      {/* Confirmed */}
+      <div className="stat2-card">
+        <div
+          className="stat2-icon"
+         style={{ background: "#0D614E20", color: "#0D614E" }}
+        >
+          <FaCheckCircle size={24} />
+        </div>
+        <div className="stat2-info">
+          <h3>Confirmed</h3>
+          {/* <div className="stat2-value">{AppointmentStats?.confirmed || 0}</div> */}
+        </div>
+      </div>
+    
+      {/* Cancelled */}
+      
+    
+      {/* Rescheduled */}
+      <div className="stat2-card">
+        <div
+          className="stat2-icon"
+      style={{ background: "#0D614E20", color: "#0D614E" }}
+        >
+          <FaSyncAlt size={24} />
+        </div>
+        <div className="stat2-info">
+          <h3>Rescheduled</h3>
+          {/* <div className="stat2-value">{AppointmentStats?.rescheduled || 0}</div> */}
+        </div>
+      </div>
+      <div className="stat2-card">
+        <div
+          className="stat2-icon"
+         style={{ background: "#0D614E20", color: "#0D614E" }}
+        >
+          <FaUserClock size={24} />
+        </div>
+        <div className="stat2-info">
+          <h3>Patient Reschedule</h3>
+          {/* <div className="stat2-value">
+                 {AppointmentStats?.patient_rescheduled || 0}
+          </div> */}
+        </div>
+      </div>
+      <div className="stat2-card">
+        <div
+          className="stat2-icon"
+          style={{ background: "#0D614E20", color: "#0D614E" }}
+        >
+          <FaExclamationTriangle size={24} />
+        </div>
+        <div className="stat2-info">
+          <h3>Missed</h3>
+          {/* <div className="stat2-value">{AppointmentStats?.missed || 0}</div> */}
+        </div>
+      </div>
+    
+      <div className="stat2-card">
+        <div
+          className="stat2-icon"
+         style={{ background: "#0D614E20", color: "#0D614E" }}
+        >
+          <FaTimesCircle size={24} />
+        </div>
+        <div className="stat2-info">
+          <h3>Cancelled</h3>
+          {/* <div className="stat2-value">{AppointmentStats?.cancelled || 0}</div> */}
+        </div>
+      </div>
+    
+      
+    
+    </div>
+                  <div classsName="table-wrapper1">
+                <table className="data-table">
+  <thead>
+    <tr>
+      <th>Order ID</th>
+      <th>Doctor Name</th>
+      <th>Consultation Fee</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Consultation Status</th>
+      <th>Payment Status</th>
+    </tr>
+  </thead>
 
-
+  <tbody>
+    {loading ? (
+      Array(3)
+        .fill(0)
+        .map((_, i) => (
+          <tr key={i}>
+            <td colSpan="7">
+              <div className="skeleton-row"></div>
+            </td>
+          </tr>
+        ))
+    ) : Error? (
+      <tr>
+        <td colSpan="7" style={{ textAlign: "center", color: "red" }}>
+          {Error}
+        </td>
+      </tr>
+    ) : orders.length > 0 ? (
+      orders.map((item) => (
+        <tr key={item.id}>
+          <td>{item.id.slice(0, 8)}...</td>
+          <td>{item.doctor_name}</td>
+          <td>₹{item.amount}</td>
+          <td>{item.date}</td>
+          <td>
+            {formatTime(item.start_time)} - {formatTime(item.end_time)}
+          </td>
+          <td>
+            <span className={`status-badge ${item.status?.toLowerCase()}`}>
+              {item.status}
+            </span>
+          </td>
+          <td>
+            <span
+              className={`status-badge ${item.payment_status?.toLowerCase()}`}
+            >
+              {item.payment_status}
+            </span>
+          </td>
+        </tr>
+      ))
+    ) : (
+      <tr>
+        <td colSpan="7" style={{ textAlign: "center" }}>
+          No consultation found for this customer.
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
+    
+    
+    
+    
+                  </div>
+{/*     
+                   {totalPages > 1 && (
+              <div className="pagination">
+    
+    
+                <button
+                 onClick={() => getConsultationhistory(currentpage - 1)}
+                  disabled={!previousPage}
+                >
+                  Prev
+                </button>
+    
+    
+                {pages.map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => getConsultationhistory(page)}
+                    style={{
+    
+                      fontWeight: currentpage === page ? "bold" : "normal",
+                      background: currentpage === page ? "#0D614E" : "#fff",
+                      color: currentpage === page ? "#fff" : "#0D614E",
+                    }}
+                  >
+                    {page}
+                  </button>
+                ))}
+    
+    
+                <button
+                  onClick={() => getConsultationhistory(currentpage + 1)}
+                  disabled={!Nextpage}
+                >
+                  Next
+                </button>
+    
+              </div>
+            )}
+     */}
+    
+                </div>
+      {/* <div className="table-wrapper1">
         <table className="data-table">
           <thead>
             <tr>
-              <th>Order Id</th>
+              <th>Order ID</th>
               <th>Doctor Name</th>
-              <th>Specialization</th>
               <th>Consultation Fee</th>
-              <th> Date</th>
-              <th> Time</th>
+              <th>Date</th>
+              <th>Time</th>
               <th>Booking Status</th>
               <th>Payment Status</th>
-              <th>Action</th>
-
             </tr>
           </thead>
+
           <tbody>
-
-            {orderlistloading ? (
-              <tr><td colSpan="9">Loading Consultation Orders...</td></tr>
-            )
-              : currentConsultation?.length > 0 ? (
-                currentConsultation
-                  .filter((order) => order?.order_type === "consultation")
-                  .map((order, index) => (
-                    <tr key={order?.id || index}>
-                      <td>{indexoffirstconsultationorder + index + 1}</td>
-                      <td>{order?.doctor_name || "N/A"}</td>
-                      <td>{order?.doctor_specializations?.join(", ") || "N/A"}</td>
-                      <td>₹{order?.consultation_fee || 0}</td>
-                      <td>{order?.consultation_date || "N/A"}</td>
-                      <td>{order?.consultation_time || "N/A"}</td>
-                      <td>{order?.booking_status || "N/A"}</td>
-                      <td>{order?.payment_status || "N/A"}</td>
-                      <td>
-                        <button className="action-btn view" onClick={() => handleNavigate(order?.id)} >
-                          👁
-                        </button>
-                      </td>
-
-                    </tr>
-                  ))
-              ) : (
-                <tr><td colSpan="9" style={{ textAlign: "center" }}>No Consultation Orders Found</td></tr>
-              )
-
-            }
+            {loading ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center" }}>
+                  Loading...
+                </td>
+              </tr>
+            ) : orders.length > 0 ? (
+              orders.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.id.slice(0, 8)}...</td>
+                  <td>{item.doctor_name}</td>
+                  <td>₹{item.amount}</td>
+                  <td>{item.date}</td>
+                  <td>
+                    {formatTime(item.start_time)} -{" "}
+                    {formatTime(item.end_time)}
+                  </td>
+                  <td>
+                    <span
+                      className={`status-badge ${item.status?.toLowerCase()}`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`status-badge ${item.payment_status?.toLowerCase()}`}
+                    >
+                      {item.payment_status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center" }}>
+                  No consultation orders found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
+      </div> */}
 
-        {filteredOrders?.length > consultationperpage && (
-          <div className="pagination">
-            <button onClick={() => handlePagechanges(currentConsultationpage - 1)} disabled={currentConsultationpage === 1}> Prev</button>
-
-            {Array.from({ length: totalpage }, (_, i) => i + 1).map(number => (
-              <button
-                key={number}
-                className={currentConsultation === number ? "active" : ""}
-                onClick={() => handlePagechanges(number)}
-              >
-                {number}
-              </button>
-            ))}
-
-            <button onClick={() => handlePagechanges(currentConsultationpage + 1)} disabled={currentConsultationpage === totalpage}> Next</button>
-
-          </div>
-        )
-        }
-
-      </div>
-
-
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        closeButton
-      />
+      <ToastContainer position="top-center" autoClose={3000} />
     </>
   );
-
 };
-export default ConsultationOrder
+
+export default ConsultationOrder;

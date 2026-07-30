@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify"
 
 import "react-toastify/dist/ReactToastify.css"
 import { IoClose } from "react-icons/io5";
+import "./Transaction.css";
 
 
 import {
@@ -36,6 +37,7 @@ import {
 
 import {
   FaCalendarCheck,
+  FaWallet,
   FaCheckCircle,
   FaTimesCircle,
   FaSyncAlt,
@@ -122,8 +124,34 @@ const [availabilityData, setAvailabilityData] = useState([]);
             "completed": 0,
             "cancelled": 0,
             "rescheduled": 0,
-            "cancellation_requested": 0
+            "cancellation_requested": 0,
+            "missed":0
 });
+
+const getDisplaySlot = (consultation) => {
+  const history = consultation.status_history || [];
+
+  // Agar reschedule hua hai to latest new_slot dikhao
+  const rescheduled = [...history]
+    .reverse()
+    .find(
+      (item) =>
+        item.to_status === "rescheduled" ||
+        item.to_status === "reschedule"
+    );
+
+  if (rescheduled?.new_slot) {
+    return rescheduled.new_slot;
+  }
+
+  // Warna current slot
+  if (consultation.slot?.length) {
+    return consultation.slot[0];
+  }
+
+  // Fallback
+  return history[history.length - 1]?.slot || {};
+};
   
 const getStatusStyle = (status) => {
   const value = status?.toLowerCase();
@@ -141,8 +169,11 @@ const getStatusStyle = (status) => {
 
   
     case "pending":
-    case "processing":
-    case "cancellation_requested":
+    case "processing":  
+    case "reschedule":
+    case "rescheduled":
+  
+   
       return {
         background: "#fef3c7",
         color: "#b45309",
@@ -150,12 +181,7 @@ const getStatusStyle = (status) => {
 
    
    
-    case "reschedule":
-    case "rescheduled":
-      return {
-        background: "#dbeafe",
-        color: "#2563eb",
-      };
+    
 
     // Red
     case "failed":
@@ -163,6 +189,7 @@ const getStatusStyle = (status) => {
     case "cancelled":
     case "expired":
     case "missed":
+       case "cancellation_requested":
       return {
         background: "#fee2e2",
         color: "#dc2626",
@@ -174,11 +201,7 @@ const getStatusStyle = (status) => {
         color: "#7c3aed",
       };
 
-    default:
-      return {
-        background: "#f3f4f6",
-        color: "#4b5563",
-      };
+   
   }
 };
 
@@ -314,7 +337,6 @@ const handleSubmitReason = async () => {
 
       const data = await response.json();
 
-      console.log("Category API Response:", data);
 
 
       setData(data.data.results);
@@ -326,10 +348,10 @@ const handleSubmitReason = async () => {
     } catch (error) {
       console.error(error.message);
 
-      setConsultationError("Something went wrong while fetching categories");
+      setConsultationError("Something went wrong while fetching consultation");
        
 
-      toast.error("Failed to fetch Category Data");
+      toast.error("Failed to fetch consultation Data");
     } finally {
       setConsultationLoading(false);
     }
@@ -1244,12 +1266,12 @@ const getAvailability = async () => {
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaUserClock size={24} />
+      <FaCheckCircle size={24} />
     </div>
     <div className="stat2-info">
-      <h3>Patient Reschedule</h3>
+      <h3>Compelted</h3>
       <div className="stat2-value">
-             {AppointmentStats?.patient_rescheduled || 0}
+             {AppointmentStats?.completed || 0}
       </div>
     </div>
   </div>
@@ -1307,51 +1329,54 @@ const getAvailability = async () => {
                   ) : ConsultationError ? (
                     <p colSpan="6" style={{ color: "red" }}>{ConsultationError}</p>
                   ) : (
-                    <tbody>
-                      {Data && Data.length > 0 ? (
-                        Data.map((consultation, index) => (
-                          <tr key={consultation.id}>
-                            <td className="id1">{index + 1}</td>
-                            <td> {consultation.patient_name}</td>
-                            <td>{consultation.doctor_name}</td>
-                            <td>{consultation.amount}</td>
-                        <td>
-  {consultation.status_history?.[
-    consultation.status_history.length - 1
-  ]?.slot?.date || "-"}
-</td>
+                   <tbody>
+  {Data && Data.length > 0 ? (
+    Data.map((consultation, index) => {
+      const slot =
+        consultation.slot?.[0] ||
+        consultation.status_history?.find(
+          (item) => item.new_slot
+        )?.new_slot ||
+        consultation.status_history?.[
+          consultation.status_history.length - 1
+        ]?.slot || {};
 
-<td>
-  {consultation.status_history?.[
-    consultation.status_history.length - 1
-  ]?.slot?.start_time || "-"}
-</td>
+      return (
+        <tr key={consultation.id}>
+          <td className="id1">{index + 1}</td>
+          <td>{consultation.patient_name}</td>
+          <td>{consultation.doctor_name}</td>
+      <td>{consultation.amount ? `₹${consultation.amount}` : "₹0"}</td>
 
-<td>
-  {consultation.status_history?.[
-    consultation.status_history.length - 1
-  ]?.slot?.end_time || "-"}
-</td>
-                           
-                                    <td><span className="category-code-badge">{consultation.consultation_type ||"N/A"}</span></td>
-<td>
-  <span
-    className="status-badge"
-    style={getStatusStyle(consultation.status)}
-  >
-    {consultation.status}
-  </span>
-</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="10" style={{ textAlign: "center" }}>
-                            No Data Found
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
+          <td>{slot.date || "-"}</td>
+          <td>{slot.start_time || "-"}</td>
+          <td>{slot.end_time || "-"}</td>
+
+          <td>
+            <span className="category-code-badge">
+              {consultation.consultation_type || "N/A"}
+            </span>
+          </td>
+
+          <td>
+            <span
+              className="status-badge"
+              style={getStatusStyle(consultation.status)}
+            >
+              {consultation.status}
+            </span>
+          </td>
+        </tr>
+      );
+    })
+  ) : (
+    <tr>
+      <td colSpan="10" style={{ textAlign: "center" }}>
+        No Data Found
+      </td>
+    </tr>
+  )}
+</tbody>
                   )}
                 </table>
 
@@ -1403,145 +1428,293 @@ const getAvailability = async () => {
           )
         }
 
-        {
-          activeTab === "Transaction" && (
-            <div className="consultation-main-card">
+      {activeTab === "Transaction" && (
+  <div className="transaction-main-card">
 
+    {/* Header */}
 
-              <div className="consultation-header">
+    <div className="transaction-header">
 
-                <div className="consultation-title-wrap">
+      <div className="transaction-title-wrap">
+        <div className="transaction-line"></div>
 
-                  <div className="consultation-line"></div>
-
-                  <div>
-                    <h2>Transaction History</h2>
-
-                    <p>
-                      Track all transaction activities,
-                      Completed, Failed, and Pending requests
-                    </p>
-                  </div>
-
-                </div>
-
-              </div>
-
-
-             
-
-               
-               
-      <div className="vendors-stats stats2-grid">
-        <div className="stat2-card">
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-        <FaClock size={24} />
-          </div>
-          <div className="stat2-info">
-            <h3>Pending</h3>
-            <div className="stat2-value">0</div>
-          </div>
+        <div>
+          <h2>Transaction History</h2>
+          <p>
+            Track all payment activities for Consultation and Orders
+          </p>
         </div>
-
-        <div className="stat2-card">
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaCheckCircle size={24} />
-          </div>
-          <div className="stat2-info">
-            <h3>Success</h3>
-            <div className="stat2-value"> 0</div>
-          </div>
-        </div>
-
-        <div className="stat2-card">
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaTimesCircle size={24} />
-          </div>
-          <div className="stat2-info">
-            <h3>Failed</h3>
-            <div className="stat2-value">0</div>
-          </div>
-        </div>
-
-<div className="stat2-card">
-  <div
-    className="stat2-icon"
-    style={{ background: "#0D614E20", color: "#0D614E" }}
-  >
-    <FaUndoAlt size={24} />
-  </div>
-  <div className="stat2-info">
-    <h3>Refunded</h3>
-    <div className="stat2-value">0</div>
-  </div>
-</div>
       </div>
-              
 
-              <div classsName="table-wrapper1">
-                <table className="data-table" >
-                  <thead>
-                    <tr>
-                      <th>Id</th>
-                      <th>Patient Name</th>                   
-                      <th>Amount</th>
-                      <th> Date</th>
-                      <th> Payment Method</th>
-                    
-                         <th>Status</th>
+      <div className="transaction-header-actions">
+        <button className="transaction-date-btn">
+          📅 Today
+        </button>
 
-                    </tr>
-                  </thead>
-                  { TransactionLoading? (
-                    Array(3).fill(0).map((_, i) => (
-                      <tr key={i}>
-                        <td colSpan="10"><div className="skeleton-row"></div></td>
-                      </tr>
-                    ))
-                  ) : TransactionError ? (
-                    <p colSpan="6" style={{ color: "red" }}>{TransactionError}</p>
-                  ) : (
-                    <tbody>
-                      {TransactionData && TransactionData.length > 0 ? (
-                 TransactionData.map((transaction, index) => (
-                          <tr key={transaction.id}>
-                            <td >{transaction.transaction_id}</td>
-                            <td> {transaction.name}</td>
-                            <td>{transaction.amount}</td>
-                            <td>{transaction.date}</td>
-                            <td>{transaction.payment_method}</td>
-                          <td>
-  <span
-    className="status-badge"
-    style={getStatusStyle(transaction.status)}
-  >
-    {transaction.status}
-  </span>
-</td>
-                           
+        <button className="transaction-export-btn">
+          Export
+        </button>
+      </div>
 
-                        
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="10" style={{ textAlign: "center" }}>
-                            No Data Found
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  )}
-                </table>
+    </div>
 
+    {/* Tabs */}
 
+    <div className="transaction-tabs">
 
+      <button className="transaction-tab active">
+        All Transactions
+      </button>
 
-              </div>
+      <button className="transaction-tab">
+        Consultation
+      </button>
 
-            </div>
-          )
-        }
+      <button className="transaction-tab">
+        Orders
+      </button>
+
+    </div>
+
+    {/* Summary */}
+
+ <div className="vendors-stats stats2-grid">
+
+  {/* Pending */}
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+      style={{ background: "#FFF4E5", color: "#F59E0B" }}
+    >
+      <FaClock size={24} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Pending</h3>
+      {/* <div className="stat2-value">{TransactionStats?.pending || 0}</div> */}
+      {/* <p>₹ {TransactionStats?.pending_amount || 0}</p> */}
+    </div>
+  </div>
+
+  {/* Success */}
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+      style={{ background: "#DCFCE7", color: "#16A34A" }}
+    >
+      <FaCheckCircle size={24} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Success</h3>
+      {/* <div className="stat2-value">{TransactionStats?.success || 0}</div> */}
+      {/* <p>₹ {TransactionStats?.success_amount || 0}</p> */}
+    </div>
+  </div>
+
+  {/* Failed */}
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+      style={{ background: "#FEE2E2", color: "#DC2626" }}
+    >
+      <FaTimesCircle size={24} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Failed</h3>
+      {/* <div className="stat2-value">{TransactionStats?.failed || 0}</div> */}
+      {/* <p>₹ {TransactionStats?.failed_amount || 0}</p> */}
+    </div>
+  </div>
+
+  {/* Refunded */}
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+      style={{ background: "#E0F2FE", color: "#0284C7" }}
+    >
+      <FaUndoAlt size={24} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Refunded</h3>
+      {/* <div className="stat2-value">{TransactionStats?.refunded || 0}</div>
+      <p>₹ {TransactionStats?.refunded_amount || 0}</p> */}
+    </div>
+  </div>
+
+  {/* Total Revenue */}
+  <div className="stat2-card">
+    <div
+      className="stat2-icon"
+      style={{ background: "#ECFDF5", color: "#0D614E" }}
+    >
+      <FaWallet size={24} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Total Revenue</h3>
+      {/* <div className="stat2-value">
+        ₹ {TransactionStats?.total_revenue || 0}
+      </div>
+      <p>Overall Earnings</p> */}
+    </div>
+  </div>
+
+</div>
+
+    {/* Filters */}
+
+    <div className="transaction-filters">
+
+      <input
+        type="text"
+        placeholder="Search patient..."
+      />
+
+      <select>
+        <option>All Type</option>
+        <option>Consultation</option>
+        <option>Order</option>
+      </select>
+
+      <select>
+        <option>All Status</option>
+        <option>Success</option>
+        <option>Pending</option>
+        <option>Failed</option>
+        <option>Refunded</option>
+      </select>
+
+      <select>
+        <option>Payment Method</option>
+        <option>UPI</option>
+        <option>Card</option>
+        <option>Cash</option>
+      </select>
+
+    </div>
+
+    {/* Table */}
+
+    <div className="transaction-table-wrapper">
+
+      <table className="transaction-table">
+
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Patient Name</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Payment Method</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        {TransactionLoading ? (
+
+          Array(4).fill(0).map((_, i) => (
+            <tr key={i}>
+              <td colSpan="7">
+                <div className="transaction-skeleton-row"></div>
+              </td>
+            </tr>
+          ))
+
+        ) : TransactionError ? (
+
+          <tbody>
+            <tr>
+              <td
+                colSpan="7"
+                style={{
+                  textAlign: "center",
+                  color: "red"
+                }}
+              >
+                {TransactionError}
+              </td>
+            </tr>
+          </tbody>
+
+        ) : (
+
+          <tbody>
+
+            {TransactionData && TransactionData.length > 0 ? (
+
+              TransactionData.map((transaction) => (
+
+                <tr key={transaction.id}>
+
+                  <td>{transaction.transaction_id}</td>
+
+                  <td>
+
+                    <span
+                      className={`transaction-type ${
+                        transaction.type === "Order"
+                          ? "order"
+                          : "consultation"
+                      }`}
+                    >
+                      {transaction.type || "Consultation"}
+                    </span>
+
+                  </td>
+
+                  <td>{transaction.name}</td>
+
+                  <td>₹ {transaction.amount}</td>
+
+                  <td>{transaction.date}</td>
+
+                  <td>{transaction.payment_method}</td>
+
+                  <td>
+
+                    <span
+                      className="transaction-status-badge"
+                      style={getStatusStyle(transaction.status)}
+                    >
+                      {transaction.status}
+                    </span>
+
+                  </td>
+
+                </tr>
+
+              ))
+
+            ) : (
+
+              <tr>
+                <td
+                  colSpan="7"
+                  style={{
+                    textAlign: "center",
+                    padding: "40px"
+                  }}
+                >
+                  No Transaction Found
+                </td>
+              </tr>
+
+            )}
+
+          </tbody>
+
+        )}
+
+      </table>
+
+    </div>
+
+  </div>
+)}
        {
   activeTab === "bank" && (
  <div className="bank-verification-wrapper">

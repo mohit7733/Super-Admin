@@ -575,10 +575,10 @@ setSelectedCustomer(null);
                   </td>
 
 
-                  <td>{customer.first_name} </td>
-                  <td>{customer.email}</td>
-                  <td>{customer.gender}</td>
-                  <td>{customer.verified_phone_number}</td>
+                  <td>{customer.first_name||"N/A"} </td>
+                  <td>{customer.email||"N/A"}</td>
+                  <td>{customer.gender||"N/A"}</td>
+                  <td>{customer.verified_phone_number||"N/A"}</td>
   <td>
           <label className="switch">
             <input

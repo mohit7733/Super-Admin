@@ -50,7 +50,7 @@ import Prakriti from './Components/Question/Prakirti';
 import Medical from './Components/Question/Medical';
 import Diet from './Components/Pages/Diet/Diet'
 import Testing from './Components/Pages/Customer/testing';
-import Producthistory from './Components/Pages/Customer/Producthistory';
+
 import Presceptions from './Components/Pages/Customer/Presceptions';
 import ConsultationOrder from './Components/Pages/Customer/ConsultationOrder'
 import ActivityLog from './Components/Pages/Customer/ActivityLog';
@@ -469,16 +469,6 @@ function App() {
         />
 
 
-        <Route
-          path="/producthistory"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Producthistory />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
 
         <Route
           path="/Prescription"
