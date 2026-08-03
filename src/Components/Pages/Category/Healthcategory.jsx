@@ -742,8 +742,9 @@ const Healthcategory = () => {
               <th>Name</th>
               <th>Service Category</th>
               <th>Code</th>
+                 <th>Status</th>
               <th>Image</th>
-              <th>Status</th>
+            
               <th>Actions</th>
             </tr>
           </thead>
@@ -783,6 +784,21 @@ const Healthcategory = () => {
                   <td>
                     <span className="category-code-badge">{item.code || "N/A"}</span>
                   </td>
+
+                      <td>
+                    {/* <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
+                      {item.is_active ? "Active" : "Inactive"}
+                    </span> */}
+                    <br />
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={item.is_active}
+                        onChange={() => handleToggle(item.id, item.is_active)}
+                      />
+                      <span className="slider round"></span>
+                    </label>
+                  </td>
                   <td>
                     {item.image_url ? (
                       <img
@@ -802,20 +818,7 @@ const Healthcategory = () => {
                       <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
                     )}
                   </td>
-                  <td>
-                    <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
-                      {item.is_active ? "Active" : "Inactive"}
-                    </span>
-                    <br />
-                    <label className="switch">
-                      <input
-                        type="checkbox"
-                        checked={item.is_active}
-                        onChange={() => handleToggle(item.id, item.is_active)}
-                      />
-                      <span className="slider round"></span>
-                    </label>
-                  </td>
+              
                   <td>
                     <div className="action-buttons">
                       <button

@@ -225,9 +225,6 @@
   background: #fafafa;
 }
 
-/* ===============================
-   TYPE BADGES
-================================= */
 
 .transaction-type {
   padding: 6px 14px;
@@ -246,9 +243,6 @@
   color: #4f46e5;
 }
 
-/* ===============================
-   STATUS
-================================= */
 
 .transaction-status-badge {
   padding: 6px 14px;

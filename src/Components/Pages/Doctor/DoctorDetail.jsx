@@ -128,31 +128,7 @@ const [availabilityData, setAvailabilityData] = useState([]);
             "missed":0
 });
 
-const getDisplaySlot = (consultation) => {
-  const history = consultation.status_history || [];
 
-  // Agar reschedule hua hai to latest new_slot dikhao
-  const rescheduled = [...history]
-    .reverse()
-    .find(
-      (item) =>
-        item.to_status === "rescheduled" ||
-        item.to_status === "reschedule"
-    );
-
-  if (rescheduled?.new_slot) {
-    return rescheduled.new_slot;
-  }
-
-  // Warna current slot
-  if (consultation.slot?.length) {
-    return consultation.slot[0];
-  }
-
-  // Fallback
-  return history[history.length - 1]?.slot || {};
-};
-  
 const getStatusStyle = (status) => {
   const value = status?.toLowerCase();
 
@@ -1484,7 +1460,7 @@ const getAvailability = async () => {
   <div className="stat2-card">
     <div
       className="stat2-icon"
-      style={{ background: "#FFF4E5", color: "#F59E0B" }}
+       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
       <FaClock size={24} />
     </div>
@@ -1500,7 +1476,7 @@ const getAvailability = async () => {
   <div className="stat2-card">
     <div
       className="stat2-icon"
-      style={{ background: "#DCFCE7", color: "#16A34A" }}
+   style={{ background: "#0D614E20", color: "#0D614E" }}
     >
       <FaCheckCircle size={24} />
     </div>
@@ -1516,7 +1492,7 @@ const getAvailability = async () => {
   <div className="stat2-card">
     <div
       className="stat2-icon"
-      style={{ background: "#FEE2E2", color: "#DC2626" }}
+      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
       <FaTimesCircle size={24} />
     </div>
@@ -1532,7 +1508,7 @@ const getAvailability = async () => {
   <div className="stat2-card">
     <div
       className="stat2-icon"
-      style={{ background: "#E0F2FE", color: "#0284C7" }}
+       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
       <FaUndoAlt size={24} />
     </div>
@@ -1548,7 +1524,7 @@ const getAvailability = async () => {
   <div className="stat2-card">
     <div
       className="stat2-icon"
-      style={{ background: "#ECFDF5", color: "#0D614E" }}
+        style={{ background: "#0D614E20", color: "#0D614E" }}
     >
       <FaWallet size={24} />
     </div>
@@ -1573,11 +1549,7 @@ const getAvailability = async () => {
         placeholder="Search patient..."
       />
 
-      <select>
-        <option>All Type</option>
-        <option>Consultation</option>
-        <option>Order</option>
-      </select>
+      
 
       <select>
         <option>All Status</option>

@@ -11,11 +11,17 @@ import ConsultationOrder from "../../Pages/Customer/ConsultationOrder";
 import Paymenthistory from "./Paymenthistory";
 
 import ActivityLog from "./ActivityLog";
+import Allprescription from "./AllPrescription";
 import aayushi from "../../Assests/aayushi.jpeg";
 import { FaDownload } from "react-icons/fa";
-import OrderModal from "../Order/OrderModal";
+
 import { ToastContainer, toast } from "react-toastify";
 import BASE_URL from "../../../Base";
+import prescriptionEmpty from "../../Assests/orderempty.svg";
+import orderEmpty from "../../Assests/fff.svg";
+import CustomerSkeleton from "./CustomerSkeleton";
+import Producthistory from "./Producthistory";
+import OrderModal from "./OrderModal"
 
 
 
@@ -33,6 +39,8 @@ const [summary, setSummary] = useState(null);
 const [healthOverview, setHealthOverview] = useState(null);
 const [ordersData, setOrdersData] = useState([]);
 const [prescriptions, setPrescriptions] = useState([]);
+
+const [selectedOrder, setSelectedOrder] = useState(null);
 
 const formatDate = (date) => {
   if (!date) return "N/A";
@@ -79,9 +87,9 @@ const formatDate = (date) => {
   setCustomerData(data.data.customer);
   setSummary(data.data.summary);
   setHealthOverview(data.data.overview.health_overview);
-
-  setOrdersData(data.data.recent_orders || []);
-  setPrescriptions(data.data.prescriptions || []);
+    setOrdersData(data.data.recent_orders || []);  
+   setPrescriptions(data.data.prescriptions || []);
+ 
 }
     } catch (err) {
 
@@ -99,8 +107,50 @@ const formatDate = (date) => {
   };
 
   useEffect(() => {
+  console.log("useEffect Called");
   getCustomerDetail();
 }, [customerId]);
+useEffect(() => {
+  console.table(
+    ordersData.map((order) => ({
+      order_id: order.order_id,
+      order_code: order.order_display_code,
+    }))
+  );
+}, [ordersData]);
+if (Loading) {
+  return <CustomerSkeleton />;
+}
+
+if (Error) {
+  return (
+    <div className="customer-error-page">
+      <div className="customer-error-card">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/564/564619.png"
+          alt="Error"
+          className="customer-error-image"
+        />
+
+        <h2>Unable to Load Customer Details</h2>
+
+        <p>
+          Something went wrong while fetching the customer information.
+          Please try again in a few moments.
+        </p>
+
+        <button
+          className="customer-retry-btn"
+          onClick={getCustomerDetail}
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
   return (
     <>
      <div className="customer-details-wrapper">
@@ -229,22 +279,21 @@ const formatDate = (date) => {
   >
     Overview
   </button>
-{/* 
-  <button
-    className={activeTab === "orders" ? "active-tab" : ""}
-    onClick={() => setActiveTab("orders")}
-  >
-    Orders 
-  </button> */}
 
-  <button
+
+  
+<button
+  className={activeTab === "orders" ? "active-tab" : ""}
+  onClick={() => setActiveTab("orders")}
+>
+  Orders
+</button>
+<button
     className={activeTab === "Consultation" ? "active-tab" : ""}
     onClick={() => setActiveTab("Consultation")}
   >
   Consultation
   </button>
-
-
   <button
     className={activeTab === "payment" ? "active-tab" : ""}
     onClick={() => setActiveTab("payment")}
@@ -252,11 +301,13 @@ const formatDate = (date) => {
    Transaction
   </button>
 
-  <button
-    className={activeTab === "activity" ? "active-tab" : ""}
-    onClick={() => setActiveTab("activity")}
+ 
+
+   <button
+    className={activeTab === "Prescription" ? "active-tab" : ""}
+    onClick={() => setActiveTab("Prescription")}
   >
-    Activity Log
+    Prescription
   </button>
 
 </div>
@@ -322,8 +373,9 @@ const formatDate = (date) => {
     : "N/A"}
 </p>
   </div>
-</div>
 
+  
+</div>
 
           
        <div className="info-card">
@@ -367,9 +419,12 @@ const formatDate = (date) => {
     <p>{healthOverview?.sleep_quality || "N/A"}</p>
   </div>
 </div>
+
+
+
           </div>
 
-         
+            
           <div className="orders-history-card">
 
             <div className="orders-head">
@@ -386,7 +441,7 @@ const formatDate = (date) => {
     
     <thead>
       <tr>
-        <th>Order ID</th>
+        <th>Order code</th>
         <th>Date</th>
         <th>Items</th>
         <th>Amount</th>
@@ -394,135 +449,250 @@ const formatDate = (date) => {
       </tr>
     </thead>
 
-    <tbody>
-      {Loading ? (
-        Array(3)
-          .fill(0)
-          .map((_, i) => (
-            <tr key={i}>
-              <td colSpan="5">
-                <div className="skeleton-row"></div>
-              </td>
-            </tr>
-          ))
-      ) : Error ? (
-        <tr>
-          <td colSpan="5" style={{ color: "red" }}>
-            {Error}
-          </td>
-        </tr>
-      ) : ordersData?.length > 0 ? (
-        ordersData.map((order, index) => (
-          <tr key={index}>
-            <td>{order.id}</td>
-            <td>{order.date}</td>
-            <td>{order.items}</td>
-            <td>{order.amount}</td>
-            <td>
-              <span className={`status ${order.status.toLowerCase()}`}>
-                {order.status}
-              </span>
-            </td>
-          </tr>
-        ))
-      ) : (
-        <tr>
-          <td colSpan="5">No Orders Found</td>
-        </tr>
-      )}
-    </tbody>
+  <tbody>
+  {Loading ? (
+    Array.from({ length: 3 }).map((_, i) => (
+      <tr key={i}>
+        <td colSpan="5">
+          <div className="skeleton-row"></div>
+        </td>
+      </tr>
+    ))
+  ) : Error ? (
+    <tr>
+      <td colSpan="5">
+        <div className="empty-card">
+          <img
+            src={orderEmpty}
+            alt="Error"
+            className="empty-image"
+          />
+
+          <h4>Unable to Load Orders</h4>
+
+          <p>
+            Something went wrong while fetching order history.
+          </p>
+
+          <button
+            className="medical-btn"
+            onClick={getCustomerDetail}
+          >
+            Retry
+          </button>
+        </div>
+      </td>
+    </tr>
+  ) : ordersData?.length ? (
+    ordersData.map((order) => (
+      <tr key={order.order_item_id}>
+        <td>{order.order_display_code}</td>
+
+        <td>
+          {new Date(order.date).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })}
+        </td>
+
+     <td className="items-cell">
+  <div className="items-count">
+    {order.items_count} {order.items_count > 1 ? "Items" : "Item"}
+  </div>
+
+  <div className="items-list">
+    {order.items?.slice(0, 2).map((item) => (
+      <div key={item.product_id || item.product_name}>
+        {item.product_name}
+      </div>
+    ))}
+
+    {order.items?.length > 2 && (
+     <button
+  className="more-items-btn"
+  onClick={() => {
+    setSelectedOrder(order);
+    setShowOrderModal(true);
+  }}
+>
+  +{order.items.length - 2} More
+</button>
+    )}
+  </div>
+</td>
+        <td>₹{Number(order.total_amount).toFixed(2)}</td>
+
+        <td>
+          <span className={`status ${order.status.toLowerCase()}`}>
+            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+          </span>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="5">
+        <div className="empty-card">
+          <img
+            src={orderEmpty}
+            alt="No Orders"
+            className="empty-image"
+          />
+
+          <h4>No Orders Found</h4>
+
+          <p>
+            This customer has not placed any orders yet.
+          </p>
+        </div>
+      </td>
+    </tr>
+  )}
+</tbody>
 
   </table>
 </div>
           
           </div>
+
+         
+          
         </div>
 
        
         <div className="customer-right-content">
 
         
-          <div className="side-card">
+       <div className="side-card">
+  <div className="side-card-top">
+    <h3>Recent Prescription</h3>
 
-            <div className="side-card-top">
-              <h3>Recent Prescription</h3>
+    {prescriptions.length > 0 && (
+      <button
+        className="medical-btn"
+        onClick={() => setActiveTab("prescription")}
+      >
+        View All
+      </button>
+    )}
+  </div>
 
-              <button className="medical-btn">View All</button>
+  {prescriptions.length > 0 ? (
+    <div className="prescription-box">
 
-            </div>
+      <div className="prescription-row">
+        <span>Prescription ID</span>
+        <p>{prescriptions[0].prescription_code}</p>
+      </div>
 
-            <div className="prescription-box">
+      <div className="prescription-row">
+        <span>Doctor</span>
+        <p className="doctor-name">
+          {prescriptions[0].doctor_name}
+        </p>
+      </div>
 
-              <div className="prescription-row">
-                <span>Prescription ID</span>
-                <p>PRX100289</p>
-              </div>
+      <div className="prescription-row">
+        <span>Date</span>
+        <p>{prescriptions[0].appointment_date}</p>
+      </div>
 
-              <div className="prescription-row">
-                <span>Doctor</span>
-                <p className="doctor-name">Dr. Neha Verma</p>
-              </div>
+      <div className="prescription-footer">
+        <button
+          className="medical-btn"
+          onClick={() => {
+          
+            setShowPrescriptionModal(true);
+          }}
+        >
+          View Prescription
+        </button>
+      </div>
 
-              <div className="prescription-row">
-                <span>Date</span>
-                <p>15 May 2024</p>
-              </div>
+    </div>
+  ) : (
+    <div className="empty-card">
 
-              <div className="prescription-footer">
+    <img src={prescriptionEmpty} alt="No Prescription" className="empty-image" />
 
-               <button
-  className="medical-btn"
-  onClick={() => setShowPrescriptionModal(true)}
->
-  View Prescription
-</button>
+      <h4>No Prescription Found</h4>
 
-              
+      <p>
+        There is no prescription available for this customer yet.
+      </p>
 
-              </div>
-            </div>
-          </div>
+    </div>
+  )}
+</div>
 
           
           <div className="side-card">
+
   <div className="side-card-top">
     <h3>Recent Order</h3>
-   <button
-  className="medical-btn"
-  onClick={() => setActiveTab("orders")}
->
-  View All 
-</button>
+
+    {ordersData.length > 0 && (
+      <button
+        className="medical-btn"
+        onClick={() => setActiveTab("orders")}
+      >
+        View All
+      </button>
+    )}
   </div>
 
-  <div className="recent-order-box">
-    {/* Center Image */}
-    <div className="recent-order-image">
-      <img
-        src={aayushi}
-        alt="Product"
-      />
+  {ordersData.length > 0 ? (
+
+    <div className="recent-order-box">
+<div className="recent-order-image">
+  <img
+    src={ordersData?.[0]?.items?.[0]?.cover_image}
+    alt={ordersData?.[0]?.items?.[0]?.product_name || "Product"}
+    className="recent-order-img"
+    onError={(e) => {
+      e.target.src = orderEmpty; // optional fallback
+    }}
+  />
+</div>
+
+      <h4>{ordersData[0].items?.[0]?.product_name}</h4>
+
+      <div className="recent-order-row">
+        <span>Qty :</span>
+        <p>{ordersData[0].items?.[0]?.quantity}</p>
+      </div>
+
+      <div className="recent-order-row">
+        <span>Amount :</span>
+        <p>₹{ordersData[0].total_amount}</p>
+      </div>
+
+      <button
+        className="medical-btn"
+        onClick={() => {
+          setShowOrderModal(true);
+        }}
+      >
+        View Order Details
+      </button>
+
     </div>
 
-    <h4>Ashwagandha Tablets</h4>
+  ) : (
 
-    <div className="recent-order-row">
-      <span>Qty :</span>
-      <p>2</p>
+    <div className="empty-card">
+<img src={orderEmpty} alt="No Orders" className="empty-image" />
+      <h4>No Orders Found</h4>
+
+      <p>
+        This customer has not placed any orders yet.
+      </p>
+
     </div>
 
-    <div className="recent-order-row">
-      <span>Amount :</span>
-      <p>₹499</p>
-    </div>
+  )}
 
-  <button
-  className="medical-btn"
-  onClick={() => setShowOrderModal(true)}
->
-  View Order Details
-</button>
-  </div>
 </div>
 
          
@@ -638,191 +808,14 @@ const formatDate = (date) => {
   </div>
 )}
 
-{showOrderModal && (
-  <div
-    className="order-modal-overlay"
-    onClick={() => setShowOrderModal(false)}
-  >
-  <div className="order-modal">
-
-  {/* Header */}
-  <div className="order-header">
-    <h2>Order Details</h2>
-    <button
-      className="close-btn"
-      onClick={() => setShowOrderModal(false)}
-    >
-      ✕
-    </button>
-  </div>
-
-  {/* Top Section */}
-  <div className="order-top-info">
-
-    <div className="top-item">
-      <span>Order ID</span>
-      <h3>#ORD001</h3>
-    </div>
-
-    <div className="top-item">
-      <span>Order Date</span>
-      <h3>08 May 2026</h3>
-    </div>
-
-    <div className="top-item">
-      <span>Order Status</span>
-      <div className="status-badge pending">
-        ● Pending
-      </div>
-    </div>
-
-  </div>
-
-  <div className="order-grid">
-
-    {/* LEFT */}
-
-    <div className="left-column">
-
-      <div className="card">
-        <h3>Order Items</h3>
-
-        <div className="table-header">
-          <span>Product</span>
-          <span>Price</span>
-          <span>Qty</span>
-          <span>Total</span>
-        </div>
-
-        <div className="item-row">
-          <div className="product-info">
-            <img src={aayushi} alt="" />
-
-            <div>
-              <h4>Ashwagandha Tablets</h4>
-              <p>Himalaya Wellness</p>
-              <span>Pack of 60 Tablets</span>
-            </div>
-          </div>
-
-          <div>₹249</div>
-          <div>2</div>
-          <div>₹499</div>
-        </div>
-      </div>
-
-      <div className="card">
-        <h3>Order Summary</h3>
-
-        <div className="summary-row">
-          <span>Subtotal</span>
-          <span>₹499</span>
-        </div>
-
-        <div className="summary-row">
-          <span>Shipping Charges</span>
-          <span>₹50</span>
-        </div>
-
-        <div className="summary-row">
-          <span>Discount</span>
-          <span className="discount">-₹50</span>
-        </div>
-
-        <div className="total-row">
-          <span>Total Amount</span>
-          <span>₹499</span>
-        </div>
-      </div>
-
-      <div className="card">
-        <h3>Order Timeline</h3>
-
-        <div className="timeline">
-
-          <div className="timeline-step active">
-            <div className="circle"></div>
-            <h5>Order Placed</h5>
-          </div>
-
-          <div className="timeline-line"></div>
-
-          <div className="timeline-step active">
-            <div className="circle"></div>
-            <h5>Packed</h5>
-          </div>
-
-          <div className="timeline-line"></div>
-
-          <div className="timeline-step active">
-            <div className="circle"></div>
-            <h5>Shipped</h5>
-          </div>
-
-          <div className="timeline-line"></div>
-
-          <div className="timeline-step">
-            <div className="circle"></div>
-            <h5>Delivered</h5>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-
-    {/* RIGHT */}
-
-    <div className="right-column">
-
-      <div className="card">
-        <h3>Shipping Address</h3>
-
-        <p>Amit Sharma</p>
-        <p>+91 9876543210</p>
-        <p>123 Green Park, Indore</p>
-      </div>
-
-      <div className="card">
-        <h3>Payment Information</h3>
-
-        <div className="summary-row">
-          <span>Payment Method</span>
-          <span>UPI</span>
-        </div>
-
-        <div className="summary-row">
-          <span>Payment Status</span>
-          <span className="paid">Paid</span>
-        </div>
-
-        <div className="summary-row">
-          <span>Transaction ID</span>
-          <span>UPI123456789</span>
-        </div>
-      </div>
-
-      <div className="card action-card">
-
-        <h3>Order Actions</h3>
-
-        <button className="invoice-btn">
-          Download Invoice
-        </button>
-
-        <button className="close-order-btn">
-          Close
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-    </div>
-  
+{showOrderModal && selectedOrder && (
+  <OrderModal
+    order={selectedOrder}
+    onClose={() => {
+      setShowOrderModal(false);
+      setSelectedOrder(null);
+    }}
+  />
 )}
 {
   activeTab==="Consultation"&&(
@@ -832,6 +825,16 @@ const formatDate = (date) => {
 }
 
  
+    {
+      activeTab==="Prescription" &&(
+        <Allprescription/>
+      )
+    }
+      {
+      activeTab==="orders" &&(
+        <Producthistory/>
+      )
+    }
 
     {
       activeTab==="payment" &&(

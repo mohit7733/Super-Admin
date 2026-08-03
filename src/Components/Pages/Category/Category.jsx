@@ -639,8 +639,8 @@ if (Object.keys(newErrors).length > 0) {
                       <img
                         src={item.image_url}
                         alt={item.name}
-                        width="50"
-                        height="50"
+                        width="40"
+                        height="40xxxddffffff"
                         style={{
                           objectFit: "cover",
                           borderRadius: "6px",
@@ -652,11 +652,9 @@ if (Object.keys(newErrors).length > 0) {
                     ) : (
                       <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
                     )}
-                  </td>
+</td>
                   <td>
-                    <span className={`status-badge ${item.is_active ? 'status-active' : 'status-inactive'}`}>
-                      {item.is_active ? 'Active' : 'Inactive'}
-                    </span>
+                   
                     <br />
                     <label className="switch">
                       <input

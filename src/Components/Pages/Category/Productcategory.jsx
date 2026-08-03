@@ -1306,7 +1306,7 @@ if (Object.keys(newErrors).length > 0) {
   </div>
 )}
 
-      {/* Preview Image Modal */}
+     
       {ProductPreviewImage && (
         <div className="prakriti-modal-overlay" onClick={() => setProductPreviewImage("")}>
           <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
