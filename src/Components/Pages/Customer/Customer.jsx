@@ -11,6 +11,7 @@ import { MdCalendarMonth } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
+import { FaCalendarCheck } from "react-icons/fa";
 
 
 
@@ -70,6 +71,8 @@ const Customers = () => {
   const[SelectedCustomer,setSelectedCustomer]=useState(null);
 const[CustomerStatusModal,setCustomerStatusModal]=useState(false);
 const[IsUpdating,setIsUpdating]=useState(false);
+const [todayCount, setTodayCount] = useState(0);
+
 
 
   
@@ -236,67 +239,6 @@ const[IsUpdating,setIsUpdating]=useState(false);
 
 
 
-  // const handleCustomerFormSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   if (!validateCustomerForm()) return;
-
-  //   const method = editingCustomerId ? "PUT" : "POST";
-  //   const url = editingCustomerId
-  //     ? `${BASE_URL}/customers/customer/${editingCustomerId}/`
-  //     : `${BASE_URL}/customers/customer/`;
-
-  //   const formData = new FormData();
-
-  //   if (method === "POST") {
-  //     const uid = userId || localStorage.getItem("USER_ID");
-  //     if (uid) formData.append("user", uid);
-  //   }
-
-  //   Object.entries(CustomerForm).forEach(([key, value]) => {
-  //     formData.append(key, value);
-  //   });
-
-  //   try {
-  //     const data = await apiFetch(url, {
-  //       method,
-  //       body: formData,
-
-  //       headers: {},
-  //     });
-
-
-  //     if (!data) return;
-
-  //     if (method === "POST") {
-  //       setCustomerData((prev) => [...prev, data]);
-  //       toast.success("Customer added successfully", {
-  //         position: "top-center",
-  //         autoClose: 2000,
-  //       });
-  //     } else {
-  //       setCustomerData((prev) =>
-  //         prev.map((cust) =>
-  //           cust.id === editingCustomerId ? { ...cust, ...CustomerForm } : cust
-  //         )
-  //       );
-  //       toast.success("Customer updated successfully", {
-  //         position: "top-center",
-  //         autoClose: 2000,
-  //       });
-  //     }
-
-  //     handleCloseCustomerModal();
-  //     getCustomerList();
-
-  //   } catch (err) {
-  //     console.error("Customer save error:", err);
-  //     toast.error("Failed to save customer", {
-  //       position: "top-center",
-  //       autoClose: 2000,
-  //     });
-  //   }
-  // };
 
   const getInitials = (firstName = "", lastName = "") => {
     return (
@@ -308,53 +250,9 @@ const[IsUpdating,setIsUpdating]=useState(false);
 
 
 
-  // const handleCustomerFileChange = (e) => {
-  //   const file = e.target.files[0];
+  
 
-  //   setCustomerForm((prev) => ({
-  //     ...prev,
-  //     profile_picture: file,
-  //   }));
-  // };
-
-
-  // const handleCustomerInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   let updatedValue = value;
-
-  //   if (name === "verified_phone_number") {
-
-  //     const digitsOnly = value.replace(/\D/g, "");
-
-  //     updatedValue = digitsOnly;
-  //   }
-
-  //   setCustomerForm((prev) => ({
-  //     ...prev,
-  //     [name]: updatedValue,
-  //   }));
-
-
-
-  //   if (formErrors[name]) {
-  //     setFormErrors((prev) => ({
-  //       ...prev,
-  //       [name]: "",
-  //     }))
-  //   }
-
-  //   if (phoneFormErrors[name]) {
-  //     setPhoneFormErrors((prev) => ({
-  //       ...prev,
-  //       [name]: "",
-  //     }))
-  //   }
-  // }
-
-
-
-  const getCustomerList = async (page = 1) => {
+  const getCustomerList = async (page = 1,search = "") => {
     const token = sessionStorage.getItem("superadmin_token");
 
     if (!token) {
@@ -367,7 +265,7 @@ const[IsUpdating,setIsUpdating]=useState(false);
 
     try {
       const response = await fetch(
-        `${BASE_URL}/customers/admin/customers/?page=${page}`,
+       `${BASE_URL}/customers/admin/customers/?page=${page}&search=${encodeURIComponent(search)}`,
         {
           method: "GET",
           headers: {
@@ -392,9 +290,9 @@ const[IsUpdating,setIsUpdating]=useState(false);
       setNextPage(data.data.next);
       setPreviousPage(data.data.previous);
       setCurrentPage(page);
-      // setThisMonthCount(data.this_month_count || 0);
-      // setThisYearCount(data.this_year_count || 0);
-
+   setThisMonthCount(data.data.this_month_count || 0);
+setThisYearCount(data.data.this_year_count || 0);
+setTodayCount(data.data.today_count || 0);
     } catch (err) {
       console.error("Customer Fetch Error:", err);
       setCustomerError("Something went wrong while fetching data.");
@@ -404,10 +302,20 @@ const[IsUpdating,setIsUpdating]=useState(false);
     }
   };
 
-  useEffect(() => {
-      getCustomerList()
-  },[] );
+useEffect(() => {
+  const delay = setTimeout(() => {
+    if (searchcustomerTerm.trim() === "") {
+      getCustomerList(1, "");
+      return;
+    }
 
+    if (searchcustomerTerm.trim().length >= 3) {
+      getCustomerList(1, searchcustomerTerm);
+    }
+  }, 500);
+
+  return () => clearTimeout(delay);
+}, [searchcustomerTerm]);
   const handleToggle = async (id, currentStatus) => {
   
   const token = sessionStorage.getItem("superadmin_token");
@@ -475,6 +383,20 @@ setSelectedCustomer(null);
             <div className="stat2-value">{totalCount.toLocaleString()}</div>
           </div>
         </div>
+
+        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+  <div
+    className="stat2-icon"
+    style={{ background: "#0D614E20", color: "#0D614E" }}
+  >
+    <FaCalendarCheck size={24} />
+  </div>
+
+  <div className="stat2-info">
+    <h3>Today</h3>
+    <div className="stat2-value">{todayCount.toLocaleString()}</div>
+  </div>
+</div>
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
             <FaChartLine size={24} />
@@ -507,20 +429,7 @@ setSelectedCustomer(null);
           />
         </div>
         <div className="action-buttons">
-          {/* <button
-            className="btn-primary"
-            // onClick={() => {
-            //   setOtpVerified(true);
-            //   setCustomerForm(initialCustomerFormState);
-            // }}
-          >
-            <BsPlus size={18} />
-            Add Customer
-          </button> */}
-          {/* <button className="btn-secondary">
-            <BsDownload size={16} />
-            Export
-          </button> */}
+         
         </div>
       </div>
 
@@ -575,10 +484,10 @@ setSelectedCustomer(null);
                   </td>
 
 
-                  <td>{customer.first_name} </td>
-                  <td>{customer.email}</td>
-                  <td>{customer.gender}</td>
-                  <td>{customer.verified_phone_number}</td>
+                  <td>{customer.first_name||"N/A"} </td>
+                  <td>{customer.email||"N/A"}</td>
+                  <td>{customer.gender||"N/A"}</td>
+                  <td>{customer.verified_phone_number||"N/A"}</td>
   <td>
           <label className="switch">
             <input
@@ -714,145 +623,7 @@ setSelectedCustomer(null);
 
       </div>
 
-      {/* {customermodalOpen && (
-        <div className="modal">
-          <form className="customer-form" onSubmit={handleCustomerFormSubmit}>
-            <h3>{editingCustomerId ? "Edit Customer" : "Add Customer"}</h3>
-
-            <label>Profile</label>
-            <input
-
-              name="profile_picture"
-              type="file"
-              placeholder="Upload your profile"
-
-              onChange={handleCustomerFileChange}
-            />
-
-
-            <label htmlFor="first_name">First Name:</label>
-            <input
-              type="text"
-              name="first_name"
-              id="first_name"
-              placeholder="Enter your first name"
-              title="Only alphabets are allowed"
-              value={CustomerForm.first_name}
-              onChange={handleCustomerInputChange}
-
-            />
-            {formErrors.first_name && (
-              <div style={{ color: "red", fontSize: "17px", marginTop: "4px" }}>{formErrors.first_name}</div>
-            )}
-
-
-
-
-            <label htmlFor="email">Email:</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={CustomerForm.email}
-              onChange={handleCustomerInputChange}
-            />
-            {formErrors.email && (
-              <div style={{ color: "red", fontSize: "17px", marginTop: "4px" }}>{formErrors.email}</div>
-            )}
-
-            <label htmlFor="gender">Gender</label>
-            <select
-
-              name="gender"
-              value={CustomerForm.gender}
-              onChange={handleCustomerInputChange}
-            >
-              <option value="">Select Gender</option>
-              <option value="male"> Male</option>
-              <option value="female"> Female</option>
-            </select>
-
-            <label htmlFor="phone_number">Mobile Number:</label>
-            <input
-              type="text"
-              name="verified_phone_number"
-              readOnly={editingCustomerId ? true : false}
-              maxLength={10}
-              placeholder="Enter your phone number"
-              value={CustomerForm.verified_phone_number}
-              onChange={handleCustomerInputChange}
-
-            />
-
-
-
-            <div className="form-buttons">
-              <button type="submit">Save</button>
-              <button type="button" onClick={handleCloseCustomerModal}>
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )} */}
-
-      {/* {otpVerified && (
-        <div className="modal">
-          <form className="customer-form" onSubmit={handleCreateCustomer}>
-            <h2>Enter your Phone Number</h2>
-
-            <input
-              type="text"
-              name="verified_phone_number"
-              placeholder="Enter your phone number"
-              value={CustomerForm.verified_phone_number}
-              onChange={handleCustomerInputChange}
-              maxLength={10}
-              inputMode="numeric"
-            />
-            {phoneFormErrors.verified_phone_number && (
-              <div style={{ color: "red", fontSize: "17px", marginTop: "4px" }}>
-                {phoneFormErrors.verified_phone_number}
-              </div>
-            )}
-
-            <div className="form-buttons">
-              <button type="submit">Create Customer</button>
-              <button
-                type="button"
-                onClick={() => {
-                  setOtpVerified(false)
-                  setPhoneFormErrors({ verified_phone_number: "" })
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )} */}
-
-
-      {/* {deleteConfirmModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Are you sure you want to delete this customer?</h3>
-            <div className="form-buttons">
-              <button className="otp-btn verify-btn"
-                onClick={() => {
-                  handleCustomerDelete(selectedCustomerId);
-                  setDeleteConfirmModal(false);
-                }}
-              >
-                Yes
-              </button>
-              <button onClick={() => setDeleteConfirmModal(false)}>No</button>
-            </div>
-          </div>
-        </div>
-      )} */}
-
-
+    
 
 
       {
@@ -957,95 +728,7 @@ setSelectedCustomer(null);
   </div>
 )}
 
-{/* {CustomerstatusModal && selectedCustomer && (
-   <div
-    className="activeModal-overlay"
-    onClick={() => {
-      setCustomerstautsModal(false);
-      setSelectedCustomer(null);
-    }}
-  >
-    <div
-      className="activeModal"
-      onClick={(e) => e.stopPropagation()}
-    >
 
-      <button
-        className="activeModal-close"
-        onClick={() => {
-          setCustomerstausModal(false);
-          setSelectedCustomer(null);
-        }}
-      >
-        ×
-      </button>
-
-      <div className="activeModal-icon">
-        ⚠️
-      </div>
-
-      <h2 className="activeModal-title">
-        Confirm Status Change
-      </h2>
-
-      <p className="activeModal-text">
-        Are you sure you want to
-        <span
-          className={
-          SelectedCustomer.is_active
-              ? "inactive-text"
-              : "active-text"
-          }
-        >
-          {SelectedCustomer.is_active
-            ? " Inactive "
-            : " Active "}
-        </span>
-        this category?
-      </p>
-
-      <div className="activeModal-card">
-        <h4>{SelectedCustomer.name}</h4>
-     
-      </div>
-
-      <div className="activeModal-footer">
-        <button
-          className="activeModal-cancel"
-          onClick={() => {
-            setStatusModal(false);
-            setSelectedCategory(null);
-          }}
-        >
-          Cancel
-        </button>
-
-        <button
-          className={`activeModal-confirm ${
-          SelectedCustomer.is_active
-              ? "deactivate-btn"
-              : "activate-btn"
-          }`}
-          onClick={() => {
-            updateCategoryStatus(
-              SelectedCustomer.id,
-              SelectedCustomer.is_active
-            );
-
-           setCustomerstautsModal(false);
-            setSelectedCustomer(null);
-          }}
-        >
-          Yes,{" "}
-          {SelectedCustomer.is_active
-            ? "Deactivate"
-            : "Activate"}
-        </button>
-      </div>
-
-    </div>
-  </div>
-)} */}
       </>
   )
 

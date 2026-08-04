@@ -33,7 +33,10 @@ const ForgotPassword = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ phone_number: formattedPhone }),
+    body: JSON.stringify({
+  phone_number: formattedPhone,
+  platform: "super_admin",
+}),
       });
 
       const data = await response.json();

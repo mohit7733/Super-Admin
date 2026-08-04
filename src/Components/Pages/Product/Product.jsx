@@ -12,6 +12,7 @@ import { FaEdit}from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
 
+  
 
 
 const initialProductForm = {
@@ -46,42 +47,23 @@ const initialProductForm = {
 }
 
 const Product = () => {
-  // const [productSearch, setProductSearch] = useState("");
-  const [stockFilter, setStockFilter] = useState("All");
+
+
   const [products,setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [productForm, setProductForm] = useState(initialProductForm);
   const [showProductModal, setShowProductModal] = useState(false);
   const [productEditing, setProductEditing] = useState(null);
+   const [searchTerm, setSearchTerm] = useState("")
   
-  const [categoryOption, setCategoryOptions] = useState([]);
-  const [previewImage, setPreviewImage] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteProductId, setDeleteProductId] = useState(null);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [Currentpage, setCurrentpage] = useState(1);
-  const [Productperpage, setProductperpage] = useState(5);
-  const [Newcategoryform, setNewCategoryform] = useState(false);
-  const [Categoryname, setCategoryname] = useState("");
-  const [CategoryImage, setCategoryImage] = useState(null);
-  const [categoryValidationErrors, setCategoryValidationErrors] = useState({});
-  const [CategoryLoading, setCategoryLoading] = useState(true);
-  const [Healthconcerncatergory, setHealthconcerncategory] = useState([]);
-  const [previewimage, setPreviewimage] = useState(null);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [HealthCategoryOption, setHealthCategoryOption] = useState([]);
-  const [HealthCategoryForm, setHealthCategoryForm] = useState(false);
-  const [healthcategoryname, setHealthcategory] = useState();
-  const [healthcategoryImage, setHealthCategoryImage] = useState(null);
-  const [Slug, setSlug] = useState("");
-  const [selectedHealthConcerns, setSelectedHealthConcerns] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
+ 
 
  const [currentPage, setCurrentPage] = useState(1);
  const pageSize = 5;
 const [totalCount, setTotalCount] = useState(0);
 const totalPages = Math.ceil(totalCount / pageSize);
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 const [Nextpage, setNextPage] = useState(null);
 const [previousPage, setPreviousPage] = useState(null);
  const [openMenuId, setOpenMenuId] = useState(null);
@@ -91,8 +73,9 @@ const [previousPage, setPreviousPage] = useState(null);
  const[showReasonModal,setShowReasonModal]=useState(false);
  const[RejectReason,setRejectReason]=useState("")
  const fetchedOnce = useRef(false);
+ 
 
- const fetchProducts = async () => {
+ const fetchProducts = async (page = 1) => {
   const token = sessionStorage.getItem("superadmin_token");
 
   if (!token) {
@@ -105,7 +88,7 @@ const [previousPage, setPreviousPage] = useState(null);
 
   try {
     const response = await fetch(
-      `${BASE_URL}/vendors/admin/product/`,
+      `${BASE_URL}/vendors/admin/product/?page=${page}`,
       {
         method: "GET",
         headers: {
@@ -130,7 +113,11 @@ const [previousPage, setPreviousPage] = useState(null);
 
     console.log("Product API Response:", data);
 
-     setProducts(data.data.results)
+     setProducts(data.data.results);
+setTotalCount(data.data.count);
+setNextPage(data.data.next);
+setPreviousPage(data.data.previous);
+setCurrentPage(page);
   } catch (error) {
     console.error("Product Fetch Error:", error);
 
@@ -149,285 +136,12 @@ const [previousPage, setPreviousPage] = useState(null);
 const handleNavigate = (id) => {
     navigate(`/Productdetail/${id}`)
   }
-  // const fetchCategoryOptions = async () => {
-  //   try {
-  //     const response = await apiFetch(`${BASE_URL}/catalogs/productcategory/`);
 
-  //     setCategoryOptions(Array.isArray(response.data) ? response.data : []);
-  //   } catch (error) {
-  //     console.error("Failed to fetch categories:", error);
-  //   }
-  // };
+ 
+ 
 
-//   const fetchhealthconcerncategory = async () => {
-//   try {
-//     const response = await apiFetch(`${BASE_URL}/catalogs/healthconcernscategory/`);
+ 
 
-//     setHealthCategoryOption(
-//       Array.isArray(response.data) ? response.data : []
-//     );
-
-//   } catch (error) {
-//     console.error("Error fetching health categories:", error);
-//   }
-// };
-
-  useEffect(() => {
-    if (!fetchedOnce.current) {
-      fetchProducts();
-      // fetchCategoryOptions();
-      // fetchhealthconcerncategory();
-      fetchedOnce.current = true;
-    }
-  }, []);
-
-
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-
-  //   setProductForm((prev) => ({
-  //     ...prev,
-  //     [name]: value,
-  //   }));
-
-  //   setValidationErrors((prevErrors) => ({
-  //     ...prevErrors,
-  //     [name]: "",
-  //   }));
-  // };
-
-
-
-  // const handleAddHealthCategory = async (e) => {
-  //   e.preventDefault();
-
-  //   const formData = new FormData();
-  //   formData.append("name", healthcategoryname);
-  //   formData.append("slug", Slug);
-  //   formData.append("icon", healthcategoryImage);
-
-  //   try {
-  //     const response = await apiFetch(
-  //       `${BASE_URL}/catalogs/healthconcernscategory/`,
-  //       {
-  //         method: "POST",
-  //         body: formData,
-  //       }
-  //     );
-
-  //     setHealthCategoryOption((prev) => [...prev, response]);
-  //     setHealthCategoryForm(false);
-  //     setHealthcategory("");
-  //     setHealthCategoryImage(null);
-  //     setSlug("");
-
-  //     toast.success("Category added successfully!");
-  //   } catch (err) {
-  //     console.error(err);
-
-  //     if (err?.name) {
-  //       toast.error(err.name[0]);
-  //     } else {
-  //       toast.error("Failed to add category.");
-  //     }
-  //   }
-  // };
-
-  const confirmDelete = (id) => {
-    setDeleteProductId(id);
-    setShowDeleteModal(true);
-  };
-
-  const handleDelete = async () => {
-
-    if (!deleteProductId) return;
-
-    try {
-      const response = await apiFetch(
-        `${BASE_URL}/catalogs/product/${deleteProductId}/`,
-        {
-          method: "DELETE",
-
-        }
-      );
-
-
-      if (!response || response?.success === false || response?.detail) {
-        toast.error("Unauthorized or failed");
-      }
-
-
-      setProducts((prev) =>
-        prev.filter((p) => p.id !== deleteProductId)
-      );
-      toast.success("Product deleted successfully!");
-
-    } catch (error) {
-      console.error("Delete error:", error);
-      toast.error("Error deleting product. Please try again.");
-    } finally {
-      setShowDeleteModal(false);
-      setDeleteProductId(null);
-    }
-  };
-
-  // const handleHealthConcernChange = (id) => {
-  //   setSelectedHealthConcerns((prev) =>
-  //     prev.includes(id)
-  //       ? prev.filter((item) => item !== id)
-  //       : [...prev, id]
-  //   );
-  // };
-
-  // const validateForm = () => {
-  //   let errors = {};
-  //   const alphaNumRegex = /^[a-zA-Z0-9\s]+$/;
-  //   const ayushRegex = /^[A-Za-z0-9\/-]{5,30}$/;
-
-  //   if (!productForm.title.trim()) {
-  //     errors.title = "Product name is required";
-  //   } else if (!alphaNumRegex.test(productForm.title.trim())) {
-  //     errors.title = "Product name can only contain letters and numbers";
-  //   }
-
-  //   if (!productForm.brand.trim()) {
-  //     errors.brand = "Brand is required";
-  //   } else if (!alphaNumRegex.test(productForm.brand.trim())) {
-  //     errors.brand = "Brand can only contain letters and numbers";
-  //   }
-  //   if (!productForm.meta_title.trim()) {
-  //     errors.meta_title = "Meta Title is required"
-  //   }
-
-
-
-  //   if (!productForm.form.trim()) {
-  //     errors.form = "Form is required";
-  //   } else if (!alphaNumRegex.test(productForm.form.trim())) {
-  //     errors.form = "Form can only contain letters and numbers";
-  //   }
-
-  //   if (!productForm.short_description.trim())
-  //     errors.short_description = "Short description is required";
-
-  //   if (!productForm.category) errors.category = "Category is required";
-
-
-  //   if (!productForm.ayush_license_number?.trim()) {
-  //     errors.ayush_license_number = "AYUSH license number is required";
-  //   }
-  //   else if (!ayushRegex.test(productForm.ayush_license_number.trim())) {
-  //     errors.ayush_license_number =
-  //       "Invalid Ayush license number. Example: DL-25-AYU-12345 ";
-  //   }
-
-
-
-  //   if (productForm.return_days === "" || productForm.return_days === null) {
-  //     errors.return_days = "Return days is required";
-  //   } else if (isNaN(productForm.return_days)) {
-  //     errors.return_days = "Return days must be a number";
-  //   } else if (Number(productForm.return_days) < 0) {
-  //     errors.return_days = "Return days cannot be negative";
-  //   } else if (!Number.isInteger(Number(productForm.return_days))) {
-  //     errors.return_days = "Return days must be a whole number";
-  //   } else if (Number(productForm.return_days) > 7) {
-  //     errors.return_days = "Return days cannot be more than 7 days";
-  //   }
-
-
-  //   if (!productForm.price?.trim()) {
-  //     errors.price = "price is required"
-  //   }
-  //   if (!productEditing && !productForm.image)
-  //     errors.image = "Product image is required";
-  //   setValidationErrors(errors);
-  //   console.log(errors, 'errors')
-  //   return Object.keys(errors).length === 0;
-  // };
-
-// const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-//   const handleProductSubmit = async (e) => {
-//     e.preventDefault();
-//     console.log('clicked')
-//     if (!validateForm()) return;
-//     console.log('clicked 2')
-//     const method = productEditing ? "PUT" : "POST";
-//     const url = productEditing
-//       ? `${BASE_URL}/catalogs/product/${productEditing}/`
-//       : `${BASE_URL}/catalogs/product/`;
-
-//     const formData = new FormData();
-//     formData.append("title", productForm.title);
-//     formData.append("form", productForm.form);
-//     formData.append("short_description", productForm.short_description);
-//     formData.append("brand", productForm.brand);
-//     formData.append("category", productForm.category);
-//     formData.append("sin_number", productForm.sin_number);
-//     formData.append("model_number", productForm.model_number);
-//     formData.append("how_to_use", productForm.how_to_use);
-//     formData.append("benefits", productForm.benefits)
-//     formData.append("composition", productForm.composition)
-//     formData.append("manufacturer", productForm.manufacturer);
-//   selectedHealthConcerns.forEach((id) => {
-//   formData.append("health_concern", id);
-// });
-//    formData.append("safety_information", productForm.safety_information);
-//     formData.append("treatment", productForm.treatment);
-//     formData.append("dosage", productForm.dosage);
-//     formData.append("side_effect", productForm.side_effects);
-//     formData.append("ayush_license_number", productForm.ayush_license_number)
-//     formData.append("is_returnable", true);
-//     formData.append("price", productForm.price);
-//     formData.append("meta_title", productForm.meta_title);
-//     formData.append("meta_description", productForm.meta_description)
-//     formData.append("full_description", productForm.full_description);
-//     formData.append("return_days", productForm.return_days);
-//     formData.append("origin", productForm.origin);
-
-
-//     if (productForm.image instanceof File) {
-//       formData.append("image", productForm.image);
-//     }
-
-//     try {
-//       const response = await apiFetch(url, {
-//         method,
-//         body: formData,
-//       });
-
-//       if (!response) throw new Error("Invalid response");
-
-//       const savedProduct = response;
-
-//       setProducts((prev) =>
-//         productEditing
-//           ? prev.map((p) => (p.id === savedProduct.id ? savedProduct : p))
-//           : [...prev, savedProduct]
-//       );
-
-//       toast.success(
-//         productEditing
-//           ? "Product updated successfully!"
-//           : "Product added successfully!"
-//       );
-
-//       handleProductCloseModal();
-//     } catch (err) {
-//       console.error("Error submitting product:", err);
-//       toast.error("Failed to submit product");
-//     }
-//   };
-
-  const handleProductCloseModal = () => {
-    setShowProductModal(false);
-    setProductEditing(null);
-    setProductForm(initialProductForm);
-    setPreviewImage(null);
-    setValidationErrors({});
-  };
  const handleRejectClick = (ProductId, statusType) => {
     setProductId(ProductId);
     setSelectedStatus(statusType);
@@ -493,84 +207,10 @@ const handleNavigate = (id) => {
   setSelectedStatus("");
 };
 
+useEffect(()=>{
+  fetchProducts();
+},[])
 
-  // const selectedHealthConcernNames = HealthCategoryOption
-  //   .filter((hc) => selectedHealthConcerns.includes(hc.id))
-  //   .map((hc) => hc.name);
-
-
-  // const filteredProducts = () => {
-  //   return products.filter((product) => {
-  //     const matchesSearch =
-  //       product?.title?.toLowerCase().includes(productSearch.toLowerCase()) ?? false;
-  //     const matchesStock =
-  //       stockFilter === "All" ||
-  //       (stockFilter === "true" && product.in_stock) ||
-  //       (stockFilter === "false" && !product.in_stock);
-  //     return matchesSearch && matchesStock;
-  //   });
-  // };
-
-  // const validateCategoryForm = () => {
-  //   let errors = {};
-  //   const alphaNumRegex = /^[a-zA-Z0-9\s]+$/;
-
-
-  //   if (!Categoryname.trim()) {
-  //     errors.name = "Category name is required";
-  //   } else if (!alphaNumRegex.test(Categoryname.trim())) {
-  //     errors.name = "Category name can only contain letters and numbers";
-  //   }
-
-  //   if (!CategoryImage) {
-  //     errors.image = "Category image is required";
-  //   }
-
-  //   setCategoryValidationErrors(errors);
-  //   return Object.keys(errors).length === 0;
-  // };
-
-  // const handleAddCategory = async (e) => {
-  //   e.preventDefault();
-
-
-  //   const formData = new FormData();
-  //   formData.append("name", Categoryname);
-
-  //   if (CategoryImage instanceof File) {
-  //     formData.append("image", CategoryImage);
-  //   }
-
-  //   try {
-  //     setCategoryLoading(true);
-  //     const response = await apiFetch(`${BASE_URL}/catalogs/productcategory/`, {
-  //       method: "POST",
-  //       body: formData,
-  //     });
-
-
-  //     setCategoryOptions((prev) => [...prev, response]);
-  //     setNewCategoryform(false);
-  //     setHealthcategory("");
-  //     setHealthCategoryImage(null);
-
-
-  //     toast.success("Category added successfully!");
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error("Failed to add category.");
-  //   } finally {
-  //     setCategoryLoading(false);
-  //   }
-  // };
-
-  // const generateSlug = (text) => {
-  //   return text
-  //     .toLowerCase()
-  //     .trim()
-  //     .replace(/\s+/g, "_")
-  //     .replace(/[^a-z0-9_]/g, "");
-  // };
 
   return (
     <>
@@ -611,9 +251,8 @@ const handleNavigate = (id) => {
       </div>
 
 
-
-
-      <table className="product-table">
+<div className="table-wrapper">
+     <table className="product-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -673,44 +312,45 @@ const handleNavigate = (id) => {
 )}
         </tbody>
       </table>
-    
-{totalPages > 1 && (
-  <div className="pagination">
 
-   
-    <button
-      onClick={() => fetchProducts(currentPage - 1)}
-      disabled={!previousPage}
-    >
-      Prev
-    </button>
-
-   
-    {/* {pages.map((page) => (
+      {totalPages > 1 && (
+    <div className="pagination">
       <button
-        key={page}
-        onClick={() => fetchProducts(page)}
-        style={{
-         
-          fontWeight: Currentpage === page ? "bold" : "normal",
-          background: Currentpage === page ? "#0D614E" : "#fff",
-          color: Currentpage === page ? "#fff" : "#0D614E",
-        }}
+        onClick={() =>  fetchProducts(currentPage - 1, searchTerm)}
+        disabled={!previousPage}
       >
-        {page}
+        Prev
       </button>
-    ))} */}
 
+      {pages.map((page) => (
+        <button
+          key={page}
+          onClick={() =>  fetchProducts(page, searchTerm)}
+          style={{
+            fontWeight:currentPage === page ? "bold" : "normal",
+            background:
+              currentPage === page ? "#0D614E" : "#fff",
+            color:
+              currentPage === page ? "#fff" : "#0D614E",
+          }}
+        >
+          {page}
+        </button>
+      ))}
+
+      <button
+        onClick={() =>  fetchProducts(currentPage + 1, searchTerm)}
+        disabled={!Nextpage}
+      >
+        Next
+      </button>
+    </div>
+  )}
+      
+</div>
+
+   
     
-    <button
-      onClick={() => fetchProducts(Currentpage+ 1)}
-      disabled={!Nextpage}
-    >
-      Next
-    </button>
-
-  </div>
-)}
 
   {showReasonModal && (
         <div className=" modal">

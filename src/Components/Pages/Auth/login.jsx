@@ -124,21 +124,16 @@ const Login = () => {
         }),
       });
 
-      // const data = await response.json();
-
-      // if (!response.ok) {
-      //   throw new Error(data.error || data.message || "Login failed");
-      // }
-
-      // sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
-      // sessionStorage.setItem(STORAGE_KEYS.ROLE, data.role);
-      // sessionStorage.setItem(STORAGE_KEYS.PERMISSIONS, JSON.stringify(data.permissions || []));
+  
 
      const result = await response.json();
      console.log("")
 
 if (!response.ok) {
-  throw new Error(result.error || result.message || "Login failed");
+  throw new Error(
+    `[${result?.error?.code}] ${result?.error?.message}` ||
+    "Something went wrong."
+  );
 }
 
 const data = result.data;

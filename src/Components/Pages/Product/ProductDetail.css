@@ -1,11 +1,4 @@
-/* ============================================
-   PRODUCT DETAIL CSS - PREMIUM EDITION
-   Primary Color: #0D614E
-   ============================================ */
 
-/* ============================================
-   CSS VARIABLES
-   ============================================ */
 :root {
 
   --secondary: #0EA5E9;
@@ -3070,7 +3063,7 @@
 /* Stats Cards */
 .stats2-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -3680,13 +3673,18 @@
 
   .data-table {
     font-size: 12px;
+    
   }
+  .data-table td{
+    vertical-align: middle;
+}
 
-  .data-table th,
-  .data-table td {
-    padding: 8px 10px;
-  }
+.data-table th,
+.data-table td{
+    padding:20px 16px;
+}
 
+  
   .prakriti-modal {
     max-width: 100%;
     margin: 10px;

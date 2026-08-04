@@ -335,7 +335,7 @@ const handleAppointmentAction = async (action) => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>patient</th>
+              <th>Patient</th>
       <th> Patient Number </th>
               <th>Doctor</th>
               <th> Booking Date</th>
