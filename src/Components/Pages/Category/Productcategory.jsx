@@ -599,7 +599,7 @@ if (Object.keys(newErrors).length > 0) {
       <div className="stats2-grid">
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={16} />
           </div>
           <div className="stat2-info">
             <h3>Total Categories</h3>
@@ -608,7 +608,7 @@ if (Object.keys(newErrors).length > 0) {
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#28a745" }}>
           <div className="stat2-icon" style={{ background: "#28a74520", color: "#28a745" }}>
-            <FaChartLine size={24} />
+            <FaChartLine size={16} />
           </div>
           <div className="stat2-info">
             <h3>Active</h3>
@@ -617,7 +617,7 @@ if (Object.keys(newErrors).length > 0) {
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#dc3545" }}>
           <div className="stat2-icon" style={{ background: "#dc354520", color: "#dc3545" }}>
-            <FaCalendarAlt size={24} />
+            <FaCalendarAlt size={16} />
           </div>
           <div className="stat2-info">
             <h3>Inactive</h3>
@@ -729,8 +729,8 @@ if (Object.keys(newErrors).length > 0) {
                       <img
                         src={item.image_url}
                         alt={item.name}
-                        width="50"
-                        height="50"
+                        width="30"
+                        height="30"
                         style={{
                           objectFit: "cover",
                           borderRadius: "6px",
@@ -744,9 +744,9 @@ if (Object.keys(newErrors).length > 0) {
                     )}
                   </td>
                   <td>
-                    <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
+                    {/* <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
                       {item.is_active ? "Active" : "Inactive"}
-                    </span>
+                    </span> */}
                     <br />
                     <label className="switch">
                       <input

@@ -61,7 +61,7 @@ const Customers = () => {
   const [ImageCustomerPreview, setImageCustomerPreview] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
 
   const [totalCount, setTotalCount] = useState(0);
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -125,20 +125,7 @@ const [todayCount, setTodayCount] = useState(0);
     setCustomerForm(initialCustomerFormState)
     setFormErrors(initialFormErrors)
   }
-  // const handleDownload = () => {
-
-  //   const exportData = customerData?.map((c) => ({
-  //     Name: c.first_name,
-  //     Email: c.email,
-  //     "Phone Number": c.verified_phone_number,
-  //   }));
-
-  //   const ws = XLSX.utils.json_to_sheet(exportData);
-  //   const wb = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(wb, ws, "Customers");
-
-  //   XLSX.writeFile(wb, "Customers.xlsx");
-  // };
+ 
 
   const handleNavigate = (id) => {
     navigate(`/CustomerDetailPage/${id}`)
@@ -376,7 +363,7 @@ setSelectedCustomer(null);
       <div className="stats2-grid">
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={16} />
           </div>
           <div className="stat2-info">
             <h3>Total Customers</h3>
@@ -389,7 +376,7 @@ setSelectedCustomer(null);
     className="stat2-icon"
     style={{ background: "#0D614E20", color: "#0D614E" }}
   >
-    <FaCalendarCheck size={24} />
+    <FaCalendarCheck size={16} />
   </div>
 
   <div className="stat2-info">
@@ -399,7 +386,7 @@ setSelectedCustomer(null);
 </div>
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaChartLine size={24} />
+            <FaChartLine size={16} />
           </div>
           <div className="stat2-info">
             <h3>This Year</h3>
@@ -408,7 +395,7 @@ setSelectedCustomer(null);
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaCalendarAlt size={24} />
+            <FaCalendarAlt size={16} />
           </div>
           <div className="stat2-info">
             <h3>This Month</h3>

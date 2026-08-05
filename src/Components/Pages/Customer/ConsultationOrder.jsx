@@ -180,7 +180,7 @@ setCurrentPage(data?.data?.consultation_orders?.page);
           className="stat2-icon"
           style={{ background: "#0D614E20", color: "#0D614E" }}
         >
-          <FaCalendarCheck size={24} />
+          <FaCalendarCheck size={15} />
         </div>
         <div className="stat2-info">
           <h3>Total</h3>
@@ -194,7 +194,7 @@ setCurrentPage(data?.data?.consultation_orders?.page);
           className="stat2-icon"
          style={{ background: "#0D614E20", color: "#0D614E" }}
         >
-          <FaCheckCircle size={24} />
+          <FaCheckCircle size={15} />
         </div>
         <div className="stat2-info">
           <h3>Confirmed</h3>
@@ -208,7 +208,7 @@ setCurrentPage(data?.data?.consultation_orders?.page);
           className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
         >
-          <FaSyncAlt size={24} />
+          <FaSyncAlt size={15} />
         </div>
         <div className="stat2-info">
           <h3>Rescheduled</h3>
@@ -221,7 +221,7 @@ setCurrentPage(data?.data?.consultation_orders?.page);
           className="stat2-icon"
           style={{ background: "#0D614E20", color: "#0D614E" }}
         >
-          <FaExclamationTriangle size={24} />
+          <FaExclamationTriangle size={15} />
         </div>
         <div className="stat2-info">
           <h3>Missed</h3>
@@ -234,7 +234,7 @@ setCurrentPage(data?.data?.consultation_orders?.page);
           className="stat2-icon"
          style={{ background: "#0D614E20", color: "#0D614E" }}
         >
-          <FaTimesCircle size={24} />
+          <FaTimesCircle size={15} />
         </div>
         <div className="stat2-info">
           <h3>Cancelled</h3>

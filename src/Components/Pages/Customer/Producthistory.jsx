@@ -119,7 +119,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaShoppingBag size={24} />
+      <FaShoppingBag size={16} />
     </div>
     <div className="stat2-info">
       <h3>Total Orders</h3>
@@ -133,7 +133,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
       className="stat2-icon"
     style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaClock size={24} />
+      <FaClock size={16} />
     </div>
     <div className="stat2-info">
       <h3>Pending</h3>
@@ -147,7 +147,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCog size={24} />
+      <FaCog size={16 } />
     </div>
     <div className="stat2-info">
       <h3>Processing</h3>
@@ -161,7 +161,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
       className="stat2-icon"
  style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaShippingFast size={24} />
+      <FaShippingFast size={15} />
     </div>
     <div className="stat2-info">
       <h3>Shipped</h3>
@@ -175,7 +175,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCheckCircle size={24} />
+      <FaCheckCircle size={15} />
     </div>
     <div className="stat2-info">
       <h3>Delivered</h3>
@@ -189,7 +189,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaTimesCircle size={24} />
+      <FaTimesCircle size={15} />
     </div>
     <div className="stat2-info">
       <h3>Cancelled</h3>
@@ -203,7 +203,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaUndoAlt size={24} />
+      <FaUndoAlt size={15} />
     </div>
     <div className="stat2-info">
       <h3>Returned</h3>
@@ -278,10 +278,9 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
 </td>      <td>₹{order.total_amount}</td>
 
             <td>
-              <div>{order.payment_method.toUpperCase()}</div>
-
-              <small>{order.payment_type.toUpperCase()}</small>
-            </td>
+  <div>{order.payment_method?.toUpperCase() || "-"}</div>
+  <small>{order.payment_type?.toUpperCase() || "-"}</small>
+</td>
 
             <td>
               <span

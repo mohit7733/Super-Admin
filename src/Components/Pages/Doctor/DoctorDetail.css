@@ -15,6 +15,7 @@ h3,
 h4,
 p {
   margin: 0;
+  font-size: 13px;
 }
 
 .back-button {
@@ -307,9 +308,9 @@ p {
 
   background: transparent;
 
-  padding: 18px 22px;
+  padding:14px 18px;
 
-  font-size: 17px;
+  font-size:14px;
   font-weight: 500;
 
   color: #6b7280;
@@ -408,7 +409,7 @@ p {
   background: #fff;
   border-radius: 18px;
   border: 1px solid #ececec;
-  padding: 22px;
+  /* padding: 22px; */
 }
 
 /* TITLE */
@@ -435,7 +436,7 @@ p {
   justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
-  padding: 14px 0;
+  padding: 8px 0;
   /* border-bottom: 1px solid #f1f1f1; */
 }
 
@@ -445,7 +446,7 @@ p {
 
 .info-row span {
   color: #8b8b8b;
-  font-size: 17px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -453,14 +454,14 @@ p {
 
 .info-row p {
   color: #1f2937;
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 500;
   text-align: right;
 }
 
 .row-icon {
   color: #0D614E;
-  font-size: 17px;
+  font-size: 13px;
 }
 
 .address-row p {
@@ -609,13 +610,14 @@ p {
 }
 
 .social-content h3 {
-  font-size: 20px;
+  font-size: 13px;
   color: #111827;
   margin-bottom: 10px;
+  font-weight: 700;
 }
 
 .social-content p {
-  font-size: 14px;
+  font-size: 13px;
   color: #6b7280;
   margin-bottom: 16px;
   line-height: 1.6;
@@ -627,7 +629,7 @@ p {
   padding: 10px 16px;
   border-radius: 10px;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   background: #f3f4f6;
   color: #111827;
@@ -891,7 +893,7 @@ p {
 
   border-radius: 28px;
 
-  padding: 30px;
+  padding: 15px;
 
   margin-top: 24px;
 
@@ -904,9 +906,7 @@ p {
    HEADER
 ========================= */
 
-.consultation-header {
-  margin-bottom: 30px;
-}
+
 
 .consultation-title-wrap {
   display: flex;
@@ -930,12 +930,12 @@ p {
 
   font-weight: 600;
   color: #0f172a;
-
+font-size: 17px;
   margin-bottom: 8px;
 }
 
 .consultation-header p {
-  font-size: 17px;
+  font-size: 13px;
   color: #64748b;
 
   line-height: 1.7;

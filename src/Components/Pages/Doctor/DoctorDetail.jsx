@@ -861,54 +861,13 @@ const getAvailability = async () => {
 
 
 
-              <div className="info-card">
-
-                <h3 className="card-title">
-                  <FiUsers className="title-icon" />
-                  Emergency Contact
-                </h3>
-
-                <div className="info-row">
-                  <span>Contact Name</span>
-                  <p>
-                    {doctorData?.emergency_contact_name||"N/A"}
-                  </p>
-                </div>
-
-                <div className="info-row">
-                  <span>Relation</span>
-                  <p>
-                    {doctorData?.emergency_contact_relation||"N/A"}
-                  </p>
-                </div>
-
-                <div className="info-row">
-                  <span>Phone</span>
-                  <p>
-                    {doctorData?.emergency_contact_phone||"N/A"}
-                  </p>
-                </div>
-
-              </div>
-
-
-
-            </div>
-            <div className="info-flex">
-
-
-
-              <div className="info-card">
+                 <div className="info-card">
 
                 <h3 className="card-title">
                   <MdOutlineMedicalServices className="title-icon" />
                   Professional Information
                 </h3>
 
-                <div className="info-row">
-                  <span>Qualification</span>
-                  <p>{doctorData?.qualification||"N/A"}</p>
-                </div>
 
                 <div className="info-row">
                   <span>Experience</span>
@@ -937,8 +896,66 @@ const getAvailability = async () => {
                     {doctorData?.registration_year||"N/A"}
                   </p>
                 </div>
+                
+                <div className="info-row">
+                  <span>Qualification</span>
+                  <p>{doctorData?.qualification||"N/A"}</p>
+                </div>
 
               </div>
+
+
+
+            </div>
+            <div className="info-flex">
+
+
+ <div className="info-card">
+
+                <h3 className="card-title">
+                  <FiBookOpen className="title-icon" />
+                  Practice Details
+                </h3>
+
+             <div className="info-row">
+  <span>Years of Practice</span>
+  <p>
+    {doctorData?.years_of_practice
+      ? `${doctorData.years_of_practice} Years`
+      : "N/A"}
+  </p>
+</div>
+                <div className="info-row">
+                  <span>Practicing Since</span>
+                  <p>
+                    {doctorData?.practicing_since ||"N/A"}
+                  </p>
+                </div>
+
+                <div className="info-row">
+                  <span>Consultation Fee</span>
+                  <p>
+                    ₹{doctorData?.consultation_fee||"N/A"}
+                  </p>
+                </div>
+
+                <div className="info-row">
+                  <span>Follow-up Fee</span>
+                  <p>
+                    ₹{doctorData?.followup_fee||"N/A"}
+                  </p>
+                </div>
+
+                <div className="info-row">
+                  <span>Consultation Modes</span>
+                  <p>
+                    {doctorData?.consultation_modes?.join(", ")||"N/A"}
+                  </p>
+                </div>
+
+              </div>
+              
+          
 
 
               <div className="info-card">
@@ -984,46 +1001,32 @@ const getAvailability = async () => {
 
 
 
-              <div className="info-card">
+             
+                  <div className="info-card">
 
                 <h3 className="card-title">
-                  <FiBookOpen className="title-icon" />
-                  Practice Details
+                  <FiUsers className="title-icon" />
+                  Emergency Contact
                 </h3>
 
-             <div className="info-row">
-  <span>Years of Practice</span>
-  <p>
-    {doctorData?.years_of_practice
-      ? `${doctorData.years_of_practice} Years`
-      : "N/A"}
-  </p>
-</div>
                 <div className="info-row">
-                  <span>Practicing Since</span>
+                  <span>Contact Name</span>
                   <p>
-                    {doctorData?.practicing_since ||"N/A"}
+                    {doctorData?.emergency_contact_name||"N/A"}
                   </p>
                 </div>
 
                 <div className="info-row">
-                  <span>Consultation Fee</span>
+                  <span>Relation</span>
                   <p>
-                    ₹{doctorData?.consultation_fee||"N/A"}
+                    {doctorData?.emergency_contact_relation||"N/A"}
                   </p>
                 </div>
 
                 <div className="info-row">
-                  <span>Follow-up Fee</span>
+                  <span>Phone</span>
                   <p>
-                    ₹{doctorData?.followup_fee||"N/A"}
-                  </p>
-                </div>
-
-                <div className="info-row">
-                  <span>Consultation Modes</span>
-                  <p>
-                    {doctorData?.consultation_modes?.join(", ")||"N/A"}
+                    {doctorData?.emergency_contact_phone||"N/A"}
                   </p>
                 </div>
 

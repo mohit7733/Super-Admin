@@ -715,9 +715,9 @@ const Healthcategory = () => {
           </select>
 
           {(searchTerm || statusFilter !== "all") && (
-            <button className="clear-filters-btn" onClick={clearFilters}>
-              Clear Filters
-            </button>
+             <button className="clear-filters-btn" onClick={clearFilters}>
+               <FiTrash2 />
+           </button>
           )}
         </div>
 
@@ -804,8 +804,8 @@ const Healthcategory = () => {
                       <img
                         src={item.image_url}
                         alt={item.name}
-                        width="50"
-                        height="50"
+                          width="30"
+                        height="30"
                         style={{
                           objectFit: "cover",
                           borderRadius: "6px",
