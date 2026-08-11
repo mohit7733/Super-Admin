@@ -318,7 +318,7 @@ const handleVendorReasonSubmit = async () => {
   <div className="info-cards-section">
 
    <div className="vendor-card">
-  <div className="card-header">
+  <div className="cards-header">
     <FaUser className="card-icon" />
     <h3>Contact Person</h3>
   </div>
@@ -360,9 +360,52 @@ const handleVendorReasonSubmit = async () => {
     </div>
   </div>
 </div>
+ <div className="vendor-card">
+  <div className="cards-header">
+    <FaBuilding className="card-icon" />
+    <h3>Business Information</h3>
+  </div>
+
+  <div className="card-body">
+    <div className="info-row-vendor">
+      <span className="label">Business Name</span>
+      <span className="value">
+        {vendorData?.business_name || "-"}
+      </span>
+    </div>
+
+    <div className="info-row-vendor">
+      <span className="label">Legal Name</span>
+      <span className="value">
+        {vendorData?.legal_name || "-"}
+      </span>
+    </div>
+
+    <div className="info-row-vendor">
+      <span className="label">Business Type</span>
+      <span className="value">
+        {vendorData?.business_type || "-"}
+      </span>
+    </div>
+
+    <div className="info-row-vendor">
+      <span className="label">Established</span>
+      <span className="value">
+        {vendorData?.year_established || "-"}
+      </span>
+    </div>
+
+    <div className="info-row-vendor">
+      <span className="label">Employees</span>
+      <span className="value">
+        {vendorData?.employee_count || "-"}
+      </span>
+    </div>
+  </div>
+</div>
 
     <div className="vendor-card">
-  <div className="card-header">
+  <div className="cards-header">
     <FaPhone className="card-icon" />
     <h3>Business Contact</h3>
   </div>
@@ -408,8 +451,10 @@ const handleVendorReasonSubmit = async () => {
   </div>
 </div>
 
+
+
   <div className="vendor-card">
-  <div className="card-header">
+  <div className="cards-header">
     <FaCogs className="card-icon" />
     <h3>Account Status</h3>
   </div>
@@ -453,52 +498,10 @@ const handleVendorReasonSubmit = async () => {
     </div>
   </div>
 </div>
- <div className="vendor-card">
-  <div className="card-header">
-    <FaBuilding className="card-icon" />
-    <h3>Business Information</h3>
-  </div>
 
-  <div className="card-body">
-    <div className="info-row-vendor">
-      <span className="label">Business Name</span>
-      <span className="value">
-        {vendorData?.business_name || "-"}
-      </span>
-    </div>
-
-    <div className="info-row-vendor">
-      <span className="label">Legal Name</span>
-      <span className="value">
-        {vendorData?.legal_name || "-"}
-      </span>
-    </div>
-
-    <div className="info-row-vendor">
-      <span className="label">Business Type</span>
-      <span className="value">
-        {vendorData?.business_type || "-"}
-      </span>
-    </div>
-
-    <div className="info-row-vendor">
-      <span className="label">Established</span>
-      <span className="value">
-        {vendorData?.year_established || "-"}
-      </span>
-    </div>
-
-    <div className="info-row-vendor">
-      <span className="label">Employees</span>
-      <span className="value">
-        {vendorData?.employee_count || "-"}
-      </span>
-    </div>
-  </div>
-</div>
 
    <div className="vendor-card">
-  <div className="card-header">
+  <div className="cards-header">
     <FaIdCard className="card-icon" />
     <h3>Registration Details</h3>
   </div>
@@ -535,7 +538,7 @@ const handleVendorReasonSubmit = async () => {
 </div>
 
    <div className="vendor-card">
-  <div className="card-header">
+  <div className="cards-header">
     <FaMapMarkerAlt className="card-icon" />
     <h3>Business Address</h3>
   </div>

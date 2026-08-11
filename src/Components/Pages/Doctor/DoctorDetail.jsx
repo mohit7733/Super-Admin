@@ -7,6 +7,15 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { IoClose } from "react-icons/io5";
 import "./Transaction.css";
+import DoctorDietplans from "./DoctorDietplans";
+import {
+  FiList,
+  FiBox,
+  FiCalendar,
+  FiChevronDown,
+} from "react-icons/fi";
+
+import { FaStethoscope } from "react-icons/fa";
 
 
 import {
@@ -697,14 +706,20 @@ const getAvailability = async () => {
           >
             Overview
           </button>
+           <button
+            className={activeTab === "documents" ? "active-tab" : ""}
+            onClick={() => setActiveTab("documents")}
+          >
+            Documents
+          </button>
    <button className={activeTab === "Consultation" ? "active-tab" : ""}
             onClick={() => setActiveTab("Consultation")}
           >
 
             Consultation History
+
+            
           </button>
-
-
 
 
           <button
@@ -736,12 +751,7 @@ const getAvailability = async () => {
           </button>
 
     
-  <button
-            className={activeTab === "documents" ? "active-tab" : ""}
-            onClick={() => setActiveTab("documents")}
-          >
-            Documents
-          </button>
+ 
 
           {/* <button
             className={activeTab === "Slots" ? "active-tab" : ""}
@@ -1202,7 +1212,7 @@ const getAvailability = async () => {
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCalendarCheck size={24} />
+      <FaCalendarCheck size={16} />
     </div>
     <div className="stat2-info">
       <h3>Appointment</h3>
@@ -1216,7 +1226,7 @@ const getAvailability = async () => {
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCheckCircle size={24} />
+      <FaCheckCircle size={16} />
     </div>
     <div className="stat2-info">
       <h3>Confirmed</h3>
@@ -1233,7 +1243,7 @@ const getAvailability = async () => {
       className="stat2-icon"
   style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaSyncAlt size={24} />
+      <FaSyncAlt size={16} />
     </div>
     <div className="stat2-info">
       <h3>Rescheduled</h3>
@@ -1245,7 +1255,7 @@ const getAvailability = async () => {
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCheckCircle size={24} />
+      <FaCheckCircle size={16} />
     </div>
     <div className="stat2-info">
       <h3>Compelted</h3>
@@ -1259,7 +1269,7 @@ const getAvailability = async () => {
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaExclamationTriangle size={24} />
+      <FaExclamationTriangle size={16} />
     </div>
     <div className="stat2-info">
       <h3>Missed</h3>
@@ -1272,7 +1282,7 @@ const getAvailability = async () => {
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaTimesCircle size={24} />
+      <FaTimesCircle size={16} />
     </div>
     <div className="stat2-info">
       <h3>Cancelled</h3>
@@ -1406,56 +1416,31 @@ const getAvailability = async () => {
             </div>
           )
         }
+      
 
       {activeTab === "Transaction" && (
   <div className="transaction-main-card">
 
-    {/* Header */}
 
-    <div className="transaction-header">
+   <div className="transaction-header">
 
-      <div className="transaction-title-wrap">
-        <div className="transaction-line"></div>
-
-        <div>
-          <h2>Transaction History</h2>
-          <p>
-            Track all payment activities for Consultation and Orders
-          </p>
-        </div>
+  <div className="transaction-header-top">
+    <div className="transaction-title-wrap">
+      <div>
+        <h2>Transaction History</h2>
+        <p>Track all payment activities for Consultation and Orders</p>
       </div>
-
-      <div className="transaction-header-actions">
-        <button className="transaction-date-btn">
-          📅 Today
-        </button>
-
-        <button className="transaction-export-btn">
-          Export
-        </button>
-      </div>
-
     </div>
 
-    {/* Tabs */}
+  
+  </div>
 
-    <div className="transaction-tabs">
+ 
 
-      <button className="transaction-tab active">
-        All Transactions
-      </button>
+</div>
+   
 
-      <button className="transaction-tab">
-        Consultation
-      </button>
-
-      <button className="transaction-tab">
-        Orders
-      </button>
-
-    </div>
-
-    {/* Summary */}
+   
 
  <div className="vendors-stats stats2-grid">
 
@@ -1465,7 +1450,7 @@ const getAvailability = async () => {
       className="stat2-icon"
        style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaClock size={24} />
+      <FaClock size={16} />
     </div>
 
     <div className="stat2-info">
@@ -1481,7 +1466,7 @@ const getAvailability = async () => {
       className="stat2-icon"
    style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCheckCircle size={24} />
+      <FaCheckCircle size={16} />
     </div>
 
     <div className="stat2-info">
@@ -1497,7 +1482,7 @@ const getAvailability = async () => {
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaTimesCircle size={24} />
+      <FaTimesCircle size={16} />
     </div>
 
     <div className="stat2-info">
@@ -1513,7 +1498,7 @@ const getAvailability = async () => {
       className="stat2-icon"
        style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaUndoAlt size={24} />
+      <FaUndoAlt size={16} />
     </div>
 
     <div className="stat2-info">
@@ -1529,7 +1514,7 @@ const getAvailability = async () => {
       className="stat2-icon"
         style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaWallet size={24} />
+      <FaWallet size={16} />
     </div>
 
     <div className="stat2-info">
@@ -1545,37 +1530,12 @@ const getAvailability = async () => {
 
     {/* Filters */}
 
-    <div className="transaction-filters">
+  
+    
 
-      <input
-        type="text"
-        placeholder="Search patient..."
-      />
+    <div className="table-wrapper">
 
-      
-
-      <select>
-        <option>All Status</option>
-        <option>Success</option>
-        <option>Pending</option>
-        <option>Failed</option>
-        <option>Refunded</option>
-      </select>
-
-      <select>
-        <option>Payment Method</option>
-        <option>UPI</option>
-        <option>Card</option>
-        <option>Cash</option>
-      </select>
-
-    </div>
-
-    {/* Table */}
-
-    <div className="transaction-table-wrapper">
-
-      <table className="transaction-table">
+      <table className="data-table">
 
         <thead>
           <tr>
@@ -1720,18 +1680,7 @@ const getAvailability = async () => {
           </span>
         </div>
 
-        {/* <div>
-          {bank.is_verified ? (
-            <span className="verified-status">
-              ✓ Verified
-            </span>
-          ) : (
-            <span className="pending-status">
-              Pending Verification
-            </span>
-          )}
-        </div> */}
-
+       
       </div>
 
       <div className="bank-grid">

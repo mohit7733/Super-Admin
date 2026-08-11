@@ -5,7 +5,7 @@
 .transaction-main-card {
  background: #ffffff;
     border-radius: 28px;
-    padding: 30px;
+    padding:19px;
     margin-top: 24px;
     border: 1px solid #e5e7eb
 }
@@ -15,12 +15,10 @@
 ================================= */
 
 .transaction-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-  gap: 15px;
+   display:flex;
+    flex-direction:column;
+    gap:18px;
+    margin-bottom:24px;
 }
 
 .transaction-title-wrap {
@@ -32,7 +30,7 @@
 
 .transaction-title-wrap h2 {
   margin: 0;
-  font-size: 24px;
+  font-size:13px;
   color: #222;
   font-weight: 700;
 }
@@ -40,8 +38,21 @@
 .transaction-title-wrap p {
   margin-top: 5px;
   color: #6b7280;
-  font-size: 14px;
+  font-size: 13px;
 }
+.transaction-header-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+}
+
+.transaction-header-bottom{
+    display:flex;
+    justify-content:flex-start;
+    align-items:center;
+}
+
 
 .transaction-header-actions {
   display: flex;
@@ -62,7 +73,64 @@
 .transaction-date-btn {
   background: #fff;
 }
+ctions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
 
+.type-toggle {
+   display:flex;
+    gap:8px;
+    padding:6px;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    width:max-content;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap:4px;
+  padding:3px;
+  border: none;
+  background: none;
+  border-radius:1px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-btn.active {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.date-export-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.date-picker-btn, .export-btn {
+  display: flex;
+  align-items: center;
+  gap: 6x;
+  padding: 3px 6px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius:1px;
+  font-size: 11px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.icon-gray {
+  color: #9ca3af;
+}
 .transaction-export-btn {
   background: #0D614E;
   color: #fff;

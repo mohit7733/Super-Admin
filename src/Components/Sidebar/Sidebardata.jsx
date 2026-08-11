@@ -104,18 +104,7 @@ export const SidebarData = () => [
     path: "#",
     permission: "manage_users",
     children: [
-      {
-        title: "Customers",
-        path: "/Customer",
-        permission: "view_customers",
-        icon: <FaUsers size={18} />
-      },
-      {
-        title: "Patients",
-        path: "/Patient",
-        permission: "view_patients",
-        icon: <FaUserInjured size={18} />
-      },
+     
       {
         title: "Vendors",
         path: "/Vendor",
@@ -128,6 +117,18 @@ export const SidebarData = () => [
         permission: "view_doctors",
         icon: <FaUserMd size={18} />
       },
+       {
+        title: "Customers",
+        path: "/Customer",
+        permission: "view_customers",
+        icon: <FaUsers size={18} />
+      },
+      {
+        title: "Patients",
+        path: "/Patient",
+        permission: "view_patients",
+        icon: <FaUserInjured size={18} />
+      }
    
     ],
   },
@@ -324,12 +325,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
       permission: "view_diet_plans",
       icon: <FaListAlt size={18} />
     },
-    {
-      title: "Add Diet Plan",
-      path: "/diet/add",
-      permission: "add_diet_plan",
-      icon: <BiPlusCircle size={18} />
-    },
+    // {
+    //   title: "Add Diet Plan",
+    //   path: "/diet/add",
+    //   permission: "add_diet_plan",
+    //   icon: <BiPlusCircle size={18} />
+    // },
     // {
     //   title: "Diet Categories",
     //   path: "/diet/categories",
@@ -347,17 +348,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
     permission: "manage_orders",
     children: [
       {
-        title: "Active Orders",
-        path: "/Order",
+        title: "OrderHistory",
+        path: "/ActiveOrder",
         permission: "view_orders",
         icon: <FaClipboardList size={18} />
       },
-      {
-        title: "Order History",
-        path: "/History",
-        permission: "view_order_history",
-        icon: <FaHistory size={18} />
-      },
+     
     ],
   },
 

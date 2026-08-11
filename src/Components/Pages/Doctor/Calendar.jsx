@@ -279,7 +279,9 @@ const BookedSlotsCalendar = ({ setActiveTab }) => {
                       {showPatient && (
                         <div className="slot-card-patient">
                           <FaUserCircle className="patient-icon" />
-                          <span>{slot.booked_by.patient_name}</span>
+                     <span style={{ fontSize: "11px", fontWeight: "600" }}>
+  {slot.booked_by.patient_name}
+</span>
                         </div>
                       )}
                     </div>

@@ -7,68 +7,23 @@ import {
   FaEllipsisV,
 } from "react-icons/fa";
 import "./Documents.css";
+import { FaFilePdf } from "react-icons/fa";
 
 const Documents = ({ documentsData }) => {
+const getFileName = (url) => {
+  if (!url) return "Document";
 
-//  const formatDocs = (data) => {
-//   if (!data) return [];
+  try {
+    return decodeURIComponent(url.split("/").pop());
+  } catch {
+    return "Document";
+  }
+};
 
-  
-//   const docs = data.documents || data;
-
-//   if (typeof docs !== "object") return [];
-
-//   const ignoreKeys = new Set([
-//     "id",
-//     "doctor",
-//     "vendor",
-//     "is_verified",
-//     "verified_at",
-//     "created_at",
-//     "updated_at",
-//   ]);
-
-//   const labelMap = {
-//     // Doctor
-//     medical_degree_certificate: "Medical Degree Certificate",
-//     registration_certificate: "Registration Certificate",
-//     identity_proof: "Identity Proof",
-//     address_proof: "Address Proof",
-//     passport_photo: "Passport Photo",
-//     signature: "Signature",
-//     experience_certificate: "Experience Certificate",
-
-//     gst_certificate: "GST Certificate",
-//     pan_card: "PAN Card",
-//     establishment_certificate: "Establishment Certificate",
-//     fssai_license: "FSSAI License",
-//     ayurvedic_manufacturing_license:
-//       "Ayurvedic Manufacturing License",
-//     bank_statement: "Bank Statement",
-//     cancelled_cheque: "Cancelled Cheque",
-//     product_catalog: "Product Catalog",
-//     company_logo: "Company Logo",
-//   };
-
-//   return Object.entries(docs)
-//     .filter(([key, value]) => {
-//       if (ignoreKeys.has(key)) return false;
-//       return value !== null && value !== undefined && value !== "";
-//     })
-//     .map(([key, value]) => ({
-//       id: key,
-//       type:
-//         labelMap[key] ||
-//         key
-//           .replace(/_/g, " ")
-//           .replace(/\b\w/g, (c) => c.toUpperCase()),
-//       fileUrl: value,
-//     }));
-// };
 const formatDocs = (data) => {
   if (!data) return [];
 
-  // Patient Documents (Array)
+ 
   if (Array.isArray(data)) {
     return data
       .filter((item) => item.file_url)
@@ -82,7 +37,7 @@ const formatDocs = (data) => {
       }));
   }
 
-  // Doctor/Vendor Documents
+ 
   const docs = data.documents || data;
 
   if (typeof docs !== "object") return [];
@@ -95,6 +50,7 @@ const formatDocs = (data) => {
     "verified_at",
     "created_at",
     "updated_at",
+    "is_deleted",
   ]);
 
   const labelMap = {
@@ -139,7 +95,7 @@ const docs = React.useMemo(() => {
 
   const DocumentCard = ({ doc }) => {
     return (
-      <div className="document-card">
+      <div className="documents-card">
 
         {/* HEADER */}
         <div className="document-header">
@@ -151,7 +107,7 @@ const docs = React.useMemo(() => {
          
         </div>
 
-      <div className="document-image-container">
+  <div className="document-image-container">
   {doc.fileUrl ? (
     /\.(jpg|jpeg|png|gif|webp)$/i.test(doc.fileUrl) ? (
       <img
@@ -160,11 +116,13 @@ const docs = React.useMemo(() => {
         className="document-image"
       />
     ) : /\.pdf$/i.test(doc.fileUrl) ? (
-      <iframe
-        src={`${doc.fileUrl}#toolbar=0&navpanes=0`}
-        title={doc.type}
-        className="pdf-preview"
-      />
+      <div className="pdf-card">
+        <FaFilePdf className="pdf-icon" />
+
+        <h4>PDF Document</h4>
+
+        <p>{getFileName(doc.fileUrl)}</p>
+      </div>
     ) : (
       <div className="no-preview">
         No Preview Available

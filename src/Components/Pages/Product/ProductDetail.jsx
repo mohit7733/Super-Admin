@@ -908,8 +908,14 @@ if (selectedVariant?.id === variantId) {
                       <h5 className="detail-section-title">Stock & Status</h5>
                       <div className="detail-row">
                         <span className="detail-label">Stock</span>
-                        <span className={`detail-value ${selectedVariant.stock < selectedVariant.low_stock_threshold ? 'low-stock' : ''}`}>
-                          {selectedVariant.stock} units
+                        <span
+  className={`detail-value ${
+    (selectedVariant.quantity ?? 0) < (selectedVariant.low_stock_threshold ?? 10)
+      ? "low-stock"
+      : ""
+  }`}
+>
+  {selectedVariant.quantity ?? 0} units
                           {selectedVariant.stock < selectedVariant.low_stock_threshold && 
                             <span className="low-stock-warning"> ⚠️ Low stock</span>
                           }
@@ -1076,24 +1082,21 @@ if (selectedVariant?.id === variantId) {
               ).toFixed(2)}
             </td>
 
-            {/* Stock */}
-            <td
-              className={`stock-cell ${
-                variant.stock <
-                variant.low_stock_threshold
-                  ? "low-stock"
-                  : ""
-              }`}
-            >
-              {variant.stock}
+   <td
+  className={`stock-cell ${
+    (variant.quantity ?? 0) < (variant.low_stock_threshold ?? 10)
+      ? "low-stock"
+      : ""
+  }`}
+>
+  {variant.quantity ?? 0}
 
-              {variant.stock <
-                variant.low_stock_threshold && (
-                <span className="stock-warning-icon">
-                  ⚠️
-                </span>
-              )}
-            </td>
+  {(variant.quantity ?? 0) < (variant.low_stock_threshold ?? 10) && (
+    <span className="stock-warning-icon">
+      ⚠️
+    </span>
+  )}
+</td>
 
             
             <td>{getStatusBadge(variant.approval_status)}</td>

@@ -132,69 +132,7 @@ const [todayCount, setTodayCount] = useState(0);
   }
 
 
-  // const handleCreateCustomer = async (e) => {
-  //   e.preventDefault();
-
-  //   if (!validatePhoneForm()) {
-  //     return;
-  //   }
-
-
-
-  //   try {
-  //     const token = sessionStorage.getItem("superadmin_token");
-  //     const payload = {
-  //       phone_number: `+91${CustomerForm.verified_phone_number}`,
-  //       role: "customer",
-  //     };
-
-  //     const response = await fetch(`${BASE_URL}/user/super-admin/create-user/`, {
-  //       method: "POST",
-  //       headers: {
-  //         Accept: "application/json",
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //       body: JSON.stringify(payload),
-  //     });
-
-
-  //     if (response.status === 401 || response.status === 403) {
-  //       toast.error("Session expired. Please login again");
-  //       sessionStorage.removeItem("superadmin_token");
-  //       navigate("/login");
-  //       return;
-  //     }
-
-  //     const data = await response.json();
-
-
-  //     if (!response.ok) {
-  //       toast.error(data?.error);
-  //       return;
-  //     }
-
-
-  //     const uid = data?.user?.id;
-
-  //     toast.success("Customer created. Please complete your registration");
-
-  //     if (uid) {
-  //       setUserId(uid);
-  //       localStorage.setItem("USER_ID", uid);
-  //       setOtpVerified(false);
-  //       setCustomerModalOpen(true);
-  //     }
-
-  //   } catch (err) {
-  //     console.error("Customer create error:", err);
-  //     toast.error("Something went wrong. Please try again", {
-  //       position: "top-center",
-  //     });
-  //   }
-  // };
-
-
+  
 
   const handleCustomerDelete = async (id) => {
     try {
@@ -224,9 +162,6 @@ const [todayCount, setTodayCount] = useState(0);
   };
 
 
-
-
-
   const getInitials = (firstName = "", lastName = "") => {
     return (
       (firstName?.[0] || "").toUpperCase() +
@@ -234,10 +169,6 @@ const [todayCount, setTodayCount] = useState(0);
     );
   };
 
-
-
-
-  
 
   const getCustomerList = async (page = 1,search = "") => {
     const token = sessionStorage.getItem("superadmin_token");
