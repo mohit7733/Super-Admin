@@ -1,0 +1,1064 @@
+/* =========================================================
+   PAGE
+========================================================= */
+
+.bulk-upload-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f5f7fb;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", "Poppins", sans-serif;
+  color: #17233d;
+}
+
+
+/* =========================================================
+   BREADCRUMB
+========================================================= */
+
+.bulk-breadcrumb {
+  height: 62px;
+  background: #ffffff;
+  border-bottom: 1px solid #e7ebf2;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 30px;
+
+  gap: 10px;
+
+  font-size: 13px;
+  color: #78839a;
+}
+
+.bulk-breadcrumb strong {
+  color: #24324a;
+  font-weight: 600;
+}
+
+.breadcrumb-arrow {
+  font-size: 9px;
+  transform: rotate(-90deg);
+  color: #a6afbf;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
+.bulk-upload-container {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(380px, 0.95fr);
+
+  gap: 22px;
+
+  padding: 22px 30px 30px;
+
+  box-sizing: border-box;
+
+  align-items: start;
+}
+
+
+/* =========================================================
+   LEFT UPLOAD CARD
+========================================================= */
+
+.bulk-upload-card {
+  background: #ffffff;
+
+  border: 1px solid #e4e8ef;
+
+  border-radius: 10px;
+
+  overflow: hidden;
+
+  box-shadow: 0 3px 12px rgba(27, 44, 72, 0.04);
+}
+
+
+/* =========================================================
+   CARD HEADER
+========================================================= */
+
+.bulk-card-header {
+  padding: 25px 25px 17px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.bulk-card-header h1 {
+  margin: 0 0 7px;
+
+  font-size: 25px;
+  line-height: 1.2;
+
+  color: #172b4d;
+
+  font-weight: 700;
+}
+
+.bulk-card-header p {
+  margin: 0;
+
+  color: #7a879c;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+.mobile-close-btn {
+  display: none;
+
+  border: none;
+  background: transparent;
+
+  color: #8792a6;
+
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   DOWNLOAD TEMPLATE
+========================================================= */
+
+.download-template-btn {
+  margin: 0 25px 24px;
+
+  height: 45px;
+
+  padding: 0 18px;
+
+  border: 1px solid #9bbfff;
+
+  background: #ffffff;
+
+  border-radius: 7px;
+
+  color: #1769e0;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.download-template-btn svg {
+  font-size: 16px;
+}
+
+.download-template-btn:hover {
+  background: #f4f8ff;
+  border-color: #347df2;
+}
+
+
+/* =========================================================
+   DROP ZONE
+========================================================= */
+
+.excel-drop-zone {
+  margin: 0 25px;
+
+  min-height: 330px;
+
+  border: 1.5px dashed #aab9d1;
+
+  border-radius: 8px;
+
+  background: #fbfcff;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  transition: all 0.2s ease;
+}
+
+.excel-drop-zone.drag-active {
+  border-color: #2478ed;
+  background: #f1f7ff;
+  transform: scale(1.005);
+}
+
+
+/* =========================================================
+   EXCEL ICON
+========================================================= */
+
+.excel-file-icon {
+  width: 65px;
+  height: 65px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 15px;
+
+  color: #18864b;
+
+  font-size: 58px;
+}
+
+.excel-drop-zone h3 {
+  margin: 0;
+
+  font-size: 17px;
+
+  color: #25334b;
+
+  font-weight: 600;
+}
+
+.drop-or {
+  margin: 8px 0;
+
+  font-size: 13px;
+
+  color: #8a95a8;
+}
+
+
+/* =========================================================
+   BROWSE BUTTON
+========================================================= */
+
+.browse-file-btn {
+  height: 43px;
+
+  padding: 0 20px;
+
+  border: none;
+
+  border-radius: 7px;
+
+  background: #176fe8;
+
+  color: #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+
+  box-shadow: 0 5px 12px rgba(23, 111, 232, 0.18);
+
+  transition: all 0.2s ease;
+}
+
+.browse-file-btn:hover {
+  background: #0f61d1;
+  transform: translateY(-1px);
+}
+
+.browse-file-btn svg {
+  font-size: 15px;
+}
+
+.supported-format {
+  margin: 12px 0 0;
+
+  font-size: 11px;
+
+  color: #9aa4b4;
+}
+
+
+/* =========================================================
+   SELECTED FILE
+========================================================= */
+
+.selected-file-box {
+  margin: 20px 25px 0;
+
+  min-height: 68px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #dfe5ee;
+
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  box-sizing: border-box;
+}
+
+.selected-file-left {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 0;
+}
+
+.small-excel-icon {
+  width: 38px;
+  height: 38px;
+
+  border-radius: 7px;
+
+  background: #e9f8ef;
+
+  color: #19884d;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.small-excel-icon svg {
+  font-size: 20px;
+}
+
+.selected-file-info {
+  min-width: 0;
+}
+
+.selected-file-info h4 {
+  margin: 0 0 4px;
+
+  font-size: 13px;
+
+  color: #27354d;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.selected-file-info span {
+  font-size: 11px;
+
+  color: #929caf;
+}
+
+.remove-file-btn {
+  border: none;
+
+  background: transparent;
+
+  color: #e53935;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
+}
+
+.remove-file-btn:hover {
+  color: #c62828;
+}
+
+
+/* =========================================================
+   NOTE
+========================================================= */
+
+.bulk-note-box {
+  margin: 20px 25px;
+
+  padding: 15px 16px;
+
+  border: 1px solid #bdd5ff;
+
+  background: #f5f9ff;
+
+  border-radius: 8px;
+
+  display: flex;
+
+  gap: 12px;
+}
+
+.bulk-note-icon {
+  width: 25px;
+  height: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #2879ea;
+
+  flex-shrink: 0;
+}
+
+.bulk-note-box h4 {
+  margin: 0 0 5px;
+
+  font-size: 13px;
+
+  color: #2870d8;
+
+  font-weight: 700;
+}
+
+.bulk-note-box p {
+  margin: 0 0 4px;
+
+  font-size: 11.5px;
+
+  color: #63738d;
+
+  line-height: 1.5;
+}
+
+.bulk-note-box span {
+  font-size: 11px;
+
+  color: #8290a5;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.bulk-card-footer {
+  border-top: 1px solid #e8ecf2;
+
+  padding: 15px 25px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 10px;
+}
+
+.cancel-upload-btn {
+  height: 42px;
+
+  padding: 0 22px;
+
+  background: #ffffff;
+
+  border: 1px solid #d6dce6;
+
+  border-radius: 7px;
+
+  color: #56647a;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.cancel-upload-btn:hover {
+  background: #f8f9fb;
+}
+
+.validate-upload-btn {
+  height: 42px;
+
+  padding: 0 18px;
+
+  border: none;
+
+  border-radius: 7px;
+
+  background: #176fe8;
+
+  color: #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  cursor: pointer;
+
+  box-shadow: 0 5px 12px rgba(23, 111, 232, 0.18);
+
+  transition: all 0.2s ease;
+}
+
+.validate-upload-btn:hover {
+  background: #0e60d2;
+}
+
+.validate-upload-btn svg {
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   RIGHT GUIDE CARD
+========================================================= */
+
+.excel-guide-card {
+  background: #ffffff;
+
+  border: 1px solid #e4e8ef;
+
+  border-radius: 10px;
+
+  box-shadow: 0 3px 12px rgba(27, 44, 72, 0.04);
+
+  overflow: hidden;
+}
+
+.guide-header {
+  padding: 23px 22px 17px;
+}
+
+.guide-header h2 {
+  margin: 0 0 6px;
+
+  font-size: 19px;
+
+  color: #1e2d48;
+
+  font-weight: 700;
+}
+
+.guide-header p {
+  margin: 0;
+
+  font-size: 12px;
+
+  color: #8994a7;
+}
+
+
+/* =========================================================
+   GUIDE SECTION
+========================================================= */
+
+.guide-section {
+  margin: 0 15px 10px;
+
+  border: 1px solid;
+
+  border-radius: 9px;
+
+  overflow: hidden;
+
+  transition: all 0.2s ease;
+}
+
+.products-section {
+  border-color: #bde7ce;
+
+  background: #f6fff9;
+}
+
+.variants-section {
+  border-color: #bfd7ff;
+
+  background: #f7faff;
+}
+
+.gallery-section {
+  border-color: #f2d99b;
+
+  background: #fffaf0;
+}
+
+.references-section {
+  border-color: #dcc9ff;
+
+  background: #fbf8ff;
+}
+
+.instructions-section {
+  border-color: #dfe4eb;
+
+  background: #f9fafc;
+}
+
+
+/* =========================================================
+   GUIDE HEADER
+========================================================= */
+
+.guide-section-header {
+  min-height: 72px;
+
+  padding: 11px 12px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  cursor: pointer;
+}
+
+.guide-icon {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  font-size: 20px;
+}
+
+.products-icon {
+  background: #e5f8ec;
+  color: #23a35c;
+}
+
+.variants-icon {
+  background: #e5efff;
+  color: #2878ea;
+}
+
+.gallery-icon {
+  background: #fff0c9;
+  color: #edaa12;
+}
+
+.references-icon {
+  background: #eee4ff;
+  color: #8651dc;
+}
+
+.instructions-icon {
+  background: #e9edf2;
+  color: #68778d;
+}
+
+
+/* =========================================================
+   GUIDE TITLE
+========================================================= */
+
+.guide-title-area {
+  flex: 1;
+
+  min-width: 0;
+}
+
+.guide-title-row {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  flex-wrap: wrap;
+}
+
+.guide-title-row h3 {
+  margin: 0;
+
+  font-size: 14px;
+
+  color: #24324a;
+
+  font-weight: 700;
+}
+
+.guide-number {
+  width: 20px;
+  height: 20px;
+
+  border-radius: 50%;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.products-number {
+  background: #23a35c;
+}
+
+.variants-number {
+  background: #2878ea;
+}
+
+.gallery-number {
+  background: #e9a612;
+}
+
+.references-number {
+  background: #8651dc;
+}
+
+.instructions-number {
+  background: #7b8798;
+}
+
+.guide-title-area > p {
+  margin: 5px 0 0;
+
+  font-size: 11px;
+
+  color: #758298;
+
+  line-height: 1.45;
+}
+
+.guide-chevron {
+  width: 25px;
+
+  color: #778398;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.required-badge,
+.optional-badge,
+.info-badge {
+  padding: 3px 7px;
+
+  border-radius: 20px;
+
+  font-size: 9px;
+
+  font-weight: 700;
+}
+
+.required-badge {
+  background: #d9f6e5;
+  color: #168148;
+}
+
+.optional-badge {
+  background: #e9ddff;
+  color: #7440ca;
+}
+
+.info-badge {
+  background: #e6eaf0;
+  color: #69768a;
+}
+
+
+/* =========================================================
+   GUIDE CONTENT
+========================================================= */
+
+.guide-content {
+  padding: 0 15px 15px 63px;
+
+  animation: guideOpen 0.2s ease;
+}
+
+@keyframes guideOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.guide-content strong {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #33415a;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.guide-content ul {
+  padding: 0;
+  margin: 0;
+
+  list-style: none;
+}
+
+.guide-content li {
+  position: relative;
+
+  padding-left: 12px;
+
+  margin-bottom: 4px;
+
+  font-size: 10.5px;
+
+  color: #6d7a90;
+
+  line-height: 1.45;
+}
+
+.guide-content li::before {
+  content: "•";
+
+  position: absolute;
+
+  left: 0;
+
+  color: #98a3b4;
+}
+
+.guide-content code {
+  padding: 1px 3px;
+
+  border-radius: 3px;
+
+  background: rgba(0, 0, 0, 0.035);
+
+  color: #46546b;
+
+  font-family: monospace;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   HELP
+========================================================= */
+
+.guide-help {
+  border-top: 1px solid #e8ecf2;
+
+  min-height: 58px;
+
+  padding: 0 18px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  color: #2877df;
+}
+
+.guide-help > svg {
+  font-size: 16px;
+}
+
+.guide-help div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.guide-help strong {
+  font-size: 11px;
+
+  color: #53627a;
+}
+
+.guide-help span {
+  font-size: 10.5px;
+
+  color: #2d76dc;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+  .bulk-upload-container {
+    grid-template-columns: 1fr;
+  }
+
+  .excel-guide-card {
+    width: 100%;
+  }
+}
+
+
+@media (max-width: 768px) {
+  .bulk-breadcrumb {
+    padding: 0 15px;
+
+    height: 55px;
+
+    font-size: 11px;
+  }
+
+  .bulk-upload-container {
+    padding: 15px;
+
+    gap: 15px;
+  }
+
+  .bulk-card-header {
+    padding: 20px 18px 15px;
+  }
+
+  .bulk-card-header h1 {
+    font-size: 21px;
+  }
+
+  .bulk-card-header p {
+    font-size: 11px;
+  }
+
+  .download-template-btn {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .excel-drop-zone {
+    margin: 0 18px;
+
+    min-height: 270px;
+  }
+
+  .selected-file-box {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .bulk-note-box {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .bulk-card-footer {
+    padding: 14px 18px;
+
+    flex-direction: column-reverse;
+
+    align-items: stretch;
+  }
+
+  .cancel-upload-btn,
+  .validate-upload-btn {
+    width: 100%;
+
+    justify-content: center;
+  }
+
+  .guide-header {
+    padding: 20px 18px 15px;
+  }
+
+  .guide-section {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .bulk-upload-page {
+    min-width: 0;
+  }
+
+  .bulk-breadcrumb span:nth-child(1),
+  .bulk-breadcrumb .breadcrumb-arrow:nth-of-type(1) {
+    display: none;
+  }
+
+  .excel-drop-zone {
+    min-height: 240px;
+  }
+
+  .excel-file-icon {
+    font-size: 48px;
+  }
+
+  .excel-drop-zone h3 {
+    font-size: 15px;
+  }
+
+  .selected-file-box {
+    align-items: flex-start;
+  }
+
+  .remove-file-btn {
+    font-size: 0;
+  }
+
+  .remove-file-btn svg {
+    font-size: 15px;
+  }
+
+  .guide-title-row h3 {
+    font-size: 12px;
+  }
+
+  .guide-title-area > p {
+    font-size: 10px;
+  }
+
+  .guide-content {
+    padding-left: 55px;
+  }
+}

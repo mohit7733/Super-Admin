@@ -36,11 +36,11 @@ const OrderModal = ({ order, onClose }) => {
         className="orderDrawer"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ================= Header ================= */}
+      
 
         <div className="drawerHeader">
           <div>
-            <h2>{order.order_display_code || order.order_code}</h2>
+            <h2>{order.order_id || "N/A"}</h2>
 
             <p>
               {formatDate(order.date)} • {formatTime(order.date)}

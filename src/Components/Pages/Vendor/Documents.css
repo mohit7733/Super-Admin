@@ -1,281 +1,212 @@
 .verification-container {
- 
-  min-height: 100vh;
- margin-top:20px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 0;
 }
 
-/* Header Section */
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.header-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-}
-
-.download-all-btn {
-  padding: 10px 20px;
-  border: 1px solid #ddd;
-  background-color: white;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-}
-
-.download-all-btn:hover {
-  border-color: #bbb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.section-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 5px 0;
-}
-
-.section-subtitle {
-  font-size: 14px;
-  color: #999;
-  margin: 0 0 25px 0;
-}
-
+/* ==========================
+   DOCUMENT GRID
+========================== */
 
 .documents-grids {
   display: grid;
-   grid-template-columns: repeat(4, 1fr);
-  gap: 25px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 24px;
 }
 
+/* ==========================
+   DOCUMENT CARD
+========================== */
 
-.document-card {
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+.documents-card {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e6ece9;
+  border-radius: 12px;
+  padding: 12px;
+  transition: 0.25s ease;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .document-card:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
+
+/* ==========================
+   HEADER
+========================== */
 
 .document-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
+  margin-bottom: 10px;
 }
 
 .document-title-section {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  flex: 1;
+  align-items: center;
+  gap: 8px;
 }
 
 .documents-icon {
-  font-size: 19x;
-  color:#0D614E;
+  color: #0d614e;
+  font-size: 15px;
   flex-shrink: 0;
 }
 
 .document-type {
-  font-size: 16px;
-
-  color: #222;
-  margin-bottom: 4px;
-}
-
-.document-subtitle {
   font-size: 13px;
-  color: #8c8c8c;
+  font-weight: 600;
+  color: #222;
+  line-height: 1.3;
 }
 
-.menu-btn {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: #999;
-  font-size: 18px;
-  padding: 0;
-  margin-left: auto;
-}
+/* ==========================
+   IMAGE
+========================== */
 
-/* Document Image */
-/* .document-image-container {
+.document-image-container {
   width: 100%;
-  height: 200px;
-  border: 1px solid #ddd;
+  height: 150px;
+  border: 1px solid #ececec;
   border-radius: 8px;
   overflow: hidden;
+  background: #fafafa;
 }
 
-.pdf-preview {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
 .document-image {
   width: 100%;
   height: 100%;
   object-fit: contain;
-} */
- .document-image-container {
-  width: 100%;
-  height: 200px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.document-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   display: block;
+  background: #fafafa;
 }
 
-.pdf-preview {
+/* ==========================
+   PDF CARD
+========================== */
+
+.pdf-card {
   width: 100%;
-  height: 100%;
-  border: none;
-}
+  height: 150px;
+  border: 1px dashed #d7d7d7;
+  border-radius: 8px;
+  background: #fafafa;
 
-
-
-/* Status Badge */
-.status-badge {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 12px;
+
+  text-align: center;
+  padding: 12px;
+  box-sizing: border-box;
 }
 
-.status-badge.verified {
-  background: #e7f6ec;
-  color: #0d614e;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-weight: 600;
-}
-.status-badge.pending {
-  background-color: #fff3e0;
-  color: #e65100;
+.pdf-icon {
+  font-size: 42px;
+  color: #e53935;
+  margin-bottom: 8px;
 }
 
-.status-badge svg {
+.pdf-card h4 {
   font-size: 14px;
+  margin: 0;
+  font-weight: 600;
 }
 
-/* Document Date */
-.document-date {
-  font-size: 12px;
-  color: #999;
-  margin-bottom: 15px;
+.pdf-card p {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #666;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
-/* Document Actions */
+/* ==========================
+   BUTTONS
+========================== */
+
 .document-actions {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .document-btn {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
+  flex: 1;
+  height: 36px;
+  border-radius: 7px;
   font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-}
-
-.docview-btn,
-.docdownload-btn {
-  border: 2px solid #0d614e;
+  font-weight: 600;
+  border: 1.5px solid #0d614e;
   background: #fff;
   color: #0d614e;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: .25s;
 }
 
-.docview-btn:hover,
-.docdownload-btn:hover {
-  background: #f4fbf8;
+.document-btn svg {
+  font-size: 12px;
 }
 
+.document-btn:hover {
+  background: #f2fbf7;
+}
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .verification-container {
-    padding: 20px 15px;
-  }
+/* ==========================
+   EMPTY STATE
+========================== */
 
-  .header-section {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
+.no-preview {
+  width: 100%;
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fafafa;
+  color: #888;
+  font-size: 13px;
+  border-radius: 8px;
+}
 
-  .summary-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-  }
+/* ==========================
+   RESPONSIVE
+========================== */
 
-  
-
-  .alert-banner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .alert-btn {
-    width: 100%;
+@media (max-width:1400px) {
+  .documents-grids {
+    grid-template-columns: repeat(3,1fr);
   }
 }
 
-@media (max-width: 480px) {
-  .summary-grid {
+@media (max-width:992px) {
+  .documents-grids {
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+
+@media (max-width:576px) {
+  .documents-grids {
     grid-template-columns: 1fr;
   }
 
-  .header-title {
-    font-size: 22px;
+  .document-image-container,
+  .pdf-card {
+    height: 140px;
   }
 
-  .document-header {
-    flex-wrap: wrap;
+  .document-btn {
+    height: 34px;
+    font-size: 11px;
   }
-
-  .document-actions {
-    flex-direction: column;
-  }
-
-  
 }

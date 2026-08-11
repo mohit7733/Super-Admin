@@ -133,7 +133,7 @@ const getTransactionlist = async () => {
       setTransactionLoading(true);
 
       const response = await fetch(
-       `${BASE_URL}/payments/admin/transactions/?patient_id =${PatientId}`,
+       `${BASE_URL}/payments/admin/transactions/?patient_id=${PatientId}`,
         {
           method: "GET",
           headers: {
@@ -857,7 +857,7 @@ useEffect(() => {
 
                           <div className="stat2-card">
                             <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                    <MdTimerOff size={24} />
+                    <MdTimerOff size={16} />
                             </div>
                             <div className="stat2-info">
                               <h3>Expired</h3>
@@ -868,7 +868,7 @@ useEffect(() => {
                   
                           <div className="stat2-card">
                             <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                              <FaCheckCircle size={24} />
+                              <FaCheckCircle size={16} />
                             </div>
                             <div className="stat2-info">
                               <h3>Success</h3>
@@ -878,7 +878,7 @@ useEffect(() => {
                   
                           <div className="stat2-card">
                             <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                              <FaTimesCircle size={24} />
+                              <FaTimesCircle size={16} />
                             </div>
                             <div className="stat2-info">
                               <h3>Failed</h3>

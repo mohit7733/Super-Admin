@@ -169,20 +169,20 @@
         .vendor-card {
             background: #fff;
             border-radius: 12px;
-            padding: 24px;
+            padding: 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
-        .card-header {
+        .cards-header {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 20px;
+       
             padding-bottom: 16px;
           
         }
 
-        .card-header .card-icon {
+        .cards-header .card-icon {
             font-size: 35px;
             color: #0D614E;
             background: rgba(13, 97, 78, 0.125);;
@@ -190,7 +190,7 @@
             border-radius: 8px;
         }
 
-        .card-header h3 {
+        .cards-header h3 {
             font-size: 16px;
             font-weight: 600;
             color: #1a1a2e;
@@ -206,8 +206,9 @@
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            font-size: 17px;
-            padding: 7px;
+            font-size: 13px;
+
+            padding: 4px;
         }
 
         .info-row-vendor .label {

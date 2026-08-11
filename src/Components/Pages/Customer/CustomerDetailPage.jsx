@@ -8,7 +8,7 @@ import {
   FaSpa, FaHeart,FaLeaf,FaRunning,FaUtensils
 } from "react-icons/fa";
 import ConsultationOrder from "../../Pages/Customer/ConsultationOrder";
-import Paymenthistory from "./Paymenthistory";
+
 
 import ActivityLog from "./ActivityLog";
 import Allprescription from "./AllPrescription";
@@ -21,7 +21,8 @@ import prescriptionEmpty from "../../Assests/orderempty.svg";
 import orderEmpty from "../../Assests/fff.svg";
 import CustomerSkeleton from "./CustomerSkeleton";
 import Producthistory from "./Producthistory";
-import OrderModal from "./OrderModal"
+import OrderModal from "./OrderModal";
+import CustomerTransaction from "./CustomerTransaction.";
 
 
 
@@ -105,6 +106,53 @@ const formatDate = (date) => {
 
     }
   };
+
+  const getStatusStyle = (status) => {
+  const value = status?.toLowerCase();
+
+  switch (value) {
+    
+    case "success":
+      case "booked":
+    case "completed":
+    case "approved":
+       case "confirmed":
+      return {
+    background: "#0D614E20", color: "#0D614E" 
+      };
+
+  
+    case "pending":
+    case "processing":  
+    case "reschedule":
+    case "rescheduled":
+  
+   
+      return {
+        background: "#fef3c7",
+        color: "#b45309",
+      };
+
+    case "failed":
+    case "rejected":
+    case "cancelled":
+    case "expired":
+    case "missed":
+       case "cancellation_requested":
+      return {
+        background: "#fee2e2",
+        color: "#dc2626",
+      };
+
+    case "refunded":
+      return {
+        background: "#ede9fe",
+        color: "#7c3aed",
+      };
+
+   
+  }
+};
 
   useEffect(() => {
   console.log("useEffect Called");
@@ -295,11 +343,11 @@ if (Error) {
   Consultation
   </button>
   <button
-    className={activeTab === "payment" ? "active-tab" : ""}
-    onClick={() => setActiveTab("payment")}
-  >
-   Transaction
-  </button>
+  className={activeTab === "transaction" ? "active-tab" : ""}
+  onClick={() => setActiveTab("transaction")}
+>
+  Transaction
+</button>
 
  
 
@@ -311,6 +359,7 @@ if (Error) {
   </button>
 
 </div>
+
 {activeTab==="overview" && (
    <div className="customer-content-wrapper">
 
@@ -522,12 +571,14 @@ if (Error) {
   </div>
 </td>
         <td>₹{Number(order.total_amount).toFixed(2)}</td>
-
-        <td>
-          <span className={`status ${order.status.toLowerCase()}`}>
-            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-          </span>
-        </td>
+<td>
+  <span
+    className="status-badge"
+    style={getStatusStyle(order.status)}
+  >
+    {order.status || "N/A"}
+  </span>
+</td>
       </tr>
     ))
   ) : (
@@ -817,6 +868,12 @@ if (Error) {
     }}
   />
 )}
+
+{
+  activeTab === "transaction" && (
+    <CustomerTransaction />
+  )
+}
 {
   activeTab==="Consultation"&&(
     <ConsultationOrder/>
@@ -836,17 +893,15 @@ if (Error) {
       )
     }
 
-    {
-      activeTab==="payment" &&(
-        <Paymenthistory/>
-      )
-    }
+   
 
     {
       activeTab==="activity" &&(
         <ActivityLog/>
       )
     }
+
+    
     </>
   );
 };

@@ -460,6 +460,53 @@ setEditBannerError({});
     toast.error("Failed to delete admin");
   }
 };
+const handleToggleBannerStatus = async (bannerId, currentStatus) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/user/admin/banner/?id=${bannerId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          is_active: !currentStatus,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      toast.success(
+        `Banner ${!currentStatus ? "Activated" : "Deactivated"} Successfully`
+      );
+
+      setBannerData(prev =>
+        prev.map(item =>
+          item.id === bannerId
+            ? { ...item, is_active: !currentStatus }
+            : item
+        )
+      );
+    } else {
+      toast.error(data.message || "Failed to update status");
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+  }
+};
   
   return (
     <>
@@ -475,7 +522,7 @@ setEditBannerError({});
          <div className="vendors-stats stats2-grid">
                   <div className="stat2-card">
                     <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                      <FaImages size={24} />
+                      <FaImages size={16} />
                     </div>
                     <div className="stat2-info">
                       <h3>Total Banner</h3>
@@ -485,7 +532,7 @@ setEditBannerError({});
           
                   <div className="stat2-card">
                     <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                      <FaCheckCircle size={24} />
+                      <FaCheckCircle size={16} />
                     </div>
                     <div className="stat2-info">
                       <h3>Active Banner</h3>
@@ -495,7 +542,7 @@ setEditBannerError({});
           
                   <div className="stat2-card">
                     <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                    <FaTimesCircle size={24} />
+                    <FaTimesCircle size={16} />
                     </div>
                     <div className="stat2-info">
                       <h3>Inactive Banner</h3>
@@ -558,8 +605,8 @@ setEditBannerError({});
     src={item.image_url}
     alt="banner"
     style={{
-      width: "80px",
-      height: "50px",
+      width: "30px",
+      height: "30px",
       objectFit: "cover",
       borderRadius: "6px",
     }}
@@ -568,11 +615,13 @@ setEditBannerError({});
 </td>
                               <td>
                 <label className="switch">
-                  <input
-                    type="checkbox"
-                    checked={item.is_active}
-                
-                  />
+                <input
+  type="checkbox"
+  checked={item.is_active}
+  onChange={() =>
+    handleToggleBannerStatus(item.id, item.is_active)
+  }
+/>
                   <span className="slider round"></span>
                 </label>
               </td>

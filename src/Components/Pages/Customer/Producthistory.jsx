@@ -20,6 +20,53 @@ const Producthistory = () => {
   const[OrderLoading,setOrderLoading]=useState(false);
   const[OrderError,setError]=useState(null);
    const [totalCount, setTotalCount] = useState(0);
+
+    const getStatusStyle = (status) => {
+  const value = status?.toLowerCase();
+
+  switch (value) {
+    
+    case "success":
+      case "booked":
+    case "completed":
+    case "approved":
+       case "confirmed":
+      return {
+    background: "#0D614E20", color: "#0D614E" 
+      };
+
+  
+    case "pending":
+    case "processing":  
+    case "reschedule":
+    case "rescheduled":
+  
+   
+      return {
+        background: "#fef3c7",
+        color: "#b45309",
+      };
+
+    case "failed":
+    case "rejected":
+    case "cancelled":
+    case "expired":
+    case "missed":
+       case "cancellation_requested":
+      return {
+        background: "#fee2e2",
+        color: "#dc2626",
+      };
+
+    case "refunded":
+      return {
+        background: "#ede9fe",
+        color: "#7c3aed",
+      };
+
+   
+  }
+};
    
    const [OrderStats, setOrderStats] = useState({
        "total": 0,
@@ -212,7 +259,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
   </div>
 
 </div>
-                    <div className="table-wrapper1">
+                    <div className="table-wrapper">
   <table className="data-table">
     <thead>
       <tr>
@@ -283,11 +330,14 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
 </td>
 
             <td>
-              <span
-                className={`status-badge ${order.status.toLowerCase()}`}
-              >
-                {order.status}
-              </span>
+              <td>
+            <span
+              className="status-badge"
+              style={getStatusStyle(order.status)}
+            >
+              {order.status}
+            </span>
+          </td>
             </td>
 
             <td>

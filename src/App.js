@@ -27,11 +27,13 @@ import Vendor from './Components/Pages/Vendor/Vendor';
 
 import Doctor from './Components/Pages/Doctor/Doctor';
 import DoctorDetail from './Components/Pages/Doctor/DoctorDetail';
+import ActiveOrders from './Components/Pages/Order/ActiveOrders';
 
 
 import Patient from './Components/Pages/Patient/Patient';
 
-import Order from './Components/Pages/Order/Order';
+
+
 
 import History from './Components/Pages/History/History';
 import Items from './Components/Pages/History/Items';
@@ -54,7 +56,7 @@ import Testing from './Components/Pages/Customer/testing';
 import Presceptions from './Components/Pages/Customer/Presceptions';
 import ConsultationOrder from './Components/Pages/Customer/ConsultationOrder'
 import ActivityLog from './Components/Pages/Customer/ActivityLog';
-import Paymenthistory from './Components/Pages/Customer/Paymenthistory';
+
 import Prakiritianalysis from './Components/Question/Prakiritianalysis';
 import Disease from './Components/Pages/Disease/Disease';
 import Category from './Components/Pages/Category/Category';
@@ -198,7 +200,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+  <Route
+          path="/ActiveOrder"
+          element={
+            <ProtectedRoute permission="view_orders">
+              <Layout>
+                <ActiveOrders />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/Review/doctor"
           element={
@@ -305,26 +316,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/order"
-          element={
-            <ProtectedRoute permission="view_orders" >
-              <Layout>
-                <Order />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/order"
-          element={
-            <ProtectedRoute permission="view_orders" >
-              <Layout>
-                <Order />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+      
 
 
         <Route
@@ -605,16 +597,21 @@ function App() {
           }
         />
 
-        <Route
-          path="/paymemthistory"
+         <Route
+          path="/diet/all"
           element={
+
+
             <ProtectedRoute>
               <Layout>
-                <Paymenthistory />
+                <Diet />
               </Layout>
             </ProtectedRoute>
           }
         />
+
+
+     
         <Route
           path="/Items/:PaymentId"
           element={
