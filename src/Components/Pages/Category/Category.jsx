@@ -6,6 +6,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { BiPlus } from 'react-icons/bi';
+import { FiSearch, FiRefreshCw } from "react-icons/fi";
+
+
 
 
 const Category = () => {
@@ -40,7 +43,7 @@ const [editErrors, setEditErrors] = useState({});
     active: 0,
     inactive: 0
   });
-
+const hasFetched = useRef(false);
   const addFileRef = useRef(null);
   const editFileRef = useRef(null);
 
@@ -129,11 +132,15 @@ const [editErrors, setEditErrors] = useState({});
       setLoading(false);
     }
   };
+ 
+ 
+useEffect(() => {
+  if (hasFetched.current) return;
 
-  useEffect(() => {
-    getCategoryList();
-  }, []);
-
+  hasFetched.current = true;
+  getCategoryList();
+}, []);
+ 
   useEffect(() => {
     setFilteredData(filterData(Data, searchTerm, statusFilter));
   }, [Data, searchTerm, statusFilter]);
@@ -517,7 +524,7 @@ if (Object.keys(newErrors).length > 0) {
       <div className="stats2-grid">
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={16} />
           </div>
           <div className="stat2-info">
             <h3>Total Categories</h3>
@@ -526,7 +533,7 @@ if (Object.keys(newErrors).length > 0) {
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaChartLine size={24} />
+            <FaChartLine size={16} />
           </div>
           <div className="stat2-info">
             <h3>Active</h3>
@@ -535,7 +542,7 @@ if (Object.keys(newErrors).length > 0) {
         </div>
     <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaCalendarAlt size={24} />
+            <FaCalendarAlt size={16} />
           </div>
           <div className="stat2-info">
             <h3>Inactive</h3>
@@ -574,9 +581,9 @@ if (Object.keys(newErrors).length > 0) {
           </select>
 
           {(searchTerm || statusFilter !== "all") && (
-            <button className="clear-filters-btn" onClick={clearFilters}>
-              Clear Filters
-            </button>
+          <button className="clear-filters-btn" onClick={clearFilters}>
+    <FiTrash2 />
+</button>
           )}
         </div>
 
@@ -598,131 +605,201 @@ if (Object.keys(newErrors).length > 0) {
 
      
       <div className="table-wrapper">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Category Name</th>
-              <th>Code</th>
-              <th>Image</th>
-              <th>Status</th>
-              <th>Created At</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Loading ? (
-              Array(3).fill(0).map((_, i) => (
-                <tr key={i}>
-                  <td colSpan="7">
-                    <div className="skeleton-row"></div>
-                  </td>
-                </tr>
-              ))
-            ) : Error ? (
-              <tr>
-                <td colSpan="7" style={{ color: "red", textAlign: "center" }}>
-                  {Error}
-                </td>
-              </tr>
-            ) : FilteredData?.length > 0 ? (
-              FilteredData.map((item, index) => (
-                <tr key={item.id}>
-                  <td>{index + 1}</td>
-                  <td><strong>{item.name ||"N/A"}</strong></td>
-                
-                  <td><span className="category-code-badge">{item.code || "N/A"}</span></td>
-             
+      <table className="data-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Category Name</th>
+      <th>Code</th>
+      <th>Image</th>
+      <th>Status</th>
+      <th>Created At</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
 
-                    <td>
-                    {item.image_url ? (
-                      <img
-                        src={item.image_url}
-                        alt={item.name}
-                        width="40"
-                        height="40xxxddffffff"
-                        style={{
-                          objectFit: "cover",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          border: "1px solid #e0e0e0",
-                        }}
-                         onClick={() => setPreviewImage(item.image_url)}
-                      />
-                    ) : (
-                      <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
-                    )}
-</td>
-                  <td>
-                   
-                    <br />
-                    <label className="switch">
-                      <input
-                        type="checkbox"
-                        checked={item.is_active}
-                        onChange={() => {
-                          setSelectedCategory(item);
-                          setStatusModal(true);
-                        }}
-                      />
-                      <span className="slider round"></span>
-                    </label>
-                  </td>
-                  <td style={{ fontSize: "14px", color: "#666" }}>
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        className="action-btn edit"
-                        onClick={() => {
-                          setEditCategoryId(item.id);
-                          setEditCategoryName(item.name);
-                          setExistingImage(item.image_url);
-                          setIsActive(item.is_active);
-                          setEditModal(true);
-                          setEditCategoryCode(item.code || "");
-                          setEditErrors({});
-                        }}
-                        title="Edit"
-                      >
-                        <FaEdit />
-                      </button>
+  <tbody>
+    {Loading ? (
+      Array(3)
+        .fill(0)
+        .map((_, i) => (
+          <tr key={i}>
+            <td colSpan="7">
+              <div className="skeleton-row"></div>
+            </td>
+          </tr>
+        ))
+    ) : Error ? (
+      <tr>
+        <td
+          colSpan="7"
+          style={{
+            color: "#dc2626",
+          
+          }}
+        >
+          {Error}
+        </td>
+      </tr>
+    ) : FilteredData?.length > 0 ? (
+      FilteredData.map((item, index) => (
+        <tr key={item.id}>
+          <td>{index + 1}</td>
 
-                      <button
-                        className="action-btn delete"
-                        onClick={() => {
-                          setCategoryId(item.id);
-                          setDeleteModal(true);
-                        }}
-                        title="Delete"
-                      >
-                        <FiTrash2 />
-                      </button>
+          <td>
+            <strong>{item.name || "N/A"}</strong>
+          </td>
 
+          <td>
+            <span className="category-code-badge">
+              {item.code || "N/A"}
+            </span>
+          </td>
 
-                    </div>
-                  </td>
-                </tr>
-              ))
+          <td>
+            {item.image_url ? (
+              <img
+                src={item.image_url}
+                alt={item.name}
+                width="34"
+                height="34"
+                style={{
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  border: "1px solid #e5e7eb",
+                }}
+                onClick={() => setPreviewImage(item.image_url)}
+              />
             ) : (
-              <tr>
-                <td colSpan="7" style={{ textAlign: "center", padding: "40px" }}>
-                  {searchTerm || statusFilter !== "all" ? (
-                    <div>
-                      <p>No matching categories found</p>
-                      <button className="clear-filters-btn" onClick={clearFilters}>
-                        Clear Filters
-                      </button>
-                    </div>
-                  ) : (
-                    <p>No categories found. Click "Add Category" to create one.</p>
-                  )}
-                </td>
-              </tr>
+              <span
+                style={{
+                  color: "#9ca3af",
+                  fontSize: "13px",
+                }}
+              >
+                No Image
+              </span>
             )}
-          </tbody>
-        </table>
+          </td>
+
+          <td>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={item.is_active}
+                onChange={() => {
+                  setSelectedCategory(item);
+                  setStatusModal(true);
+                }}
+              />
+              <span className="slider round"></span>
+            </label>
+          </td>
+
+          <td
+            style={{
+              color: "#6b7280",
+              fontSize: "14px",
+            }}
+          >
+            {new Date(item.created_at).toLocaleDateString()}
+          </td>
+
+          <td>
+            <div className="action-buttons">
+              <button
+                className="action-btn edit"
+                title="Edit"
+                onClick={() => {
+                  setEditCategoryId(item.id);
+                  setEditCategoryName(item.name);
+                  setExistingImage(item.image_url);
+                  setIsActive(item.is_active);
+                  setEditModal(true);
+                  setEditCategoryCode(item.code || "");
+                  setEditErrors({});
+                }}
+              >
+                <FaEdit />
+              </button>
+
+              <button
+                className="action-btn delete"
+                title="Delete"
+                onClick={() => {
+                  setCategoryId(item.id);
+                  setDeleteModal(true);
+                }}
+              >
+                <FiTrash2 />
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))
+    ) : (
+      <tr>
+        <td colSpan="7">
+          {searchTerm || statusFilter !== "all" ? (
+            <div className="empty-filter-state">
+
+              <div className="empty-filter-icon">
+                <FiSearch />
+              </div>
+
+              <h3>No Categories Found</h3>
+
+              <p>
+                We couldn't find any category matching your search or
+                selected filters.
+              </p>
+
+              <button
+                className="empty-clear-btn"
+                onClick={clearFilters}
+              >
+                <FiRefreshCw />
+                Reset Filters
+              </button>
+
+            </div>
+          ) : (
+            <div className="empty-filter-state">
+
+              <div className="empty-filter-icon">
+                📂
+              </div>
+
+              <h3>No Categories Available</h3>
+
+              <p>
+                There are no service categories yet. Create your first
+                category to get started.
+              </p>
+
+              <button
+                className="add-customer-btn"
+                onClick={() => {
+                  setShowModal(true);
+                  setCategoryName("");
+                  setCategoryCode("");
+                  setCategoryImage(null);
+                  setErrors({});
+                  setIsActive(false);
+                }}
+              >
+                <BiPlus />
+                Add Category
+              </button>
+
+            </div>
+          )}
+        </td>
+      </tr>
+    )}
+  </tbody>
+</table>
       </div>
 
   

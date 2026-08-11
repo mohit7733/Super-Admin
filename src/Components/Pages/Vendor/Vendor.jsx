@@ -80,7 +80,7 @@ const Vendor = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
   
-  const pageSize = 5;
+  const pageSize = 10;
  const [vendorStats, setVendorStats] = useState({
   vendors: 0,
   approved: 0,
@@ -541,7 +541,7 @@ console.log("Vendor list fetched");
       <div className="vendors-stats stats2-grid">
         <div className="stat2-card">
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={16} />
           </div>
           <div className="stat2-info">
             <h3>Total Vendors</h3>
@@ -552,7 +552,7 @@ console.log("Vendor list fetched");
 
         <div className="stat2-card">
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={16} />
           </div>
           <div className="stat2-info">
             <h3>Approved Vendors</h3>
@@ -563,7 +563,7 @@ console.log("Vendor list fetched");
 
         <div className="stat2-card">
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={16} />
           </div>
           <div className="stat2-info">
             <h3>Pending Vendors</h3>
@@ -574,7 +574,7 @@ console.log("Vendor list fetched");
 
         <div className="stat2-card">
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={16} />
           </div>
           <div className="stat2-info">
             <h3>Rejected Vendors</h3>
@@ -708,7 +708,7 @@ console.log("Vendor list fetched");
 
             <td style={{ textAlign: "center" }}>
               <FiFileText
-                size={20}
+                size={15}
                 color="#0D614E"
                 onClick={() => openDocumentModal(vendor)}
                 style={{ cursor: "pointer" }}
@@ -730,7 +730,7 @@ console.log("Vendor list fetched");
                   background: "transparent",
                   border: "none",
                   cursor: "pointer",
-                  fontSize: "20px",
+                  fontSize: "15px",
                 }}
               >
                 <BsThreeDotsVertical />

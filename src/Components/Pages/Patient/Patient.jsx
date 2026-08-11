@@ -25,7 +25,7 @@ const Patient = () => {
   const [Currentpage, setCurrentpage] = useState(1);
   const [previousPage, setPreviousPage] = useState(null);
   const [Nextpage, setNextPage] = useState(null);
-  const pagesize = 5;
+  const pagesize = 10;
   const [Count, setCount] = useState(0);
   const totalPages = Math.ceil(Count / pagesize);
   const [AddError, setAddError] = useState({});

@@ -3,8 +3,8 @@
 .switch {
   position: relative;
   display: inline-block;
-  width: 40px;
-  height: 16px;
+  width:32px;
+  height: 12px;
   flex-shrink: 0;
 }
 
@@ -30,9 +30,9 @@
 .slider:before {
   position: absolute;
   content: "";
-  height: 13px;
-  width: 13px;
-  left: 2px;
+  height: 10px;
+  width: 10px;
+ right: 23px;
   bottom: 2px;
   background-color: white;
   transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);

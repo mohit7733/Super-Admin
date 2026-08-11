@@ -14,7 +14,7 @@
   flex: 2;
   background: #fff;
   border-radius: 16px;
-  padding: 24px;
+  padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -95,7 +95,7 @@
   gap: 10px;
   margin-top: 10px;
   color: #777;
-  font-size: 17px;
+  font-size: 13px;
  
   flex-wrap: wrap;
 }
@@ -123,7 +123,7 @@
 
 .customer-id h4 {
   margin-top: 8px;
-  font-size: 16px;
+  font-size: 13px;
   color: #222;
 }
 
@@ -164,18 +164,18 @@
 .stat-box p {
   margin: 0;
   color: #888;
-  font-size: 17px;
+  font-size: 13px;
 }
 
 .stat-box h3 {
   margin-top: 5px;
-  font-size: 17px;
+  font-size: 13px;
   color: #222;
 }
 
 .stat-icon1 {
-  width: 48px;
-  height: 48px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -238,7 +238,7 @@
 
 .info-card h3{
   margin-bottom: 20px;
-  font-size: 17px;
+  font-size: 13px;
 }
 
 
@@ -260,17 +260,17 @@
     border: 1px solid #0D614E;
     background: none;
     color: #0D614E;
-    padding: 10px 15px;
+    padding: 5px 10px;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 17px;
+    font-size: 12px;
 }
 
 .orders-history-card{
   margin-top: 20px;
   background: #fff;
   border-radius: 14px;
-  padding: 20px;
+  padding: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     border: 1px solid #ececec;
 }
@@ -289,8 +289,8 @@
 }
 
 .recent-order-image img {
-  width: 120px;
-  height: 120px;
+  width: 90px;
+  height: 90px;
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
@@ -365,7 +365,7 @@
 .side-card{
   background: #fff;
   border-radius: 14px;
-  padding: 18px;
+  padding: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       border: 1px solid #ececec;
 }
@@ -384,7 +384,7 @@
 .recent-order-box{
   border: 1px solid #0D614E;
   border-radius: 12px;
-  padding: 16px;
+  padding: 10px;
 
 }
 
@@ -398,13 +398,13 @@
 .prescription-row span,
 .recent-order-row span{
   color: #777;
-  font-size: 17px;
+  font-size: 13px;
 }
 
 .prescription-row p,
 .recent-order-row p{
   margin: 0;
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -848,9 +848,9 @@
 }
 
 .product-image{
-    width:60px;
-    height:60px;
-    border-radius:12px;
+    width:35px;
+    height:35px;
+    border-radius:10px;
     object-fit:cover;
     border:1px solid #e5e7eb;
     flex-shrink:0;
@@ -866,7 +866,7 @@
 
 .product-content h5{
     margin:0;
-    font-size:15px;
+    font-size:12px;
     font-weight:600;
     color:#1f2937;
 }
@@ -928,4 +928,14 @@
   color: #6b7280;
   line-height: 1.6;
   max-width: 240px;
+}
+.actions-btn{
+width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
 }
