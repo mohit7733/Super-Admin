@@ -389,7 +389,7 @@ export default function Page() {
             </select>
           </label>
 
-          {/* Season */}
+
 
           <label>
             Season <em>*</em>
@@ -439,7 +439,6 @@ export default function Page() {
             </div>
           </label>
 
-          {/* Is Paid */}
 
           <fieldset>
 
