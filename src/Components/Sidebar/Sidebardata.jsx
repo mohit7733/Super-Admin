@@ -325,12 +325,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
       permission: "view_diet_plans",
       icon: <FaListAlt size={18} />
     },
-    // {
-    //   title: "Add Diet Plan",
-    //   path: "/diet/add",
-    //   permission: "add_diet_plan",
-    //   icon: <BiPlusCircle size={18} />
-    // },
+    {
+      title: "Add Diet Plan",
+      path: "/diet/add",
+      permission: "add_diet_plan",
+      icon: <BiPlusCircle size={18} />
+    },
     // {
     //   title: "Diet Categories",
     //   path: "/diet/categories",

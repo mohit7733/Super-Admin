@@ -7026,12 +7026,11 @@ flex-direction:column;
   max-width: 220px;
 }
 
-/* Product */
 .order-data-table th:nth-child(3),
 .order-data-table td:nth-child(3) {
-  width: 300px;
-  min-width: 300px;
-  max-width: 300px;
+  width: 230px;
+  min-width: 230px;
+  max-width: 230px;
 }
 
 /* Brand */

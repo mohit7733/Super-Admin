@@ -76,6 +76,7 @@ import PatientDetails from './Components/Pages/Patient/PatientDetails';
 import Management from './Components/Pages/Mangement/Management';
 import AddRoles from './Components/Pages/Admin/AddRoles';
 import Unicommerece from './Components/Pages/Unicomerece/Unicommerece';
+import AddDiet from './Components/Pages/Diet/AddDiet';
 
 
 
@@ -155,6 +156,17 @@ function App() {
             </ProtectedRoute>
           }
         />
+          <Route
+          path="/diet/add"
+          element={
+            <ProtectedRoute permission="add_diet_plan">
+              <Layout>
+                <AddDiet />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+     
 
         <Route
           path="/main/subcategory"
