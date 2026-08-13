@@ -23,7 +23,8 @@ import CustomerSkeleton from "./CustomerSkeleton";
 import Producthistory from "./Producthistory";
 import OrderModal from "./OrderModal";
 import CustomerTransaction from "./CustomerTransaction.";
-
+import CustomerPatient from "./CustomerPatient";
+import { FaArrowLeft } from "react-icons/fa";
 
 
 
@@ -202,12 +203,21 @@ if (Error) {
   return (
     <>
      <div className="customer-details-wrapper">
+              
 
   <div className="customer-profile-card">
+    <button
+        className="customer-back-btn"
+        onClick={() => navigate(-1)}
+      >
+        <FaArrowLeft />
+   
+      </button>
 
     <div className="customer-left">
        <div className="avatar-section">
               <div className="avatar-wrapper">
+          
                 {customerData?.profile_image ? (
                   <img
                     src={customerData.profile_image}
@@ -347,6 +357,12 @@ if (Error) {
   onClick={() => setActiveTab("transaction")}
 >
   Transaction
+</button>
+<button
+  className={activeTab === "Patient" ? "active-tab" : ""}
+  onClick={() => setActiveTab("Patient")}
+>
+  Patient
 </button>
 
  
@@ -751,7 +767,11 @@ if (Error) {
         </div>
       </div>
 )}
-
+{
+  activeTab === "Patient" && (
+    <CustomerPatient />
+  )
+}
 {showPrescriptionModal && (
   <div
     className="prescription-modal-overlay"

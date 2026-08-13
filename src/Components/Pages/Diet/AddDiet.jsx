@@ -17,10 +17,6 @@ import {
 
 import "./AddDiet.css";
 
-/* =========================================================
-   MEAL PRESETS
-========================================================= */
-
 const mealPresets = [
   {
     name: "Morning",
@@ -93,20 +89,12 @@ const mealPresets = [
   },
 ];
 
-/* =========================================================
-   CREATE MEALS FOR A NEW DAY
-========================================================= */
-
 const createMealsForDay = (dayNumber) => {
   return mealPresets.map((meal, index) => ({
     ...meal,
     id: `day-${dayNumber}-meal-${index}`,
   }));
 };
-
-/* =========================================================
-   CREATE EXTRA MEAL
-========================================================= */
 
 const createMeal = (dayNumber, index) => {
   const preset =
@@ -118,14 +106,8 @@ const createMeal = (dayNumber, index) => {
   };
 };
 
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
-
 export default function Page() {
-  /* =======================================================
-     DAYS
-  ======================================================= */
+  
 
   const [days, setDays] = useState([1]);
     const [dietImage, setDietImage] =
@@ -134,9 +116,16 @@ export default function Page() {
   const [imagePreview, setImagePreview] =
     useState(null);
 
-  /* =======================================================
-     STATUS
-  ======================================================= */
+    const[DiseaseData,setDiseaseData]=useState([]);
+    const[PrakirtiData,setPrairtiData]=useState([]);
+    const[DietData,setDietData]=useState([]);
+    const[DiseaseError,setDiseaseError]=useState(null);
+    const[DiseaseLoading,setDiseaseLoading]=useState(false);
+    const[PrakirtiError,setPrakirtiError]=useState(null);
+    const[PrakirtiLoading,setPrakirtiLoading]=useState(false);
+    const[DietLoading,setDietLoading]=useState(false);
+    const[DietError,setDietError]=useState(null);
+  
 
   const [isActive, setIsActive] =
     useState(true);
@@ -155,9 +144,6 @@ export default function Page() {
       return;
     }
 
-    /*
-      Maximum 2 MB.
-    */
 
     if (
       file.size >
@@ -190,47 +176,27 @@ export default function Page() {
     setImagePreview(null);
   };
 
-  /* =======================================================
-     ADD DAY
-  ======================================================= */
-
+ 
   const addDay = () => {
-    // Maximum 7 days
+ 
     if (days.length >= 7) {
       return;
     }
 
-    /*
-      Find the highest existing day number.
-
-      Example:
-
-      [1]       -> 2
-      [1,2]     -> 3
-      [1,3]     -> 4
-      [1,3,4]   -> 5
-    */
-
+   
     const newDay =
       days.length === 0
         ? 1
         : Math.max(...days) + 1;
 
-    /* Add new day */
+   
 
     setDays((previousDays) => [
       ...previousDays,
       newDay,
     ]);
 
-    /* Automatically create
-       Morning
-       Breakfast
-       Midday
-       Lunch
-       Dinner
-    */
-
+ 
     setDayMeals((previousMeals) => ({
       ...previousMeals,
 
@@ -239,28 +205,21 @@ export default function Page() {
     }));
   };
 
-  /* =======================================================
-     DELETE COMPLETE DAY
-  ======================================================= */
-
+ 
   const deleteDay = (dayNumber) => {
-    /*
-      Don't allow Day 1 to be deleted.
-    */
-
+   
     if (dayNumber === 1) {
       return;
     }
 
-    /* Remove day from days array */
-
+   
     setDays((previousDays) =>
       previousDays.filter(
         (day) => day !== dayNumber
       )
     );
 
-    /* Remove complete day meals */
+    
 
     setDayMeals((previousMeals) => {
       const updatedMeals = {
@@ -273,9 +232,7 @@ export default function Page() {
     });
   };
 
-  /* =======================================================
-     ADD MEAL TO SPECIFIC DAY
-  ======================================================= */
+  
 
   const addMeal = (dayNumber) => {
     setDayMeals((previousMeals) => {
@@ -298,9 +255,7 @@ export default function Page() {
     });
   };
 
-  /* =======================================================
-     DELETE MEAL FROM SPECIFIC DAY
-  ======================================================= */
+
 
   const removeMeal = (
     dayNumber,
@@ -317,7 +272,7 @@ export default function Page() {
     }));
   };
 
- 
+
 
   return (
     <div className="page-header">
@@ -352,7 +307,7 @@ export default function Page() {
 
         <div className="form-grid three">
 
-          {/* Diet Plan Name */}
+     
 
           <label>
             Diet Plan Name <em>*</em>

@@ -12,8 +12,9 @@ import HealingIcon from '@mui/icons-material/FitnessCenter';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 
 import { FiClock } from "react-icons/fi";
-import { FaTag, FaTicketAlt, FaUsers, FaClipboardList, FaHistory, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck } from "react-icons/fa";
+import { FaTag, FaTicketAlt, FaUsers, FaClipboardList, FaHistory, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
 import { MdQuiz, MdRestaurantMenu, MdSpa, MdCategory, MdInventory, MdBrandingWatermark, MdPhotoSizeSelectActual, MdReviews, MdOndemandVideo } from "react-icons/md";
+import { FaCircleQuestion } from "react-icons/fa6";
 import { FaAppleAlt, FaBoxOpen, FaTags, FaChartLine, FaHeadset, FaUserInjured, FaStore, FaUserMd, FaUserShield, FaListAlt } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
@@ -33,7 +34,7 @@ import { BiPlusCircle } from "react-icons/bi";
 
 
 export const SidebarData = () => [
-  // ========== DASHBOARD ==========
+
   {
     title: "Dashboard",
     icon: <HomeIcon sx={{ fontSize: 20 }} />,
@@ -41,7 +42,7 @@ export const SidebarData = () => [
     permission: "view_dashboard",
   },
 
-  // ========== CATEGORY MANAGEMENT ==========
+  
   {
     title: "Category Management",
     icon: <MdCategory style={{ fontSize: 20 }} />,
@@ -97,6 +98,20 @@ export const SidebarData = () => [
     ]
   },
 
+  {
+  title: "FAQ",
+  icon: <FaCircleQuestion size={18} />,
+  path: "#",
+  permission: "view_faq",
+  children: [
+    {
+      title: "FAQ Management",
+      path: "/FAQ/Management",
+      permission: "view_faq",
+      icon: <FaCircleQuestion size={18} />,
+    },
+  ],
+},
  
   {
     title: "User Management",
@@ -199,7 +214,7 @@ export const SidebarData = () => [
     ],
   },
 {
-   title: "Unicommerce Management",
+   title: "Unicommerce ",
 icon: <ShoppingCartIcon sx={{ fontSize: 20 }} />,
   path: "#",
   permission: "manage_ecommerce",

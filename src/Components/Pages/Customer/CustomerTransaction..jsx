@@ -293,20 +293,33 @@ const getTransactionlist = async (page = 1) => {
         ? "order"
         : "consultation"
     }`}
-  >
-    {transaction.type || "Consultation"}
+  >{transaction.transaction_type === "product"
+  ? "Product"
+  : "Consultation"}
   </span>
 </td>
-
 <td>
-  {transaction.customer_name ||
-    transaction.patient_name ||
-    "N/A"}
+  {transaction.transaction_type?.toLowerCase() === "product"
+    ? transaction.customer?.name || "N/A"
+    : transaction.patient?.name || "N/A"}
 </td>
 
 <td>₹ {transaction.amount || 0}</td>
-
-<td>{transaction.date || "N/A"}</td>
+<td>
+  {transaction.paid_at
+    ? new Date(transaction.paid_at).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : transaction.created_at
+    ? new Date(transaction.created_at).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "N/A"}
+</td>
 
 <td>
   {transaction.payment_method || "N/A"}

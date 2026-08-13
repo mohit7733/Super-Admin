@@ -7855,3 +7855,25 @@ flex-direction:column;
     overflow-x: auto;
   }
 }
+.customer-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: #0d614e;
+  
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  /* padding: 6px 0; */
+  margin-bottom: 12px;
+}
+
+.customer-back-btn svg {
+  font-size: 16px;
+}
+
+.customer-back-btn:hover {
+  color: #084c3d;
+}

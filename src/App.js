@@ -77,6 +77,7 @@ import Management from './Components/Pages/Mangement/Management';
 import AddRoles from './Components/Pages/Admin/AddRoles';
 import Unicommerece from './Components/Pages/Unicomerece/Unicommerece';
 import AddDiet from './Components/Pages/Diet/AddDiet';
+import Faq from './Components/Pages/Faq/Faq';
 
 
 
@@ -179,7 +180,16 @@ function App() {
           }
         />
 
-
+      <Route
+          path="/FAQ/Management"
+          element={
+            <ProtectedRoute permission="view_faq">
+              <Layout>
+                <Faq />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dietplans"
           element={

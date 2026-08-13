@@ -72,6 +72,7 @@ const Diet = () => {
   }
 };
 
+
 useEffect(()=>{getDietPlans();},[])
   return (
     <>
@@ -80,7 +81,7 @@ useEffect(()=>{getDietPlans();},[])
         <p className="page-paragraph">Manage All Diet Plans and their details</p>
       </div>
        <div className="stats2-grid">
-        {/* Total Diet Plans */}
+     
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div
             className="stat2-icon"
@@ -90,7 +91,7 @@ useEffect(()=>{getDietPlans();},[])
           </div>
           <div className="stat2-info">
             <h3>Total Diet Plans</h3>
-            {/* <div className="stat2-value">{stats.total}</div> */}
+        
           </div>
         </div>
       
@@ -108,7 +109,7 @@ useEffect(()=>{getDietPlans();},[])
           </div>
         </div>
       
-        {/* Inactive Plans */}
+
         <div className="stat2-card" style={{ borderTopColor:"#0D614E" }}>
           <div
             className="stat2-icon"
@@ -117,8 +118,7 @@ useEffect(()=>{getDietPlans();},[])
             <FaTimesCircle size={16} />
           </div>
           <div className="stat2-info">
-            <h3>Inactive Plans</h3>
-            {/* <div className="stat2-value">{stats.inactive}</div> */}
+            <h3>Inactive Plans</h3>    
           </div>
         </div>
       </div>
