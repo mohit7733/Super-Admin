@@ -16,12 +16,7 @@ const TOAST_AUTO_CLOSE = 1000;
 const TOAST_POSITION = "top-center";
 
 
-const ROLES = {
-  SUPERADMIN: "SUPERADMIN",
-  ADMIN: "ADMIN",
-  VERIFIER: "VERIFIER",
-  FOLLOWUP: "FOLLOWUP",
-};
+
 
 
 const STORAGE_KEYS = {

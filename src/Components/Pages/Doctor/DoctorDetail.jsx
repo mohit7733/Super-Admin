@@ -7,6 +7,7 @@ import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { IoClose } from "react-icons/io5";
 import "./Transaction.css";
+import { FaArrowLeft } from "react-icons/fa";
 import DoctorDietplans from "./DoctorDietplans";
 import {
   FiList,
@@ -561,7 +562,14 @@ const getAvailability = async () => {
 
       <div className="doctor-page">
 
-
+                 <button
+        className="customer-back-btn"
+        onClick={() => navigate(-1)}
+      >
+        <FaArrowLeft />
+   
+      </button>
+                 
         <div className="card profile-top-card">
           <div className="profile-main">
 

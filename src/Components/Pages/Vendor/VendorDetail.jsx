@@ -2,6 +2,7 @@
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { IoClose } from "react-icons/io5";
+import { FaArrowLeft } from "react-icons/fa";
 
 
 import BASE_URL from "../../../Base";
@@ -225,10 +226,18 @@ const handleVendorReasonSubmit = async () => {
 
               return (
                 <div className="vendor-details-page">
+                        <button
+        className="customer-back-btn"
+        onClick={() => navigate(-1)}
+      >
+        <FaArrowLeft />
+   
+      </button>
                    
                     <div className="vendor-overview">
+                
                         <div className="overview-left">
-                            <div className="vendor-logo">
+                           <div className="vendor-logo">
                                 <FaStore />
                             </div>
                             <div className="vendor-info">

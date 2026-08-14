@@ -4767,10 +4767,10 @@ textarea {
 
 .activeModal{
   width: 100%;
-  max-width: 560px;
+  max-width: 450px;
   background: #fff;
   border-radius: 24px;
-  padding: 32px;
+  padding: 20px;
   position: relative;
   animation: activeModalPop .25s ease;
   box-shadow: 0 25px 60px rgba(0,0,0,.18);
@@ -4799,8 +4799,8 @@ textarea {
 }
 
 .activeModal-icon{
-  width:90px;
-  height:90px;
+  width:70px;
+  height:70px;
   margin:auto;
   border-radius:50%;
   background:#fff7ed;
@@ -4813,15 +4813,15 @@ textarea {
 .activeModal-title{
   text-align:center;
   margin-top:20px;
-  font-size:24px;
+  font-size:16px;
   font-weight:600;
   color:#0f172a;
 }
 
 .activeModal-text{
   text-align:center;
-  margin-top:15px;
-  font-size:16px;
+  margin-top:4px;
+  font-size:12px;
   color:#334155;
   line-height:1.6;
 }
@@ -4846,7 +4846,7 @@ textarea {
 
 .activeModal-card h4{
   margin:0;
-  font-size:20px;
+  font-size:11px;
   color:#0f172a;
 }
 
@@ -4873,7 +4873,7 @@ textarea {
 
 .activeModal-confirm{
   border:none;
-  padding:12px 24px;
+  padding:10px 22px;
   border-radius:12px;
   color:#fff;
   font-weight:600;

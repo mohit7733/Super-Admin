@@ -19,8 +19,14 @@ const Diet = () => {
   const[Data,setData]=useState([]);
   const[Error,setError]=useState(null);
   const[Loading,setLoading]=useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+const [pageSize] = useState(10);
+const [totalPages, setTotalPages] = useState(1);
+const [totalCount, setTotalCount] = useState(0);
+const[SelectedDiet,setSelectedDiet]=useState(null);
+const[StatusModal,setStatusModal]=useState(false)
 
-  const getDietPlans = async () => {
+  const getDietPlans = async (page = 1) => {
   const token = sessionStorage.getItem("superadmin_token");
 
   if (!token) {
@@ -33,7 +39,7 @@ const Diet = () => {
   setError(null);
 
   try {
-    const response = await fetch(`${BASE_URL}/diet/plans/`, {
+    const response = await fetch(`${BASE_URL}/diet/plans/?page=${page}`, {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -58,6 +64,12 @@ const Diet = () => {
       );
 
       setData(sortedData);
+         const count = Number(result.count || 0);
+
+      setTotalCount(count);
+
+      // API is returning 10 records per page
+      setTotalPages(Math.ceil(count / pageSize));
      
     } else {
       setError(result.message);
@@ -72,8 +84,71 @@ const Diet = () => {
   }
 };
 
+const handleStatusChange = async (id,currentStatus) => {
+  if (!SelectedDiet) return;
 
-useEffect(()=>{getDietPlans();},[])
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  const dietId = SelectedDiet.id;
+ 
+
+  try {
+    setLoading(true);
+
+    const response = await fetch(
+      `${BASE_URL}/diet/plans/?id=${dietId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          is_active:!currentStatus ,
+        }),
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const result = await response.json();
+
+     if (response.ok) {
+          toast.success(
+            !currentStatus ?"Diet Activated Successfully" : "Diet Deactivated Successfully"
+          );
+          getDietPlans();
+        } else {
+          toast.error( "Failed to update status");
+        }
+      
+     
+    
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong while updating status");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+useEffect(() => {
+  getDietPlans(currentPage);
+}, [currentPage]);
   return (
     <>
      <div className="page-header">
@@ -135,8 +210,9 @@ useEffect(()=>{getDietPlans();},[])
       <th>Prakriti</th>
       <th>Type</th>
       <th>Price</th>
-      
+      <th> Status</th>
       <th>Created At</th>
+      <th>Created By</th>
     </tr>
   </thead>
 
@@ -146,14 +222,14 @@ useEffect(()=>{getDietPlans();},[])
         .fill(0)
         .map((_, i) => (
           <tr key={i}>
-            <td colSpan="10">
+            <td colSpan="12">
               <div className="skeleton-row"></div>
             </td>
           </tr>
         ))
     ) : Error ? (
       <tr>
-        <td colSpan="10">{Error}</td>
+        <td colSpan="12">{Error}</td>
       </tr>
     ) : Data.length > 0 ? (
       Data.map((item, index) => {
@@ -198,7 +274,32 @@ useEffect(()=>{getDietPlans();},[])
             </td>
 
             <td>{item.prakriti}</td>
+  <td>
+  <span
+    className={`status-badge ${
+      item.is_active
+        ? "status-active"
+        : "status-inactive"
+    }`}
+  >
+    {item.is_active ? "Active" : "Inactive"}
+  </span>
 
+  <br />
+
+  <label className="switch">
+    <input
+      type="checkbox"
+      checked={item.is_active}
+      onChange={() => {
+        setSelectedDiet(item);
+        setStatusModal(true);
+      }}
+    />
+
+    <span className="slider round"></span>
+  </label>
+</td>
             <td>
               <span
                 className={
@@ -219,6 +320,14 @@ useEffect(()=>{getDietPlans();},[])
             <td>
               {new Date(item.created_at).toLocaleDateString()}
             </td>
+
+            <td>
+
+    <p>{item.created_by_name || "-"}</p>
+  
+  
+  
+</td>
           </tr>
         );
       })
@@ -231,7 +340,212 @@ useEffect(()=>{getDietPlans();},[])
     )}
   </tbody>
 </table>
+<div className="order-pagination-container">
+
+  <div className="order-pagination-info">
+    Showing{" "}
+    <strong>
+      {totalCount === 0
+        ? 0
+        : (currentPage - 1) * pageSize + 1}
+    </strong>{" "}
+    to{" "}
+    <strong>
+      {Math.min(currentPage * pageSize, totalCount)}
+    </strong>{" "}
+    of <strong>{totalCount}</strong> diet plans
+  </div>
+
+  <div className="order-pagination-buttons">
+
+   
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={currentPage === 1 || Loading}
+      onClick={() =>
+        setCurrentPage((prev) => prev - 1)
+      }
+    >
+      ‹
+    </button>
+
+    {/* FIRST PAGE */}
+    <button
+      className={`order-pagination-btn ${
+        currentPage === 1
+          ? "order-pagination-active"
+          : ""
+      }`}
+      disabled={Loading}
+      onClick={() => setCurrentPage(1)}
+    >
+      1
+    </button>
+
+    {/* LEFT DOTS */}
+    {currentPage > 3 && (
+      <span className="order-pagination-dots">
+        ...
+      </span>
+    )}
+
+    {/* MIDDLE PAGES */}
+    {Array.from(
+      { length: totalPages },
+      (_, index) => index + 1
+    )
+      .filter((page) => {
+        return (
+          page !== 1 &&
+          page !== totalPages &&
+          page >= currentPage - 1 &&
+          page <= currentPage + 1
+        );
+      })
+      .map((page) => (
+        <button
+          key={page}
+          className={`order-pagination-btn ${
+            currentPage === page
+              ? "order-pagination-active"
+              : ""
+          }`}
+          disabled={Loading}
+          onClick={() => setCurrentPage(page)}
+        >
+          {page}
+        </button>
+      ))}
+
+   
+    {currentPage < totalPages - 2 && (
+      <span className="order-pagination-dots">
+        ...
+      </span>
+    )}
+
+    
+    {totalPages > 1 && (
+      <button
+        className={`order-pagination-btn ${
+          currentPage === totalPages
+            ? "order-pagination-active"
+            : ""
+        }`}
+        disabled={Loading}
+        onClick={() => setCurrentPage(totalPages)}
+      >
+        {totalPages}
+      </button>
+    )}
+
+    
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={
+        currentPage === totalPages || Loading
+      }
+      onClick={() =>
+        setCurrentPage((prev) => prev + 1)
+      }
+    >
+      ›
+    </button>
+
+  </div>
+</div>
+
             </div>
+             {StatusModal && SelectedDiet && (
+   <div
+    className="activeModal-overlay"
+    onClick={() => {
+      setStatusModal(false);
+      setSelectedDiet(null);
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <button
+        className="activeModal-close"
+        onClick={() => {
+          setStatusModal(false);
+          setSelectedDiet(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        ⚠️
+      </div>
+
+      <h2 className="activeModal-title">
+        Confirm Status Change
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span
+          className={
+            SelectedDiet.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {SelectedDiet.is_active
+            ? " Inactive "
+            : " Active "}
+        </span>
+        this Diet?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{SelectedDiet.name}</h4>
+     
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          className="activeModal-cancel"
+          onClick={() => {
+            setStatusModal(false);
+            setSelectedDiet(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className={`activeModal-confirm ${
+            SelectedDiet.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+        onClick={() => {
+            handleStatusChange(
+              SelectedDiet.id,
+              SelectedDiet.is_active
+            );
+
+            setStatusModal(false);
+            setSelectedDiet(null);
+          }}
+        >
+          Yes,{" "}
+        {SelectedDiet.is_active
+            ? "Deactivate"
+            : "Activate"}
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+ <ToastContainer position="top-center" autoClose={2000} />
     </>
   )
 }

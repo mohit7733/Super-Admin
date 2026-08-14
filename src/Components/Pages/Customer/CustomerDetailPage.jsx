@@ -734,15 +734,19 @@ if (Error) {
         <span>Amount :</span>
         <p>₹{ordersData[0].total_amount}</p>
       </div>
+<button
+  className="medical-btn"
+  onClick={() => {
+    const recentOrder = ordersData?.[0];
 
-      <button
-        className="medical-btn"
-        onClick={() => {
-          setShowOrderModal(true);
-        }}
-      >
-        View Order Details
-      </button>
+    if (recentOrder) {
+      setSelectedOrder(recentOrder);
+      setShowOrderModal(true);
+    }
+  }}
+>
+  View Order Details
+</button>
 
     </div>
 

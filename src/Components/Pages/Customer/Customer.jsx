@@ -220,20 +220,29 @@ setTodayCount(data.data.today_count || 0);
     }
   };
 
+// useEffect(() => {
+//   const delay = setTimeout(() => {
+//     if (searchcustomerTerm.trim() === "") {
+//       getCustomerList(1, "");
+//       return;
+//     }
+
+//     if (searchcustomerTerm.trim().length >= 0) {
+//       getCustomerList(1, searchcustomerTerm);
+//     }
+//   }, 500);
+
+//   return () => clearTimeout(delay);
+// }, [searchcustomerTerm]);
+
 useEffect(() => {
   const delay = setTimeout(() => {
-    if (searchcustomerTerm.trim() === "") {
-      getCustomerList(1, "");
-      return;
-    }
-
-    if (searchcustomerTerm.trim().length >= 3) {
-      getCustomerList(1, searchcustomerTerm);
-    }
+    getCustomerList(1, searchcustomerTerm.trim());
   }, 500);
 
   return () => clearTimeout(delay);
 }, [searchcustomerTerm]);
+
   const handleToggle = async (id, currentStatus) => {
   
   const token = sessionStorage.getItem("superadmin_token");
