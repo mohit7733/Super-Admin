@@ -1,267 +1,375 @@
 /* =========================================================
-   PAGE
-========================================================= */
-
-.bulk-upload-page {
-  width: 100%;
-  min-height: 100vh;
-  background: #f5f7fb;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Inter", "Poppins", sans-serif;
-  color: #17233d;
-}
+   BULK UPLOAD PAGE
 
 
 /* =========================================================
-   BREADCRUMB
+   PAGE HEADER
 ========================================================= */
 
-.bulk-breadcrumb {
-  height: 62px;
-  background: #ffffff;
-  border-bottom: 1px solid #e7ebf2;
+.bulk-page-header {
+  margin-bottom: 26px;
+}
 
+.back-products-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  color: #667085;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 18px;
+  transition: 0.2s ease;
+}
+
+.back-products-btn:hover {
+  color: #0D614E;
+}
+
+.back-products-btn svg {
+  font-size: 17px;
+}
+
+.bulk-title-row {
   display: flex;
   align-items: center;
-
-  padding: 0 30px;
-
-  gap: 10px;
-
-  font-size: 13px;
-  color: #78839a;
 }
 
-.bulk-breadcrumb strong {
-  color: #24324a;
-  font-weight: 600;
+.bulk-title-row h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 750;
+  color: #202124;
+  letter-spacing: -0.5px;
 }
 
-.breadcrumb-arrow {
-  font-size: 9px;
-  transform: rotate(-90deg);
-  color: #a6afbf;
+.bulk-title-row h1 span {
+  color: #0D614E;
 }
 
+.bulk-page-description {
+  margin: 9px 0 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.6;
+}
 
 /* =========================================================
-   MAIN CONTAINER
+   MAIN GRID
 ========================================================= */
 
-.bulk-upload-container {
-  width: 100%;
-
+.bulk-content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(380px, 0.95fr);
-
+  grid-template-columns: minmax(0, 1.55fr) minmax(350px, 0.85fr);
   gap: 22px;
-
-  padding: 22px 30px 30px;
-
-  box-sizing: border-box;
-
   align-items: start;
 }
 
-
-/* =========================================================
-   LEFT UPLOAD CARD
-========================================================= */
-
-.bulk-upload-card {
-  background: #ffffff;
-
-  border: 1px solid #e4e8ef;
-
-  border-radius: 10px;
-
-  overflow: hidden;
-
-  box-shadow: 0 3px 12px rgba(27, 44, 72, 0.04);
+.bulk-left-column,
+.bulk-right-column {
+  min-width: 0;
 }
 
+/* =========================================================
+   COMMON CARD
+========================================================= */
+
+.upload-card,
+.info-card {
+  background: #ffffff;
+  border: 1px solid #e8ebf0;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.035);
+}
+
+.upload-card {
+  padding: 24px;
+  margin-bottom: 22px;
+}
+
+.info-card {
+  padding: 22px;
+  margin-bottom: 18px;
+}
 
 /* =========================================================
    CARD HEADER
 ========================================================= */
 
-.bulk-card-header {
-  padding: 25px 25px 17px;
-
+.upload-card-header,
+.info-card-header {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  gap: 13px;
 }
 
-.bulk-card-header h1 {
-  margin: 0 0 7px;
-
-  font-size: 25px;
-  line-height: 1.2;
-
-  color: #172b4d;
-
-  font-weight: 700;
-}
-
-.bulk-card-header p {
-  margin: 0;
-
-  color: #7a879c;
-
-  font-size: 13px;
-
-  line-height: 1.6;
-}
-
-.mobile-close-btn {
-  display: none;
-
-  border: none;
-  background: transparent;
-
-  color: #8792a6;
-
-  font-size: 18px;
-
-  cursor: pointer;
-}
-
-
-/* =========================================================
-   DOWNLOAD TEMPLATE
-========================================================= */
-
-.download-template-btn {
-  margin: 0 25px 24px;
-
-  height: 45px;
-
-  padding: 0 18px;
-
-  border: 1px solid #9bbfff;
-
-  background: #ffffff;
-
-  border-radius: 7px;
-
-  color: #1769e0;
-
-  font-size: 13px;
-
-  font-weight: 600;
-
-  display: inline-flex;
+.upload-card-icon,
+.info-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 10px;
+  display: flex;
   align-items: center;
-  gap: 9px;
-
-  cursor: pointer;
-
-  transition: all 0.2s ease;
+  justify-content: center;
 }
 
-.download-template-btn svg {
-  font-size: 16px;
+.upload-card-icon {
+  background: #EAF6F2;
+  color: #0D614E;
 }
 
-.download-template-btn:hover {
-  background: #f4f8ff;
-  border-color: #347df2;
+.upload-card-icon svg {
+  font-size: 21px;
 }
 
+.info-icon.yellow {
+  background: #fff7df;
+  color: #d99a00;
+}
+
+.info-icon.blue {
+  background: #EAF6F2;
+  color: #0D614E;
+}
+
+.info-icon svg {
+  font-size: 20px;
+}
+
+.upload-card-header h2,
+.info-card-header h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #252a31;
+}
+
+.upload-card-header p,
+.info-card-header p {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #8a93a3;
+}
 
 /* =========================================================
-   DROP ZONE
+   EXCEL DROP ZONE
 ========================================================= */
 
 .excel-drop-zone {
-  margin: 0 25px;
+  margin-top: 22px;
+  min-height: 235px;
 
-  min-height: 330px;
+  border: 1.5px dashed #cfd6e1;
+  border-radius: 13px;
 
-  border: 1.5px dashed #aab9d1;
-
-  border-radius: 8px;
-
-  background: #fbfcff;
+  background: #fbfcfe;
 
   display: flex;
   flex-direction: column;
-
   align-items: center;
   justify-content: center;
 
   text-align: center;
+  padding: 25px;
 
-  transition: all 0.2s ease;
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+
+  box-sizing: border-box;
 }
 
-.excel-drop-zone.drag-active {
-  border-color: #2478ed;
-  background: #f1f7ff;
+.excel-drop-zone:hover {
+  border-color: #7eb8a8;
+  background: #F3FAF8;
+}
+
+.excel-drop-zone.dragging {
+  border-color: #0D614E;
+  background: #EAF6F2;
   transform: scale(1.005);
 }
 
+.upload-cloud-icon {
+  width: 58px;
+  height: 58px;
 
-/* =========================================================
-   EXCEL ICON
-========================================================= */
+  border-radius: 50%;
 
-.excel-file-icon {
-  width: 65px;
-  height: 65px;
+  background: #EAF6F2;
+  color: #0D614E;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  margin-bottom: 15px;
+  margin-bottom: 14px;
+}
 
-  color: #18864b;
-
-  font-size: 58px;
+.upload-cloud-icon svg {
+  font-size: 28px;
 }
 
 .excel-drop-zone h3 {
   margin: 0;
 
-  font-size: 17px;
+  font-size: 15px;
+  font-weight: 700;
 
-  color: #25334b;
+  color: #30343b;
+}
 
+.excel-drop-zone p {
+  margin: 7px 0 10px;
+
+  color: #858d9b;
+  font-size: 13px;
+}
+
+.accepted-files {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 5px 10px;
+
+  border-radius: 6px;
+
+  background: #EAF6F2;
+  color: #0D614E;
+
+  font-size: 11px;
   font-weight: 600;
 }
-
-.drop-or {
-  margin: 8px 0;
-
-  font-size: 13px;
-
-  color: #8a95a8;
-}
-
 
 /* =========================================================
-   BROWSE BUTTON
+   SELECTED FILE
 ========================================================= */
 
-.browse-file-btn {
-  height: 43px;
+.selected-file-card {
+  margin-top: 15px;
 
-  padding: 0 20px;
+  border: 1px solid #e3e7ed;
+  border-radius: 10px;
 
-  border: none;
+  padding: 12px 13px;
 
-  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  background: #176fe8;
+  background: #fafbfc;
+}
 
-  color: #ffffff;
+.selected-file-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.selected-file-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #EAF6F2;
+  color: #0D614E;
+
+  border-radius: 8px;
+}
+
+.selected-file-icon svg {
+  font-size: 19px;
+}
+
+.selected-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.selected-file-info strong {
+  max-width: 430px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   font-size: 13px;
+  color: #30343b;
+}
 
-  font-weight: 600;
+.selected-file-info span {
+  color: #8a93a3;
+  font-size: 11px;
+}
+
+/* =========================================================
+   REMOVE FILE
+========================================================= */
+
+.remove-file-btn {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+  border-radius: 7px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #d64545;
+  background: #fff1f1;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.remove-file-btn:hover {
+  background: #ffe3e3;
+}
+
+.remove-file-btn svg {
+  font-size: 16px;
+}
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+.upload-actions {
+  margin-top: 18px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.upload-products-btn,
+.reset-upload-btn {
+  height: 42px;
+
+  border-radius: 8px;
+
+  padding: 0 17px;
 
   display: inline-flex;
   align-items: center;
@@ -269,796 +377,833 @@
 
   gap: 8px;
 
+  font-size: 13px;
+  font-weight: 650;
+
   cursor: pointer;
 
-  box-shadow: 0 5px 12px rgba(23, 111, 232, 0.18);
-
-  transition: all 0.2s ease;
+  transition: 0.2s ease;
 }
 
-.browse-file-btn:hover {
-  background: #0f61d1;
-  transform: translateY(-1px);
+.upload-products-btn {
+  border: 1px solid #0D614E;
+  background: #0D614E;
+  color: #ffffff;
 }
 
-.browse-file-btn svg {
+.upload-products-btn:hover:not(:disabled) {
+  background: #094D3E;
+  border-color: #094D3E;
+}
+
+.upload-products-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reset-upload-btn {
+  border: 1px solid #dfe3e8;
+  background: #ffffff;
+  color: #606a78;
+}
+
+.reset-upload-btn:hover:not(:disabled) {
+  background: #f5f6f8;
+}
+
+.reset-upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload-products-btn svg,
+.reset-upload-btn svg {
+  font-size: 16px;
+}
+
+/* =========================================================
+   GALLERY UPLOAD
+========================================================= */
+
+.gallery-upload-card {
+  overflow: hidden;
+}
+
+.gallery-drop-zone {
+  min-height: 190px;
+}
+
+.gallery-drop-zone .upload-cloud-icon {
+  width: 52px;
+  height: 52px;
+}
+
+.gallery-uploading {
+  margin-top: 13px;
+
+  padding: 10px 13px;
+
+  border-radius: 8px;
+
+  background: #EAF6F2;
+  color: #0D614E;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.spin-icon {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   GALLERY LIST
+========================================================= */
+
+.gallery-images-list {
+  margin-top: 20px;
+
+  border-top: 1px solid #edf0f4;
+
+  padding-top: 18px;
+}
+
+.gallery-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 11px;
+}
+
+.gallery-list-header > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gallery-list-header strong {
+  font-size: 13px;
+  color: #30343b;
+}
+
+.gallery-list-header span {
+  font-size: 10px;
+  font-weight: 600;
+
+  color: #0D614E;
+  background: #EAF6F2;
+
+  padding: 4px 7px;
+
+  border-radius: 5px;
+}
+
+/* =========================================================
+   GALLERY IMAGE ITEM
+========================================================= */
+
+.gallery-image-item {
+  display: flex;
+  gap: 13px;
+
+  padding: 13px;
+
+  border: 1px solid #e7eaf0;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  margin-bottom: 10px;
+
+  transition: 0.2s ease;
+}
+
+.gallery-image-item:hover {
+  border-color: #C5E5DC;
+
+  box-shadow: 0 3px 12px rgba(16, 24, 40, 0.045);
+}
+
+/* =========================================================
+   GALLERY PREVIEW
+========================================================= */
+
+.gallery-preview {
+  width: 82px;
+  height: 82px;
+  min-width: 82px;
+
+  border-radius: 8px;
+
+  overflow: hidden;
+
+  background: #f4f5f7;
+
+  position: relative;
+
+  border: 1px solid #e4e7eb;
+}
+
+.gallery-preview img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+}
+
+/* =========================================================
+   COVER BADGE
+========================================================= */
+
+.cover-badge {
+  position: absolute;
+
+  left: 5px;
+  bottom: 5px;
+
+  background: #0D614E;
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  padding: 4px 6px;
+
+  border-radius: 4px;
+}
+
+/* =========================================================
+   GALLERY IMAGE INFO
+========================================================= */
+
+.gallery-image-info {
+  flex: 1;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-image-info > strong {
+  display: block;
+
+  max-width: 100%;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #343941;
+
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.gallery-image-info > span {
+  margin-top: 3px;
+
+  color: #9299a5;
+
+  font-size: 10.5px;
+}
+
+/* =========================================================
+   URL BOX
+========================================================= */
+
+.gallery-url-box {
+  display: flex;
+  align-items: center;
+
+  margin-top: 9px;
+
+  width: 100%;
+
+  border: 1px solid #e1e5ea;
+  border-radius: 7px;
+
+  overflow: hidden;
+
+  background: #fafbfc;
+}
+
+.gallery-url-box input {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 32px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  padding: 0 9px;
+
+  color: #687282;
+
+  font-size: 10.5px;
+}
+
+.gallery-url-box button {
+  width: 34px;
+  height: 32px;
+  min-width: 34px;
+
+  border: none;
+
+  border-left: 1px solid #e1e5ea;
+
+  background: #ffffff;
+
+  color: #687282;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.gallery-url-box button:hover {
+  background: #EAF6F2;
+  color: #0D614E;
+}
+
+.gallery-url-box button svg {
+  font-size: 14px;
+}
+
+/* =========================================================
+   GALLERY ACTIONS
+========================================================= */
+
+.gallery-item-actions {
+  margin-top: 8px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.set-cover-btn,
+.remove-gallery-btn {
+  height: 28px;
+
+  border-radius: 6px;
+
+  padding: 0 9px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  font-size: 10.5px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.set-cover-btn {
+  border: 1px solid #C5E5DC;
+
+  color: #0D614E;
+
+  background: #F3FAF8;
+}
+
+.set-cover-btn:hover {
+  background: #EAF6F2;
+  border-color: #7eb8a8;
+}
+
+.remove-gallery-btn {
+  border: 1px solid #f0d5d5;
+
+  color: #d14c4c;
+
+  background: #fff8f8;
+}
+
+.remove-gallery-btn:hover {
+  background: #fff0f0;
+}
+
+.remove-gallery-btn svg {
+  font-size: 12px;
+}
+
+/* =========================================================
+   GALLERY INFO NOTE
+========================================================= */
+
+.gallery-info-note {
+  margin-top: 17px;
+
+  padding: 11px 12px;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 9px;
+
+  border-radius: 8px;
+
+  background: #F3FAF8;
+
+  border: 1px solid #C5E5DC;
+}
+
+.gallery-info-note > svg {
+  color: #0D614E;
+
+  font-size: 15px;
+
+  min-width: 15px;
+
+  margin-top: 2px;
+}
+
+.gallery-info-note p {
+  margin: 0;
+
+  color: #506c63;
+
+  font-size: 10.5px;
+
+  line-height: 1.6;
+}
+
+.gallery-info-note strong {
+  color: #0D614E;
+}
+
+/* =========================================================
+   HOW IT WORKS
+========================================================= */
+
+.steps-list {
+  margin-top: 20px;
+}
+
+.step-item {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 11px;
+
+  margin-bottom: 16px;
+}
+
+.step-item:last-child {
+  margin-bottom: 0;
+}
+
+.step-number {
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+
+  border-radius: 50%;
+
+  background: #EAF6F2;
+  color: #0D614E;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.step-item p {
+  margin: 2px 0 0;
+
+  color: #697383;
+
+  font-size: 11.5px;
+
+  line-height: 1.6;
+}
+
+.step-item strong {
+  color: #424a56;
+}
+
+/* =========================================================
+   DOWNLOAD TEMPLATE
+========================================================= */
+
+.download-template-btn {
+  margin-top: 20px;
+
+  width: 100%;
+  height: 40px;
+
+  border: 1px solid #C5E5DC;
+
+  background: #F3FAF8;
+
+  color: #0D614E;
+
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+
+  font-size: 12px;
+  font-weight: 650;
+
+  transition: 0.2s ease;
+}
+
+.download-template-btn:hover {
+  background: #EAF6F2;
+
+  border-color: #7eb8a8;
+
+  color: #094D3E;
+}
+
+.download-template-btn svg {
   font-size: 15px;
 }
 
-.supported-format {
-  margin: 12px 0 0;
-
-  font-size: 11px;
-
-  color: #9aa4b4;
-}
-
-
 /* =========================================================
-   SELECTED FILE
+   SHEET GUIDE
 ========================================================= */
 
-.selected-file-box {
-  margin: 20px 25px 0;
+.sheet-guide-card {
+  padding: 0;
+  overflow: hidden;
+}
 
-  min-height: 68px;
+.sheet-guide-header {
+  width: 100%;
 
-  padding: 12px 14px;
+  border: none;
 
-  border: 1px solid #dfe5ee;
+  background: transparent;
 
-  border-radius: 8px;
+  padding: 20px 22px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  box-sizing: border-box;
-}
-
-.selected-file-left {
-  display: flex;
-  align-items: center;
-
-  gap: 12px;
-
-  min-width: 0;
-}
-
-.small-excel-icon {
-  width: 38px;
-  height: 38px;
-
-  border-radius: 7px;
-
-  background: #e9f8ef;
-
-  color: #19884d;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-}
-
-.small-excel-icon svg {
-  font-size: 20px;
-}
-
-.selected-file-info {
-  min-width: 0;
-}
-
-.selected-file-info h4 {
-  margin: 0 0 4px;
-
-  font-size: 13px;
-
-  color: #27354d;
-
-  font-weight: 600;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.selected-file-info span {
-  font-size: 11px;
-
-  color: #929caf;
-}
-
-.remove-file-btn {
-  border: none;
-
-  background: transparent;
-
-  color: #e53935;
-
-  font-size: 12px;
-
-  font-weight: 600;
-
-  display: flex;
-  align-items: center;
-
-  gap: 7px;
+  text-align: left;
 
   cursor: pointer;
-
-  flex-shrink: 0;
 }
 
-.remove-file-btn:hover {
-  color: #c62828;
+.sheet-guide-header:hover {
+  background: #fafbfc;
 }
 
-
-/* =========================================================
-   NOTE
-========================================================= */
-
-.bulk-note-box {
-  margin: 20px 25px;
-
-  padding: 15px 16px;
-
-  border: 1px solid #bdd5ff;
-
-  background: #f5f9ff;
-
-  border-radius: 8px;
-
-  display: flex;
-
-  gap: 12px;
-}
-
-.bulk-note-icon {
-  width: 25px;
-  height: 25px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: #2879ea;
-
-  flex-shrink: 0;
-}
-
-.bulk-note-box h4 {
-  margin: 0 0 5px;
-
-  font-size: 13px;
-
-  color: #2870d8;
-
-  font-weight: 700;
-}
-
-.bulk-note-box p {
-  margin: 0 0 4px;
-
-  font-size: 11.5px;
-
-  color: #63738d;
-
-  line-height: 1.5;
-}
-
-.bulk-note-box span {
-  font-size: 11px;
-
-  color: #8290a5;
-}
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-.bulk-card-footer {
-  border-top: 1px solid #e8ecf2;
-
-  padding: 15px 25px;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: flex-end;
-
-  gap: 10px;
-}
-
-.cancel-upload-btn {
-  height: 42px;
-
-  padding: 0 22px;
-
-  background: #ffffff;
-
-  border: 1px solid #d6dce6;
-
-  border-radius: 7px;
-
-  color: #56647a;
-
-  font-size: 13px;
-
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-.cancel-upload-btn:hover {
-  background: #f8f9fb;
-}
-
-.validate-upload-btn {
-  height: 42px;
-
-  padding: 0 18px;
-
-  border: none;
-
-  border-radius: 7px;
-
-  background: #176fe8;
-
-  color: #ffffff;
-
-  font-size: 13px;
-
-  font-weight: 600;
-
-  display: flex;
-  align-items: center;
-
-  gap: 9px;
-
-  cursor: pointer;
-
-  box-shadow: 0 5px 12px rgba(23, 111, 232, 0.18);
-
-  transition: all 0.2s ease;
-}
-
-.validate-upload-btn:hover {
-  background: #0e60d2;
-}
-
-.validate-upload-btn svg {
-  font-size: 12px;
-}
-
-
-/* =========================================================
-   RIGHT GUIDE CARD
-========================================================= */
-
-.excel-guide-card {
-  background: #ffffff;
-
-  border: 1px solid #e4e8ef;
-
-  border-radius: 10px;
-
-  box-shadow: 0 3px 12px rgba(27, 44, 72, 0.04);
-
-  overflow: hidden;
-}
-
-.guide-header {
-  padding: 23px 22px 17px;
-}
-
-.guide-header h2 {
-  margin: 0 0 6px;
-
-  font-size: 19px;
-
-  color: #1e2d48;
-
-  font-weight: 700;
-}
-
-.guide-header p {
+.sheet-guide-header h2 {
   margin: 0;
 
-  font-size: 12px;
+  font-size: 16px;
 
-  color: #8994a7;
+  color: #2e333a;
 }
 
-
-/* =========================================================
-   GUIDE SECTION
-========================================================= */
-
-.guide-section {
-  margin: 0 15px 10px;
-
-  border: 1px solid;
-
-  border-radius: 9px;
-
-  overflow: hidden;
-
-  transition: all 0.2s ease;
-}
-
-.products-section {
-  border-color: #bde7ce;
-
-  background: #f6fff9;
-}
-
-.variants-section {
-  border-color: #bfd7ff;
-
-  background: #f7faff;
-}
-
-.gallery-section {
-  border-color: #f2d99b;
-
-  background: #fffaf0;
-}
-
-.references-section {
-  border-color: #dcc9ff;
-
-  background: #fbf8ff;
-}
-
-.instructions-section {
-  border-color: #dfe4eb;
-
-  background: #f9fafc;
-}
-
-
-/* =========================================================
-   GUIDE HEADER
-========================================================= */
-
-.guide-section-header {
-  min-height: 72px;
-
-  padding: 11px 12px;
-
-  box-sizing: border-box;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  cursor: pointer;
-}
-
-.guide-icon {
-  width: 42px;
-  height: 42px;
-
-  border-radius: 8px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  font-size: 20px;
-}
-
-.products-icon {
-  background: #e5f8ec;
-  color: #23a35c;
-}
-
-.variants-icon {
-  background: #e5efff;
-  color: #2878ea;
-}
-
-.gallery-icon {
-  background: #fff0c9;
-  color: #edaa12;
-}
-
-.references-icon {
-  background: #eee4ff;
-  color: #8651dc;
-}
-
-.instructions-icon {
-  background: #e9edf2;
-  color: #68778d;
-}
-
-
-/* =========================================================
-   GUIDE TITLE
-========================================================= */
-
-.guide-title-area {
-  flex: 1;
-
-  min-width: 0;
-}
-
-.guide-title-row {
-  display: flex;
-  align-items: center;
-
-  gap: 7px;
-
-  flex-wrap: wrap;
-}
-
-.guide-title-row h3 {
-  margin: 0;
-
-  font-size: 14px;
-
-  color: #24324a;
-
-  font-weight: 700;
-}
-
-.guide-number {
-  width: 20px;
-  height: 20px;
-
-  border-radius: 50%;
-
-  display: inline-flex;
-
-  align-items: center;
-  justify-content: center;
-
-  color: #ffffff;
-
-  font-size: 10px;
-
-  font-weight: 700;
-}
-
-.products-number {
-  background: #23a35c;
-}
-
-.variants-number {
-  background: #2878ea;
-}
-
-.gallery-number {
-  background: #e9a612;
-}
-
-.references-number {
-  background: #8651dc;
-}
-
-.instructions-number {
-  background: #7b8798;
-}
-
-.guide-title-area > p {
+.sheet-guide-header p {
   margin: 5px 0 0;
 
   font-size: 11px;
 
-  color: #758298;
-
-  line-height: 1.45;
+  color: #8b94a2;
 }
 
-.guide-chevron {
-  width: 25px;
+.sheet-guide-header > svg {
+  color: #6f7886;
 
-  color: #778398;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 11px;
+  font-size: 17px;
 }
 
+.sheet-guide-content {
+  border-top: 1px solid #edf0f4;
 
-/* =========================================================
-   BADGES
-========================================================= */
+  padding: 2px 22px 20px;
+}
 
-.required-badge,
-.optional-badge,
-.info-badge {
-  padding: 3px 7px;
+.sheet-section {
+  padding: 16px 0;
 
-  border-radius: 20px;
+  border-bottom: 1px solid #edf0f4;
+}
 
-  font-size: 9px;
+.sheet-section:last-child {
+  border-bottom: none;
+
+  padding-bottom: 0;
+}
+
+.sheet-section h3 {
+  margin: 0 0 8px;
+
+  font-size: 12.5px;
 
   font-weight: 700;
+
+  color: #3a414a;
 }
 
-.required-badge {
-  background: #d9f6e5;
-  color: #168148;
-}
-
-.optional-badge {
-  background: #e9ddff;
-  color: #7440ca;
-}
-
-.info-badge {
-  background: #e6eaf0;
-  color: #69768a;
-}
-
-
-/* =========================================================
-   GUIDE CONTENT
-========================================================= */
-
-.guide-content {
-  padding: 0 15px 15px 63px;
-
-  animation: guideOpen 0.2s ease;
-}
-
-@keyframes guideOpen {
-  from {
-    opacity: 0;
-    transform: translateY(-3px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.guide-content strong {
-  display: block;
-
-  margin-bottom: 6px;
-
-  color: #33415a;
-
-  font-size: 11px;
-
-  font-weight: 700;
-}
-
-.guide-content ul {
-  padding: 0;
+.columns-text {
   margin: 0;
 
-  list-style: none;
-}
-
-.guide-content li {
-  position: relative;
-
-  padding-left: 12px;
-
-  margin-bottom: 4px;
+  color: #687282;
 
   font-size: 10.5px;
 
-  color: #6d7a90;
+  line-height: 1.65;
 
-  line-height: 1.45;
+  word-break: break-word;
 }
 
-.guide-content li::before {
-  content: "•";
+.guide-note {
+  margin: 8px 0 0;
 
-  position: absolute;
+  color: #929aa7;
 
-  left: 0;
+  font-size: 10px;
 
-  color: #98a3b4;
+  line-height: 1.55;
 }
 
-.guide-content code {
-  padding: 1px 3px;
+/* =========================================================
+   QUICK TIPS
+========================================================= */
 
-  border-radius: 3px;
+.quick-tips-list {
+  margin: 17px 0 0;
 
-  background: rgba(0, 0, 0, 0.035);
+  padding-left: 18px;
+}
 
-  color: #46546b;
+.quick-tips-list li {
+  margin-bottom: 10px;
 
-  font-family: monospace;
+  color: #687282;
+
+  font-size: 11px;
+
+  line-height: 1.6;
+}
+
+.quick-tips-list li:last-child {
+  margin-bottom: 0;
+}
+
+.quick-tips-list strong {
+  color: #414852;
+}
+
+.quick-tips-list code {
+  background: #EAF6F2;
+
+  color: #0D614E;
+
+  border-radius: 4px;
+
+  padding: 2px 5px;
 
   font-size: 10px;
 }
 
-
 /* =========================================================
-   HELP
+   TOAST
 ========================================================= */
 
-.guide-help {
-  border-top: 1px solid #e8ecf2;
-
-  min-height: 58px;
-
-  padding: 0 18px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  color: #2877df;
+.Toastify__toast {
+  border-radius: 9px !important;
+  font-size: 13px !important;
 }
 
-.guide-help > svg {
-  font-size: 16px;
+.Toastify__toast-body {
+  font-family: inherit !important;
 }
-
-.guide-help div {
-  display: flex;
-  flex-direction: column;
-
-  gap: 2px;
-}
-
-.guide-help strong {
-  font-size: 11px;
-
-  color: #53627a;
-}
-
-.guide-help span {
-  font-size: 10.5px;
-
-  color: #2d76dc;
-}
-
 
 /* =========================================================
-   RESPONSIVE
+   RESPONSIVE - TABLET
 ========================================================= */
 
-@media (max-width: 1200px) {
-  .bulk-upload-container {
+@media (max-width: 1100px) {
+  .bulk-content-grid {
     grid-template-columns: 1fr;
   }
 
-  .excel-guide-card {
-    width: 100%;
+  .bulk-right-column {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+
+    align-items: start;
+  }
+
+  .bulk-right-column .info-card {
+    margin-bottom: 0;
+  }
+
+  .quick-tips-card {
+    grid-column: span 2;
   }
 }
 
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
 
-@media (max-width: 768px) {
-  .bulk-breadcrumb {
-    padding: 0 15px;
-
-    height: 55px;
-
-    font-size: 11px;
-  }
-
-  .bulk-upload-container {
-    padding: 15px;
-
-    gap: 15px;
-  }
-
-  .bulk-card-header {
-    padding: 20px 18px 15px;
-  }
-
-  .bulk-card-header h1 {
-    font-size: 21px;
-  }
-
-  .bulk-card-header p {
-    font-size: 11px;
-  }
-
-  .download-template-btn {
-    margin-left: 18px;
-    margin-right: 18px;
-  }
-
-  .excel-drop-zone {
-    margin: 0 18px;
-
-    min-height: 270px;
-  }
-
-  .selected-file-box {
-    margin-left: 18px;
-    margin-right: 18px;
-  }
-
-  .bulk-note-box {
-    margin-left: 18px;
-    margin-right: 18px;
-  }
-
-  .bulk-card-footer {
-    padding: 14px 18px;
-
-    flex-direction: column-reverse;
-
-    align-items: stretch;
-  }
-
-  .cancel-upload-btn,
-  .validate-upload-btn {
-    width: 100%;
-
-    justify-content: center;
-  }
-
-  .guide-header {
-    padding: 20px 18px 15px;
-  }
-
-  .guide-section {
-    margin-left: 12px;
-    margin-right: 12px;
-  }
-}
-
-
-@media (max-width: 480px) {
+@media (max-width: 700px) {
   .bulk-upload-page {
-    min-width: 0;
+    padding: 20px 14px 35px;
   }
 
-  .bulk-breadcrumb span:nth-child(1),
-  .bulk-breadcrumb .breadcrumb-arrow:nth-of-type(1) {
-    display: none;
+  .bulk-title-row h1 {
+    font-size: 24px;
   }
 
-  .excel-drop-zone {
-    min-height: 240px;
-  }
-
-  .excel-file-icon {
-    font-size: 48px;
-  }
-
-  .excel-drop-zone h3 {
-    font-size: 15px;
-  }
-
-  .selected-file-box {
-    align-items: flex-start;
-  }
-
-  .remove-file-btn {
-    font-size: 0;
-  }
-
-  .remove-file-btn svg {
-    font-size: 15px;
-  }
-
-  .guide-title-row h3 {
+  .bulk-page-description {
     font-size: 12px;
   }
 
-  .guide-title-area > p {
-    font-size: 10px;
+  .bulk-content-grid {
+    display: block;
   }
 
-  .guide-content {
-    padding-left: 55px;
+  .upload-card,
+  .info-card {
+    padding: 17px;
+    border-radius: 11px;
+  }
+
+  .bulk-right-column {
+    display: block;
+  }
+
+  .bulk-right-column .info-card {
+    margin-bottom: 15px;
+  }
+
+  .quick-tips-card {
+    grid-column: auto;
+  }
+
+  .excel-drop-zone {
+    min-height: 200px;
+    padding: 20px 12px;
+  }
+
+  .upload-actions {
+    flex-direction: column;
+  }
+
+  .upload-products-btn,
+  .reset-upload-btn {
+    width: 100%;
+  }
+
+  .gallery-image-item {
+    flex-direction: column;
+  }
+
+  .gallery-preview {
+    width: 100%;
+    height: 180px;
+  }
+
+  .gallery-url-box input {
+    font-size: 9.5px;
+  }
+
+  .gallery-item-actions {
+    flex-wrap: wrap;
+  }
+
+  .set-cover-btn,
+  .remove-gallery-btn {
+    flex: 1;
+  }
+
+  .selected-file-info strong {
+    max-width: 220px;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 420px) {
+  .bulk-upload-page {
+    padding: 15px 10px 30px;
+  }
+
+  .bulk-title-row h1 {
+    font-size: 21px;
+  }
+
+  .upload-card,
+  .info-card {
+    padding: 14px;
+  }
+
+  .upload-card-header h2,
+  .info-card-header h2 {
+    font-size: 15px;
+  }
+
+  .upload-card-header p,
+  .info-card-header p {
+    font-size: 11px;
+  }
+
+  .gallery-preview {
+    height: 150px;
+  }
+
+  .gallery-item-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .set-cover-btn,
+  .remove-gallery-btn {
+    width: 100%;
   }
 }

@@ -78,7 +78,7 @@ import AddRoles from './Components/Pages/Admin/AddRoles';
 import Unicommerece from './Components/Pages/Unicomerece/Unicommerece';
 import AddDiet from './Components/Pages/Diet/AddDiet';
 import Faq from './Components/Pages/Faq/Faq';
-
+import BulkUpload from './Components/Pages/Product/BulkUpload';
 
 
 
@@ -147,12 +147,24 @@ function App() {
           }
         />
 
+
            <Route
           path="/admin/role"
           element={
             <ProtectedRoute permission="view_role">
               <Layout>
                 <AddRoles />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+ 
+            <Route
+          path="/admin/bulk-upload-products"
+          element={
+            <ProtectedRoute permission="manage_product_bulk">
+              <Layout>
+                <BulkUpload/>
               </Layout>
             </ProtectedRoute>
           }

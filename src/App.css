@@ -2343,7 +2343,7 @@ textarea:focus {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: 11px;
   color: #333;
   text-align: left;
   transition: background 0.2s, color 0.2s;
@@ -6987,7 +6987,7 @@ flex-direction:column;
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   border-radius: 12px;
 }
 
@@ -7876,4 +7876,169 @@ flex-direction:column;
 
 .customer-back-btn:hover {
   color: #084c3d;
+}
+/* =========================================================
+   DIETICIAN STATUS
+========================================================= */
+
+.dietician-status-card {
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px 16px;
+
+  border: 1px solid #d8e9e4;
+  border-radius: 12px;
+
+  background: #fbfefd;
+
+ 
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  box-sizing: border-box;
+
+  gap: 20px;
+}
+
+.dietician-status-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dietician-icon {
+  width: 38px;
+  height: 38px;
+
+  border-radius: 10px;
+
+  background: #e4f5ef;
+  color: #0d614e;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dietician-status-content {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.dietician-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #172033;
+}
+
+.dietician-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dietician-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Active */
+
+.dietician-active {
+  color: #0d614e;
+}
+
+.dietician-active .dietician-dot {
+  background: #19a974;
+}
+
+/* Inactive */
+
+.dietician-inactive {
+  color: #667085;
+}
+
+.dietician-inactive .dietician-dot {
+  background: #98a2b3;
+}
+
+
+
+
+.dietician-action-btn {
+  height: 38px;
+  padding: 0 16px;
+
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+
+/* Make Dietician */
+
+.make-dietician-btn {
+  background: #ffffff;
+  color: #0d614e;
+  border: 1px solid #0d614e;
+}
+
+.make-dietician-btn:hover {
+  background: #0d614e;
+  color: #ffffff;
+}
+
+
+/* Remove Dietician */
+
+.remove-dietician-btn {
+  background: #fff;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.remove-dietician-btn:hover {
+  background: #dc2626;
+  color: #fff;
+}
+
+
+/* Responsive */
+
+@media (max-width: 700px) {
+
+  .dietician-status-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dietician-status-content {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dietician-action-btn {
+    width: 100%;
+  }
 }

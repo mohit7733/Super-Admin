@@ -137,7 +137,8 @@ const [availabilityData, setAvailabilityData] = useState([]);
             "cancellation_requested": 0,
             "missed":0
 });
-
+const [dieticianLoading, setDieticianLoading] = useState(false);
+const [showDieticianModal, setShowDieticianModal] = useState(false);
 
 const getStatusStyle = (status) => {
   const value = status?.toLowerCase();
@@ -402,7 +403,61 @@ const handleSubmitReason = async () => {
 }, []);
 
 
+const handleDieticianToggle = async () => {
+  if (!doctorData) return;
 
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again.");
+    navigate("/login");
+    return;
+  }
+
+  const newDieticianStatus = !doctorData.is_dietitian;
+
+  try {
+    setLoadingAction(true);
+
+    const response = await fetch(
+      `${BASE_URL}/doctors/admin/doctor/?id=${DoctorId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          is_dietitian: newDieticianStatus,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      setDoctorData((prev) => ({
+        ...prev,
+        is_dietitian: newDieticianStatus,
+      }));
+
+      toast.success(
+        newDieticianStatus
+          ? "Doctor is now a Dietician"
+          : "Doctor removed from Dietician"
+      );
+    } else {
+      toast.error(data.message || "Failed to update Dietician status");
+    }
+  } catch (error) {
+    console.error("Dietician update error:", error);
+    toast.error("Something went wrong");
+  } finally {
+    setLoadingAction(false);
+  }
+};
 
 const getAvailability = async () => {
   const token = sessionStorage.getItem("superadmin_token");
@@ -645,6 +700,7 @@ const getAvailability = async () => {
                   </span>
                 )}
               </div>
+
             </div>
           </div>
 
@@ -704,6 +760,52 @@ const getAvailability = async () => {
 </button>
             </div>
           </div>
+           <div className="dietician-status-card">
+  <div className="dietician-status-left">
+    <div className="dietician-icon">
+      <BiLeaf size={20} />
+    </div>
+
+    <div className="dietician-status-content">
+      <span className="dietician-title">
+        Dietician Status
+      </span>
+
+      <span
+        className={`dietician-status ${
+          doctorData?.is_dietitian
+            ? "dietician-active"
+            : "dietician-inactive"
+        }`}
+      >
+        <span className="dietician-dot"></span>
+
+        {doctorData?.is_dietitian
+          ? "Dietician"
+          : "Not a Dietician"}
+      </span>
+    </div>
+  </div>
+
+ <button 
+  type="button" 
+  className={`dietician-action-btn ${
+    doctorData?.is_dietitian
+      ? "remove-dietician-btn"
+      : "make-dietician-btn"
+  }`}
+  onClick={handleDieticianToggle}
+  disabled={loadingAction}
+>
+  <BiLeaf size={17} />
+
+  {loadingAction
+    ? "Updating..."
+    : doctorData?.is_dietitian
+    ? "Remove  As a Dietician"
+    : "Make Dietician"}
+</button>
+</div>
         </div>
 
         <div className="tabs">

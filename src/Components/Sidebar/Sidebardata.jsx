@@ -29,7 +29,7 @@ import { GiMeal } from "react-icons/gi";
 
 import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { BiPlusCircle } from "react-icons/bi";
-
+import { FiUploadCloud } from "react-icons/fi";
 
 
 
@@ -296,6 +296,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
         permission: "manage_brand_name",
         icon: <MdBrandingWatermark size={18} />
       },
+       {
+      title: "Bulk Upload",
+      path: "/admin/bulk-upload-products",
+      permission: "manage_product_bulk",
+      icon: <FiUploadCloud size={18} />
+    },
       // {
       //   title: "Stock Management",
       //   path: "/Product/Stock",

@@ -353,7 +353,7 @@ fieldset legend {
   align-items: center;
   gap: 7px;
   min-height: 35px;
-  margin-top: 7px;
+  margin-top: 7px; ser: 567890px 78px;
   padding: 4px 9px;
   border: 1px solid #d6dce8;
   border-radius: 5px;
@@ -384,9 +384,6 @@ fieldset legend {
 }
 
 
-/* =========================================================
-   DAY CONTROLS
-========================================================= */
 
 .day-controls {
   display: flex;
@@ -1052,4 +1049,183 @@ fieldset legend {
 
 .delete-day svg {
   flex-shrink: 0;
+}
+/* =========================================================
+   PREPARATION STEPS
+========================================================= */
+
+.preparation-section {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.preparation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.preparation-header > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #172033;
+}
+
+.add-step-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  border: 1px solid #dfe3e8;
+  background: #ffffff;
+  color: #3157d5;
+
+  border-radius: 7px;
+  padding: 6px 10px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-step-btn:hover {
+  background: #f5f7ff;
+  border-color: #3157d5;
+}
+
+
+/* =========================================================
+   STEP LIST
+========================================================= */
+
+.preparation-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+
+/* =========================================================
+   SINGLE STEP
+========================================================= */
+
+.preparation-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: 100%;
+}
+
+
+/* =========================================================
+   STEP NUMBER
+========================================================= */
+
+.step-number {
+  flex: 0 0 28px;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 3px;
+
+  border-radius: 50%;
+
+  background: #eef2ff;
+  color: #3157d5;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   STEP TEXTAREA
+========================================================= */
+
+.preparation-step textarea {
+  flex: 1;
+
+  min-height: 42px;
+  height: 42px;
+
+  resize: vertical;
+
+  padding: 10px 12px;
+
+  border: 1px solid #e1e5ea;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #172033;
+
+  font-family: inherit;
+  font-size: 12px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.preparation-step textarea::placeholder {
+  color: #9aa1ad;
+}
+
+.preparation-step textarea:focus {
+  border-color: #3157d5;
+
+  box-shadow: 0 0 0 3px rgba(49, 87, 213, 0.08);
+}
+
+
+/* =========================================================
+   REMOVE STEP
+========================================================= */
+
+.remove-step {
+  width: 30px;
+  height: 30px;
+
+  margin-top: 2px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+
+  background: #ffffff;
+  color: #9a9fa8;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.remove-step:hover {
+  color: #e53935;
+  border-color: #f1b5b5;
+  background: #fff5f5;
+}
+
+
+/* =========================================================
+   OPTIONAL: FIRST STEP LOOK
+========================================================= */
+
+.preparation-step:first-child .step-number {
+  background: #eef7f1;
+  color: #2f8f52;
 }

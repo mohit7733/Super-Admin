@@ -331,6 +331,74 @@ const submitRejection = async (e) => {
       setLoading(false);
     }
   };
+  const handleDieticianToggle = async (doctor) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  const newDieticianStatus = !doctor.is_dietitian;
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/doctors/admin/doctor/?id=${doctor.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          is_dietitian: newDieticianStatus,
+        }),
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data?.message || "Failed to update dietician status");
+    }
+
+    // Update table immediately
+    setDoctorData((prev) =>
+      prev.map((item) =>
+        item.id === doctor.id
+          ? {
+              ...item,
+              is_dietitian: newDieticianStatus,
+            }
+          : item
+      )
+    );
+
+    // Close three-dot menu
+    setOpenthreedotId(null);
+
+    toast.success(
+      newDieticianStatus
+        ? "Doctor added as Dietician successfully"
+        : "Doctor removed as Dietician successfully"
+    );
+  } catch (error) {
+    console.error("Dietician toggle error:", error);
+    toast.error(
+      error.message || "Something went wrong while updating Dietician"
+    );
+  }
+};
  useEffect(()=>{
   getdoctorlist();
  },
@@ -674,47 +742,70 @@ const filterDoctors = () => {
 
 
 
-  <td
-    style={{ position: "relative" }}
-    onClick={(e) => e.stopPropagation()}
-  >
-    <button
-      className="action-menu-toggle"
-      onClick={() =>
-        setOpenthreedotId(
-          OpenthreedotId === item.id ? null : item.id
-        )
-      }
-      style={{
-        background: "transparent",
-        border: "none",
-        cursor: "pointer",
-        fontSize: "20px",
-      }}
-    >
+ <td
+  className={
+    index === Doctordata.length - 1
+      ? "action-td action-td-up"
+      : "action-td"
+  }
+  onClick={(e) => e.stopPropagation()}
+>
+ <button
+  className="action-menu-toggle"
+  onClick={() =>
+    setOpenthreedotId(
+      OpenthreedotId === item.id ? null : item.id
+    )
+  }
+>
       <span className="icon">
         <BsThreeDotsVertical />
       </span>
     </button>
 
-    {OpenthreedotId === item.id && (
-      <div className="action-buttons-modal">
+  {OpenthreedotId === item.id && (
+  <div className="action-buttons-modal">
 
-        
-          <button
-            className="action-btn1"
-            title="Detail Page"
-            onClick={() => handleNavigateDoctor(item.id)}
-          >
-            <span className="icon">
-              <FaEye />
-            </span>
-            <span>Detail Page</span>
-          </button>
-        
+    {/* DETAIL PAGE */}
+    <button
+      className="action-btn1"
+      title="Detail Page"
+      onClick={() => {
+        setOpenthreedotId(null);
+        handleNavigateDoctor(item.id);
+      }}
+    >
+      <span className="icon">
+        <FaEye />
+      </span>
 
-      </div>
-    )}
+      <span>Detail Page</span>
+    </button>
+
+
+    {/* ADD / REMOVE DIETICIAN */}
+    <button
+      className="action-btn1"
+      title={
+        item.is_dietitian
+          ? "Remove as Dietician"
+          : "Add as Dietician"
+      }
+      onClick={() => handleDieticianToggle(item)}
+    >
+      <span className="icon">
+        {item.is_dietitian ? "✕" : "🥗"}
+      </span>
+
+      <span>
+        {item.is_dietitian
+          ? "Remove as Dietician"
+          : "Add as Dietician"}
+      </span>
+    </button>
+
+  </div>
+)}
   </td>
 </tr>
               ))
