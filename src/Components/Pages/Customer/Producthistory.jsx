@@ -329,7 +329,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
   <small>{order.payment_type?.toUpperCase() || "-"}</small>
 </td>
 
-            <td>
+
               <td>
             <span
               className="status-badge"
@@ -338,7 +338,7 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
               {order.status}
             </span>
           </td>
-            </td>
+          
 
             <td>
               {new Date(order.date).toLocaleDateString("en-IN")}
@@ -372,6 +372,15 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
                
 
                     </div>
+                    {showOrderModal && (
+  <OrderModal
+    order={selectedOrder}
+    onClose={() => {
+      setShowOrderModal(false);
+      setSelectedOrder(null);
+    }}
+  />
+)}
     </>
   )
 }

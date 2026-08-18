@@ -76,7 +76,9 @@ import PatientDetails from './Components/Pages/Patient/PatientDetails';
 import Management from './Components/Pages/Mangement/Management';
 import AddRoles from './Components/Pages/Admin/AddRoles';
 import Unicommerece from './Components/Pages/Unicomerece/Unicommerece';
-
+import AddDiet from './Components/Pages/Diet/AddDiet';
+import Faq from './Components/Pages/Faq/Faq';
+import BulkUpload from './Components/Pages/Product/BulkUpload';
 
 
 
@@ -145,6 +147,7 @@ function App() {
           }
         />
 
+
            <Route
           path="/admin/role"
           element={
@@ -155,6 +158,28 @@ function App() {
             </ProtectedRoute>
           }
         />
+ 
+            <Route
+          path="/admin/bulk-upload-products"
+          element={
+            <ProtectedRoute permission="manage_product_bulk">
+              <Layout>
+                <BulkUpload/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+          <Route
+          path="/diet/add"
+          element={
+            <ProtectedRoute permission="add_diet_plan">
+              <Layout>
+                <AddDiet />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+     
 
         <Route
           path="/main/subcategory"
@@ -167,7 +192,16 @@ function App() {
           }
         />
 
-
+      <Route
+          path="/FAQ/Management"
+          element={
+            <ProtectedRoute permission="view_faq">
+              <Layout>
+                <Faq />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dietplans"
           element={

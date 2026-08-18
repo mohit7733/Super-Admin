@@ -8,9 +8,6 @@ import BASE_URL from "../../../Base";
 import { BiPlus } from 'react-icons/bi';
 import { FiSearch, FiRefreshCw } from "react-icons/fi";
 
-
-
-
 const Category = () => {
   const [Loading, setLoading] = useState(true);
   const [Error, setError] = useState(null);

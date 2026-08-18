@@ -968,7 +968,7 @@ if (selectedVariant?.id === variantId) {
                       <h5 className="detail-section-title">Actions</h5>
                       <div className="action-buttons-group horizontal">
                         <button 
-                          className="actions-btn approves-btn"
+                          className="actionss-btn approves-btn"
                           onClick={() => {
                             setSelectedVariantForAction(selectedVariant);
                             setShowActionModal(true);
@@ -978,7 +978,7 @@ if (selectedVariant?.id === variantId) {
                           <FaCheckCircle /> Approve
                         </button>
                         <button 
-                          className="actions-btn reject-btn"
+                          className="actionss-btn rejectss-btn"
                           onClick={() => {
                             setSelectedVariantForAction(selectedVariant);
                             setShowActionModal(true);
@@ -988,7 +988,7 @@ if (selectedVariant?.id === variantId) {
                           <FaTimesCircle /> Reject
                         </button>
                         <button 
-                          className="actions-btn suspends-btn"
+                          className="actionss-btn suspends-btn"
                           onClick={() => {
                             setSelectedVariantForAction(selectedVariant);
                             setShowActionModal(true);
