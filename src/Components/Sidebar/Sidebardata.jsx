@@ -250,7 +250,14 @@ icon: <ShoppingCartIcon sx={{ fontSize: 20 }} />,
         path: "/Review/doctor",
         permission: "view_doctor_review",
         icon: <FaUserMd size={18} />
-      }
+      },
+      {
+  title: "Diet Reviews",
+  path: "/Review/Diet",
+  permission: "view_diet_review",
+  icon: <MdReviews size={18} />
+},
+
     ]
   },
 

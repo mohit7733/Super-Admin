@@ -3,6 +3,7 @@
 import React, { useEffect, useState ,useRef} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify"
+import { FaEye } from "react-icons/fa";
 
 import "react-toastify/dist/ReactToastify.css"
 import { IoClose } from "react-icons/io5";
@@ -70,6 +71,7 @@ import {
   BiFile,
 
 } from "react-icons/bi";
+
 import { FaUsers,FaBuilding } from "react-icons/fa";
 
 import { IoLanguageOutline } from "react-icons/io5";
@@ -116,17 +118,18 @@ const[SlotLoading,setSlotLoading]=useState(false);
 const[SlotError,setSlotError]=useState(null);
 
 
- const pagesize = 5;
-  const [totalCount, setTotalCount] = useState(0);
-  const totalPages = Math.ceil(totalCount / pagesize);
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+ const [currentPage, setCurrentPage] = useState(1);
+const [pageSize] = useState(5);
 
-  const [currentpage, setCurrentPage] = useState(1);
-  const [Nextpage, setNextpage] = useState(null);
+const [totalCount, setTotalCount] = useState(0);
+const [totalPages, setTotalPages] = useState(1);
+
+const [nextPage, setNextpage] = useState(null);
+const [previousPage, setPreviousPage] = useState(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
 const [availabilityError, setAvailabilityError] = useState("");
 const [availabilityData, setAvailabilityData] = useState([]);
-  const [previousPage, setPreviousPage] = useState(null);
+  
   const [AppointmentStats, setAppointmentStats] = useState({
    "total": 0,
             "pending": 0,
@@ -139,6 +142,7 @@ const [availabilityData, setAvailabilityData] = useState([]);
 });
 const [dieticianLoading, setDieticianLoading] = useState(false);
 const [showDieticianModal, setShowDieticianModal] = useState(false);
+
 
 const getStatusStyle = (status) => {
   const value = status?.toLowerCase();
@@ -166,6 +170,13 @@ const getStatusStyle = (status) => {
         color: "#b45309",
       };
 
+      
+  case "confirmed":
+      return {
+    background: "#84d2e420", color: "#3b11e2" 
+      };
+
+  
    
    
     
@@ -299,50 +310,75 @@ const handleSubmitReason = async () => {
   setReason("");
 };
   const getConsultationhistory = async (page = 1) => {
-    const token = sessionStorage.getItem("superadmin_token");
+  const token = sessionStorage.getItem("superadmin_token");
 
-    if (!token) {
-      toast.error("Session Expired , Login Again")
-      navigate("/login");
-    }
+  if (!token) {
+    toast.error("Session Expired, Login Again");
+    navigate("/login");
+    return;
+  }
 
-    try {
-      setConsultationLoading(true);
+  try {
+    setConsultationLoading(true);
+    setConsultationError(null);
 
-      const response = await fetch(
-       `${BASE_URL}/doctors/admin/consultation-history/?doctor_id=${DoctorId}&page=${page}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "ngrok-skip-browser-warning": "true",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+    const response = await fetch(
+      `${BASE_URL}/doctors/admin/consultation-history/?doctor_id=${DoctorId}&page=${page}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "ngrok-skip-browser-warning": "true",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Failed to fetch consultation history"
       );
-
-      const data = await response.json();
-
-
-
-      setData(data.data.results);
-       setTotalCount(data.data.count);
-      setCurrentPage(page);
-      setNextpage(data.data.next);
-      setPreviousPage(data.data.previous);
-      setAppointmentStats(data.data.total_counts)
-    } catch (error) {
-      console.error(error.message);
-
-      setConsultationError("Something went wrong while fetching consultation");
-       
-
-      toast.error("Failed to fetch consultation Data");
-    } finally {
-      setConsultationLoading(false);
     }
-  };
+
+    const results = data?.data?.results || [];
+    const count = data?.data?.count || 0;
+
+    setData(results);
+    setTotalCount(count);
+
+    // IMPORTANT
+    setTotalPages(Math.ceil(count / pageSize));
+
+    setCurrentPage(page);
+    setNextpage(data?.data?.next || null);
+    setPreviousPage(data?.data?.previous || null);
+
+    setAppointmentStats(data?.data?.total_counts || {
+      total: 0,
+      pending: 0,
+      confirmed: 0,
+      completed: 0,
+      cancelled: 0,
+      rescheduled: 0,
+      cancellation_requested: 0,
+      missed: 0,
+    });
+
+  } catch (error) {
+    console.error("Consultation history error:", error);
+
+    setConsultationError(
+      error.message || "Something went wrong while fetching consultation"
+    );
+
+    toast.error("Failed to fetch consultation data");
+  } finally {
+    setConsultationLoading(false);
+  }
+};
  const getTransactionlist = async () => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -824,6 +860,7 @@ const getAvailability = async () => {
           </button>
    <button className={activeTab === "Consultation" ? "active-tab" : ""}
             onClick={() => setActiveTab("Consultation")}
+
           >
 
             Consultation History
@@ -1310,6 +1347,9 @@ const getAvailability = async () => {
                     </p>
                   </div>
 
+
+
+
                 </div>
 
               </div>
@@ -1344,10 +1384,7 @@ const getAvailability = async () => {
     </div>
   </div>
 
-  {/* Cancelled */}
-  
-
-  {/* Rescheduled */}
+ 
   <div className="stat2-card">
     <div
       className="stat2-icon"
@@ -1416,6 +1453,7 @@ const getAvailability = async () => {
                       <th>End Time</th>
                       <th>Consultation Type</th>
                       <th>Status</th>
+                      <th> Action</th>
 
                     </tr>
                   </thead>
@@ -1465,6 +1503,16 @@ const getAvailability = async () => {
               {consultation.status}
             </span>
           </td>
+          <td> 
+<button
+  type="button"
+  className="faq-action-btn faq-edit-btn"
+  title="View Patient History"
+  onClick={() => navigate(`/PatientHistory/${consultation.id}`)}
+>
+  <FaEye />
+</button>
+          </td>
         </tr>
       );
     })
@@ -1484,43 +1532,136 @@ const getAvailability = async () => {
 
               </div>
 
-               {totalPages > 1 && (
-          <div className="pagination">
+           {totalPages > 1 && (
+  <div className="order-pagination-container">
 
-
-            <button
-             onClick={() => getConsultationhistory(currentpage - 1)}
-              disabled={!previousPage}
-            >
-              Prev
-            </button>
-
-
-            {pages.map((page) => (
-              <button
-                key={page}
-                onClick={() => getConsultationhistory(page)}
-                style={{
-
-                  fontWeight: currentpage === page ? "bold" : "normal",
-                  background: currentpage === page ? "#0D614E" : "#fff",
-                  color: currentpage === page ? "#fff" : "#0D614E",
-                }}
-              >
-                {page}
-              </button>
-            ))}
-
-
-            <button
-              onClick={() => getConsultationhistory(currentpage + 1)}
-              disabled={!Nextpage}
-            >
-              Next
-            </button>
-
-          </div>
+    <div className="order-pagination-info">
+      Showing{" "}
+      <strong>
+        {totalCount === 0
+          ? 0
+          : (currentPage - 1) * pageSize + 1}
+      </strong>{" "}
+      to{" "}
+      <strong>
+        {Math.min(
+          currentPage * pageSize,
+          totalCount
         )}
+      </strong>{" "}
+      of{" "}
+      <strong>{totalCount}</strong>{" "}
+      consultations
+    </div>
+
+    <div className="order-pagination-buttons">
+
+      {/* PREVIOUS */}
+      <button
+        className="order-pagination-btn order-pagination-arrow"
+        disabled={
+          currentPage === 1 ||
+          ConsultationLoading
+        }
+        onClick={() =>
+          getConsultationhistory(currentPage - 1)
+        }
+      >
+        ‹
+      </button>
+
+      {/* FIRST PAGE */}
+      <button
+        className={`order-pagination-btn ${
+          currentPage === 1
+            ? "order-pagination-active"
+            : ""
+        }`}
+        disabled={ConsultationLoading}
+        onClick={() =>
+          getConsultationhistory(1)
+        }
+      >
+        1
+      </button>
+
+      {/* LEFT DOTS */}
+      {currentPage > 3 && (
+        <span className="order-pagination-dots">
+          ...
+        </span>
+      )}
+
+      {/* MIDDLE PAGES */}
+      {Array.from(
+        { length: totalPages },
+        (_, index) => index + 1
+      )
+        .filter(
+          (page) =>
+            page !== 1 &&
+            page !== totalPages &&
+            page >= currentPage - 1 &&
+            page <= currentPage + 1
+        )
+        .map((page) => (
+          <button
+            key={page}
+            className={`order-pagination-btn ${
+              currentPage === page
+                ? "order-pagination-active"
+                : ""
+            }`}
+            disabled={ConsultationLoading}
+            onClick={() =>
+              getConsultationhistory(page)
+            }
+          >
+            {page}
+          </button>
+        ))}
+
+      {/* RIGHT DOTS */}
+      {currentPage < totalPages - 2 && (
+        <span className="order-pagination-dots">
+          ...
+        </span>
+      )}
+
+      {/* LAST PAGE */}
+      {totalPages > 1 && (
+        <button
+          className={`order-pagination-btn ${
+            currentPage === totalPages
+              ? "order-pagination-active"
+              : ""
+          }`}
+          disabled={ConsultationLoading}
+          onClick={() =>
+            getConsultationhistory(totalPages)
+          }
+        >
+          {totalPages}
+        </button>
+      )}
+
+      {/* NEXT */}
+      <button
+        className="order-pagination-btn order-pagination-arrow"
+        disabled={
+          currentPage === totalPages ||
+          ConsultationLoading
+        }
+        onClick={() =>
+          getConsultationhistory(currentPage + 1)
+        }
+      >
+        ›
+      </button>
+
+    </div>
+  </div>
+)}
 
 
             </div>

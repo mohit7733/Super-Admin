@@ -4,6 +4,7 @@ import { FaEye } from "react-icons/fa";
 import BASE_URL from "../../../Base";
 import { toast } from 'react-toastify'
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import DoctorReviewModal from "./DoctorReviewModal";
 import {
   FaTimes,
  
@@ -261,183 +262,11 @@ getDoctorReviewList();
                       
                       
                             </div>  
-              {showReviewModal && selectedReview && (
-  <div className="doctor-review-modal-overlay">
-    <div className="doctor-review-modal">
-
-      {/* Header */}
-      <div className="doctor-review-modal-header">
-        <div className="doctor-review-modal-title-wrapper">
-          <div className="doctor-review-modal-icon">
-            <FaBoxOpen />
-          </div>
-
-          <div>
-            <h2>Doctor Review Details</h2>
-            <p>Review ID: {selectedReview?.id}</p>
-          </div>
-        </div>
-
-        <button
-          className="doctor-review-modal-close-btn"
-          onClick={closeReviewModal}
-        >
-          <FaTimes />
-        </button>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="doctor-review-summary-grid">
-
-        <div className="doctor-review-summary-card">
-          <div className="doctor-review-summary-icon doctor-review-blue">
-            <FaUser />
-          </div>
-
-          <div>
-            <span>Patient Name</span>
-            <h4>{selectedReview?.patient_name}</h4>
-          </div>
-        </div>
-
-        <div className="doctor-review-summary-card">
-          <div className="doctor-review-summary-icon doctor-review-green">
-            <FaUser />
-          </div>
-
-          <div>
-            <span>Doctor Name</span>
-            <h4>{selectedReview?.doctor_name}</h4>
-          </div>
-        </div>
-
-        <div className="doctor-review-summary-card">
-          <div className="doctor-review-summary-icon doctor-review-yellow">
-            <FaStar />
-          </div>
-
-          <div>
-            <span>Rating</span>
-
-            <div className="doctor-review-rating-box">
-              {renderStars(Number(selectedReview?.rating))}
-            </div>
-
-            <h4>{selectedReview?.rating}/5</h4>
-          </div>
-        </div>
-
-        <div className="doctor-review-summary-card">
-          <div className="doctor-review-summary-icon doctor-review-purple">
-            <FaCheckCircle />
-          </div>
-
-          <div>
-            <span>Status</span>
-
-            <div
-              className={`doctor-review-status-badge ${selectedReview?.status?.toLowerCase()}`}
-            >
-              {selectedReview?.status}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Details Grid */}
-      <div className="doctor-review-detail-grid">
-
-    
-
-      
-        <div className="doctor-review-detail-card">
-          <h3>Doctor Information</h3>
-
-          <div className="doctor-review-detail-row">
-            <span>Doctor Name</span>
-            <p>{selectedReview?.doctor_name}</p>
-          </div>
-
-          <div className="doctor-review-detail-row">
-            <span>Current Status</span>
-
-            <div
-              className={`doctor-review-status-badge ${selectedReview?.status?.toLowerCase()}`}
-            >
-              {selectedReview?.status}
-            </div>
-          </div>
-
-          <div className="doctor-review-detail-row">
-            <span>Action By</span>
-            <p>-</p>
-          </div>
-
-          <div className="doctor-review-detail-row">
-            <span>Action Reason</span>
-            <p>-</p>
-          </div>
-        </div>
-      </div>
-
-    
-      <div className="doctor-review-date-card">
-        <FaCalendarAlt />
-
-        <div>
-          <h4>Review Date & Time</h4>
-          <p>{selectedReview?.created_at}</p>
-        </div>
-      </div>
-
-      {/* Review Message */}
-      <div className="doctor-review-text-card">
-        <h3>Review</h3>
-
-        <div className="doctor-review-message">
-          {selectedReview?.review}
-        </div>
-      </div>
-
-      {/* Images */}
-      <div className="doctor-review-image-card">
-        <h3>
-          <FaImage />
-          &nbsp; Review Images
-        </h3>
-
-        {selectedReview?.images?.length > 0 ? (
-          <div className="doctor-review-images">
-            {selectedReview.images.map((img, index) => (
-              <img
-                key={index}
-                src={img}
-                alt={`review-${index}`}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="doctor-review-no-image">
-            No images attached with this review.
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="doctor-review-modal-footer">
-        <button
-          className="doctor-review-close-btn"
-          onClick={closeReviewModal}
-        >
-          Close
-        </button>
-
-       
-      </div>
-
-    </div>
-  </div>
-)}
+                            <DoctorReviewModal
+  review={selectedReview}
+  onClose={closeReviewModal}
+/>
+           
 {showRejectModal && (
   <div className="modal">
    <form className="customer-form"> 

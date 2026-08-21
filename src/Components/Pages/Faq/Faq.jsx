@@ -478,7 +478,7 @@ const handleUpdateFaq = async (e) => {
 
       setEditFaqErrors({});
 
-      // Refresh FAQ list
+      
       getFaqs();
 
     } else {
@@ -1315,7 +1315,6 @@ const handleDeleteFaq = async (id) => {
       onClick={(e) => e.stopPropagation()}
     >
 
-      {/* CLOSE BUTTON */}
       <button
         className="activeModal-close"
         disabled={deleteLoading}
@@ -1327,17 +1326,17 @@ const handleDeleteFaq = async (id) => {
         ×
       </button>
 
-      {/* ICON */}
+    
       <div className="activeModal-icon">
         ⚠️
       </div>
 
-      {/* TITLE */}
+      
       <h2 className="activeModal-title">
         Confirm FAQ Deletion
       </h2>
 
-      {/* MESSAGE */}
+      
       <p className="activeModal-text">
         Are you sure you want to
         <span className="inactive-text">

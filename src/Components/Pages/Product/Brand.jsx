@@ -434,7 +434,7 @@ const handleDelete = async (id) => {
               <div className="vendors-stats stats2-grid">
                 <div className="stat2-card">
                   <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                  <FaTag size={24} />
+                  <FaTag size={12} />
                   </div>
                   <div className="stat2-info">
                     <h3>Total Brand</h3>
@@ -444,7 +444,7 @@ const handleDelete = async (id) => {
         
                 <div className="stat2-card">
                   <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                    <FaChartLine size={24} />
+                    <FaChartLine size={12} />
                   </div>
                   <div className="stat2-info">
                    <h3>Active Brands</h3>
@@ -454,7 +454,7 @@ const handleDelete = async (id) => {
         
                 <div className="stat2-card">
                   <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                  <FaCalendarAlt size={24} />
+                  <FaCalendarAlt size={12} />
                   </div>
                   <div className="stat2-info">
                <h3>InActive Brands</h3>
@@ -529,8 +529,8 @@ const handleDelete = async (id) => {
                       <img
                         src={item.logo}
                         alt={item.name}
-                        width="50"
-                        height="50"
+                        width="30"
+                        height="30"
                         style={{
                           objectFit: "cover",
                           borderRadius: "6px",

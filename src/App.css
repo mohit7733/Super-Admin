@@ -4939,8 +4939,8 @@ textarea {
 }
 
 .approval-icon-wrapper {
-  width: 130px;
-  height: 130px;
+  width: 70px;
+  height: 70px;
   margin: auto;
   border-radius: 50%;
   background: #ecfdf5;
@@ -4951,20 +4951,19 @@ textarea {
 }
 
 .approval-icon {
-  font-size: 75px;
+  font-size: 50px;
   color: #0D614E;
 }
-
 .confirm-title {
-  margin-top: 25px;
-  font-size: 38px;
+
+  font-size: 25px;
   font-weight: 700;
   color: #111827;
 }
 
 .confirm-description {
-  margin-top: 15px;
-  font-size: 18px;
+  margin-top: 7px;
+  font-size: 14px;
   color: #6b7280;
 }
 
@@ -5028,13 +5027,13 @@ textarea {
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:10px 0;
+  padding:5px 0;
 }
 
 
 
 .vendor-row .label{
-  font-size:14px;
+  font-size:15px;
   color:#6b7280;
   font-weight:600;
 }

@@ -77,7 +77,9 @@ const createEmptyMeal = (dayNumber, index) => {
         notes: "",
       },
     ],
-
+    diet_gallery: [],
+     recipe: "",
+  guidance: "",
     steps: "",
     calories: "",
     carbs: "",
@@ -357,6 +359,101 @@ const updateMealField = (
             [field]: value,
           }
         : meal
+    ),
+  }));
+};
+const handleMealGalleryChange = (
+  dayNumber,
+  mealId,
+  file
+) => {
+  if (!file) return;
+
+  // 5 MB limit
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error("Meal image must be less than 5MB.");
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    toast.error("Please select a valid image.");
+    return;
+  }
+
+  const imageUrl = URL.createObjectURL(file);
+
+  setDayMeals((previousMeals) => ({
+    ...previousMeals,
+
+    [dayNumber]: (previousMeals[dayNumber] || []).map(
+      (meal) =>
+        meal.id === mealId
+          ? {
+              ...meal,
+
+              diet_gallery: [
+                ...(meal.diet_gallery || []),
+                {
+                  file,
+                  image_url: imageUrl,
+                  caption: "",
+                },
+              ],
+            }
+          : meal
+    ),
+  }));
+};
+const removeMealGalleryImage = (
+  dayNumber,
+  mealId,
+  galleryIndex
+) => {
+  setDayMeals((previousMeals) => ({
+    ...previousMeals,
+
+    [dayNumber]: (previousMeals[dayNumber] || []).map(
+      (meal) =>
+        meal.id === mealId
+          ? {
+              ...meal,
+              diet_gallery: (
+                meal.diet_gallery || []
+              ).filter(
+                (_, index) => index !== galleryIndex
+              ),
+            }
+          : meal
+    ),
+  }));
+};
+const updateMealGalleryCaption = (
+  dayNumber,
+  mealId,
+  galleryIndex,
+  value
+) => {
+  setDayMeals((previousMeals) => ({
+    ...previousMeals,
+
+    [dayNumber]: (previousMeals[dayNumber] || []).map(
+      (meal) =>
+        meal.id === mealId
+          ? {
+              ...meal,
+
+              diet_gallery: (
+                meal.diet_gallery || []
+              ).map((image, index) =>
+                index === galleryIndex
+                  ? {
+                      ...image,
+                      caption: value,
+                    }
+                  : image
+              ),
+            }
+          : meal
     ),
   }));
 };
@@ -963,18 +1060,14 @@ Select Disease
   key={`${day}-${meal.id}`}
   meal={meal}
   dayNumber={day}
-
-  onRemove={() =>
-    removeMeal(day, meal.id)
-  }
-
+  onRemove={() => removeMeal(day, meal.id)}
   onAddDietItem={addDietItem}
-
   onRemoveDietItem={removeDietItem}
-
   onUpdateDietItem={updateDietItem}
-
   onUpdateMealField={updateMealField}
+  onMealGalleryChange={handleMealGalleryChange}
+  onRemoveMealGalleryImage={removeMealGalleryImage}
+  onUpdateMealGalleryCaption={updateMealGalleryCaption}
 />
   ))}
 </div>
@@ -1050,9 +1143,7 @@ Select Disease
   </div>
 
   <div className="diet-bottom-row">
-    {/* =================================================
-        DIET PLAN IMAGE
-    ================================================= */}
+    
     <div className="diet-image-section">
       <label className="bottom-field-label">
         Diet Plan Image <span>(Optional)</span>
@@ -1101,9 +1192,6 @@ Select Disease
       )}
     </div>
 
-    {/* =================================================
-        STATUS
-    ================================================= */}
     <div className="status-section">
       <label className="bottom-field-label">
         Status
@@ -1129,7 +1217,7 @@ Select Disease
           <span>Active</span>
         </button>
 
-        {/* INACTIVE */}
+      
         <button
           type="button"
           className={`status-option ${
@@ -1185,9 +1273,7 @@ Select Disease
   );
 }
 
-/* =========================================================
-   SECTION TITLE
-========================================================= */
+
 
 function SectionTitle({
   icon,
@@ -1217,9 +1303,7 @@ function SectionTitle({
   );
 }
 
-/* =========================================================
-   MEAL CARD
-========================================================= */
+
 
 function MealCard({
   meal,
@@ -1229,6 +1313,9 @@ function MealCard({
   onRemoveDietItem,
   onUpdateDietItem,
   onUpdateMealField,
+  onMealGalleryChange,
+  onRemoveMealGalleryImage,
+  onUpdateMealGalleryCaption,
 }) {
   const Icon = meal.icon;
 
@@ -1236,7 +1323,7 @@ function MealCard({
     <article
       className={`meal-card ${meal.tone}`}
     >
-      {/* MEAL HEADER */}
+     
 
       <div className="meal-card-header">
         <div className="meal-type">
@@ -1255,7 +1342,7 @@ function MealCard({
         </button>
       </div>
 
-      {/* DIET / FOOD ITEMS */}
+    
 
       <div className="diet-items-section">
         <div className="field-section-header">
@@ -1371,8 +1458,6 @@ function MealCard({
         </button>
       </div>
 
-      {/* PREPARATION STEPS */}
-
       <label className="preparation-field">
         Preparation Steps
 
@@ -1390,7 +1475,104 @@ function MealCard({
         />
       </label>
 
-      {/* NUTRITION */}
+<div className="meal-gallery-section">
+
+  <div className="meal-gallery-header">
+    <div>
+      <strong>Meal Gallery</strong>
+      <small>
+        Add images for this meal
+      </small>
+    </div>
+
+    <label className="meal-gallery-upload">
+      <UploadCloud size={14} />
+      Add Image
+
+      <input
+        type="file"
+        accept=".png,.jpg,.jpeg,.webp"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+
+          if (file) {
+            onMealGalleryChange(
+              dayNumber,
+              meal.id,
+              file
+            );
+          }
+
+          e.target.value = "";
+        }}
+      />
+    </label>
+  </div>
+
+  {(meal.diet_gallery || []).length > 0 && (
+    <div className="meal-gallery-list">
+
+      {(meal.diet_gallery || []).map(
+        (image, index) => (
+          <div
+            className="meal-gallery-item"
+            key={`${meal.id}-gallery-${index}`}
+          >
+
+            <div className="meal-gallery-preview">
+
+              <img
+                src={image.image_url}
+                alt={`${meal.name} ${index + 1}`}
+              />
+
+              <button
+                type="button"
+                className="meal-gallery-remove"
+                onClick={() =>
+                  onRemoveMealGalleryImage(
+                    dayNumber,
+                    meal.id,
+                    index
+                  )
+                }
+              >
+                <X size={13} />
+              </button>
+
+            </div>
+
+            <input
+              type="text"
+              placeholder="Image caption"
+              value={image.caption || ""}
+              onChange={(e) =>
+                onUpdateMealGalleryCaption(
+                  dayNumber,
+                  meal.id,
+                  index,
+                  e.target.value
+                )
+              }
+            />
+
+          </div>
+        )
+      )}
+
+    </div>
+  )}
+
+
+  {(meal.diet_gallery || []).length === 0 && (
+    <div className="meal-gallery-empty">
+      No meal image added
+    </div>
+  )}
+
+
+</div>
+    
 
       <div className="nutrition">
         <span>Nutrition Information</span>
@@ -1469,6 +1651,8 @@ function MealCard({
           </label>
         </div>
       </div>
+     
+
     </article>
   );
 }
