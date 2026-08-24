@@ -16,6 +16,8 @@ import {
 } from "react-icons/fa";
 
 import "./Review.css"
+import ReviewsModal from './ReviewsModal';
+// import ReviewsModal from './ReviewsModal';
 
 
 const Review = () => {
@@ -207,167 +209,14 @@ const renderStars = (rating) => {
                 
                       </div>  
 
-                      {reviewModal && (
-  <div className="review-modal-overlay">
-    <div className="review-modal">
-
-      <div className="review-modal-header">
-        <div className="review-modal-title">
-          <FaBoxOpen />
-          <h2>Review Details</h2>
-        </div>
-
-        <button
-          className="review-close-btn"
-          onClick={() => setReviewModal(false)}
-        >
-          <FaTimes />
-        </button>
-      </div>
-
-     
-     <div className="review-product-card">
-
-  <div className="review-product-left">
-    <img
-      src={selectedReview?.variant_image_urls?.[0]}
-      alt={selectedReview?.product_name}
-      className="review-product-image"
-    />
-
-    <div className="review-product-content">
-      <span className="review-product-tag">
-        Product
-      </span>
-
-      <h3>{selectedReview?.product_name}</h3>
-
-     
-    </div>
-  </div>
-
-  <div className="review-product-gallery-box">
-    <h4>
-      Product Gallery (
-      {selectedReview?.variant_image_urls?.length || 0}
-      )
-    </h4>
-
-    <div className="review-product-gallery">
-      {selectedReview?.variant_image_urls?.map((img, index) => (
-        <div
-          key={index}
-          className="review-gallery-item"
-        >
-          <img
-            src={img}
-            alt={`product-${index}`}
-          />
-        </div>
-      ))}
-    </div>
-  </div>
-
-</div>
-
-   
-
-      <div className="review-info-section">
-
-        <div className="review-info-box">
-          <FaUser />
-          <div>
-            <label>Patient</label>
-            <span>
-              {selectedReview?.patient_name}
-            </span>
-          </div>
-        </div>
-
-        <div className="review-info-box">
-          <FaStar />
-          <div>
-            <label>Rating</label>
-            <span>
-              {selectedReview?.rating}/5
-            </span>
-          </div>
-        </div>
-
-        <div className="review-info-box">
-          <FaCheckCircle />
-          <div>
-            <label>Status</label>
-            <span className="review-status-active">
-              {selectedReview?.status}
-            </span>
-          </div>
-        </div>
-
-        <div className="review-info-box">
-          <FaCalendarAlt />
-          <div>
-            <label>Date</label>
-            <span>
-              {new Date(
-                selectedReview?.created_at
-              ).toLocaleDateString()}
-            </span>
-          </div>
-        </div>
-
-      </div>
-
-
-
-      <div className="review-comment-card">
-        <h4>Review Comment</h4>
-
-        <p>
-          {selectedReview?.review}
-        </p>
-      </div>
-
-   
-
-      <div className="review-gallery-card">
-
-        <h4>
-          <FaImage />
-          Review Photos
-        </h4>
-
-        <div className="review-gallery-grid">
-
-          {selectedReview?.image_urls?.map(
-            (img, index) => (
-              <img
-                key={index}
-                src={img}
-                alt=""
-                className="review-gallery-image"
-              />
-            )
-          )}
-
-        </div>
-      </div>
-      <div className="review-modal-footer">
-  <button
-    className="review-footer-close-btn"
-    onClick={() => {
+     {reviewModal && selectedReview && (
+  <ReviewsModal
+    review={selectedReview}
+    onClose={() => {
       setReviewModal(false);
       setSelectedReview(null);
     }}
-  >
-    <FaTimes />
-    <span>Close</span>
-  </button>
-</div>
-
-    </div>
-    
-  </div>
+  />
 )}
 
     </>

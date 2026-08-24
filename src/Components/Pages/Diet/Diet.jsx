@@ -1259,28 +1259,7 @@ const Diet = () => {
 
                         <div className="faq-actions">
 
-                          {/* EDIT */}
-
-                          <button
-                            type="button"
-                            className="faq-action-btn faq-edit-btn"
-                            title="Edit Diet Plan"
-
-                            onClick={() =>
-                              handleEditDiet(
-                                item
-                              )
-                            }
-                          >
-
-                            <FaEdit
-                              size={12}
-                            />
-
-                          </button>
-
-
-                          {/* DELETE */}
+                        
 
                           <button
                             type="button"
@@ -1558,9 +1537,9 @@ const Diet = () => {
             }
           >
 
-            {/* HEADER */}
+           
 
-            <div className="edit-modal-header">
+            <div className="">
 
               <div>
 

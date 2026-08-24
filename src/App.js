@@ -79,6 +79,7 @@ import Unicommerece from './Components/Pages/Unicomerece/Unicommerece';
 import AddDiet from './Components/Pages/Diet/AddDiet';
 import Faq from './Components/Pages/Faq/Faq';
 import BulkUpload from './Components/Pages/Product/BulkUpload';
+import PatientHistory from './Components/Pages/Doctor/PatientHistory';
 
 
 
@@ -234,6 +235,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+ <Route
+  path="/PatientHistory/:consultationId"
+  element={
+    <ProtectedRoute permission="view_patient_history">
+      <Layout>
+        <PatientHistory />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
   <Route
           path="/ActiveOrder"
           element={

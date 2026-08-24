@@ -40,7 +40,7 @@ const BulkUploadProducts = () => {
   const [galleryDragging, setGalleryDragging] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(null);
 
-  const MAX_FILE_SIZE = 15 * 1024 * 1024;
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
   const GALLERY_DIR = "product_gallery";
 
@@ -60,7 +60,7 @@ const BulkUploadProducts = () => {
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      toast.error("File size must be less than 15 MB.");
+      toast.error("File size must be less than 5 MB.");
       return false;
     }
 
@@ -177,7 +177,7 @@ const uploadGalleryImage = async (file) => {
   }
 
   if (file.size > MAX_FILE_SIZE) {
-    toast.error("Image size must be less than 15 MB.");
+    toast.error("Image size must be less than 5 MB.");
     return null;
   }
 
@@ -285,9 +285,6 @@ const uploadGalleryImage = async (file) => {
   }
 };
 
-  /* =========================
-     GALLERY FILE SELECT
-  ========================= */
 
   const handleGalleryChange = (e) => {
     const files = Array.from(e.target.files || []);
@@ -299,10 +296,7 @@ const uploadGalleryImage = async (file) => {
     e.target.value = "";
   };
 
-  /* =========================
-     GALLERY DRAG & DROP
-  ========================= */
-
+ 
   const handleGalleryDragOver = (e) => {
     e.preventDefault();
     setGalleryDragging(true);
@@ -348,14 +342,6 @@ const uploadGalleryImage = async (file) => {
 
  
 
-  const setCoverImage = (id) => {
-    setGalleryImages((prev) =>
-      prev.map((image) => ({
-        ...image,
-        is_cover: image.id === id,
-      }))
-    );
-  };
 
 
   const copyGalleryUrl = async (url, id) => {
@@ -374,9 +360,7 @@ const uploadGalleryImage = async (file) => {
     }
   };
 
-  /* =========================
-     FORMAT FILE SIZE
-  ========================= */
+ 
 
   const formatFileSize = (bytes) => {
     if (!bytes) return "0 KB";
@@ -388,68 +372,70 @@ const uploadGalleryImage = async (file) => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  /* =========================
-     EXCEL UPLOAD
-  ========================= */
+  
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      toast.error("Please select an Excel file first.");
+const handleUpload = async () => {
+  if (!selectedFile) {
+    toast.error("Please select an Excel file first.");
+    return;
+  }
+
+  try {
+    setIsUploading(true);
+
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Authentication token not found. Please login again.");
       return;
     }
 
-    try {
-      setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", selectedFile);
 
-      const formData = new FormData();
-
-      formData.append("file", selectedFile);
-
-      const response = await fetch(
-        `${BASE_URL}/products/admin/bulk-upload/`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data?.message ||
-            "Unable to upload products."
-        );
+    const response = await fetch(
+      `${BASE_URL}/vendors/product/bulk-upload/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
       }
+    );
 
-      toast.success(
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
         data?.message ||
-          "Products uploaded successfully."
+          data?.detail ||
+          "Unable to upload products."
       );
-
-      setSelectedFile(null);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (error) {
-      console.error(
-        "Bulk upload error:",
-        error
-      );
-
-      toast.error(
-        error?.message ||
-          "Something went wrong while uploading."
-      );
-    } finally {
-      setIsUploading(false);
     }
-  };
 
-  /* =========================
-     BACK
-  ========================= */
+    toast.success(
+      data?.message || "Products uploaded successfully."
+    );
+
+    setSelectedFile(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  } catch (error) {
+    console.error("Bulk upload error:", error);
+
+    toast.error(
+      error?.message ||
+        "Something went wrong while uploading."
+    );
+  } finally {
+    setIsUploading(false);
+  }
+};
+
+  
 
   const handleBack = () => {
     window.history.back();
@@ -466,9 +452,7 @@ const uploadGalleryImage = async (file) => {
 
       <div className="bulk-upload-container">
 
-        {/* =========================
-            HEADER
-        ========================= */}
+      
 
         <div className="bulk-page-header">
 
@@ -494,21 +478,15 @@ const uploadGalleryImage = async (file) => {
 
         </div>
 
-        {/* =========================
-            CONTENT GRID
-        ========================= */}
+       
 
         <div className="bulk-content-grid">
 
-          {/* =========================
-              LEFT COLUMN
-          ========================= */}
+          
 
           <div className="bulk-left-column">
 
-            {/* =========================
-                EXCEL UPLOAD CARD
-            ========================= */}
+           
 
             <div className="upload-card">
 
@@ -529,7 +507,7 @@ const uploadGalleryImage = async (file) => {
 
               </div>
 
-              {/* DROP ZONE */}
+           
 
               <div
                 className={`excel-drop-zone ${
@@ -608,8 +586,7 @@ const uploadGalleryImage = async (file) => {
                 </div>
               )}
 
-              {/* ACTIONS */}
-
+            
               <div className="upload-actions">
 
                 <button
@@ -644,9 +621,6 @@ const uploadGalleryImage = async (file) => {
 
             </div>
 
-            {/* =================================================
-                GALLERY IMAGE UPLOAD CARD
-            ================================================= */}
 
             <div className="upload-card gallery-upload-card">
 
@@ -667,7 +641,7 @@ const uploadGalleryImage = async (file) => {
 
               </div>
 
-              {/* GALLERY DROP ZONE */}
+             
 
               <div
                 className={`excel-drop-zone gallery-drop-zone ${
@@ -705,12 +679,12 @@ const uploadGalleryImage = async (file) => {
                 </p>
 
                 <span className="accepted-files">
-                  JPG, JPEG, PNG, WEBP • Max 15 MB
+                  JPG, JPEG, PNG, WEBP • Max 5 MB
                 </span>
 
               </div>
 
-              {/* UPLOADING MESSAGE */}
+             
 
               {isGalleryUploading && (
                 <div className="gallery-uploading">
@@ -721,7 +695,7 @@ const uploadGalleryImage = async (file) => {
                 </div>
               )}
 
-              {/* GALLERY IMAGES */}
+           
 
               {galleryImages.length > 0 && (
                 <div className="gallery-images-list">
@@ -749,7 +723,7 @@ const uploadGalleryImage = async (file) => {
                       key={image.id}
                     >
 
-                      {/* IMAGE */}
+                      
 
                       <div className="gallery-preview">
 
@@ -758,11 +732,11 @@ const uploadGalleryImage = async (file) => {
                           alt={image.name}
                         />
 
-                        {image.is_cover && (
+                        {/* {image.is_cover && (
                           <span className="cover-badge">
                             Cover
                           </span>
-                        )}
+                        )} */}
 
                       </div>
 
@@ -821,19 +795,7 @@ const uploadGalleryImage = async (file) => {
 
                         <div className="gallery-item-actions">
 
-                          {!image.is_cover && (
-                            <button
-                              type="button"
-                              className="set-cover-btn"
-                              onClick={() =>
-                                setCoverImage(
-                                  image.id
-                                )
-                              }
-                            >
-                              Set as Cover
-                            </button>
-                          )}
+                         
 
                           <button
                             type="button"

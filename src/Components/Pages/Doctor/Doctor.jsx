@@ -83,7 +83,7 @@ const Doctor = () => {
   const [previewImage, setPreviewImage] = useState("");
   const [ImageModal, setImageModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  const pagesize = 5;
+  const pagesize =10;
   const [totalCount, setTotalCount] = useState(0);
   const totalPages = Math.ceil(totalCount / pagesize);
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -101,6 +101,7 @@ const Doctor = () => {
   suspended: 0,
   rejected: 0,
 });
+const searchDebounceRef = useRef(null);
 
 
 
@@ -281,56 +282,86 @@ const submitRejection = async (e) => {
   setRejectionDoctorModal(true);
 };
 
-  const getdoctorlist = async (page = 1) => {
-    
-    const token = sessionStorage.getItem("superadmin_token");
-   
-       if (!token) {
-         toast.error("Session expired. Please login again");
-         navigate("/login");
-         return;
-       }
-   
-       setLoading(true);
-   
-       try {
-         const response = await fetch(
-            `${BASE_URL}/doctors/admin/doctors-list/?page=${page}`,
-           {
-             method: "GET",
-             headers: {
-               Accept: "application/json",
-               "Content-Type": "application/json",
-               Authorization: `Bearer ${token}`,
-               "ngrok-skip-browser-warning": "true",
-             },
-           }
-         );
-   
-         if (response.status === 401 || response.status === 403) {
-           sessionStorage.removeItem("superadmin_token");
-           toast.error("Session expired. Please login again");
-           navigate("/login");
-           return;
-         }
+  const getdoctorlist = async (
+  page = 1,
+  searchValue = doctorsearch,
+  statusValue = statusFilter
+) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-      const data = await response.json();
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
 
-      setDoctorData(data.data.results);
-      setTotalCount(data.data.count);
-      setCurrentPage(page);
-      setNextpage(data.data.next);
-      setPreviousPage(data.data.previous);
-        setdoctorStats(data.data.total_counts);
+  setLoading(true);
 
-    } catch (err) {
-      console.error(err.message);
-      setError("Something went wrong while fetching data.");
-      toast.error("Failed to fetch Doctor Data");
-    } finally {
-      setLoading(false);
+  try {
+    const queryParams = new URLSearchParams();
+
+    queryParams.append("page", page.toString());
+
+   
+    if (searchValue?.trim()) {
+      queryParams.append("search", searchValue.trim());
     }
-  };
+
+   
+    if (statusValue && statusValue !== "All") {
+      queryParams.append("status", statusValue);
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/doctors/admin/doctors-list/?${queryParams.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data?.message || "Failed to fetch doctors");
+    }
+
+    setDoctorData(data?.data?.results || []);
+    setTotalCount(data?.data?.count || 0);
+    setCurrentPage(page);
+
+    setNextpage(data?.data?.next || null);
+    setPreviousPage(data?.data?.previous || null);
+
+    setdoctorStats(
+      data?.data?.total_counts || {
+        doctors: 0,
+        approved: 0,
+        pending: 0,
+        rejected: 0,
+        suspended: 0,
+      }
+    );
+  } catch (err) {
+    console.error("Doctor list error:", err);
+    setError("Something went wrong while fetching data.");
+    toast.error("Failed to fetch Doctor Data");
+  } finally {
+    setLoading(false);
+  }
+};
   const handleDieticianToggle = async (doctor) => {
   const token = sessionStorage.getItem("superadmin_token");
 
@@ -399,11 +430,25 @@ const submitRejection = async (e) => {
     );
   }
 };
- useEffect(()=>{
-  getdoctorlist();
- },
- []
-)
+
+useEffect(() => {
+  getdoctorlist(1, "", "All");
+}, []);
+
+useEffect(() => {
+  if (searchDebounceRef.current) {
+    clearTimeout(searchDebounceRef.current);
+  }
+
+  searchDebounceRef.current = setTimeout(() => {
+    setCurrentPage(1);
+    getdoctorlist(1, doctorsearch, statusFilter);
+  }, 500);
+
+  return () => {
+    clearTimeout(searchDebounceRef.current);
+  };
+}, [doctorsearch]);
 const modalRef = useRef(null);
 const filterDoctors = () => {
   let filtered = [...allDoctorData];
@@ -529,7 +574,7 @@ const filterDoctors = () => {
       <div className="vendors-stats stats2-grid">
         <div className="stat2-card">
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={12} />
           </div>
           <div className="stat2-info">
             <h3>Total Doctors</h3>
@@ -539,7 +584,7 @@ const filterDoctors = () => {
 
         <div className="stat2-card">
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={12} />
           </div>
           <div className="stat2-info">
             <h3>Approved Doctors</h3>
@@ -549,7 +594,7 @@ const filterDoctors = () => {
 
         <div className="stat2-card">
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={12} />
           </div>
           <div className="stat2-info">
             <h3>Pending Approval</h3>
@@ -559,7 +604,7 @@ const filterDoctors = () => {
 
         <div className="stat2-card">
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={12} />
           </div>
           <div className="stat2-info">
             <h3>Rejected Doctors</h3>
@@ -573,7 +618,7 @@ const filterDoctors = () => {
           <BsSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Search doctor by name or specialization..."
+            placeholder="Search doctor by email,phone Number..."
             value={doctorsearch}
             onChange={(e) => setDoctorsearch(e.target.value)}
             className="search-input"
@@ -581,16 +626,26 @@ const filterDoctors = () => {
         </div>
 
         <div className="action-buttons">
-          <select className="status-filter" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="All">All Status</option>
-            <option value="pending">pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected"> Rejected</option>
-            <option value="suspended"> Suspended</option>
+        <select
+  className="status-filter"
+  value={statusFilter}
+  onChange={(e) => {
+    const newStatus = e.target.value;
 
-          </select>
+    setStatusFilter(newStatus);
+    setCurrentPage(1);
 
-          <select
+    getdoctorlist(1, doctorsearch, newStatus);
+  }}
+>
+  <option value="All">All Status</option>
+  <option value="pending">Pending</option>
+  <option value="approved">Approved</option>
+  <option value="rejected">Rejected</option>
+  <option value="suspended">Suspended</option>
+</select>
+
+          {/* <select
             value={specializationfilter}
             onChange={(e) => setSpecilizationfilter(e.target.value)}
             className="status-filter"
@@ -601,7 +656,7 @@ const filterDoctors = () => {
                 {s.name}
               </option>
             ))}
-          </select>
+          </select> */}
 
           {/* <button className="btn-primary" onClick={() => setDoctorModal(true)}>
             <BsPlus size={18} />
@@ -820,43 +875,64 @@ const filterDoctors = () => {
         </table>
 
 
-        {totalPages > 1 && (
-          <div className="pagination">
+  {totalPages > 1 && (
+  <div className="pagination">
 
+    <button
+      onClick={() =>
+        getdoctorlist(
+          currentpage - 1,
+          doctorsearch,
+          statusFilter
+        )
+      }
+      disabled={!previousPage}
+    >
+      Prev
+    </button>
 
-            <button
-             onClick={() => getdoctorlist(currentpage - 1)}
-              disabled={!previousPage}
-            >
-              Prev
-            </button>
+    {pages.map((page) => (
+      <button
+        key={page}
+        onClick={() =>
+          getdoctorlist(
+            page,
+            doctorsearch,
+            statusFilter
+          )
+        }
+        style={{
+          fontWeight:
+            currentpage === page ? "bold" : "normal",
+          background:
+            currentpage === page
+              ? "#0D614E"
+              : "#fff",
+          color:
+            currentpage === page
+              ? "#fff"
+              : "#0D614E",
+        }}
+      >
+        {page}
+      </button>
+    ))}
 
+    <button
+      onClick={() =>
+        getdoctorlist(
+          currentpage + 1,
+          doctorsearch,
+          statusFilter
+        )
+      }
+      disabled={!Nextpage}
+    >
+      Next
+    </button>
 
-            {pages.map((page) => (
-              <button
-                key={page}
-                onClick={() => getdoctorlist(page)}
-                style={{
-
-                  fontWeight: currentpage === page ? "bold" : "normal",
-                  background: currentpage === page ? "#0D614E" : "#fff",
-                  color: currentpage === page ? "#fff" : "#0D614E",
-                }}
-              >
-                {page}
-              </button>
-            ))}
-
-
-            <button
-              onClick={() => getdoctorlist(currentpage + 1)}
-              disabled={!Nextpage}
-            >
-              Next
-            </button>
-
-          </div>
-        )}
+  </div>
+)}
 
       </div>
 

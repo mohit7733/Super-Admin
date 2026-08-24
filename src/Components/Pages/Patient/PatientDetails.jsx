@@ -326,219 +326,323 @@ useEffect(() => {
     <div className="patient-page">
       
 
-      <div className="patient-header-card">
-        <div className="patient-left">
-            <div className="avatar-section">
-              <div className="avatar-wrapper">
-             {patient?.profile_picture ? (
-  <img
-    src={patient.profile_picture}
-    alt="patient"
-    className="avatar-img"
-  />
-) : (
-  <div className="avatar-placeholder">
-    {patient?.first_name?.charAt(0)?.toUpperCase()}
-    {patient?.last_name?.charAt(0)?.toUpperCase()}
-  </div>
-)}
+   <div className="patient-header-card">
 
-              </div>
-          
-            </div>
+  {/* ================= LEFT ================= */}
+  <div className="patient-left">
 
-          <div className="patient-info">
-           
-            <h2>
-           <h2>
-  {patient?.first_name} {patient?.last_name}
-</h2>
-            </h2>
-
-          <h4>Date of Birth</h4>
-                <p>
-               <p>
-  {patient?.dob
-    ? new Date(patient.dob).toLocaleDateString("en-GB")
-    : "N/A"}
-</p>
-                </p>
-
-            <div className="patient-meta">
-              <span>
-                <FiPhone />
-          {patient?.phone_number || "N/A"}
-              </span>
-
-              <span>
-                <FiCalendar />
-                Joined:
-                {new Date(patient.created_at).toLocaleDateString("en-GB")}
-              </span>
-            </div>
-          </div>
+    <div className="avatar-wrapper">
+      {patient?.profile_picture ? (
+        <img
+          src={patient.profile_picture}
+          alt="patient"
+          className="avatar-img"
+        />
+      ) : (
+        <div className="avatar-placeholder">
+          {patient?.first_name?.charAt(0)?.toUpperCase() || "P"}
+          {patient?.last_name?.charAt(0)?.toUpperCase()}
         </div>
-
-        <div className="patient-right">
-          <div className="action-icons">
-          
-
-          
-
-           
-          </div>
-
-          
-        </div>
-      </div>
-
-     <div className="info-grid">
-
-  {/* About Patient */}
-  <div className="patientinfo-card">
-    <div className="card-header">
-      <h3>About Patient</h3>
+      )}
     </div>
 
-    <div className="patient-info-grid">
+    <div className="patient-info">
 
-      <div className="patient-info-item">
-        <div className="item-icon">
+      {/* NAME */}
+      <div className="patient-name-row">
+
+        <h2>
+          {patient?.first_name || "N/A"}{" "}
+          {patient?.last_name || ""}
+        </h2>
+
+        <span
+          className={
+            patient?.is_active
+              ? "status-active"
+              : "status-inactive"
+          }
+        >
+          <span className="status-dot"></span>
+          {patient?.is_active ? "Active" : "Inactive"}
+        </span>
+
+      </div>
+
+
+     
+      <div className="patient-basic-info">
+
+        <div className="basic-item">
+          <div className="basic-icon">
+            <FiCalendar />
+          </div>
+
+          <div>
+            <span className="basic-label">
+              Date of Birth:
+            </span>
+
+            <span className="basic-value">
+              {patient?.dob
+                ? new Date(patient.dob).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "N/A"}
+            </span>
+          </div>
+        </div>
+
+
+        <div className="basic-item">
+          <div className="basic-icon">
+            <FiUser />
+          </div>
+
+          <div>
+            <span className="basic-label">
+              Gender:
+            </span>
+
+            <span className="basic-value">
+              {patient?.gender
+                ? patient.gender.charAt(0).toUpperCase() +
+                  patient.gender.slice(1)
+                : "N/A"}
+            </span>
+          </div>
+        </div>
+
+
+        <div className="basic-item">
+          <div className="basic-icon">
+            <FiDroplet />
+          </div>
+
+          <div>
+            <span className="basic-label">
+              Blood Group:
+            </span>
+
+            <span className="basic-value">
+              {patient?.blood_group || "N/A"}
+            </span>
+          </div>
+        </div>
+
+
+        <div className="basic-item">
+          <div className="basic-icon">
+            <FaUsers />
+          </div>
+
+          <div>
+            <span className="basic-label">
+              Relation:
+            </span>
+
+            <span className="basic-value">
+              {patient?.relation
+                ? patient.relation.charAt(0).toUpperCase() +
+                  patient.relation.slice(1)
+                : "N/A"}
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+
+      <div className="patient-meta">
+
+        <span>
+          <FiPhone />
+          {patient?.phone_number || "N/A"}
+        </span>
+
+        <span>
           <FiCalendar />
-        </div>
-        <div className="item-content">
-          <h4>DOB</h4>
-          <p>{new Date(patient.dob).toLocaleDateString("en-GB")}</p>
-        </div>
+
+          Joined{" "}
+
+          {patient?.created_at
+            ? new Date(patient.created_at).toLocaleDateString(
+                "en-GB",
+                {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                }
+              )
+            : "N/A"}
+        </span>
+
       </div>
 
-      <div className="patient-info-item">
-        <div className="item-icon">
-          <FiDroplet />
-        </div>
-        <div className="item-content">
-          <h4>Blood Group</h4>
-          <p>{patient.blood_group || "N/A"}</p>
-        </div>
-      </div>
-
-      <div className="patient-info-item">
-        <div className="item-icon">
-          <FiUser />
-        </div>
-        <div className="item-content">
-          <h4>Gender</h4>
-          <p>{patient.gender}</p>
-        </div>
-      </div>
-
-     <div className="patient-info-item">
-  <div className="item-icon">
-    <FiPhone />
+    </div>
   </div>
-  <div className="item-content">
-    <h4>Phone Number</h4>
-    <p>{patient.phone_number}</p>
-  </div>
+
+
+
+  <div className="patient-right">
+
+    <div className="right-info">
+
+    
+      <div className="right-info-item">
+
+        <div className="right-icon">
+          <FiActivity />
+        </div>
+
+        <div>
+          <span>Height</span>
+
+          <strong>
+            {patient?.height
+              ? `${patient.height} cm`
+              : "N/A"}
+          </strong>
+        </div>
+
+      </div>
+
+
+
+      <div className="right-info-item">
+
+        <div className="right-icon">
+          <FiActivity />
+        </div>
+
+        <div>
+          <span>Weight</span>
+
+          <strong>
+            {patient?.weight
+              ? `${patient.weight} kg`
+              : "N/A"}
+          </strong>
+        </div>
+
+      </div>
+
+
+      
+      <div className="right-info-item">
+
+        <div className="right-icon">
+          <FiPhone />
+        </div>
+
+        <div>
+          <span>Account Phone :</span>
+
+          <strong>
+            {patient?.account_phone || "N/A"}
+          </strong>
+        </div>
+
+      </div>
+
+
+      
+      <div className="right-info-item">
+
+        <div className="right-icon">
+          <FiCheckCircle />
+        </div>
+
+        <div>
+          <span>Profile Status</span>
+
+          <strong
+            className={
+              patient?.is_active_profile
+                ? "text-active"
+                : "text-inactive"
+            }
+          >
+            {patient?.is_active_profile
+              ? "Active"
+              : "Inactive"}
+          </strong>
+        </div>
+
+      </div>
+
+
+     
+      <div className="right-info-item">
+
+        <div className="right-icon">
+          <FiCheckCircle />
+        </div>
+
+        <div>
+          <span>Insurance Provider</span>
+
+          <strong>
+            {patient?.insurance_provider || "N/A"}
+          </strong>
+        </div>
+
+      </div>
+
 
    
-</div>
+      <div className="right-info-item">
 
-<div className="patient-info-item">
-  <div className="item-icon">
-    <FiMapPin />
-  </div>
-  <div className="item-content">
-    <h4>Address</h4>
-    <p>{patient.address}</p>
-  </div>
-</div>
-
-<div className="patient-info-item">
-  <div className="item-icon">
-    <FiMail />
-  </div>
-  <div className="item-content">
-    <h4>Email Address</h4>
- <p>{patient?.email || "N/A"}</p>
-  </div>
-</div>
-    </div>
-  </div>
-
- 
-  <div className="patientinfo-card">
-    <div className="card-header">
-      <h3>Profile Information</h3>
-    </div>
-
-    <div className="patient-info-grid">
-
-      <div className="patient-info-item">
-        <div className="item-icon">
-          <FiActivity />
+        <div className="right-icon">
+          <FiMail />
         </div>
-        <div className="item-content">
-          <h4>Height</h4>
-          <p>{patient.height || "N/A"}</p>
+
+        <div>
+          <span>Policy Number</span>
+
+          <strong>
+            {patient?.insurance_policy_number || "N/A"}
+          </strong>
         </div>
+
       </div>
 
-      <div className="patient-info-item">
-        <div className="item-icon">
-          <FiActivity />
-        </div>
-        <div className="item-content">
-          <h4>Weight</h4>
-          <p>{patient.weight || "N/A"}</p>
-        </div>
-      </div>
 
-      <div className="patient-info-item">
-        <div className="item-icon">
-          <FiActivity />
-        </div>
-        <div className="item-content">
-          <h4>Insurance Provider</h4>
-          <p>{patient.insurance_provider || "N/A"}</p>
-        </div>
-      </div>
+     
+      <div className="right-info-item">
 
-      <div className="patient-info-item">
-        <div className="item-icon">
-          <FiActivity />
-        </div>
-        <div className="item-content">
-          <h4>Policy Number</h4>
-          <p>{patient.insurance_policy_number || "N/A"}</p>
-        </div>
-      </div>
-
-      <div className="patient-info-item">
-        <div className="item-icon">
+        <div className="right-icon">
           <FiCalendar />
         </div>
-        <div className="item-content">
-          <h4>Valid Thru</h4>
-          <p>{patient.insurance_valid_thru || "N/A"}</p>
-        </div>
-      </div>
 
-      <div className="patient-info-item">
-        <div className="item-icon">
-          <FiActivity />
+        <div>
+          <span>Policy Valid Thru</span>
+
+          <strong>
+            {patient?.insurance_valid_thru
+              ? new Date(
+                  patient.insurance_valid_thru
+                ).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "N/A"}
+          </strong>
+
         </div>
-        <div className="item-content">
-          <h4>Status</h4>
-          <p>{patient.is_active ? "Active" : "Inactive"}</p>
-        </div>
+
       </div>
 
     </div>
+
   </div>
 
 </div>
 
+   
   <div className="tabs">
 
         
@@ -601,7 +705,7 @@ useEffect(() => {
  
  
                <div className="vendors-stats stats2-grid">
-              {/* Total Appointment */}
+             
               <div className="stat2-card">
                 <div
                   className="stat2-icon"
@@ -615,7 +719,7 @@ useEffect(() => {
                 </div>
               </div>
             
-              {/* Confirmed */}
+             
               <div className="stat2-card">
                 <div
                   className="stat2-icon"
@@ -629,16 +733,13 @@ useEffect(() => {
                 </div>
               </div>
             
-              {/* Cancelled */}
-              
-            
-              {/* Rescheduled */}
+             
               <div className="stat2-card">
                 <div
                   className="stat2-icon"
               style={{ background: "#0D614E20", color: "#0D614E" }}
                 >
-                  <FaSyncAlt size={24} />
+                  <FaSyncAlt size={12} />
                 </div>
                 <div className="stat2-info">
                   <h3>Rescheduled</h3>
@@ -650,7 +751,7 @@ useEffect(() => {
                   className="stat2-icon"
                  style={{ background: "#0D614E20", color: "#0D614E" }}
                 >
-                  <FaUserClock size={24} />
+                  <FaUserClock size={12} />
                 </div>
                 <div className="stat2-info">
                   <h3>Patient Reschedule</h3>
@@ -664,7 +765,7 @@ useEffect(() => {
                   className="stat2-icon"
                   style={{ background: "#0D614E20", color: "#0D614E" }}
                 >
-                  <FaExclamationTriangle size={24} />
+                  <FaExclamationTriangle size={12} />
                 </div>
                 <div className="stat2-info">
                   <h3>Missed</h3>

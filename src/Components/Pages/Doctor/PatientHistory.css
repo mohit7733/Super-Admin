@@ -1,0 +1,1776 @@
+
+
+.patient-history-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: none;
+  background: transparent;
+
+  color: #0d614e;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  padding: 6px 0;
+  margin-bottom: 18px;
+
+  transition: color 0.2s ease;
+}
+
+.patient-history-back:hover {
+  color: #07805f;
+}
+
+.patient-history-back svg {
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   PATIENT HEADER
+   ========================================================= */
+
+.patient-history-header {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 25px;
+  padding: 24px;
+
+  background: #ffffff;
+  border: 1px solid #e1e8e5;
+  border-radius: 18px;
+
+  box-shadow: 0 4px 16px rgba(13, 97, 78, 0.05);
+
+  box-sizing: border-box;
+}
+
+.patient-profile-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  min-width: 0;
+}
+
+.patient-history-avatar {
+  width: 76px;
+  height: 76px;
+  min-width: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  border: 2px solid #c9ebe1;
+
+  background: #e8f5f1;
+  color: #0d614e;
+
+  font-size: 25px;
+  font-weight: 700;
+
+  overflow: hidden;
+}
+
+.patient-history-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.patient-header-content {
+  min-width: 0;
+}
+
+.patient-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 12px;
+}
+
+.patient-name-row h1 {
+  margin: 0;
+
+  color: #102a43;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.patient-completed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 11px;
+
+  border-radius: 20px;
+  background: #eaf8f3;
+  color: #07805f;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.patient-id {
+  margin: 6px 0 12px;
+
+  color: #7b8794;
+  font-size: 13px;
+}
+
+.patient-basic-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 18px;
+}
+
+.patient-basic-info span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #52677d;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.patient-basic-info svg {
+  color: #0d9f7d;
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   CURRENT CONSULTATION
+   ========================================================= */
+
+.current-consultation-box {
+  min-width: 230px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+  padding: 17px 20px;
+
+  background: #effaf6;
+  border: 1px solid #bcebdc;
+  border-radius: 14px;
+
+  box-sizing: border-box;
+}
+
+.consultation-box-label {
+  color: #07805f;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.current-consultation-box strong {
+  color: #102a43;
+  font-size: 14px;
+}
+
+.current-consultation-box span:not(.consultation-box-label) {
+  color: #60758a;
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
+
+.patient-summary-grid {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.patient-summary-card {
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+  padding: 17px;
+
+  background: #ffffff;
+  border: 1px solid #e1e8e5;
+  border-radius: 15px;
+
+  box-shadow: 0 3px 12px rgba(13, 97, 78, 0.035);
+
+  box-sizing: border-box;
+}
+
+.summary-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: #e9f7f3;
+  color: #0d8c70;
+
+  font-size: 19px;
+}
+
+.patient-summary-card span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #7b8794;
+  font-size: 11px;
+}
+
+.patient-summary-card strong {
+  color: #102a43;
+  font-size: 17px;
+}
+
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
+
+.patient-history-content {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+
+  gap: 18px;
+  align-items: start;
+}
+
+.patient-history-left {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+.patient-history-right {
+  width: 100%;
+}
+
+
+/* =========================================================
+   COMMON HISTORY CARD
+   ========================================================= */
+
+.history-card {
+  background: #ffffff;
+
+  border: 1px solid #dfe7e4;
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  box-shadow: 0 3px 14px rgba(13, 97, 78, 0.035);
+}
+
+.history-card-header {
+  min-height: 82px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+  padding: 17px 22px;
+
+  border-bottom: 1px solid #e9eeec;
+
+  box-sizing: border-box;
+}
+
+.history-title {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+}
+
+.history-title-icon {
+  width: 43px;
+  height: 43px;
+  min-width: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: #e9f7f3;
+  color: #078c70;
+
+  font-size: 19px;
+}
+
+.history-title h2 {
+  margin: 0 0 4px;
+
+  color: #102a43;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.history-title p {
+  margin: 0;
+
+  color: #8291a2;
+  font-size: 11px;
+}
+
+.completed-status {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+  padding: 7px 12px;
+
+  border-radius: 20px;
+
+  background: #eaf8f3;
+  color: #07805f;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   PERSONAL INFORMATION
+   ========================================================= */
+
+.personal-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 20px 35px;
+  padding: 22px;
+}
+
+.personal-info-item {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.personal-info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.personal-info-item span {
+  color: #8492a3;
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.personal-info-item span svg {
+  margin-right: 5px;
+
+  color: #0d8c70;
+
+  vertical-align: middle;
+}
+
+.personal-info-item strong {
+  color: #183b56;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   CONSULTATION DETAILS
+   ========================================================= */
+
+.consultation-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 25px 40px;
+  padding: 23px;
+}
+
+.consultation-detail-grid > div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.consultation-detail-grid span {
+  color: #8391a2;
+  font-size: 11px;
+}
+
+.consultation-detail-grid strong {
+  color: #102a43;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   PATIENT MEASUREMENTS
+   ========================================================= */
+
+.measurement-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+  padding: 18px;
+}
+
+.measurement-item {
+  min-height: 105px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  gap: 6px;
+  padding: 14px;
+
+  border: 1px solid #e1ebe7;
+  border-radius: 12px;
+
+  background: #fbfdfc;
+
+  box-sizing: border-box;
+}
+
+.measurement-item > svg {
+  margin-bottom: 2px;
+
+  color: #0d8f73;
+  font-size: 19px;
+}
+
+.measurement-item span {
+  color: #7d8d9d;
+  font-size: 10px;
+}
+
+.measurement-item strong {
+  color: #153b57;
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   MEDICAL HISTORY OUTER SECTION
+   ========================================================= */
+
+.medical-history-wrapper {
+  width: 100%;
+  margin-top: 22px;
+}
+
+.medical-history-section {
+  width: 100%;
+
+  background: #ffffff;
+
+  border: 1px solid #dfe7e4;
+  border-radius: 18px;
+
+  box-shadow: 0 4px 18px rgba(13, 97, 78, 0.05);
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   MEDICAL HISTORY HEADER
+   ========================================================= */
+
+.medical-history-header {
+  width: 100%;
+  min-height: 88px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+  padding: 22px 28px;
+
+  border-bottom: 1px solid #e5ebe9;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.medical-history-header > div:first-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.medical-history-header h2 {
+  margin: 0 0 5px;
+
+  color: #102a43;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.medical-history-header p {
+  margin: 0;
+
+  color: #65798c;
+  font-size: 13px;
+}
+
+.last-visit-box {
+  min-width: 265px;
+
+  padding: 13px 18px;
+
+  border: 1px solid #a9ead5;
+  border-radius: 13px;
+
+  background: #effbf7;
+
+  box-sizing: border-box;
+}
+
+.last-visit-box span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #07805f;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 0.8px;
+}
+
+.last-visit-box strong {
+  color: #064f42;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   MEDICAL HISTORY TIMELINE
+   ========================================================= */
+
+.medical-history-timeline {
+  width: 100%;
+
+  padding: 26px 28px 32px;
+
+  box-sizing: border-box;
+}
+
+.medical-history-item {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+
+  gap: 15px;
+
+  position: relative;
+
+  box-sizing: border-box;
+}
+
+.medical-history-item:not(:last-child) {
+  padding-bottom: 20px;
+}
+
+
+/* =========================================================
+   TIMELINE
+   ========================================================= */
+
+.timeline-column {
+  position: relative;
+
+  width: 42px;
+  min-height: 100%;
+
+  display: flex;
+  justify-content: center;
+}
+
+.timeline-dot {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #00b887;
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  z-index: 3;
+  box-sizing: border-box;
+}
+
+.timeline-dot span {
+  width: 12px;
+  height: 12px;
+
+  border-radius: 50%;
+
+  background: #0bb889;
+}
+
+.timeline-line {
+  position: absolute;
+
+  top: 34px;
+  bottom: -20px;
+  left: 50%;
+
+  width: 2px;
+
+  transform: translateX(-50%);
+
+  background: linear-gradient(
+    to bottom,
+    #20c99a,
+    #ccefe5
+  );
+
+  z-index: 1;
+}
+
+
+/* =========================================================
+   CONSULTATION CARD
+   ========================================================= */
+
+.medical-consultation-card {
+  width: 100%;
+
+  border: 1px solid #dce5e2;
+  border-radius: 15px;
+
+  background: #ffffff;
+
+  overflow: hidden;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  box-sizing: border-box;
+}
+
+.medical-consultation-card:hover {
+  border-color: #b9ddd3;
+
+  box-shadow: 0 5px 18px rgba(13, 97, 78, 0.06);
+}
+
+
+/* =========================================================
+   CONSULTATION HEADER
+   ========================================================= */
+
+.medical-consultation-header {
+  width: 100%;
+  min-height: 78px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+  padding: 17px 20px;
+
+  border: none;
+
+  background: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  box-sizing: border-box;
+
+  transition: background 0.2s ease;
+}
+
+.medical-consultation-header:hover {
+  background: #fbfdfc;
+}
+
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+.medical-date-wrapper {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.medical-date-wrapper > svg {
+  flex-shrink: 0;
+
+  color: #079777;
+  font-size: 18px;
+}
+
+.medical-date-wrapper > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.medical-date-wrapper strong {
+  color: #102a43;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.medical-date-wrapper span {
+  color: #64798d;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.medical-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+}
+
+.attachment-badge,
+.sent-badge {
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 18px;
+
+  color: #155ee8;
+  border: 1px solid #b9d5ff;
+
+  background: #f3f7ff;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  box-sizing: border-box;
+}
+
+.attachment-badge {
+  min-width: 42px;
+  gap: 5px;
+  padding: 0 10px;
+}
+
+.attachment-badge svg {
+  font-size: 13px;
+}
+
+.sent-badge {
+  padding: 0 11px;
+}
+
+.history-dropdown-btn {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #d7e1de;
+  border-radius: 50%;
+
+  background: #ffffff;
+  color: #6d7d8c;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.history-dropdown-btn:hover {
+  border-color: #0d8f73;
+
+  color: #0d8f73;
+
+  background: #f5fcfa;
+}
+
+.history-dropdown-btn svg {
+  font-size: 17px;
+
+  transition: transform 0.2s ease;
+}
+
+.history-dropdown-btn.open svg {
+  transform: rotate(180deg);
+}
+
+
+/* =========================================================
+   EXPANDED DETAILS
+   ========================================================= */
+
+.medical-history-details {
+  padding: 24px 26px 28px;
+
+  border-top: 1px solid #e7edeb;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   DETAIL BOX
+   ========================================================= */
+
+.history-detail-box {
+  padding: 18px 20px;
+  margin-bottom: 18px;
+
+  border-radius: 14px;
+
+  box-sizing: border-box;
+}
+
+.detail-box-title {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 10px;
+}
+
+.detail-box-title svg {
+  flex-shrink: 0;
+
+  font-size: 18px;
+}
+
+.detail-box-title span {
+  font-size: 12px;
+  font-weight: 700;
+
+  letter-spacing: 0.7px;
+}
+
+.history-detail-box p {
+  margin: 0;
+
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   CHIEF COMPLAINT
+   ========================================================= */
+
+.complaint-box {
+  border: 1px solid #ffd77b;
+
+  background: #fffdf6;
+}
+
+.complaint-box .detail-box-title {
+  color: #a94d00;
+}
+
+.complaint-box p {
+  color: #7c3500;
+}
+
+
+/* =========================================================
+   DIAGNOSIS
+   ========================================================= */
+
+.diagnosis-detail-box {
+  border: 1px solid #9de8d0;
+
+  background: #f7fffc;
+}
+
+.diagnosis-detail-box .detail-box-title {
+  color: #087b64;
+}
+
+.diagnosis-detail-box p {
+  color: #185d50;
+}
+
+
+/* =========================================================
+   OBSERVATION / CLINICAL NOTES
+   ========================================================= */
+
+.observation-box {
+  margin-bottom: 26px;
+
+  border: 1px solid #bdd7ff;
+
+  background: #f7faff;
+}
+
+.observation-box .detail-box-title {
+  color: #2165df;
+}
+
+.observation-box p {
+  color: #315a88;
+}
+
+
+/* =========================================================
+   PRESCRIBED MEDICINES
+   ========================================================= */
+
+.prescribed-section {
+  margin: 26px 0 28px;
+}
+
+.prescribed-title {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 14px;
+}
+
+.prescribed-title svg {
+  color: #0b9877;
+  font-size: 19px;
+}
+
+.prescribed-title h3 {
+  margin: 0;
+
+  color: #102a43;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   MEDICINE TABLE
+   ========================================================= */
+
+.medicine-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+
+  border: 1px solid #dce6e2;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow: 0 2px 8px rgba(13, 97, 78, 0.035);
+
+  scrollbar-width: thin;
+}
+
+.medicine-table {
+  width: 100%;
+  min-width: 680px;
+
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+
+/* FIX:
+   Light header + dark text
+   instead of white text on light background.
+*/
+
+.medicine-table thead {
+  background: #f3f7f5;
+}
+
+.medicine-table th {
+  padding: 13px 17px;
+
+ background: #0d614e;
+    color: #f0f0f0 !important;
+  text-align: left;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: 0.2px;
+
+  white-space: nowrap;
+
+  border-bottom: 1px solid #dfe8e5;
+}
+
+.medicine-table th:first-child {
+  border-top-left-radius: 13px;
+}
+
+.medicine-table th:last-child {
+  border-top-right-radius: 13px;
+}
+
+.medicine-table td {
+  padding: 16px 17px;
+
+  color: #405b73;
+
+  font-size: 12px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #edf1ef;
+}
+
+.medicine-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.medicine-table tbody tr:hover td {
+  background: #f9fcfb;
+}
+
+.medicine-table tbody tr:nth-child(even) td {
+  background: #fbfdfc;
+}
+
+.medicine-table tbody tr:nth-child(even):hover td {
+  background: #f7fbf9;
+}
+
+.medicine-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.medicine-table td strong {
+  color: #173b55;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   DIET PLAN
+   ========================================================= */
+
+.diet-plan-section {
+  margin-top: 28px;
+  margin-bottom: 28px;
+}
+
+.diet-plan-card {
+  width: 100%;
+  min-height: 76px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+  padding: 14px 16px;
+
+  border: 1px solid #b8eadb;
+  border-radius: 14px;
+
+  background: #f5fffb;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.diet-plan-card:hover {
+  border-color: #8edbc7;
+
+  box-shadow: 0 4px 14px rgba(13, 97, 78, 0.06);
+}
+
+.diet-plan-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #e2f8f0;
+  color: #078a70;
+}
+
+.diet-plan-content {
+  flex: 1;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.diet-plan-content strong {
+  color: #163452;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.diet-plan-content span {
+  color: #71839a;
+  font-size: 11px;
+}
+
+.diet-plan-meta {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+}
+
+.diet-plan-meta span {
+  padding: 6px 10px;
+
+  border-radius: 7px;
+
+  background: #dff7ed;
+  color: #07866d;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   DO'S AND DON'TS
+   ========================================================= */
+
+.dos-donts-section {
+  margin-top: 28px;
+}
+
+.dos-donts-header {
+  margin-bottom: 14px;
+}
+
+.dos-donts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+.dos-card,
+.donts-card {
+  padding: 18px;
+
+  border-radius: 14px;
+
+  box-sizing: border-box;
+}
+
+.dos-card {
+  background: #effcf7;
+  border: 1px solid #b8eadb;
+}
+
+.donts-card {
+  background: #fff3f3;
+  border: 1px solid #f2c7c7;
+}
+
+.dos-card-header,
+.donts-card-header {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 10px;
+
+  margin-bottom: 13px;
+}
+
+.dos-icon,
+.donts-icon {
+  width: 27px;
+  height: 27px;
+  min-width: 27px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-weight: 800;
+}
+
+.dos-icon {
+  background: #d7f6ea;
+  color: #008f72;
+}
+
+.donts-icon {
+  background: #ffe1e1;
+  color: #d33b3b;
+
+  font-size: 18px;
+}
+
+.dos-card-header h4,
+.donts-card-header h4 {
+  margin: 0 0 3px;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.dos-card-header h4 {
+  color: #00896f;
+}
+
+.donts-card-header h4 {
+  color: #d13b3b;
+}
+
+.dos-card-header span,
+.donts-card-header span {
+  color: #70829a;
+  font-size: 10px;
+}
+
+.dos-list,
+.donts-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.dos-item,
+.donts-item {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 8px;
+}
+
+.dos-check,
+.donts-cross {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 1px;
+
+  border-radius: 50%;
+
+  font-size: 9px;
+}
+
+.dos-check {
+  border: 1px solid #0aa17e;
+  color: #008f72;
+}
+
+.donts-cross {
+  border: 1px solid #db5050;
+  color: #d33b3b;
+
+  font-size: 11px;
+}
+
+.dos-item p,
+.donts-item p {
+  margin: 0;
+
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.dos-item p {
+  color: #24445f;
+}
+
+.donts-item p {
+  color: #684545;
+}
+
+
+/* =========================================================
+   ALLERGIES / FAMILY / PAST ILLNESS
+   ========================================================= */
+
+.history-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 16px;
+
+  margin-top: 24px;
+}
+
+.history-bottom-grid .history-detail-box {
+  min-height: 120px;
+
+  margin-bottom: 0;
+}
+
+.allergy-box {
+  border: 1px solid #ffc7c7;
+  background: #fff7f7;
+}
+
+.allergy-box .detail-box-title {
+  color: #9d2c2c;
+}
+
+.allergy-box p {
+  color: #763535;
+}
+
+.family-box {
+  border: 1px solid #ddc7ff;
+  background: #fbf7ff;
+}
+
+.family-box .detail-box-title {
+  color: #6235a4;
+}
+
+.family-box p {
+  color: #573d77;
+}
+
+.illness-box {
+  border: 1px solid #ffd4a8;
+  background: #fffaf4;
+}
+
+.illness-box .detail-box-title {
+  color: #934300;
+}
+
+.illness-box p {
+  color: #733c14;
+}
+
+
+/* =========================================================
+   RESPONSIVE - 1200px
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+  .patient-history-page {
+    padding: 20px;
+  }
+
+  .patient-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .patient-history-content {
+    grid-template-columns: 1fr;
+  }
+
+  .patient-history-right {
+    display: block;
+  }
+
+  .measurement-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .history-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 900px
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .patient-history-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .current-consultation-box {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .medical-history-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .last-visit-box {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dos-donts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .measurement-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .history-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 700px
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  .patient-history-page {
+    padding: 15px;
+  }
+
+  .patient-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .personal-info-grid,
+  .consultation-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .personal-info-item.full-width {
+    grid-column: auto;
+  }
+
+  .medical-history-timeline {
+    padding: 18px 12px 22px;
+  }
+
+  .medical-history-item {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  .timeline-column {
+    width: 30px;
+  }
+
+  .timeline-dot {
+    width: 27px;
+    height: 27px;
+    min-width: 27px;
+  }
+
+  .timeline-dot span {
+    width: 9px;
+    height: 9px;
+  }
+
+  .timeline-line {
+    top: 27px;
+    bottom: -20px;
+  }
+
+  .medical-consultation-header {
+    padding: 15px;
+
+    align-items: flex-start;
+  }
+
+  .medical-actions {
+    gap: 5px;
+  }
+
+  .sent-badge {
+    display: none;
+  }
+
+  .medical-history-details {
+    padding: 18px 15px 22px;
+  }
+
+  .medicine-table {
+    min-width: 680px;
+  }
+
+  .measurement-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .diet-plan-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .diet-plan-content {
+    width: calc(100% - 52px);
+  }
+
+  .diet-plan-meta {
+    width: 100%;
+
+    margin-left: 52px;
+  }
+
+  .history-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - 480px
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .patient-history-page {
+    padding: 12px;
+  }
+
+  .patient-history-header {
+    padding: 18px;
+    border-radius: 15px;
+  }
+
+  .patient-profile-left {
+    align-items: flex-start;
+    gap: 13px;
+  }
+
+  .patient-history-avatar {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+
+    font-size: 20px;
+  }
+
+  .patient-name-row {
+    gap: 8px;
+  }
+
+  .patient-name-row h1 {
+    font-size: 20px;
+  }
+
+  .patient-id {
+    margin: 5px 0 10px;
+  }
+
+  .patient-basic-info {
+    gap: 9px 13px;
+  }
+
+  .patient-summary-card {
+    padding: 14px;
+  }
+
+  .history-card-header {
+    padding: 15px;
+  }
+
+  .history-title {
+    gap: 10px;
+  }
+
+  .history-title-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+  }
+
+  .history-title h2 {
+    font-size: 16px;
+  }
+
+  .history-title p {
+    font-size: 10px;
+  }
+
+  .medical-history-header {
+    padding: 20px 18px;
+  }
+
+  .medical-history-header h2 {
+    font-size: 21px;
+  }
+
+  .medical-history-header p {
+    font-size: 11px;
+  }
+
+  .last-visit-box {
+    min-width: 0;
+    padding: 12px 14px;
+  }
+
+  .medical-date-wrapper strong {
+    font-size: 12px;
+  }
+
+  .medical-date-wrapper span {
+    font-size: 10px;
+  }
+
+  .attachment-badge {
+    min-width: 32px;
+    width: 32px;
+    padding: 0;
+  }
+
+  .history-dropdown-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .measurement-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dos-donts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prescribed-title h3 {
+    font-size: 15px;
+  }
+
+  .diet-plan-content strong {
+    font-size: 12px;
+  }
+
+  .diet-plan-content span {
+    font-size: 10px;
+  }
+
+  .history-detail-box {
+    padding: 15px;
+  }
+
+  .history-detail-box p {
+    font-size: 12px;
+  }
+}
+
+
+/* =========================================================
+   EXTRA SAFETY / OVERFLOW FIXES
+   ========================================================= */
+
+.patient-history-page *,
+.patient-history-page *::before,
+.patient-history-page *::after {
+  box-sizing: border-box;
+}
+
+.patient-history-page img {
+  max-width: 100%;
+}
+
+.patient-history-page button {
+  font-family: inherit;
+}
+
+.patient-history-page table {
+  max-width: 100%;
+}
+
+.patient-history-page h1,
+.patient-history-page h2,
+.patient-history-page h3,
+.patient-history-page h4,
+.patient-history-page p {
+  overflow-wrap: break-word;
+}

@@ -135,8 +135,7 @@ const data = result.data;
 
 const userRole = data.is_super_admin
   ? "SUPERADMIN"
-  : data.admin_role;
-
+  : data.role?.name;
 
 sessionStorage.setItem(STORAGE_KEYS.TOKEN, data.access);
 
