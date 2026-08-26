@@ -2,8 +2,9 @@ import React from "react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from 'react-toastify';
 import BASE_URL from "../../../Base";
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+
+import { useParams, useNavigate } from "react-router-dom";
+import { FaEye } from "react-icons/fa";
 
 import {
   FaUsers,
@@ -53,7 +54,7 @@ const [error, setError] = useState(null);
   const [Data, setData] = useState([]);
    const [ConsultationLoading, setConsultationLoading] = useState(false);
     const [ConsultationError, setConsultationError] = useState(null);
-     const pagesize = 5;
+     const pagesize = 10;
       const [totalCount, setTotalCount] = useState(0);
       const totalPages = Math.ceil(totalCount / pagesize);
       const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -188,7 +189,7 @@ const getTransactionlist = async () => {
 
       const data = await response.json();
 
-      console.log("Category API Response:", data);
+     
 
 
       setData(data.data.results);
@@ -200,10 +201,10 @@ const getTransactionlist = async () => {
     } catch (error) {
       console.error(error.message);
 
-      setConsultationError("Something went wrong while fetching categories");
+      setConsultationError("Something went wrong while fetching the consultation Data");
        
 
-      toast.error("Failed to fetch Category Data");
+      toast.error("Failed to fetch Consultation  Data");
     } finally {
       setConsultationLoading(false);
     }
@@ -328,7 +329,7 @@ useEffect(() => {
 
    <div className="patient-header-card">
 
-  {/* ================= LEFT ================= */}
+ 
   <div className="patient-left">
 
     <div className="avatar-wrapper">
@@ -348,7 +349,7 @@ useEffect(() => {
 
     <div className="patient-info">
 
-      {/* NAME */}
+      
       <div className="patient-name-row">
 
         <h2>
@@ -790,82 +791,101 @@ useEffect(() => {
             
             </div>
  
-               <div classsName="table-wrapper1">
-                 <table className="data-table" >
-                   <thead>
-                     <tr>
-                       <th>Id</th>
-                       <th>Patient Name</th>
-                       <th>Doctor Name</th>
-                       <th>Amount</th>
-                       <th>Date</th>
-                       <th>Start Time</th>
-                       <th>End Time</th>
-                       <th>Consultation Type</th>
-                       <th>Status</th>
- 
-                     </tr>
-                   </thead>
-                   {ConsultationLoading ? (
-                     Array(3).fill(0).map((_, i) => (
-                       <tr key={i}>
-                         <td colSpan="10"><div className="skeleton-row"></div></td>
-                       </tr>
-                     ))
-                   ) : ConsultationError ? (
-                     <p colSpan="6" style={{ color: "red" }}>{ConsultationError}</p>
-                   ) : (
-                     <tbody>
-                       {Data && Data.length > 0 ? (
-                         Data.map((consultation, index) => (
-                           <tr key={consultation.id}>
-                             <td className="id1">{index + 1}</td>
-                             <td> {consultation.patient_name}</td>
-                             <td>{consultation.doctor_name}</td>
-                             <td>{consultation.amount}</td>
-                         <td>
-   {consultation.status_history?.[
-     consultation.status_history.length - 1
-   ]?.slot?.date || "-"}
- </td>
- 
- <td>
-   {consultation.status_history?.[
-     consultation.status_history.length - 1
-   ]?.slot?.start_time || "-"}
- </td>
- 
- <td>
-   {consultation.status_history?.[
-     consultation.status_history.length - 1
-   ]?.slot?.end_time || "-"}
- </td>
-                             <td>{consultation.consultation_type ||"N/A"}</td>
- <td>
-   <span
-     className="status-badge"
-     style={getStatusStyle(consultation.status)}
-   >
-     {consultation.status}
-   </span>
- </td>
-                           </tr>
-                         ))
-                       ) : (
-                         <tr>
-                           <td colSpan="10" style={{ textAlign: "center" }}>
-                             No Data Found
-                           </td>
-                         </tr>
-                       )}
-                     </tbody>
-                   )}
-                 </table>
- 
- 
- 
- 
-               </div>
+      <div className="table-wrapper1">
+  <table className="data-table">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Patient Name</th>
+        <th>Doctor Name</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Consultation Type</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {ConsultationLoading ? (
+        Array(3)
+          .fill(0)
+          .map((_, i) => (
+            <tr key={i}>
+              <td colSpan="10">
+                <div className="skeleton-row"></div>
+              </td>
+            </tr>
+          ))
+      ) : ConsultationError ? (
+        <tr>
+          <td colSpan="10" style={{ color: "red", textAlign: "center" }}>
+            {ConsultationError}
+          </td>
+        </tr>
+      ) : Data && Data.length > 0 ? (
+        Data.map((consultation, index) => {
+          const lastStatus =
+            consultation.status_history?.[
+              consultation.status_history.length - 1
+            ];
+
+          return (
+            <tr key={consultation.id}>
+              <td className="id1">{index + 1}</td>
+
+              <td>{consultation.patient_name || "N/A"}</td>
+
+              <td>{consultation.doctor_name || "N/A"}</td>
+
+              <td>{consultation.amount || "N/A"}</td>
+
+              <td>{lastStatus?.slot?.date || "-"}</td>
+
+              <td>{lastStatus?.slot?.start_time || "-"}</td>
+
+              <td>{lastStatus?.slot?.end_time || "-"}</td>
+
+              <td>{consultation.consultation_type || "N/A"}</td>
+
+              <td>
+                <span
+                  className="status-badge"
+                  style={getStatusStyle(consultation.status)}
+                >
+                  {consultation.status || "N/A"}
+                </span>
+              </td>
+
+              <td>
+                <button
+                  type="button"
+                  className="faq-action-btn faq-edit-btn"
+                  title="View Patient History"
+                  onClick={() =>
+                    navigate(
+                      `/PrescriptionHistory/${consultation.patient_id}`
+                    )
+                  }
+                >
+                  <FaEye />
+                </button>
+              </td>
+            </tr>
+          );
+        })
+      ) : (
+        <tr>
+          <td colSpan="10" style={{ textAlign: "center" }}>
+            No Data Found
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
  
                 {totalPages > 1 && (
            <div className="pagination">

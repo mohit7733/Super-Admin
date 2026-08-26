@@ -85,6 +85,9 @@ const createEmptyMeal = (dayNumber, index) => {
     carbs: "",
     protein: "",
     fat: "",
+
+
+    
   };
 };
 
@@ -369,7 +372,7 @@ const handleMealGalleryChange = (
 ) => {
   if (!file) return;
 
-  // 5 MB limit
+  
   if (file.size > 5 * 1024 * 1024) {
     toast.error("Meal image must be less than 5MB.");
     return;
@@ -468,9 +471,7 @@ const addDietPlan = async () => {
       return;
     }
 
-    // -----------------------------
-    // Build schedule
-    // -----------------------------
+  
     const schedule = {};
 
     Object.keys(dayMeals).forEach((dayNumber) => {
@@ -523,9 +524,7 @@ const addDietPlan = async () => {
       });
     });
 
-    // -----------------------------
-    // Gallery
-    // -----------------------------
+  
     const dietPlanGallery = [];
 
     if (dietImage) {
@@ -538,9 +537,7 @@ const addDietPlan = async () => {
       });
     }
 
-    // -----------------------------
-    // Final payload
-    // -----------------------------
+    
     const payload = {
       name: formData.name,
 

@@ -8041,3 +8041,7 @@ flex-direction:column;
     width: 100%;
   }
 }
+.faqorder{
+  display: flex;
+  gap:3px
+}

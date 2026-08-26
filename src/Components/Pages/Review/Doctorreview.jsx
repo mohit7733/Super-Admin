@@ -188,14 +188,14 @@ getDoctorReviewList();
                   {LoadingDoctorReview? (
                     Array(3).fill(0).map((_, i) => (
                       <tr key={i}>
-                        <td colSpan="6">
+                        <td colSpan="7">
                           <div className="skeleton-row"></div>
                         </td>
                       </tr>
                     ))
                   ) : ErrorDoctorReview? (
                     <tr>
-                      <td colSpan="6" style={{ color: "red" }}>
+                      <td colSpan="7" style={{ color: "red" }}>
                         {ErrorDoctorReview}
                       </td>
                     </tr>

@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import BASE_URL from "../../../Base";
 import OrderModal from "../Customer/OrderModal";
+import { FaTruck } from "react-icons/fa";
+
+
+
 
 import {
   FaShoppingBag,
@@ -383,7 +387,7 @@ useEffect(() => {
   className="status-filter date-filter"
 />
           </div>
-    {/* Sorted By */}
+   
  
 
   </div>
@@ -552,8 +556,7 @@ useEffect(() => {
                 </span>
               </div>
             </td>
-
-            {/* AMOUNT */}
+   {/* AMOUNT */}
             <td>
               <span className="order-amount">
                 ₹
@@ -579,7 +582,8 @@ useEffect(() => {
             {/* ACTION */}
            {/* ACTION */}
 <td className="order-action-cell">
-  <button
+  <div className="faqorder">
+     <button
     type="button"
     className="order-view-btn"
     title="View Order Details"
@@ -590,6 +594,20 @@ useEffect(() => {
   >
     <FaEye size={14} />
   </button>
+  
+<button
+    type="button"
+    className="order-view-btn"
+    title="Track Order"
+    onClick={() => {
+  navigate(`/OrderTracking/${order.order_id}`);
+}}
+  >
+    <FaTruck size={14} />
+  </button>
+  </div>
+ 
+
 </td>
 
 
@@ -626,10 +644,10 @@ useEffect(() => {
     of <strong>{totalCount}</strong> orders
   </div>
 
-  {/* RIGHT - PAGINATION */}
+
   <div className="order-pagination-buttons">
 
-    {/* PREVIOUS */}
+ 
     <button
       className="order-pagination-btn order-pagination-arrow"
       disabled={currentPage === 1 || orderLoading}
@@ -640,7 +658,7 @@ useEffect(() => {
       ‹
     </button>
 
-    {/* FIRST PAGE */}
+    
     <button
       className={`order-pagination-btn ${
         currentPage === 1
@@ -653,14 +671,14 @@ useEffect(() => {
       1
     </button>
 
-    {/* LEFT DOTS */}
+   
     {currentPage > 3 && (
       <span className="order-pagination-dots">
         ...
       </span>
     )}
 
-    {/* MIDDLE PAGES */}
+   
     {Array.from(
       { length: totalPages },
       (_, index) => index + 1
@@ -688,14 +706,14 @@ useEffect(() => {
         </button>
       ))}
 
-    {/* RIGHT DOTS */}
+  
     {currentPage < totalPages - 2 && (
       <span className="order-pagination-dots">
         ...
       </span>
     )}
 
-    {/* LAST PAGE */}
+ 
     {totalPages > 1 && (
       <button
         className={`order-pagination-btn ${
@@ -712,7 +730,7 @@ useEffect(() => {
       </button>
     )}
 
-    {/* NEXT */}
+  
     <button
       className="order-pagination-btn order-pagination-arrow"
       disabled={
