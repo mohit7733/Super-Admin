@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUsers, FaChartLine, FaCalendarAlt, FaEdit, FaSearch, FaTimes } from 'react-icons/fa';
+import { FaUsers, FaChartLine, FaCalendarAlt, FaEdit, FaSearch, FaTimes , FaCopy, FaFileExcel,} from 'react-icons/fa';
 import { FiTrash2, FiUpload, FiEye } from 'react-icons/fi';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { BiPlus } from 'react-icons/bi';
 import { FiSearch, FiRefreshCw } from "react-icons/fi";
+import ExcelJS from "exceljs";
+
 
 const Category = () => {
   const [Loading, setLoading] = useState(true);
@@ -509,7 +511,126 @@ if (Object.keys(newErrors).length > 0) {
     setSearchTerm("");
     setStatusFilter("all");
   };
+const exportToExcel = async () => {
+  if (!FilteredData?.length) {
+    toast.error("No category data available to export");
+    return;
+  }
 
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Categories");
+
+    worksheet.columns = [
+      { header: "#", key: "index", width: 8 },
+      { header: " Service Category Name", key: "name", width: 30 },
+      { header: " Service Category ID", key: "id", width: 40 },
+      { header: "Category Code", key: "code", width: 20 },
+      { header: "Image Link", key: "image", width: 50 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Created At", key: "created_at", width: 20 },
+    ];
+
+    FilteredData.forEach((item, index) => {
+      const row = worksheet.addRow({
+        index: index + 1,
+        name: item.name || "N/A",
+        id: item.id || "N/A",
+        code: item.code || "N/A",
+        image: item.image_url || "N/A",
+        status: item.is_active ? "Active" : "Inactive",
+        created_at: item.created_at
+          ? new Date(item.created_at).toLocaleDateString()
+          : "N/A",
+      });
+
+      // Image URL ko clickable hyperlink banana
+      if (item.image_url) {
+        const imageCell = row.getCell("image");
+
+        imageCell.value = {
+          text: "View Image",
+          hyperlink: item.image_url,
+        };
+
+        imageCell.font = {
+          color: { argb: "0563C1" },
+          underline: true,
+        };
+      }
+    });
+
+  
+    worksheet.getRow(1).font = {
+      bold: true,
+      color: { argb: "FFFFFF" },
+    };
+
+    worksheet.getRow(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "0D614E" },
+    };
+
+    worksheet.getRow(1).alignment = {
+      vertical: "middle",
+      horizontal: "center",
+    };
+
+    // Borders
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+          left: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+          bottom: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+          right: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+        };
+
+        cell.alignment = {
+          vertical: "middle",
+        };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `Service_Categories_${new Date()
+      .toISOString()
+      .slice(0, 10)}.xlsx`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+
+    toast.success("Excel exported successfully!");
+  } catch (error) {
+    console.error("Excel Export Error:", error);
+    toast.error("Failed to export Excel");
+  }
+};
   return (
     <>
       <div className="page-header">
@@ -583,7 +704,15 @@ if (Object.keys(newErrors).length > 0) {
 </button>
           )}
         </div>
-
+        <div className="category-action-buttons">
+ <button
+   className="add-customer-btn"
+    onClick={exportToExcel}
+    disabled={!FilteredData?.length}
+  >
+    <FaFileExcel />
+    Export Excel
+  </button>
         <button
           className="add-customer-btn"
           onClick={() => {
@@ -598,6 +727,7 @@ if (Object.keys(newErrors).length > 0) {
         <BiPlus/>
           Add Category
         </button>
+        </div>
       </div>
 
      
@@ -632,6 +762,7 @@ if (Object.keys(newErrors).length > 0) {
           colSpan="7"
           style={{
             color: "#dc2626",
+
           
           }}
         >
@@ -645,6 +776,25 @@ if (Object.keys(newErrors).length > 0) {
 
           <td>
             <strong>{item.name || "N/A"}</strong>
+                            {item.id && (
+                   <div className="category-id-wrapper">
+                     <span className="category-id-text">
+                       {item.id}
+                     </span>
+                 
+                     <button
+                       type="button"
+                       className="copy-id-btn"
+                       onClick={() => {
+                         navigator.clipboard.writeText(item.id);
+                         toast.success("Category ID copied!");
+                       }}
+                       title="Copy Category ID"
+                     >
+                       <FaCopy size={12} />
+                     </button>
+                   </div>
+                 )}
           </td>
 
           <td>
@@ -672,7 +822,13 @@ if (Object.keys(newErrors).length > 0) {
               <span
                 style={{
                   color: "#9ca3af",
-                  fontSize: "13px",
+                  fontSize
+                  
+                  
+                  
+                  
+                  
+                  : "13px",
                 }}
               >
                 No Image

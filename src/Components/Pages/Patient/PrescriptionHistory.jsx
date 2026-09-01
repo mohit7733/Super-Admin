@@ -12,7 +12,6 @@ import {
   FiCalendar,
   FiFileText,
   FiActivity,
-  FiClipboard,
   FiCheckCircle,
   FiThermometer,
   FiDroplet,
@@ -27,22 +26,36 @@ import {
   FaRulerVertical,
 } from "react-icons/fa";
 
-import "./PatientHistory.css";
+import "../Doctor/PatientHistory.css";
 
-const PatientHistory = () => {
+const PrescriptionHistory = () => {
   const navigate = useNavigate();
-  const {PatientsId} = useParams();
+  const { PatientHistoryId } = useParams();
 
   const [openHistory, setOpenHistory] = useState(null);
 
   const [prescriptionData, setPrescriptionData] = useState(null);
-const [prescriptionLoading, setPrescriptionLoading] = useState(false);
-const [prescriptionError, setPrescriptionError] = useState(null);
+  const [prescriptionLoading, setPrescriptionLoading] = useState(false);
+  const [prescriptionError, setPrescriptionError] = useState(null);
 
- const formatDate = (date) => {
+  console.log("========== PRESCRIPTION HISTORY ==========");
+  console.log("PatientHistoryId:", PatientHistoryId);
+  console.log("BASE_URL:", BASE_URL);
+
+  // =========================================================
+  // DATE FORMAT
+  // =========================================================
+
+  const formatDate = (date) => {
     if (!date) return "N/A";
 
-    return new Date(`${date}T00:00:00`).toLocaleDateString("en-IN", {
+    const parsedDate = new Date(`${date}T00:00:00`);
+
+    if (isNaN(parsedDate.getTime())) {
+      return "N/A";
+    }
+
+    return parsedDate.toLocaleDateString("en-IN", {
       weekday: "short",
       day: "2-digit",
       month: "short",
@@ -50,362 +63,141 @@ const [prescriptionError, setPrescriptionError] = useState(null);
     });
   };
 
+  // =========================================================
+  // FULL DATE FORMAT
+  // =========================================================
+
+  const formatFullDate = (date) => {
+    if (!date) return "N/A";
+
+    const parsedDate = new Date(`${date}T00:00:00`);
+
+    if (isNaN(parsedDate.getTime())) {
+      return "N/A";
+    }
+
+    return parsedDate.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  // =========================================================
+  // TIME FORMAT
+  // =========================================================
+
   const formatTime = (time) => {
     if (!time) return "N/A";
 
-    return new Date(`1970-01-01T${time}`).toLocaleTimeString("en-IN", {
+    const parsedTime = new Date(`1970-01-01T${time}`);
+
+    if (isNaN(parsedTime.getTime())) {
+      return "N/A";
+    }
+
+    return parsedTime.toLocaleTimeString("en-IN", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
     });
   };
 
-  const patient = {
-    id: "PAT-10245",
-    firstName: "Diksha",
-    lastName: "Yadav",
-    gender: "Female",
-    dob: "29 May 2000",
-    age: 26,
-    phone: "+91 98765 43210",
-    email: "diksha.yadav@gmail.com",
-    address: "Gurgaon, Haryana, India",
-    profileImage: null,
+  // =========================================================
+  // GET PRESCRIPTION DATA
+  // =========================================================
 
-    height: "165 cm",
-    weight: "62 kg",
-    bloodGroup: "B+",
-    maritalStatus: "Single",
+  const getPatientPrescription = async (patientId) => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-    totalConsultations: 8,
-    completedConsultations: 6,
+    console.log("Token:", token);
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    setPrescriptionLoading(true);
+    setPrescriptionError(null);
+
+    try {
+      const url = `${BASE_URL}/customers/admin/prescriptions/?patient_id=${encodeURIComponent(
+        patientId
+      )}`;
+
+      console.log("API URL:", url);
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      console.log("Prescription API Response:", data);
+
+      if (response.ok && data?.success) {
+        setPrescriptionData(data?.data || null);
+      } else {
+        setPrescriptionError(
+          data?.message || "Failed to fetch prescription"
+        );
+
+        toast.error(
+          data?.message || "Failed to fetch prescription"
+        );
+      }
+    } catch (error) {
+      console.error("API ERROR:", error);
+
+      setPrescriptionError(
+        "Failed to fetch prescription data"
+      );
+
+      toast.error("Failed to fetch prescription data");
+    } finally {
+      setPrescriptionLoading(false);
+    }
   };
 
+  // =========================================================
+  // API CALL
+  // =========================================================
 
+  useEffect(() => {
+    if (PatientHistoryId) {
+      getPatientPrescription(PatientHistoryId);
+    } else {
+      console.log("PatientHistoryId not found");
+    }
+  }, [PatientHistoryId]);
 
-  const currentConsultation = {
-    consultationId: consultationId || "CONS-2026-0082",
-    date: "20 August 2026",
-    time: "11:30 AM - 12:00 PM",
-    type: "Video Consultation",
-    status: "Completed",
-    amount: "₹800",
-    doctor: "Dr. Rajesh Sharma",
-    specialization: "Ayurvedic Physician",
-  };
+  // =========================================================
+  // PATIENT DATA
+  // =========================================================
 
+  const patient = prescriptionData?.patient;
 
+  // =========================================================
+  // PRESCRIPTION RESULTS
+  // =========================================================
 
-  const medicalHistory = [
-    {
-      id: "CONS-2026-0082",
-      date: "Wed, 19 Aug, 2026, 05:00 pm",
-      time: "05:00 pm - 05:30 pm",
-      complaint: "fever",
-      attachments: 1,
+  const prescriptions =
+    prescriptionData?.prescriptions?.results || [];
 
-      chiefComplaint: "fever",
+  // =========================================================
+  // FIRST / LATEST PRESCRIPTION
+  // =========================================================
 
-      diagnosis: "Ift rft",
+  const latestPrescription = prescriptions[0];
 
-      observations: "no",
-
-      medicines: [
-        {
-          name: "Dolo",
-          dosage: "1",
-          frequency: "2",
-          duration: "8 days",
-          instructions: "ff",
-        },
-      ],
-
-      dietPlan: {
-        title: "Joint & Muscle Comfort Support Diet Plan",
-        duration: "7 days",
-        meals: "3 meals/day",
-        description:
-          "Assigned with this prescription",
-      },
-
-      dos: [
-        "Eat warm, freshly cooked meals at regular intervals.",
-        "Start the day with warm water or herbal tea.",
-        "Include healthy fats such as ghee, sesame oil, and soaked nuts in moderation.",
-        "Choose easy-to-digest foods like khichdi, soups, and steamed vegetables.",
-        "Consume cooling fruits like pears, pomegranates, sweet lime, and apples.",
-        "Practice yoga, meditation, or pranayama for at least 20 minutes daily.",
-        "Maintain a consistent sleep schedule and aim for 7–8 hours of sleep.",
-        "Stay hydrated with room-temperature or warm water throughout the day.",
-        "Include probiotic foods like homemade curd or buttermilk if tolerated.",
-        "Take short walks after meals to improve digestion.",
-      ],
-
-      donts: [
-        "Avoid spicy, oily, fried and very hot foods.",
-        "Do not skip meals or stay hungry for long periods.",
-        "Avoid spicy, deep-fried, and heavily processed foods.",
-        "Avoid excessive tea, coffee, and energy drinks.",
-        "Limit carbonated drinks, alcohol, and packaged foods.",
-        "Avoid eating late at night.",
-        "Do not consume extremely cold foods or beverages.",
-        "Avoid excessive consumption of citrus fruits and vinegar if acidity worsens.",
-        "Do not overwork or stay under prolonged stress without breaks.",
-        "Avoid sleeping immediately after meals.",
-        "Do not eat too quickly; chew food thoroughly before swallowing.",
-      ],
-
-      allergies: "no",
-
-      familyHistory: "no",
-
-      pastIllness:
-        "5 days back caught by throat infection",
-    },
-
-    {
-      id: "CONS-2026-0071",
-      date: "Tue, 11 Aug, 2026, 10:00 am",
-      time: "10:00 am - 10:30 am",
-      complaint: "test",
-      attachments: 1,
-
-      chiefComplaint: "test",
-
-      diagnosis: "Digestive imbalance",
-
-      observations: "no",
-
-      medicines: [
-        {
-          name: "Avipattikar Churna",
-          dosage: "5 gm",
-          frequency: "Twice Daily",
-          duration: "14 days",
-          instructions: "After meals",
-        },
-        {
-          name: "Triphala Tablet",
-          dosage: "1 Tablet",
-          frequency: "Once Daily",
-          duration: "30 days",
-          instructions: "Before bedtime",
-        },
-      ],
-
-      dietPlan: {
-        title: "Digestive Balance Diet Plan",
-        duration: "14 days",
-        meals: "3 meals/day",
-        description:
-          "Assigned with this prescription",
-      },
-
-      dos: [
-        "Eat meals at regular intervals.",
-        "Prefer freshly prepared and warm food.",
-        "Drink sufficient warm water throughout the day.",
-        "Include easily digestible vegetables and fruits.",
-        "Practice light yoga for 20 minutes daily.",
-        "Maintain a regular sleeping schedule.",
-        "Take a short walk after meals.",
-      ],
-
-      donts: [
-        "Avoid spicy and oily food.",
-        "Do not skip meals.",
-        "Avoid excessive tea and coffee.",
-        "Avoid packaged and processed foods.",
-        "Do not eat very late at night.",
-        "Avoid overeating.",
-        "Do not lie down immediately after meals.",
-      ],
-
-      allergies: "no",
-
-      familyHistory: "no",
-
-      pastIllness:
-        "No significant past illness",
-    },
-
-    {
-      id: "CONS-2026-0062",
-      date: "Wed, 22 Jul, 2026, 04:00 pm",
-      time: "04:00 pm - 04:30 pm",
-      complaint: "Acidity & bloating",
-      attachments: 2,
-
-      chiefComplaint:
-        "Acidity and bloating after meals",
-
-      diagnosis: "Digestive imbalance",
-
-      observations:
-        "Mild bloating observed",
-
-      medicines: [
-        {
-          name: "Triphala Tablet",
-          dosage: "1 Tablet",
-          frequency: "Once Daily",
-          duration: "30 days",
-          instructions: "Before bedtime",
-        },
-      ],
-
-      dietPlan: {
-        title: "Acidity Relief Diet Plan",
-        duration: "30 days",
-        meals: "3 meals/day",
-        description:
-          "Assigned with this prescription",
-      },
-
-      dos: [
-        "Eat smaller meals at regular intervals.",
-        "Drink warm water throughout the day.",
-        "Include fresh vegetables in meals.",
-        "Practice light walking after meals.",
-        "Maintain regular sleep timings.",
-      ],
-
-      donts: [
-        "Avoid very spicy food.",
-        "Avoid fried and oily food.",
-        "Avoid excessive caffeine.",
-        "Avoid carbonated drinks.",
-        "Do not skip meals.",
-        "Avoid sleeping immediately after eating.",
-      ],
-
-      allergies: "No known allergies",
-
-      familyHistory:
-        "No significant family history",
-
-      pastIllness:
-        "Irregular digestion",
-    },
-
-    {
-      id: "CONS-2026-0050",
-      date: "Fri, 10 Jul, 2026, 02:30 pm",
-      time: "02:30 pm - 03:00 pm",
-      complaint: "Irregular digestion",
-      attachments: 1,
-
-      chiefComplaint:
-        "Irregular digestion",
-
-      diagnosis:
-        "Digestive disorder",
-
-      observations:
-        "Mild abdominal discomfort",
-
-      medicines: [
-        {
-          name: "Jeerakadyarishta",
-          dosage: "15 ml",
-          frequency: "Twice Daily",
-          duration: "15 days",
-          instructions: "After meals",
-        },
-      ],
-
-      dietPlan: {
-        title: "Healthy Digestion Support Plan",
-        duration: "15 days",
-        meals: "3 meals/day",
-        description:
-          "Assigned with this prescription",
-      },
-
-      dos: [
-        "Eat fresh and warm food.",
-        "Maintain proper meal timings.",
-        "Drink enough water.",
-        "Include fruits and vegetables.",
-        "Walk for a few minutes after meals.",
-      ],
-
-      donts: [
-        "Avoid junk food.",
-        "Avoid excessive fried food.",
-        "Do not skip breakfast.",
-        "Avoid overeating.",
-        "Do not sleep immediately after meals.",
-      ],
-
-      allergies: "No",
-
-      familyHistory:
-        "No significant family history",
-
-      pastIllness:
-        "Previous digestive issues",
-    },
-
-    {
-      id: "CONS-2026-0042",
-      date: "Mon, 22 Jun, 2026, 11:00 am",
-      time: "11:00 am - 11:30 am",
-      complaint: "Fatigue",
-      attachments: 1,
-
-      chiefComplaint:
-        "Feeling tired and low energy",
-
-      diagnosis:
-        "General weakness",
-
-      observations:
-        "Patient reported fatigue",
-
-      medicines: [
-        {
-          name: "Ashwagandha Tablet",
-          dosage: "1 Tablet",
-          frequency: "Once Daily",
-          duration: "30 days",
-          instructions: "After dinner",
-        },
-      ],
-
-      dietPlan: {
-        title: "Energy & Wellness Diet Plan",
-        duration: "30 days",
-        meals: "3 meals/day",
-        description:
-          "Assigned with this prescription",
-      },
-
-      dos: [
-        "Maintain regular meals.",
-        "Include protein-rich foods.",
-        "Drink enough water.",
-        "Get adequate sleep.",
-        "Practice light physical activity.",
-      ],
-
-      donts: [
-        "Avoid skipping meals.",
-        "Avoid excessive caffeine.",
-        "Do not stay awake late at night.",
-        "Avoid prolonged stress.",
-        "Do not overwork.",
-      ],
-
-      allergies: "No known allergies",
-
-      familyHistory:
-        "No significant family history",
-
-      pastIllness:
-        "No significant illness",
-    },
-  ];
+  // =========================================================
+  // TOGGLE HISTORY
+  // =========================================================
 
   const toggleHistory = (id) => {
     setOpenHistory((previous) =>
@@ -413,70 +205,32 @@ const [prescriptionError, setPrescriptionError] = useState(null);
     );
   };
 
- const getpatientprescrition = async (PatientsId) => {
-  const token = sessionStorage.getItem("superadmin_token");
+  // =========================================================
+  // LOADING
+  // =========================================================
 
-  if (!token) {
-    toast.error("Session expired. Please login again");
-    navigate("/login");
-    return;
-  }
+  if (prescriptionLoading) {
+    return (
+      <div className="patient-history-page">
+        <div className="medical-history-empty">
+          <FiFileText />
 
-  setPrescriptionLoading(true);
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/customers/admin/prescriptions/?appointment_id=${encodeURIComponent(
-        appointmentId
-      )}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
+          <p>
+            Loading patient medical history...
+          </p>
+        </div>
+      </div>
     );
-
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
-
-    const data = await response.json();
-
-    console.log("Prescription API Response:", data);
-
-    if (data?.success) {
-      setPrescriptionData(data?.data || null);
-    } else {
-      toast.error(data?.message || "Failed to fetch prescription");
-    }
-  } catch (err) {
-    console.error("Prescription Fetch Error:", err);
-
-    toast.error("Failed to fetch prescription data", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  } finally {
-    setPrescriptionLoading(false);
   }
-};
-useEffect(() => {
-  if (PatientsId) {
-  getpatientprescrition(PatientsId);
-  }
-}, [PatientsId]);
 
   return (
     <div className="patient-history-page">
 
- 
+      <ToastContainer />
+
+      {/* =====================================================
+          BACK BUTTON
+      ===================================================== */}
 
       <button
         type="button"
@@ -487,112 +241,136 @@ useEffect(() => {
         Back
       </button>
 
+      {/* =====================================================
+          PATIENT HEADER
+      ===================================================== */}
 
-     
+      <div className="patient-history-header">
 
-    <div className="patient-history-header">
+        <div className="patient-profile-left">
 
-  <div className="patient-profile-left">
+          {/* AVATAR */}
 
-    <div className="patient-history-avatar">
-      <span>
-        {prescriptionData?.patient_name
-          ? prescriptionData.patient_name
-              .split(" ")
-              .map((name) => name.charAt(0))
-              .join("")
-              .toUpperCase()
-          : "P"}
-      </span>
-    </div>
+          <div className="patient-history-avatar">
+            <span>
+              {patient?.name
+                ? patient.name
+                    .split(" ")
+                    .filter(Boolean)
+                    .map((name) => name.charAt(0))
+                    .join("")
+                    .toUpperCase()
+                : "P"}
+            </span>
+          </div>
 
-    <div className="patient-header-content">
+          {/* PATIENT INFO */}
 
-      <div className="patient-name-row">
+          <div className="patient-header-content">
 
-        <h1>
-          {prescriptionData?.patient_name || "N/A"}
-        </h1>
+            <div className="patient-name-row">
 
-        <span className="patient-completed-badge">
-          <FiCheckCircle />
+              <h1>
+                {patient?.name || "N/A"}
+              </h1>
 
-          {prescriptionData?.status
-            ? prescriptionData.status
-                .charAt(0)
-                .toUpperCase() +
-              prescriptionData.status.slice(1)
-            : "N/A"}
-        </span>
+              {latestPrescription?.status && (
+                <span className="patient-completed-badge">
+                  <FiCheckCircle />
+
+                  {latestPrescription.status
+                    .charAt(0)
+                    .toUpperCase() +
+                    latestPrescription.status.slice(1)}
+                </span>
+              )}
+
+            </div>
+
+            <p className="patient-id">
+              Patient ID: {patient?.id || "N/A"}
+            </p>
+
+            <div className="patient-basic-info">
+
+              <span>
+                <FiCalendar />
+
+                DOB:{" "}
+                {patient?.dob
+                  ? formatFullDate(patient.dob)
+                  : "N/A"}
+              </span>
+
+              <span>
+                <FiUser />
+
+                Gender:{" "}
+                {patient?.gender
+                  ? patient.gender
+                      .charAt(0)
+                      .toUpperCase() +
+                    patient.gender.slice(1)
+                  : "N/A"}
+              </span>
+
+              <span>
+                <FiPhone />
+
+                {patient?.phone_number || "N/A"}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* =====================================================
+            CURRENT CONSULTATION
+        ===================================================== */}
+
+        <div className="current-consultation-box">
+
+          <span className="consultation-box-label">
+            CURRENT CONSULTATION
+          </span>
+
+          <strong>
+            {latestPrescription?.appointment_id ||
+              "N/A"}
+          </strong>
+
+          <span>
+            {latestPrescription?.appointment_date
+              ? formatFullDate(
+                  latestPrescription.appointment_date
+                )
+              : "N/A"}
+          </span>
+
+          <span>
+            {latestPrescription?.start_time &&
+            latestPrescription?.end_time
+              ? `${formatTime(
+                  latestPrescription.start_time
+                )} - ${formatTime(
+                  latestPrescription.end_time
+                )}`
+              : "N/A"}
+          </span>
+
+        </div>
 
       </div>
 
-      <p className="patient-id">
-        Patient ID: {prescriptionData?.patient_id || "N/A"}
-      </p>
-
-      <div className="patient-basic-info">
-
-        <span>
-          <FiCalendar />
-
-        
-        </span>
-
-        <span>
-          <FiUser />
-
-          Doctor: {prescriptionData?.doctor_name || "N/A"}
-        </span>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-
-
-  <div className="current-consultation-box">
-
-    <span className="consultation-box-label">
-      CURRENT CONSULTATION
-    </span>
-
-    <strong>
-      {prescriptionData?.appointment_id || "N/A"}
-    </strong>
-
-    <span>
-      {prescriptionData?.appointment_date
-        ? new Date(
-            prescriptionData.appointment_date
-          ).toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          })
-        : "N/A"}
-    </span>
-
-    <span>
-      {prescriptionData?.start_time &&
-      prescriptionData?.end_time
-        ? `${prescriptionData.start_time.slice(
-            0,
-            5
-          )} - ${prescriptionData.end_time.slice(0, 5)}`
-        : "N/A"}
-    </span>
-
-  </div>
-
-</div>
-
-   
+      {/* =====================================================
+          SUMMARY CARDS
+      ===================================================== */}
 
       <div className="patient-summary-grid">
+
+        {/* TOTAL CONSULTATIONS */}
 
         <div className="patient-summary-card">
 
@@ -601,19 +379,19 @@ useEffect(() => {
           </div>
 
           <div>
-
             <span>
               Total Consultations
             </span>
 
             <strong>
-              {patient.totalConsultations}
+              {prescriptionData?.prescriptions
+                ?.count || 0}
             </strong>
-
           </div>
 
         </div>
 
+        {/* COMPLETED */}
 
         <div className="patient-summary-card">
 
@@ -622,19 +400,24 @@ useEffect(() => {
           </div>
 
           <div>
-
             <span>
               Completed
             </span>
 
             <strong>
-              {patient.completedConsultations}
+              {
+                prescriptions.filter(
+                  (item) =>
+                    item.status?.toLowerCase() ===
+                    "completed"
+                ).length
+              }
             </strong>
-
           </div>
 
         </div>
 
+        {/* LAST CONSULTATION */}
 
         <div className="patient-summary-card">
 
@@ -643,19 +426,22 @@ useEffect(() => {
           </div>
 
           <div>
-
             <span>
               Last Consultation
             </span>
 
             <strong>
-              19 Aug 2026
+              {latestPrescription?.appointment_date
+                ? formatDate(
+                    latestPrescription.appointment_date
+                  )
+                : "N/A"}
             </strong>
-
           </div>
 
         </div>
 
+        {/* PATIENT SINCE */}
 
         <div className="patient-summary-card">
 
@@ -664,33 +450,30 @@ useEffect(() => {
           </div>
 
           <div>
-
             <span>
               Patient Since
             </span>
 
             <strong>
-              Jan 2026
+              N/A
             </strong>
-
           </div>
 
         </div>
 
       </div>
 
-
-
+      {/* =====================================================
+          PATIENT INFORMATION + MEASUREMENTS
+      ===================================================== */}
 
       <div className="patient-history-content">
 
-
-       
+        {/* ===================================================
+            PERSONAL INFORMATION
+        =================================================== */}
 
         <div className="patient-history-left">
-
-
-        
 
           <div className="history-card">
 
@@ -703,7 +486,6 @@ useEffect(() => {
                 </div>
 
                 <div>
-
                   <h2>
                     Personal Information
                   </h2>
@@ -711,15 +493,15 @@ useEffect(() => {
                   <p>
                     Patient personal and contact details
                   </p>
-
                 </div>
 
               </div>
 
             </div>
 
-
             <div className="personal-info-grid">
+
+              {/* FULL NAME */}
 
               <div className="personal-info-item">
 
@@ -728,12 +510,12 @@ useEffect(() => {
                 </span>
 
                 <strong>
-                  {patient.firstName}{" "}
-                  {patient.lastName}
+                  {patient?.name || "N/A"}
                 </strong>
 
               </div>
 
+              {/* GENDER */}
 
               <div className="personal-info-item">
 
@@ -742,11 +524,17 @@ useEffect(() => {
                 </span>
 
                 <strong>
-                  {patient.gender}
+                  {patient?.gender
+                    ? patient.gender
+                        .charAt(0)
+                        .toUpperCase() +
+                      patient.gender.slice(1)
+                    : "N/A"}
                 </strong>
 
               </div>
 
+              {/* DOB */}
 
               <div className="personal-info-item">
 
@@ -755,71 +543,87 @@ useEffect(() => {
                 </span>
 
                 <strong>
-                  {patient.dob}
+                  {patient?.dob
+                    ? formatFullDate(patient.dob)
+                    : "N/A"}
                 </strong>
 
               </div>
 
+              {/* RELATION */}
 
               <div className="personal-info-item">
 
                 <span>
-                  Marital Status
+                  Relation
                 </span>
 
                 <strong>
-                  {patient.maritalStatus}
+                  {patient?.relation
+                    ? patient.relation
+                        .charAt(0)
+                        .toUpperCase() +
+                      patient.relation.slice(1)
+                    : "N/A"}
                 </strong>
 
               </div>
 
+              {/* PHONE */}
 
               <div className="personal-info-item">
 
                 <span>
-
                   <FiPhone />
-
                   Phone
-
                 </span>
 
                 <strong>
-                  {patient.phone}
+                  {patient?.phone_number || "N/A"}
                 </strong>
 
               </div>
 
+              {/* EMAIL */}
 
               <div className="personal-info-item">
 
                 <span>
-
                   <FiMail />
-
                   Email
-
                 </span>
 
                 <strong>
-                  {patient.email}
+                  {patient?.email || "N/A"}
                 </strong>
 
               </div>
 
+              {/* CUSTOMER ID */}
+
+              <div className="personal-info-item">
+
+                <span>
+                  Customer ID
+                </span>
+
+                <strong>
+                  {patient?.customer_id || "N/A"}
+                </strong>
+
+              </div>
+
+              {/* ADDRESS */}
 
               <div className="personal-info-item full-width">
 
                 <span>
-
                   <FiMapPin />
-
                   Address
-
                 </span>
 
                 <strong>
-                  {patient.address}
+                  N/A
                 </strong>
 
               </div>
@@ -828,15 +632,13 @@ useEffect(() => {
 
           </div>
 
-
-      
-
         </div>
 
-
+        {/* ===================================================
+            MEASUREMENTS
+        =================================================== */}
 
         <div className="patient-history-right">
-
 
           <div className="history-card">
 
@@ -849,7 +651,6 @@ useEffect(() => {
                 </div>
 
                 <div>
-
                   <h2>
                     Patient Measurements
                   </h2>
@@ -857,16 +658,15 @@ useEffect(() => {
                   <p>
                     Latest recorded measurements
                   </p>
-
                 </div>
 
               </div>
 
             </div>
 
-
             <div className="measurement-grid">
 
+              {/* HEIGHT */}
 
               <div className="measurement-item">
 
@@ -877,11 +677,15 @@ useEffect(() => {
                 </span>
 
                 <strong>
-                  {patient.height}
+                  {patient?.height &&
+                  Number(patient.height) > 0
+                    ? `${patient.height} cm`
+                    : "N/A"}
                 </strong>
 
               </div>
 
+              {/* WEIGHT */}
 
               <div className="measurement-item">
 
@@ -892,11 +696,15 @@ useEffect(() => {
                 </span>
 
                 <strong>
-                  {patient.weight}
+                  {patient?.weight &&
+                  Number(patient.weight) > 0
+                    ? `${patient.weight} kg`
+                    : "N/A"}
                 </strong>
 
               </div>
 
+              {/* BLOOD GROUP */}
 
               <div className="measurement-item">
 
@@ -907,11 +715,12 @@ useEffect(() => {
                 </span>
 
                 <strong>
-                  {patient.bloodGroup}
+                  {patient?.blood_group || "N/A"}
                 </strong>
 
               </div>
 
+              {/* BMI */}
 
               <div className="measurement-item">
 
@@ -922,11 +731,10 @@ useEffect(() => {
                 </span>
 
                 <strong>
-                  22.8
+                  N/A
                 </strong>
 
               </div>
-
 
             </div>
 
@@ -936,674 +744,813 @@ useEffect(() => {
 
       </div>
 
-
-
+      {/* =====================================================
+          MEDICAL HISTORY
+      ===================================================== */}
 
       <div className="medical-history-wrapper">
 
         <div className="medical-history-section">
 
+          {/* HEADER */}
 
-        
-
-       <div className="medical-history-header">
-
-  <div>
-
-    <h2>
-      Medical History
-    </h2>
-
-    <p>
-      {prescriptionData ? "1 consultation on record" : "No consultation record found"}
-    </p>
-
-  </div>
-
-
-  <div className="last-visit-box">
-
-    <span>
-      LAST VISIT
-    </span>
-
-    <strong>
-      {prescriptionData?.appointment_date
-        ? new Date(
-            `${prescriptionData.appointment_date}T${prescriptionData.start_time}`
-          ).toLocaleString("en-IN", {
-            weekday: "short",
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          })
-        : "N/A"}
-    </strong>
-
-  </div>
-
-</div>
-
-
-         
-
-        <div className="medical-history-timeline">
-
-  {prescriptionData ? (
-
-    <div
-      className="medical-history-item"
-      key={prescriptionData.id}
-    >
-
-      {/* TIMELINE */}
-
-      <div className="timeline-column">
-
-        <div className="timeline-dot">
-          <span />
-        </div>
-
-      </div>
-
-
-      {/* CONSULTATION */}
-
-      <div className="medical-consultation-card">
-
-        <div
-          className="medical-consultation-header"
-          onClick={() =>
-            toggleHistory(prescriptionData.id)
-          }
-        >
-
-          <div className="medical-date-wrapper">
-
-            <FiCalendar />
+          <div className="medical-history-header">
 
             <div>
 
-              <strong>
-                {formatDate(
-                  prescriptionData.appointment_date
-                )}
-              </strong>
+              <h2>
+                Medical History
+              </h2>
+
+              <p>
+                {prescriptions.length > 0
+                  ? `${prescriptions.length} consultation${
+                      prescriptions.length > 1
+                        ? "s"
+                        : ""
+                    } on record`
+                  : "No consultation record found"}
+              </p>
+
+            </div>
+
+            {/* LAST VISIT */}
+
+            <div className="last-visit-box">
 
               <span>
-                {prescriptionData.symptom_description ||
-                  "Consultation"}
+                LAST VISIT
               </span>
 
+              <strong>
+
+                {latestPrescription?.appointment_date
+                  ? `${formatDate(
+                      latestPrescription.appointment_date
+                    )} ${
+                      latestPrescription.start_time
+                        ? formatTime(
+                            latestPrescription.start_time
+                          )
+                        : ""
+                    }`
+                  : "N/A"}
+
+              </strong>
+
             </div>
 
           </div>
 
+          {/* =================================================
+              TIMELINE
+          ================================================= */}
 
-          <div className="medical-actions">
+          <div className="medical-history-timeline">
 
-            <span className="attachment-badge">
+            {prescriptions.length > 0 ? (
 
-              <FiFileText />
+              prescriptions.map((prescription) => (
 
-              {prescriptionData.prescription_items?.length || 0}
+                <div
+                  className="medical-history-item"
+                  key={prescription.id}
+                >
 
-            </span>
+                  {/* TIMELINE */}
 
+                  <div className="timeline-column">
 
-            <span className="sent-badge">
-              {prescriptionData.status || "Sent"}
-            </span>
-
-
-            <button
-              type="button"
-              className={`history-dropdown-btn ${
-                openHistory === prescriptionData.id
-                  ? "open"
-                  : ""
-              }`}
-              onClick={(event) => {
-
-                event.stopPropagation();
-
-                toggleHistory(prescriptionData.id);
-
-              }}
-            >
-
-              <FiChevronDown />
-
-            </button>
-
-          </div>
-
-        </div>
-
-
-        {openHistory === prescriptionData.id && (
-
-          <div className="medical-history-details">
-
-
-            {/* CHIEF COMPLAINT */}
-
-            <div className="history-detail-box complaint-box">
-
-              <div className="detail-box-title">
-
-                <FiAlertCircle />
-
-                <span>
-                  CHIEF COMPLAINT
-                </span>
-
-              </div>
-
-              <p>
-                {prescriptionData.symptom_description || "N/A"}
-              </p>
-
-            </div>
-
-
-            {/* DIAGNOSIS */}
-
-            <div className="history-detail-box diagnosis-detail-box">
-
-              <div className="detail-box-title">
-
-                <FiActivity />
-
-                <span>
-                  DIAGNOSIS
-                </span>
-
-              </div>
-
-              <p>
-                {prescriptionData.diagnosis_advice || "N/A"}
-              </p>
-
-            </div>
-
-
-            {/* MEDICINES */}
-
-            <div className="prescribed-section">
-
-              <div className="prescribed-title">
-
-                <FiFileText />
-
-                <h3>
-                  Prescribed Medicines
-                </h3>
-
-              </div>
-
-
-              <div className="medicine-table-wrapper">
-
-                <table className="medicine-table">
-
-                  <thead>
-
-                    <tr>
-
-                      <th>
-                        Medicine
-                      </th>
-
-                      <th>
-                        Dosage
-                      </th>
-
-                      <th>
-                        Frequency
-                      </th>
-
-                      <th>
-                        Duration
-                      </th>
-
-                      <th>
-                        Instructions
-                      </th>
-
-                    </tr>
-
-                  </thead>
-
-
-                  <tbody>
-
-                    {prescriptionData.prescription_items?.length > 0 ? (
-
-                      prescriptionData.prescription_items.map(
-                        (medicine) => (
-
-                          <tr key={medicine.id}>
-
-                            <td>
-
-                              <strong>
-                                {medicine.product_name || "N/A"}
-                              </strong>
-
-                            </td>
-
-                            <td>
-                              {medicine.dosage || "N/A"}
-                            </td>
-
-                            <td>
-                              {medicine.frequency || "N/A"}
-                            </td>
-
-                            <td>
-                              {medicine.duration
-                                ? `${medicine.duration} days`
-                                : "N/A"}
-                            </td>
-
-                            <td>
-                              {medicine.instruction || "N/A"}
-                            </td>
-
-                          </tr>
-
-                        )
-                      )
-
-                    ) : (
-
-                      <tr>
-
-                        <td colSpan="5">
-                          No medicines prescribed
-                        </td>
-
-                      </tr>
-
-                    )}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-            </div>
-
-
-            {/* DIET PLANS */}
-
-            {prescriptionData.diets?.length > 0 && (
-
-              <div className="diet-plan-section">
-
-                <div className="prescribed-title">
-
-                  <FiHeart />
-
-                  <h3>
-                    Diet Plans
-                  </h3>
-
-                </div>
-
-
-                {prescriptionData.diets.map((diet) => (
-
-                  <div
-                    className="diet-plan-card"
-                    key={diet.id}
-                  >
-
-                    <div className="diet-plan-icon">
-                      <FiEdit3 />
-                    </div>
-
-
-                    <div className="diet-plan-content">
-
-                      <strong>
-                        {diet.name || "Diet Plan"}
-                      </strong>
-
-                      <span>
-                        Assigned with this prescription
-                      </span>
-
-                    </div>
-
-
-                    <div className="diet-plan-meta">
-
-                      <span>
-                        {diet.duration} day
-                        {diet.duration > 1 ? "s" : ""}
-                      </span>
-
-                      <span>
-                        {diet.meals_per_day} meals/day
-                      </span>
-
+                    <div className="timeline-dot">
+                      <span />
                     </div>
 
                   </div>
 
-                ))}
+                  {/* CONSULTATION CARD */}
+
+                  <div className="medical-consultation-card">
+
+                    {/* HEADER */}
+
+                    <div
+                      className="medical-consultation-header"
+                      onClick={() =>
+                        toggleHistory(
+                          prescription.id
+                        )
+                      }
+                    >
+
+                      {/* DATE */}
+
+                      <div className="medical-date-wrapper">
+
+                        <FiCalendar />
+
+                        <div>
+
+                          <strong>
+                            {formatDate(
+                              prescription.appointment_date
+                            )}
+                          </strong>
+
+                          <span>
+                            {prescription.symptom_description ||
+                              "Consultation"}
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                      {/* ACTIONS */}
+
+                      <div className="medical-actions">
+
+                        {/* MEDICINE COUNT */}
+
+                        <span className="attachment-badge">
+
+                          <FiFileText />
+
+                          {prescription
+                            .prescription_items
+                            ?.length || 0}
+
+                        </span>
+
+                        {/* STATUS */}
+
+                        <span className="sent-badge">
+
+                          {prescription.status
+                            ? prescription.status
+                                .charAt(0)
+                                .toUpperCase() +
+                              prescription.status.slice(
+                                1
+                              )
+                            : "N/A"}
+
+                        </span>
+
+                        {/* DROPDOWN */}
+
+                        <button
+                          type="button"
+                          className={`history-dropdown-btn ${
+                            openHistory ===
+                            prescription.id
+                              ? "open"
+                              : ""
+                          }`}
+                          onClick={(event) => {
+
+                            event.stopPropagation();
+
+                            toggleHistory(
+                              prescription.id
+                            );
+
+                          }}
+                        >
+                          <FiChevronDown />
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                    {/* =================================================
+                        DETAILS
+                    ================================================= */}
+
+                    {openHistory ===
+                      prescription.id && (
+
+                      <div className="medical-history-details">
+
+                        {/* CHIEF COMPLAINT */}
+
+                        <div className="history-detail-box complaint-box">
+
+                          <div className="detail-box-title">
+
+                            <FiAlertCircle />
+
+                            <span>
+                              CHIEF COMPLAINT
+                            </span>
+
+                          </div>
+
+                          <p>
+                            {prescription.symptom_description ||
+                              "N/A"}
+                          </p>
+
+                        </div>
+
+                        {/* DIAGNOSIS */}
+
+                        <div className="history-detail-box diagnosis-detail-box">
+
+                          <div className="detail-box-title">
+
+                            <FiActivity />
+
+                            <span>
+                              DIAGNOSIS
+                            </span>
+
+                          </div>
+
+                          <p>
+                            {prescription.diagnosis_advice ||
+                              "N/A"}
+                          </p>
+
+                        </div>
+
+                        {/* =================================================
+                            MEDICINES
+                        ================================================= */}
+
+                        <div className="prescribed-section">
+
+                          <div className="prescribed-title">
+
+                            <FiFileText />
+
+                            <h3>
+                              Prescribed Medicines
+                            </h3>
+
+                          </div>
+
+                          <div className="medicine-table-wrapper">
+
+                            <table className="medicine-table">
+
+                              <thead>
+
+                                <tr>
+
+                                  <th>
+                                    Medicine
+                                  </th>
+
+                                  <th>
+                                    Dosage
+                                  </th>
+
+                                  <th>
+                                    Frequency
+                                  </th>
+
+                                  <th>
+                                    Duration
+                                  </th>
+
+                                  <th>
+                                    Instructions
+                                  </th>
+
+                                </tr>
+
+                              </thead>
+
+                              <tbody>
+
+                                {prescription
+                                  .prescription_items
+                                  ?.length > 0 ? (
+
+                                  prescription.prescription_items.map(
+                                    (medicine) => (
+
+                                      <tr
+                                        key={
+                                          medicine.id
+                                        }
+                                      >
+
+                                        <td>
+
+                                          <strong>
+                                            {medicine.product_name ||
+                                              "N/A"}
+                                          </strong>
+
+                                        </td>
+
+                                        <td>
+                                          {medicine.dosage ||
+                                            "N/A"}
+                                        </td>
+
+                                        <td>
+                                          {medicine.frequency ||
+                                            "N/A"}
+                                        </td>
+
+                                        <td>
+                                          {medicine.duration
+                                            ? `${medicine.duration} days`
+                                            : "N/A"}
+                                        </td>
+
+                                        <td>
+                                          {medicine.instruction ||
+                                            "N/A"}
+                                        </td>
+
+                                      </tr>
+
+                                    )
+                                  )
+
+                                ) : (
+
+                                  <tr>
+
+                                    <td colSpan="5">
+                                      No medicines prescribed
+                                    </td>
+
+                                  </tr>
+
+                                )}
+
+                              </tbody>
+
+                            </table>
+
+                          </div>
+
+                        </div>
+
+                        {/* =================================================
+                            DIET PLANS
+                        ================================================= */}
+
+                        {prescription.diets
+                          ?.length > 0 && (
+
+                          <div className="diet-plan-section">
+
+                            <div className="prescribed-title">
+
+                              <FiHeart />
+
+                              <h3>
+                                Diet Plans
+                              </h3>
+
+                            </div>
+
+                            {prescription.diets.map(
+                              (diet) => (
+
+                                <div
+                                  className="diet-plan-card"
+                                  key={diet.id}
+                                >
+
+                                  <div className="diet-plan-icon">
+                                    <FiEdit3 />
+                                  </div>
+
+                                  <div className="diet-plan-content">
+
+                                    <strong>
+                                      {diet.name ||
+                                        "Diet Plan"}
+                                    </strong>
+
+                                    <span>
+                                      Assigned with this prescription
+                                    </span>
+
+                                  </div>
+
+                                  <div className="diet-plan-meta">
+
+                                    <span>
+
+                                      {diet.duration} day
+                                      {Number(
+                                        diet.duration
+                                      ) > 1
+                                        ? "s"
+                                        : ""}
+
+                                    </span>
+
+                                    <span>
+                                      {
+                                        diet.meals_per_day
+                                      }{" "}
+                                      meals/day
+                                    </span>
+
+                                  </div>
+
+                                </div>
+
+                              )
+                            )}
+
+                          </div>
+
+                        )}
+
+                        {/* =================================================
+                            CLINICAL NOTES
+                        ================================================= */}
+
+                        <div className="history-detail-box observation-box">
+
+                          <div className="detail-box-title">
+
+                            <FiThermometer />
+
+                            <span>
+                              CLINICAL NOTES & OBSERVATIONS
+                            </span>
+
+                          </div>
+
+                          <p>
+                            {prescription.clinical_notes ||
+                              "N/A"}
+                          </p>
+
+                        </div>
+
+                        {/* =================================================
+                            DOS & DONTS
+                        ================================================= */}
+
+                        <div className="dos-donts-section">
+
+                          <div className="dos-donts-header">
+
+                            <div className="prescribed-title">
+
+                              <FiEdit3 />
+
+                              <h3>
+                                Diet & Lifestyle
+                              </h3>
+
+                            </div>
+
+                          </div>
+
+                          <div className="dos-donts-grid">
+
+                            {/* DOS */}
+
+                            <div className="dos-card">
+
+                              <div className="dos-card-header">
+
+                                <div className="dos-icon">
+                                  ✓
+                                </div>
+
+                                <div>
+
+                                  <h4>
+                                    Do's
+                                  </h4>
+
+                                  <span>
+                                    Advice the patient what they should follow.
+                                  </span>
+
+                                </div>
+
+                              </div>
+
+                              <div className="dos-list">
+
+                                {prescription.dos
+                                  ?.length > 0 ? (
+
+                                  prescription.dos.map(
+                                    (
+                                      doItem,
+                                      index
+                                    ) => (
+
+                                      <div
+                                        className="dos-item"
+                                        key={index}
+                                      >
+
+                                        <span className="dos-check">
+                                          ✓
+                                        </span>
+
+                                        <p>
+                                          {doItem}
+                                        </p>
+
+                                      </div>
+
+                                    )
+                                  )
+
+                                ) : (
+
+                                  <p>
+                                    No recommendations available.
+                                  </p>
+
+                                )}
+
+                              </div>
+
+                            </div>
+
+                            {/* DONTS */}
+
+                            <div className="donts-card">
+
+                              <div className="donts-card-header">
+
+                                <div className="donts-icon">
+                                  ×
+                                </div>
+
+                                <div>
+
+                                  <h4>
+                                    Don'ts
+                                  </h4>
+
+                                  <span>
+                                    Mention activities or foods to avoid.
+                                  </span>
+
+                                </div>
+
+                              </div>
+
+                              <div className="donts-list">
+
+                                {prescription.donts
+                                  ?.length > 0 ? (
+
+                                  prescription.donts.map(
+                                    (
+                                      dontItem,
+                                      index
+                                    ) => (
+
+                                      <div
+                                        className="donts-item"
+                                        key={index}
+                                      >
+
+                                        <span className="donts-cross">
+                                          ×
+                                        </span>
+
+                                        <p>
+                                          {dontItem}
+                                        </p>
+
+                                      </div>
+
+                                    )
+                                  )
+
+                                ) : (
+
+                                  <p>
+                                    No restrictions available.
+                                  </p>
+
+                                )}
+
+                              </div>
+
+                            </div>
+
+                          </div>
+
+                        </div>
+
+                        {/* =================================================
+                            ALLERGIES / FAMILY HISTORY / PAST ILLNESS
+                        ================================================= */}
+
+                        <div className="history-bottom-grid">
+
+                          {/* ALLERGIES */}
+
+                          <div className="history-detail-box allergy-box">
+
+                            <div className="detail-box-title">
+
+                              <FiAlertCircle />
+
+                              <span>
+                                ALLERGIES
+                              </span>
+
+                            </div>
+
+                            <p>
+                              {prescription.allergies ||
+                                "N/A"}
+                            </p>
+
+                          </div>
+
+                          {/* FAMILY HISTORY */}
+
+                          <div className="history-detail-box family-box">
+
+                            <div className="detail-box-title">
+
+                              <FiUser />
+
+                              <span>
+                                FAMILY HISTORY
+                              </span>
+
+                            </div>
+
+                            <p>
+                              {prescription.family_history ||
+                                "N/A"}
+                            </p>
+
+                          </div>
+
+                          {/* PAST ILLNESS */}
+
+                          <div className="history-detail-box illness-box">
+
+                            <div className="detail-box-title">
+
+                              <FiFileText />
+
+                              <span>
+                                PAST ILLNESS
+                              </span>
+
+                            </div>
+
+                            <p>
+                              {prescription.history_of_past_illness ||
+                                "N/A"}
+                            </p>
+
+                          </div>
+
+                        </div>
+
+                        {/* =================================================
+                            FOLLOW UP
+                        ================================================= */}
+
+                        {prescription.follow_up && (
+
+                          <div className="history-detail-box">
+
+                            <div className="detail-box-title">
+
+                              <FiCalendar />
+
+                              <span>
+                                FOLLOW UP
+                              </span>
+
+                            </div>
+
+                            <p>
+
+                              {prescription.follow_up.date
+                                ? formatFullDate(
+                                    prescription
+                                      .follow_up
+                                      .date
+                                  )
+                                : "N/A"}
+
+                              {" - "}
+
+                              {prescription.follow_up
+                                .reason || "N/A"}
+
+                            </p>
+
+                          </div>
+
+                        )}
+
+                        {/* =================================================
+                            CONSULTATION TIME
+                        ================================================= */}
+
+                        <div className="history-detail-box">
+
+                          <div className="detail-box-title">
+
+                            <FiCalendar />
+
+                            <span>
+                              CONSULTATION TIME
+                            </span>
+
+                          </div>
+
+                          <p>
+
+                            {formatTime(
+                              prescription.start_time
+                            )}
+
+                            {" - "}
+
+                            {formatTime(
+                              prescription.end_time
+                            )}
+
+                          </p>
+
+                        </div>
+
+                        {/* =================================================
+                            CREATED AT
+                        ================================================= */}
+
+                        <div className="history-detail-box">
+
+                          <div className="detail-box-title">
+
+                            <FiFileText />
+
+                            <span>
+                              PRESCRIPTION CREATED
+                            </span>
+
+                          </div>
+
+                          <p>
+
+                            {prescription.created_at
+                              ? new Date(
+                                  prescription.created_at
+                                ).toLocaleString(
+                                  "en-IN",
+                                  {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  }
+                                )
+                              : "N/A"}
+
+                          </p>
+
+                        </div>
+
+                      </div>
+
+                    )}
+
+                  </div>
+
+                </div>
+
+              ))
+
+            ) : (
+
+              <div className="medical-history-empty">
+
+                <FiFileText />
+
+                <p>
+                  No medical history found.
+                </p>
 
               </div>
 
             )}
 
-
-            {/* CLINICAL NOTES */}
-
-            <div className="history-detail-box observation-box">
-
-              <div className="detail-box-title">
-
-                <FiThermometer />
-
-                <span>
-                  CLINICAL NOTES & OBSERVATIONS
-                </span>
-
-              </div>
-
-              <p>
-                {prescriptionData.clinical_notes || "N/A"}
-              </p>
-
-            </div>
-
-
-            {/* DOS & DONTS */}
-
-            <div className="dos-donts-section">
-
-              <div className="dos-donts-header">
-
-                <div className="prescribed-title">
-
-                  <FiEdit3 />
-
-                  <h3>
-                    Diet & Lifestyle
-                  </h3>
-
-                </div>
-
-              </div>
-
-
-              <div className="dos-donts-grid">
-
-
-                {/* DOS */}
-
-                <div className="dos-card">
-
-                  <div className="dos-card-header">
-
-                    <div className="dos-icon">
-                      ✓
-                    </div>
-
-                    <div>
-
-                      <h4>
-                        Do's
-                      </h4>
-
-                      <span>
-                        Advice the patient what they should follow.
-                      </span>
-
-                    </div>
-
-                  </div>
-
-
-                  <div className="dos-list">
-
-                    {prescriptionData.dos?.length > 0 ? (
-
-                      prescriptionData.dos.map(
-                        (doItem, index) => (
-
-                          <div
-                            className="dos-item"
-                            key={index}
-                          >
-
-                            <span className="dos-check">
-                              ✓
-                            </span>
-
-                            <p>
-                              {doItem}
-                            </p>
-
-                          </div>
-
-                        )
-                      )
-
-                    ) : (
-
-                      <p>
-                        No recommendations available.
-                      </p>
-
-                    )}
-
-                  </div>
-
-                </div>
-
-
-                {/* DONTS */}
-
-                <div className="donts-card">
-
-                  <div className="donts-card-header">
-
-                    <div className="donts-icon">
-                      ×
-                    </div>
-
-                    <div>
-
-                      <h4>
-                        Don'ts
-                      </h4>
-
-                      <span>
-                        Mention activities or foods to avoid.
-                      </span>
-
-                    </div>
-
-                  </div>
-
-
-                  <div className="donts-list">
-
-                    {prescriptionData.donts?.length > 0 ? (
-
-                      prescriptionData.donts.map(
-                        (dontItem, index) => (
-
-                          <div
-                            className="donts-item"
-                            key={index}
-                          >
-
-                            <span className="donts-cross">
-                              ×
-                            </span>
-
-                            <p>
-                              {dontItem}
-                            </p>
-
-                          </div>
-
-                        )
-                      )
-
-                    ) : (
-
-                      <p>
-                        No restrictions available.
-                      </p>
-
-                    )}
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-
-            {/* ALLERGIES / FAMILY HISTORY / PAST ILLNESS */}
-
-            <div className="history-bottom-grid">
-
-
-              {/* ALLERGIES */}
-
-              <div className="history-detail-box allergy-box">
-
-                <div className="detail-box-title">
-
-                  <FiAlertCircle />
-
-                  <span>
-                    ALLERGIES
-                  </span>
-
-                </div>
-
-                <p>
-                  {prescriptionData.allergies || "N/A"}
-                </p>
-
-              </div>
-
-
-              {/* FAMILY HISTORY */}
-
-              <div className="history-detail-box family-box">
-
-                <div className="detail-box-title">
-
-                  <FiUser />
-
-                  <span>
-                    FAMILY HISTORY
-                  </span>
-
-                </div>
-
-                <p>
-                  {prescriptionData.family_history || "N/A"}
-                </p>
-
-              </div>
-
-
-              {/* PAST ILLNESS */}
-
-              <div className="history-detail-box illness-box">
-
-                <div className="detail-box-title">
-
-                  <FiFileText />
-
-                  <span>
-                    PAST ILLNESS
-                  </span>
-
-                </div>
-
-                <p>
-                  {prescriptionData.history_of_past_illness || "N/A"}
-                </p>
-
-              </div>
-
-
-            </div>
-
-
-            {/* CONSULTATION TIME */}
-
-            <div className="history-detail-box">
-
-              <div className="detail-box-title">
-
-                <FiCalendar />
-
-                <span>
-                  CONSULTATION TIME
-                </span>
-
-              </div>
-
-              <p>
-
-                {formatTime(
-                  prescriptionData.start_time
-                )}
-
-                {" - "}
-
-                {formatTime(
-                  prescriptionData.end_time
-                )}
-
-              </p>
-
-            </div>
-
-
           </div>
-
-        )}
-
-      </div>
-
-    </div>
-
-  ) : (
-
-    <div className="medical-history-empty">
-
-      <FiFileText />
-
-      <p>
-        {prescriptionLoading
-          ? "Loading medical history..."
-          : "No medical history found."}
-      </p>
-
-    </div>
-
-  )}
-
-</div>
 
         </div>
 
@@ -1613,4 +1560,4 @@ useEffect(() => {
   );
 };
 
-export default PatientHistory;
+export default PrescriptionHistory;

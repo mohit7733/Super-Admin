@@ -2603,10 +2603,11 @@
 }
 
 .form-group label {
-  display: block;
+  /* display: block; */
+  display:flex;
   font-weight: 600;
   color: var(--gray-700);
-  margin-bottom: var(--space-sm);
+  /* margin-bottom: var(--space-sm); */
   font-size: 14px;
 }
 

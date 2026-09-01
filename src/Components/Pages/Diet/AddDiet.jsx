@@ -59,6 +59,7 @@ const initialForm = {
   is_common: true,
   description: "",
   notes: "",
+   guidance: [],
 };
 const createEmptyMeal = (dayNumber, index) => {
   const meal = mealTypes[index % mealTypes.length];
@@ -78,13 +79,18 @@ const createEmptyMeal = (dayNumber, index) => {
       },
     ],
     diet_gallery: [],
-     recipe: "",
-  guidance: "",
+    recipe: [""],
+
+  guidance: [],
+
     steps: "",
     calories: "",
     carbs: "",
     protein: "",
     fat: "",
+
+
+    
   };
 };
 
@@ -369,7 +375,7 @@ const handleMealGalleryChange = (
 ) => {
   if (!file) return;
 
-  // 5 MB limit
+  
   if (file.size > 5 * 1024 * 1024) {
     toast.error("Meal image must be less than 5MB.");
     return;
@@ -468,9 +474,7 @@ const addDietPlan = async () => {
       return;
     }
 
-    // -----------------------------
-    // Build schedule
-    // -----------------------------
+  
     const schedule = {};
 
     Object.keys(dayMeals).forEach((dayNumber) => {
@@ -490,13 +494,14 @@ const addDietPlan = async () => {
             quantity: item.quantity,
             notes: item.notes,
           })),
-
+  recipe: (meal.recipe || []).filter(Boolean),
           preparation_steps: meal.steps
             ? meal.steps
                 .split("\n")
                 .map((step) => step.trim())
                 .filter(Boolean)
             : [],
+
 
           nutrition: {
             total_calories: {
@@ -523,14 +528,11 @@ const addDietPlan = async () => {
       });
     });
 
-    // -----------------------------
-    // Gallery
-    // -----------------------------
+  
     const dietPlanGallery = [];
 
     if (dietImage) {
-      // If backend expects uploaded image through another endpoint,
-      // handle that upload separately.
+     
       dietPlanGallery.push({
         image_url: imagePreview || "",
         is_cover: true,
@@ -538,13 +540,12 @@ const addDietPlan = async () => {
       });
     }
 
-    // -----------------------------
-    // Final payload
-    // -----------------------------
+    
     const payload = {
       name: formData.name,
 
       prakriti: formData.prakriti,
+      guidance: formData.guidance,
 
       season: formData.season,
 
@@ -980,6 +981,26 @@ Select Disease
     />
   </label>
 )}
+
+<label className="guidance-field">
+  Guidance
+
+  <textarea
+    placeholder="Enter guidance for this diet plan"
+    value={(formData.guidance || []).join("\n")}
+    onChange={(e) => {
+      const guidance = e.target.value
+        .split("\n")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      setFormData({
+        ...formData,
+        guidance,
+      });
+    }}
+  />
+</label>
 
         </div>
       </section>
@@ -1574,83 +1595,106 @@ function MealCard({
 </div>
     
 
-      <div className="nutrition">
-        <span>Nutrition Information</span>
+    <div className="nutrition">
+  <span>Nutrition Information</span>
 
-        <div>
-          <label>
-            Calories (kcal)
+  <div className="nutrition-fields">
+    <label>
+      Calories (kcal)
+      <input
+        type="number"
+        placeholder="0"
+        value={meal.calories}
+        onChange={(e) =>
+          onUpdateMealField(
+            dayNumber,
+            meal.id,
+            "calories",
+            e.target.value
+          )
+        }
+      />
+    </label>
 
-            <input
-              type="number"
-              placeholder="0"
-              value={meal.calories}
-              onChange={(e) =>
-                onUpdateMealField(
-                  dayNumber,
-                  meal.id,
-                  "calories",
-                  e.target.value
-                )
-              }
-            />
-          </label>
+    <label>
+      Carbs (g)
+      <input
+        type="number"
+        placeholder="0"
+        value={meal.carbs}
+        onChange={(e) =>
+          onUpdateMealField(
+            dayNumber,
+            meal.id,
+            "carbs",
+            e.target.value
+          )
+        }
+      />
+    </label>
 
-          <label>
-            Carbs (g)
+    <label>
+      Protein (g)
+      <input
+        type="number"
+        placeholder="0"
+        value={meal.protein}
+        onChange={(e) =>
+          onUpdateMealField(
+            dayNumber,
+            meal.id,
+            "protein",
+            e.target.value
+          )
+        }
+      />
+    </label>
 
-            <input
-              type="number"
-              placeholder="0"
-              value={meal.carbs}
-              onChange={(e) =>
-                onUpdateMealField(
-                  dayNumber,
-                  meal.id,
-                  "carbs",
-                  e.target.value
-                )
-              }
-            />
-          </label>
+    <label>
+      Fat (g)
+      <input
+        type="number"
+        placeholder="0"
+        value={meal.fat}
+        onChange={(e) =>
+          onUpdateMealField(
+            dayNumber,
+            meal.id,
+            "fat",
+            e.target.value
+          )
+        }
+      />
+    </label>
 
-          <label>
-            Protein (g)
+<div className="recipe-links-field">
+  <label htmlFor={`recipe-${meal.id}`}>
+    Recipe Links
+  </label>
 
-            <input
-              type="number"
-              placeholder="0"
-              value={meal.protein}
-              onChange={(e) =>
-                onUpdateMealField(
-                  dayNumber,
-                  meal.id,
-                  "protein",
-                  e.target.value
-                )
-              }
-            />
-          </label>
+  <textarea
+    id={`recipe-${meal.id}`}
+    placeholder={`Enter recipe links
+https://youtube.com/recipe-1
+https://youtube.com/recipe-2`}
+    value={(meal.recipe || []).join("\n")}
+    onChange={(e) => {
+      const recipes = e.target.value
+        .split("\n")
+        .map((url) => url.trim())
+        .filter((url) => url !== "");
 
-          <label>
-            Fat (g)
-
-            <input
-              type="number"
-              placeholder="0"
-              value={meal.fat}
-              onChange={(e) =>
-                onUpdateMealField(
-                  dayNumber,
-                  meal.id,
-                  "fat",
-                  e.target.value
-                )
-              }
-            />
-          </label>
-        </div>
-      </div>
+      onUpdateMealField(
+        dayNumber,
+        meal.id,
+        "recipe",
+        recipes
+      );
+    }}
+  />
+</div>
+  </div>
+</div>
      
 
     </article>

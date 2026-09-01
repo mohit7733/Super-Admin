@@ -10,6 +10,14 @@ body {
   padding: 0;
 }
 
+.guidance-field {
+  grid-column: 1 / -1;
+}
+
+.guidance-field textarea {
+  min-height: 85px;
+  width: 100%;
+}
 .page-heading {
   display: flex;
   align-items: flex-end;
@@ -1065,6 +1073,10 @@ fieldset legend {
    Food / Preparation and does NOT go below Gallery.
 */
 
+/* =========================================================
+   NUTRITION
+========================================================= */
+
 .meal-card .nutrition {
   grid-column: 3;
   grid-row: 2 / span 2;
@@ -1090,26 +1102,26 @@ fieldset legend {
   font-weight: 700;
 }
 
-.meal-card .nutrition > div {
+
+/* Nutrition 2-column layout */
+.meal-card .nutrition-fields {
   display: grid;
 
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
   gap: 8px;
 }
 
 
-/* =========================================================
-   NUTRITION BOX
-========================================================= */
-
-.meal-card .nutrition label {
+/* Each nutrition box */
+.meal-card .nutrition-fields > label {
   display: flex;
+
   flex-direction: column;
 
   justify-content: center;
 
+  min-width: 0;
   min-height: 58px;
 
   padding: 9px 10px;
@@ -1127,21 +1139,27 @@ fieldset legend {
   transition: 0.2s ease;
 }
 
-.meal-card .nutrition label:hover {
+.meal-card .nutrition-fields > label:hover {
   background: #ffffff;
   border-color: #cfd7e1;
 }
 
-.meal-card .nutrition input {
+
+/* Nutrition inputs */
+.meal-card .nutrition-fields > label > input {
+  display: block;
+
   width: 100%;
 
   height: auto;
+
+  min-height: 18px;
 
   margin-top: 5px;
 
   padding: 0;
 
-  border: none;
+  border: none !important;
 
   background: transparent;
 
@@ -1155,19 +1173,52 @@ fieldset legend {
 
   font-weight: 700;
 
-  box-shadow: none;
+  box-shadow: none !important;
 }
 
-.meal-card .nutrition input:focus {
-  border: none;
-  box-shadow: none;
+.meal-card .nutrition-fields > label > input:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+.recipe-links-field {
+  width: 100%;
+  grid-column: 1 / -1 !important;
+  box-sizing: border-box;
+  margin-top: 16px;
 }
 
+.recipe-links-field label {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #172033;
+}
 
-/* =========================================================
-   FORM BOTTOM AREA
-========================================================= */
+.recipe-links-field textarea {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+  min-height: 100px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  border: 1px solid #d6deea;
+  border-radius: 8px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #172033;
+  outline: none;
+  resize: vertical;
+}
 
+.recipe-links-field textarea:focus {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.08);
+}
 .diet-bottom-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

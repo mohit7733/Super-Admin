@@ -7,12 +7,15 @@ import {
   FaEdit,
   FaSearch,
   FaTimes,
+  FaCopy,
+   FaFileExcel,
 } from "react-icons/fa";
 import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { BiPlus } from "react-icons/bi";
+import ExcelJS from "exceljs";
 
 const SubProductCategory = () => {
   const [Data, setData] = useState([]);
@@ -672,6 +675,154 @@ if (!code) {
     setSearchTerm("");
     setStatusFilter("all");
   };
+  const exportToExcel = async () => {
+  if (!FilteredData?.length) {
+    toast.error("No sub product category data available to export");
+    return;
+  }
+
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sub Product Categories");
+
+    worksheet.columns = [
+      { header: "#", key: "index", width: 8 },
+      { header: "Sub Product Category", key: "name", width: 30 },
+        { header: "Sub Product Category Code", key: "code", width: 28 },
+      { header: "Product Category Name", key: "product_category_name", width: 30 },
+      {header:"Tax Class",key:"tax_class_name",width:30},
+      {header:"Tax Class Id" ,key:"tax_class_id",width:40},
+      { header: "HSN Code", key: "hsn_code", width: 18 },
+      { header: " Sub ProductCategory ID", key: "id", width: 40 },
+      { header: "Image Link", key: "image", width: 45 },
+      { header: "Active Status", key: "status", width: 18 },
+      { header: "Created At", key: "created_at", width: 20 },
+      
+    ];
+
+    FilteredData.forEach((item, index) => {
+      const row = worksheet.addRow({
+        index: index + 1,
+        name: item.name || "N/A",
+        code:item.code|| "N/A",
+       
+        product_category_name:
+          item.product_category_name ||
+          "N/A",
+tax_class_name:item.tax_class_name||  "N/A",
+tax_class_id:item.tax_class_id||"N/A",
+
+        hsn_code: item.hsn_code || "N/A",
+        id: item.id || "N/A",
+        image: item.image_url || "N/A",
+        status: item.is_active ? "Active" : "Inactive",
+        created_at: item.created_at
+          ? new Date(item.created_at).toLocaleDateString()
+          : "N/A",
+      });
+
+      // Clickable Image Link
+      if (item.image_url) {
+        const imageCell = row.getCell("image");
+
+        imageCell.value = {
+          text: "View Image",
+          hyperlink: item.image_url,
+        };
+
+        imageCell.font = {
+          color: { argb: "0563C1" },
+          underline: true,
+        };
+      }
+    });
+
+    // Header styling
+    const headerRow = worksheet.getRow(1);
+
+    headerRow.font = {
+      bold: true,
+      color: { argb: "FFFFFF" },
+    };
+
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "0D614E" },
+    };
+
+    headerRow.alignment = {
+      vertical: "middle",
+      horizontal: "center",
+    };
+
+    headerRow.height = 25;
+
+    // Borders
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: "thin", color: { argb: "D1D5DB" } },
+          left: { style: "thin", color: { argb: "D1D5DB" } },
+          bottom: { style: "thin", color: { argb: "D1D5DB" } },
+          right: { style: "thin", color: { argb: "D1D5DB" } },
+        };
+
+        cell.alignment = {
+          vertical: "middle",
+        };
+      });
+    });
+
+    
+    ["index", "hsn_code", "status"].forEach((column) => {
+      worksheet.getColumn(column).alignment = {
+        horizontal: "center",
+        vertical: "middle",
+      };
+    });
+
+    // Filter
+    worksheet.autoFilter = {
+      from: "A1",
+      to: "H1",
+    };
+
+    // Freeze header
+    worksheet.views = [
+      {
+        state: "frozen",
+        ySplit: 1,
+      },
+    ];
+
+    // Download
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Sub_Product_Categories_${new Date()
+      .toISOString()
+      .slice(0, 10)}.xlsx`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+
+    toast.success("Excel exported successfully!");
+  } catch (error) {
+    console.error("Excel Export Error:", error);
+    toast.error("Failed to export Excel");
+  }
+};
 
   return (
     <>
@@ -711,7 +862,7 @@ if (!code) {
         </div>
       </div>
 
-      {/* Filters and Actions */}
+     
       <div className="filter-category">
         <div className="filter-controls">
           <div className="search-wrapper">
@@ -742,12 +893,22 @@ if (!code) {
 
           {(searchTerm || statusFilter !== "all") && (
             <button className="clear-filters-btn" onClick={clearFilters}>
-              Clear Filters
+            <FiTrash2/>
             </button>
           )}
         </div>
-
+<div className="category-action-buttons">
+  
+  
         <button
+           className="add-customer-btn"
+            onClick={exportToExcel}
+            disabled={!FilteredData?.length}
+          >
+            <FaFileExcel />
+            Export Excel
+          </button>
+           <button
           className="add-customer-btn"
           onClick={() => {
             resetForm();
@@ -757,9 +918,12 @@ if (!code) {
         <BiPlus/>
           Add Sub Product Category
         </button>
+        
+</div>
+       
       </div>
 
-      {/* Table */}
+   
       <div className="table-wrapper">
         <table className="data-table">
           <thead>
@@ -795,12 +959,25 @@ if (!code) {
                   <td>{index + 1}</td>
                   <td>
                     <strong>{item.name}</strong>
-                    {item.description && (
-                      <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
-                        {item.description.substring(0, 30)}
-                        {item.description.length > 30 && "..."}
-                      </div>
-                    )}
+                             {item.id && (
+                                     <div className="category-id-wrapper">
+                                       <span className="category-id-text">
+                                         {item.id}
+                                       </span>
+                                   
+                                       <button
+                                         type="button"
+                                         className="copy-id-btn"
+                                         onClick={() => {
+                                           navigator.clipboard.writeText(item.id);
+                                           toast.success("Category ID copied!");
+                                         }}
+                                         title="Copy Category ID"
+                                       >
+                                         <FaCopy size={12} />
+                                       </button>
+                                     </div>
+                                   )}
                   </td>
                   <td>
                     <span className="service-category-badge">
@@ -894,7 +1071,8 @@ if (!code) {
         </table>
       </div>
 
-      {/* Add Modal */}
+      
+
       {ShowCategoryModal && (
         <div
           className="prakriti-modal-overlay"

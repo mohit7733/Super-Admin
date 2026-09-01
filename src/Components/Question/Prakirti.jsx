@@ -968,119 +968,204 @@ const uploadImage = async (file) => {
 
 
    {AddQuestionModal && (
-  <div className="modal">
-    <form className="customer-form" onSubmit={handleAddSubmit}>
-      <h2>Add New Question</h2>
+  <div className="prakriti-modal-overlay">
+    <div className="prakriti-modal">
 
+      <div className="prakriti-modal-header">
+        <div>
+          <h2>Add Question</h2>
+          <p>Create New Prakriti Question</p>
+        </div>
+      </div>
 
-      <label>Question</label>
+      <form
+        className="prakriti-form"
+        onSubmit={handleAddSubmit}
+      >
 
-      <input
-        type="text"
-        name="question"
-        placeholder="Enter Your Question"
-        value={Addform.question}
-        onChange={handleAddChange}
+        {/* Question */}
+        <div className="form-group">
+          <label>Question</label>
+
+          <input
+            type="text"
+            name="question"
+            placeholder="Enter Your Question"
+            value={Addform.question}
+            onChange={handleAddChange}
+          />
+
+          {AddError.question && (
+            <p className="error">
+              {AddError.question}
+            </p>
+          )}
+        </div>
+
+        {/* Choices */}
+        <div className="form-group">
+          <div>
+            <h4>Choices</h4>
+
+          {AddError.choices && (
+            <p className="error">
+              {AddError.choices}
+            </p>
+          )}
+          </div>
+          
+
+          <div className="choice-header">
+            <button
+              type="button"
+              onClick={addNewChoice}
+              className="AddButton"
+            >
+              + Add Choice
+            </button>
+          </div>
+
+          {Addform.choices.map((choice, index) => (
+            <div
+              key={index}
+              className="choice-card"
+            >
+
+              <div className="choice-card-header">
+                <span className="choice-title">
+                  Choice {index + 1}
+                </span>
+
+                <button
+                  type="button"
+                  className="remove-choice-btn"
+                  onClick={() => deleteNewChoice(index)}
+                >
+                  <FiTrash2 />
+                </button>
+              </div>
+
+    <div className="choice-fields">
+
+  {/* Choice Value */}
+  <input
+    type="text"
+    placeholder="Choice Value"
+    value={choice.value}
+    onChange={(e) =>
+      handleAddChoiceChange(
+        index,
+        "value",
+        e.target.value
+      )
+    }
+    className="choice-input"
+  />
+
+  {/* Hidden File Input */}
+  <input
+    type="file"
+    accept="image/*"
+    id={`choice-image-${index}`}
+    className="hidden-file-input"
+    onChange={(e) => {
+      const file = e.target.files?.[0];
+
+      if (file) {
+        handleAddChoiceChange(
+          index,
+          "image",
+          file
+        );
+      }
+    }}
+  />
+
+  {/* IMAGE AREA */}
+  {choice.image ? (
+    <div className="selected-image-box">
+
+      <img
+        src={URL.createObjectURL(choice.image)}
+        alt="Selected"
+        className="choice-preview-image"
       />
 
-      {AddError.question && (
-        <p className="error">{AddError.question}</p>
-      )}
-
-     
-
-  
-
-<h4>Choices</h4>
-
-{AddError.choices && (
-  <p className="error">{AddError.choices}</p>
-)}
-
-<div className="choice-header">
-  <button
-    type="button"
-    onClick={addNewChoice}
-    className="AddButton"
-  >
-    + Add Choice
-  </button>
-</div>
-
-{Addform.choices.map((choice, index) => (
-  <div key={index} className="choice-card">
-
-    <div className="choice-card-header">
-
-      <span className="choice-title">
-        Choice {index + 1}
+      <span className="choice-image-name">
+        {choice.image.name}
       </span>
 
       <button
         type="button"
-        className="remove-choice-btn"
-        onClick={() => deleteNewChoice(index)}
-      >
-        <FiTrash2 />
-      </button>
-    </div>
-
-    <div className="choice-fields">
-
-      <input
-        type="text"
-        placeholder="Choice Value"
-        value={choice.value}
-        onChange={(e) =>
-          handleAddChoiceChange(
-            index,
-            "value",
-            e.target.value
-          )
-        }
-        className="choice-input"
-      />
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) =>
+        className="delete-image-btn"
+        onClick={() => {
           handleAddChoiceChange(
             index,
             "image",
-            e.target.files[0]
-          )
-        }
-        className="choice-file"
-      />
+            null
+          );
+
+          // file input reset
+          const input = document.getElementById(
+            `choice-image-${index}`
+          );
+
+          if (input) {
+            input.value = "";
+          }
+        }}
+      >
+        <FiTrash2 />
+      </button>
+
     </div>
+  ) : (
+    <label
+      htmlFor={`choice-image-${index}`}
+      className="upload-image-btn"
+    >
+      <span>📷</span>
+      <span>Click here to upload image</span>
+    </label>
+  )}
 
-    {AddError.choiceErrors &&
-      AddError.choiceErrors[index] && (
-        <p className="errortext">
-          {AddError.choiceErrors[index]}
-        </p>
-      )}
-  </div>
-))}
+</div>
+              {AddError.choiceErrors &&
+                AddError.choiceErrors[index] && (
+                  <p className="errortext">
+                    {AddError.choiceErrors[index]}
+                  </p>
+                )}
 
+            </div>
+          ))}
 
-      <div className="form-buttons">
-       <button
-  type="submit"
-  disabled={isAdding}
->
-  {isAdding ? "Adding..." : "Add Question"}
-</button>
+          {/* Buttons */}
+          <div className="form-buttons">
 
-        <button
-          type="button"
-          onClick={() => setAddQuestinModal(false)}
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
+            <button
+              type="submit"
+              disabled={isAdding}
+            >
+              {isAdding
+                ? "Adding..."
+                : "Add Question"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setAddQuestinModal(false)}
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
   </div>
 )}
       {DeleteModal && (

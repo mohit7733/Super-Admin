@@ -143,7 +143,7 @@ const renderStars = (rating) => {
               ))
             ) : ErrorReview ? (
               <tr>
-                <td colSpan="6" style={{ color: "red" }}>
+                <td colSpan="7" style={{ color: "red" }}>
                   {ErrorReview}
                 </td>
               </tr>
@@ -197,7 +197,7 @@ const renderStars = (rating) => {
               ))
             ) : (
               <tr>
-                <td colSpan="6" style={{ textAlign: "center" }}>
+                <td colSpan="7" style={{ textAlign: "center" }}>
                   No data found
                 </td>
               </tr>

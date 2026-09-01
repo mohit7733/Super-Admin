@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import BASE_URL from "../../../Base";
 import OrderModal from "../Customer/OrderModal";
+import { FaTruck } from "react-icons/fa";
+
+
+
 
 import {
   FaShoppingBag,
@@ -383,7 +387,7 @@ useEffect(() => {
   className="status-filter date-filter"
 />
           </div>
-    {/* Sorted By */}
+   
  
 
   </div>
@@ -395,12 +399,15 @@ useEffect(() => {
       <th>Order ID</th>
       <th>Customer</th>
       <th>Product</th>
+      
       <th>Brand</th>
       <th>Items</th>
       <th>Order Date</th>
+        <th>Status</th>
       <th>Payment</th>
+      
       <th>Amount</th>
-      <th>Status</th>
+    
     
       <th className="action-column">Action</th>
     </tr>
@@ -531,7 +538,19 @@ useEffect(() => {
                 </span>
               </div>
             </td>
-
+<td>
+  <span
+    className={`order-status-badge ${status} order-status-clickable`}
+    title="View Order Tracking"
+    onClick={() => {
+      navigate(`/OrderTracking/${order.order_id}`);
+    }}
+  >
+    {status
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase())}
+  </span>
+</td>
          
             <td>
               <div className="order-payment-info">
@@ -552,8 +571,7 @@ useEffect(() => {
                 </span>
               </div>
             </td>
-
-            {/* AMOUNT */}
+   {/* AMOUNT */}
             <td>
               <span className="order-amount">
                 ₹
@@ -564,22 +582,13 @@ useEffect(() => {
             </td>
 
             {/* STATUS */}
-            <td>
-              <span
-                className={`order-status-badge ${status}`}
-              >
-                {status
-                  .replaceAll("_", " ")
-                  .replace(/\b\w/g, (char) =>
-                    char.toUpperCase()
-                  )}
-              </span>
-            </td>
+          
 
             {/* ACTION */}
            {/* ACTION */}
 <td className="order-action-cell">
-  <button
+  <div className="faqorder">
+     <button
     type="button"
     className="order-view-btn"
     title="View Order Details"
@@ -590,6 +599,20 @@ useEffect(() => {
   >
     <FaEye size={14} />
   </button>
+  
+<button
+    type="button"
+    className="order-view-btn"
+    title="Track Order"
+    onClick={() => {
+  navigate(`/OrderTracking/${order.order_id}`);
+}}
+  >
+    <FaTruck size={14} />
+  </button>
+  </div>
+ 
+
 </td>
 
 
@@ -626,10 +649,10 @@ useEffect(() => {
     of <strong>{totalCount}</strong> orders
   </div>
 
-  {/* RIGHT - PAGINATION */}
+
   <div className="order-pagination-buttons">
 
-    {/* PREVIOUS */}
+ 
     <button
       className="order-pagination-btn order-pagination-arrow"
       disabled={currentPage === 1 || orderLoading}
@@ -640,7 +663,7 @@ useEffect(() => {
       ‹
     </button>
 
-    {/* FIRST PAGE */}
+    
     <button
       className={`order-pagination-btn ${
         currentPage === 1
@@ -653,14 +676,14 @@ useEffect(() => {
       1
     </button>
 
-    {/* LEFT DOTS */}
+   
     {currentPage > 3 && (
       <span className="order-pagination-dots">
         ...
       </span>
     )}
 
-    {/* MIDDLE PAGES */}
+   
     {Array.from(
       { length: totalPages },
       (_, index) => index + 1
@@ -688,14 +711,14 @@ useEffect(() => {
         </button>
       ))}
 
-    {/* RIGHT DOTS */}
+  
     {currentPage < totalPages - 2 && (
       <span className="order-pagination-dots">
         ...
       </span>
     )}
 
-    {/* LAST PAGE */}
+ 
     {totalPages > 1 && (
       <button
         className={`order-pagination-btn ${
@@ -712,7 +735,7 @@ useEffect(() => {
       </button>
     )}
 
-    {/* NEXT */}
+  
     <button
       className="order-pagination-btn order-pagination-arrow"
       disabled={

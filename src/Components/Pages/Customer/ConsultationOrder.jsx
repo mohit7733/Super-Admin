@@ -66,11 +66,6 @@ const ConsultationOrder = () => {
         color: "#b45309",
       };
 
-   
-   
-    
-
-    // Red
     case "failed":
     case "rejected":
     case "cancelled":

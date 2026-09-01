@@ -856,7 +856,7 @@ input[type="checkbox"] {
 
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 10px;
 
   max-height: 90vh;
   overflow-y: auto;
@@ -888,7 +888,7 @@ input[type="checkbox"] {
   font-weight: 500;
   font-size: 14px;
   color: #444;
-  margin-bottom: 4px;
+ 
 }
 
 .customer-form input {
@@ -3763,13 +3763,13 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
-
 .choice-card {
   border: 1px solid #e5e5e5;
   border-radius: 10px;
-  padding: 14px;
+  padding: 10px;
   margin-bottom: 15px;
   background: #fafafa;
 }
@@ -3806,23 +3806,131 @@ textarea {
 
 .choice-fields {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 12px;
+  width: 100%;
 }
 
-.choice-input,
-.choice-file {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #dcdcdc;
-  font-size: 14px;
+.choice-input {
+  flex: 1;
+  height: 46px;
+  padding: 0 14px;
+
+  border: 1px solid #d9dfe5;
+  border-radius: 10px;
+
+  font-size: 15px;
   outline: none;
+  box-sizing: border-box;
 }
 
 .choice-input:focus {
-  border-color: #0D614E;
+  border-color: #0d6b59;
 }
+
+.hidden-file-input {
+  display: none;
+}
+
+/* Upload box */
+.upload-image-btn {
+  flex: 1;
+  height: 46px;
+
+  border-radius: 10px;
+  border: 1px solid #d9dfe5;
+
+  background: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  box-sizing: border-box;
+  cursor: pointer;
+
+  color: #0d6b59;
+  font-size: 15px;
+  font-weight: 600;
+
+  transition: 0.2s ease;
+}
+
+.upload-image-btn:hover {
+  background: #f7fbfa;
+  border-color: #0d6b59;
+}
+
+/* Selected image */
+.selected-image-box {
+  flex: 1;
+  height: 46px;
+
+  border: 1px solid #d9dfe5;
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+  padding: 4px 6px;
+
+  box-sizing: border-box;
+  background: #fff;
+
+  overflow: hidden;
+}
+
+.choice-preview-image {
+  width: 36px !important;
+  height: 36px !important;
+
+  min-width: 36px !important;
+  max-width: 36px !important;
+
+  min-height: 36px !important;
+  max-height: 36px !important;
+
+  object-fit: cover !important;
+  border-radius: 6px;
+
+  flex-shrink: 0;
+}
+
+.choice-image-name {
+  flex: 1;
+  min-width: 0;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  font-size: 13px;
+  color: #4c5870;
+}
+
+.delete-image-btn {
+  width: 32px;
+  height: 32px;
+
+  min-width: 32px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #fff0f0;
+  color: #ef4444;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 
 .AddButton {
   background: #0D614E;
@@ -7969,7 +8077,37 @@ flex-direction:column;
   background: #98a2b3;
 }
 
+.category-id-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 2px;
+  line-height: 1;
+}
 
+.category-id-text {
+  font-size: 12px;
+  color: #666;
+}
+
+.copy-id-btn {
+  border: none;
+  background: transparent;
+  padding: 2px;
+  margin: 0;
+  color: #0d614e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.copy-id-btn:hover {
+  background: #e8f3f0;
+  color: #095442;
+}
 
 
 .dietician-action-btn {
@@ -8020,9 +8158,15 @@ flex-direction:column;
   background: #dc2626;
   color: #fff;
 }
+.category-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
 
-/* Responsive */
+
+
 
 @media (max-width: 700px) {
 
@@ -8040,4 +8184,8 @@ flex-direction:column;
   .dietician-action-btn {
     width: 100%;
   }
+}
+.faqorder{
+  display: flex;
+  gap:3px
 }

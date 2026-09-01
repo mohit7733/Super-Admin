@@ -349,7 +349,7 @@ const handleSubmitReason = async () => {
     setData(results);
     setTotalCount(count);
 
-    // IMPORTANT
+    
     setTotalPages(Math.ceil(count / pageSize));
 
     setCurrentPage(page);

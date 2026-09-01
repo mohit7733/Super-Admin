@@ -20,6 +20,7 @@ const userId = localStorage.getItem("USER_ID")
 console.log("userIduserIduserId", userId)
 
 const intialDoctorform = {
+  
   profile_image: "",
   first_name: "",
   last_name: "",
@@ -645,27 +646,7 @@ const filterDoctors = () => {
   <option value="suspended">Suspended</option>
 </select>
 
-          {/* <select
-            value={specializationfilter}
-            onChange={(e) => setSpecilizationfilter(e.target.value)}
-            className="status-filter"
-          >
-            <option value="All">All Specializations</option>
-            {specialities?.map((s) => (
-              <option key={s.id} value={s.name}>
-                {s.name}
-              </option>
-            ))}
-          </select> */}
-
-          {/* <button className="btn-primary" onClick={() => setDoctorModal(true)}>
-            <BsPlus size={18} />
-            Add Doctor
-          </button>
-          <button className="btn-secondary" >
-            <BsDownload size={16} />
-            Export Details
-          </button> */}
+        
 
         </div>
       </div>
@@ -711,7 +692,7 @@ const filterDoctors = () => {
                 <tr key={item.id}>
   <td>{index + 1}</td>
 
-  {/* PROFILE */}
+  
   <td>
     <div className="customer-avatar-wrapper">
       {item.profile_image ? (
@@ -954,6 +935,7 @@ const filterDoctors = () => {
     setSelectedDoctorId(null);
   }}
   >
+
     <div className="confirm-modal"
       onClick={(e) => e.stopPropagation()}
     >

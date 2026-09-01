@@ -40,7 +40,7 @@ const DoctorDietplans = () => {
                   </div>
     
     <div className="stats2-grid">
-  {/* Total Diet Plans */}
+
   <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
     <div
       className="stat2-icon"
@@ -50,11 +50,11 @@ const DoctorDietplans = () => {
     </div>
     <div className="stat2-info">
       <h3>Total Diet Plans</h3>
-      {/* <div className="stat2-value">{stats.total}</div> */}
+     
     </div>
   </div>
 
-  {/* Active Plans */}
+ 
   <div className="stat2-card" style={{ borderTopColor:"#0D614E" }}>
     <div
       className="stat2-icon"
@@ -64,7 +64,7 @@ const DoctorDietplans = () => {
     </div>
     <div className="stat2-info">
       <h3>Active Plans</h3>
-      {/* <div className="stat2-value">{stats.active}</div> */}
+  
     </div>
   </div>
 

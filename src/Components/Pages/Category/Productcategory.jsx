@@ -7,6 +7,8 @@ import {
   FaEdit,
   FaSearch,
   FaTimes,
+   FaCopy,
+   FaFileExcel,
 } from "react-icons/fa";
 import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
@@ -14,6 +16,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { BiPlus } from "react-icons/bi";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 const ProductCategory = () => {
   const [HealthCategoryData, setHealthCategoryData] = useState([]);
@@ -68,7 +72,7 @@ const ProductCategory = () => {
   const editFileRef = useRef(null);
   const navigate = useNavigate();
 
-  // Calculate statistics
+ 
   const calculateStats = (data) => {
     const total = data.length;
     const active = data.filter((item) => item.is_active === true).length;
@@ -587,7 +591,239 @@ if (Object.keys(newErrors).length > 0) {
     setSearchTerm("");
     setStatusFilter("all");
   };
+const exportToExcel = async () => {
+  if (!FilteredData || FilteredData.length === 0) {
+    toast.warning("No product categories available to export");
+    return;
+  }
 
+  try {
+    toast.info("Preparing Excel file...");
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Product Categories");
+
+  worksheet.columns = [
+  {
+    header: "Product Category ID",
+    key: "id",
+    width: 45,
+  },
+  {
+    header: "Service Category",
+    key: "service_category_name",
+    width: 28,
+  },
+  {
+    header: "Category Name",
+    key: "name",
+    width: 32,
+  },
+  {
+    header: "Code",
+    key: "code",
+    width: 18,
+  },
+  {
+    header: "Status",
+    key: "is_active",
+    width: 18,
+  },
+  {
+    header: "Image",
+    key: "image",
+    width: 65,
+  },
+
+];
+    const headerRow = worksheet.getRow(1);
+
+    headerRow.font = {
+      bold: true,
+      color: { argb: "FFFFFF" },
+      size: 12,
+    };
+
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "0D614E" },
+    };
+
+    headerRow.alignment = {
+      vertical: "middle",
+      horizontal: "center",
+    };
+
+    headerRow.height = 25;
+
+    
+    for (const item of FilteredData) {
+      const row = worksheet.addRow({
+        id: item.id || "",
+        service_category_name: item.service_category_name || "N/A",
+      is_active: item.is_active ? "Active" : "Inactive",
+        name: item.name || "",
+        code: item.code || "",
+        image: "",
+      });
+
+      row.height = 90;
+
+      row.alignment = {
+        vertical: "middle",
+        horizontal: "center",
+      };
+
+   
+      if (item.image_url) {
+     
+        row.getCell(6).alignment = {
+  vertical: "middle",
+  horizontal: "left",
+  wrapText: false,
+};
+
+        try {
+          const response = await fetch(item.image_url);
+
+          if (response.ok) {
+            const blob = await response.blob();
+            const arrayBuffer = await blob.arrayBuffer();
+
+            let extension = "png";
+
+            if (
+              blob.type.includes("jpeg") ||
+              blob.type.includes("jpg")
+            ) {
+              extension = "jpeg";
+            } else if (blob.type.includes("png")) {
+              extension = "png";
+            } else if (blob.type.includes("webp")) {
+              // ExcelJS does not properly support webp
+              // so keep URL link if image cannot be embedded
+              extension = "png";
+            }
+
+            const imageId = workbook.addImage({
+              buffer: arrayBuffer,
+              extension: extension,
+            });
+
+            // IMPORTANT:
+            // Image column = E
+            // ExcelJS columns are 0-based
+            worksheet.addImage(imageId, {
+              tl: {
+                col: 4.25,
+                row: row.number - 0.85,
+              },
+              ext: {
+                width: 65,
+                height: 65,
+              },
+            });
+
+            // Keep clickable URL also
+            row.getCell(6).value = {
+              text: "View Image",
+              hyperlink: item.image_url,
+            };
+
+            row.getCell(6).font = {
+              color: { argb: "0563C1" },
+              underline: true,
+            };
+          }
+        } catch (imageError) {
+          console.log(
+            "Image could not be embedded:",
+            item.image_url,
+            imageError
+          );
+
+          // IMPORTANT:
+          // Do NOT put image URL in cell 4.
+          // Cell 4 = Code.
+          // Cell 5 = Image.
+          row.getCell(6).value = {
+            text: "View Image",
+            hyperlink: item.image_url,
+          };
+
+          row.getCell(6).font = {
+            color: { argb: "0563C1" },
+            underline: true,
+          };
+        }
+      } else {
+        row.getCell(6).value = "No Image";
+      }
+    }
+
+    // =========================
+    // BORDER
+    // =========================
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: {
+            style: "thin",
+            color: { argb: "D9E2E0" },
+          },
+          left: {
+            style: "thin",
+            color: { argb: "D9E2E0" },
+          },
+          bottom: {
+            style: "thin",
+            color: { argb: "D9E2E0" },
+          },
+          right: {
+            style: "thin",
+            color: { argb: "D9E2E0" },
+          },
+        };
+
+        cell.alignment = {
+          vertical: "middle",
+          horizontal: "center",
+          wrapText: true,
+        };
+      });
+    });
+
+    // =========================
+    // FREEZE HEADER
+    // =========================
+    worksheet.views = [
+      {
+        state: "frozen",
+        ySplit: 1,
+      },
+    ];
+
+   
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    saveAs(
+      blob,
+      `Product_Categories_${new Date()
+        .toISOString()
+        .split("T")[0]}.xlsx`
+    );
+
+    toast.success("Product Categories exported successfully!");
+  } catch (error) {
+    console.error("Excel Export Error:", error);
+    toast.error("Failed to export Excel file");
+  }
+};
   return (
     <>
       <div className="page-header">
@@ -595,11 +831,11 @@ if (Object.keys(newErrors).length > 0) {
         <p className="page-paragraph">Manage product categories and their details</p>
       </div>
 
-      {/* Stats Cards */}
+     
       <div className="stats2-grid">
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={16} />
+            <FaUsers size={12} />
           </div>
           <div className="stat2-info">
             <h3>Total Categories</h3>
@@ -608,7 +844,7 @@ if (Object.keys(newErrors).length > 0) {
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#28a745" }}>
           <div className="stat2-icon" style={{ background: "#28a74520", color: "#28a745" }}>
-            <FaChartLine size={16} />
+            <FaChartLine size={12} />
           </div>
           <div className="stat2-info">
             <h3>Active</h3>
@@ -617,7 +853,7 @@ if (Object.keys(newErrors).length > 0) {
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#dc3545" }}>
           <div className="stat2-icon" style={{ background: "#dc354520", color: "#dc3545" }}>
-            <FaCalendarAlt size={16} />
+            <FaCalendarAlt size={12} />
           </div>
           <div className="stat2-info">
             <h3>Inactive</h3>
@@ -626,7 +862,7 @@ if (Object.keys(newErrors).length > 0) {
         </div>
       </div>
 
-      {/* Filters and Actions */}
+     
       <div className="filter-category">
         <div className="filter-controls">
           <div className="search-wrapper">
@@ -661,20 +897,32 @@ if (Object.keys(newErrors).length > 0) {
             </button>
           )}
         </div>
+        <div className="category-action-buttons">
 
-        <button
-          className="add-customer-btn"
-          onClick={() => {
-            resetForm();
-            setShowCategoryModal(true);
-          }}
-        >
-       <BiPlus/>
-          Add Product Category
-        </button>
-      </div>
+  <button
+   className="add-customer-btn"
+    onClick={exportToExcel}
+    disabled={!FilteredData?.length}
+  >
+    <FaFileExcel />
+    Export Excel
+  </button>
 
-      {/* Table */}
+  <button
+    className="add-customer-btn"
+    onClick={() => {
+      resetForm();
+      setShowCategoryModal(true);
+    }}
+  >
+    <BiPlus />
+    Add Product Category
+  </button>
+
+</div>
+</div>
+
+  
       <div className="table-wrapper">
         <table className="data-table">
           <thead>
@@ -709,17 +957,31 @@ if (Object.keys(newErrors).length > 0) {
                   <td>{index + 1}</td>
                   <td>
                     <strong>{item.name}</strong>
-                    {item.description && (
-                      <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
-                        {item.description.substring(0, 30)}
-                        {item.description.length > 30 && "..."}
-                      </div>
-                    )}
+                 {item.id && (
+  <div className="category-id-wrapper">
+    <span className="category-id-text">
+      {item.id}
+    </span>
+
+    <button
+      type="button"
+      className="copy-id-btn"
+      onClick={() => {
+        navigator.clipboard.writeText(item.id);
+        toast.success("Category ID copied!");
+      }}
+      title="Copy Category ID"
+    >
+      <FaCopy size={12} />
+    </button>
+  </div>
+)}
                   </td>
                   <td>
                     <span className="service-category-badge">
                       {item.service_category_name || "N/A"}
                     </span>
+                        
                   </td>
                   <td>
                     <span className="category-code-badge">{item.code || "N/A"}</span>
@@ -879,7 +1141,6 @@ if (Object.keys(newErrors).length > 0) {
     onChange={(e) => {
       const input = e.target.value.toUpperCase();
 
-      // Show toast if invalid character is entered
       if (/[^A-Z]/.test(input)) {
         toast.error("Only uppercase letters (A-Z) are allowed");
         return;
@@ -1214,7 +1475,7 @@ if (Object.keys(newErrors).length > 0) {
   </div>
 )}
 
-      {/* Status Change Modal */}
+  
   {productCategoryStatusModal && selectedProductCategory && (
   <div
     className="activeModal-overlay"

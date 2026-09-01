@@ -4,9 +4,6 @@
   padding: 0;
 }
 
-/* ==========================
-   DOCUMENT GRID
-========================== */
 
 .documents-grids {
   display: grid;
@@ -16,9 +13,7 @@
   margin-bottom: 24px;
 }
 
-/* ==========================
-   DOCUMENT CARD
-========================== */
+
 
 .documents-card {
   width: 100%;
@@ -36,9 +31,7 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 
-/* ==========================
-   HEADER
-========================== */
+
 
 .document-header {
   display: flex;
@@ -163,9 +156,6 @@
   background: #f2fbf7;
 }
 
-/* ==========================
-   EMPTY STATE
-========================== */
 
 .no-preview {
   width: 100%;
@@ -179,9 +169,6 @@
   border-radius: 8px;
 }
 
-/* ==========================
-   RESPONSIVE
-========================== */
 
 @media (max-width:1400px) {
   .documents-grids {

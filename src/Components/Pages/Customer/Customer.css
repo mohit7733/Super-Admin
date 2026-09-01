@@ -369,7 +369,7 @@
     font-size: 13px;
     font-weight: 500;
     color: #495057;
-    margin-bottom: 8px;
+    /* margin-bottom: 8px; */
 }
 
 .form-group input,

@@ -80,7 +80,9 @@ import AddDiet from './Components/Pages/Diet/AddDiet';
 import Faq from './Components/Pages/Faq/Faq';
 import BulkUpload from './Components/Pages/Product/BulkUpload';
 import PatientHistory from './Components/Pages/Doctor/PatientHistory';
-
+import PrescriptionHistory from './Components/Pages/Patient/PrescriptionHistory'
+import OrderTracking from'./Components/Pages/Order/OrderTracking'
+import DietReview from './Components/Pages/Review/DietReview'
 
 
 const Layout = ({ children }) => {
@@ -180,6 +182,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+         <Route
+          path="/Review/Diet"
+          element={
+            <ProtectedRoute permission="view_diet_review">
+              <Layout>
+                <DietReview />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
      
 
         <Route
@@ -192,6 +204,17 @@ function App() {
             </ProtectedRoute>
           }
         />
+         <Route
+          path="/OrderTracking/:OrderId"
+          element={
+            <ProtectedRoute permission="view_Order_Tracking">
+              <Layout>
+                <OrderTracking />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+     
 
       <Route
           path="/FAQ/Management"
@@ -245,6 +268,18 @@ function App() {
     </ProtectedRoute>
   }
 />
+
+ <Route
+  path="/PrescriptionHistory/:PatientHistoryId"
+  element={
+    <ProtectedRoute permission="view_patient_history">
+      <Layout>
+        <PrescriptionHistory />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
+ 
   <Route
           path="/ActiveOrder"
           element={
