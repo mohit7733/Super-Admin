@@ -848,7 +848,7 @@ p {
 }
 
 .form-group label {
-  margin-bottom: 8px;
+  /* margin-bottom: 8px; */
   font-size: 14px;
   font-weight: 600;
 }

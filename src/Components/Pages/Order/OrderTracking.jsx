@@ -494,16 +494,16 @@ const timelineData = buildTimeline();
       </div>
 
 
-      {/* ================= MAIN GRID ================= */}
+    
 
       <div className="ordertracking-main-grid">
 
 
-        {/* ================= ORDER ITEMS ================= */}
+ 
 
     <div className="ordertracking-col">
 
-  {/* ================= ORDER ITEMS ================= */}
+
   <div className="ordertracking-card">
 
     <div className="ordertracking-card-head">

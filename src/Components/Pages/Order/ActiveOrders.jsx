@@ -399,12 +399,15 @@ useEffect(() => {
       <th>Order ID</th>
       <th>Customer</th>
       <th>Product</th>
+      
       <th>Brand</th>
       <th>Items</th>
       <th>Order Date</th>
+        <th>Status</th>
       <th>Payment</th>
+      
       <th>Amount</th>
-      <th>Status</th>
+    
     
       <th className="action-column">Action</th>
     </tr>
@@ -535,7 +538,19 @@ useEffect(() => {
                 </span>
               </div>
             </td>
-
+<td>
+  <span
+    className={`order-status-badge ${status} order-status-clickable`}
+    title="View Order Tracking"
+    onClick={() => {
+      navigate(`/OrderTracking/${order.order_id}`);
+    }}
+  >
+    {status
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase())}
+  </span>
+</td>
          
             <td>
               <div className="order-payment-info">
@@ -567,17 +582,7 @@ useEffect(() => {
             </td>
 
             {/* STATUS */}
-            <td>
-              <span
-                className={`order-status-badge ${status}`}
-              >
-                {status
-                  .replaceAll("_", " ")
-                  .replace(/\b\w/g, (char) =>
-                    char.toUpperCase()
-                  )}
-              </span>
-            </td>
+          
 
             {/* ACTION */}
            {/* ACTION */}

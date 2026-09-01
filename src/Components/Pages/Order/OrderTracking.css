@@ -31,7 +31,7 @@
   height: 38px;
   border-radius: 10px;
   border: 1px solid #e6e9ef;
-  background: #ffffff;
+border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,7 +44,7 @@
 }
 
 .ordertracking-back-btn:hover {
-  background: #fafbfc;
+
   color: #131722;
 }
 
@@ -222,31 +222,35 @@
   font-weight: 600;
 }
 
-/* ================================
-   MAIN GRID
-================================ */
+/* =========================================
+   MAIN ORDER CONTENT
+========================================= */
 
 .ordertracking-main-grid {
   display: grid;
-  grid-template-columns: 1.65fr 1.05fr 1.05fr 1.05fr;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr) minmax(280px, 1fr);
+  gap: 16px;
+  width: 100%;
   align-items: start;
 }
 
 .ordertracking-col {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
+  width: 100%;
 }
 
 .ordertracking-card {
+  width: 100%;
+  box-sizing: border-box;
   background: #ffffff;
-  border: 1px solid #e6e9ef;
-  border-radius: 16px;
+  border: 1px solid #e5e9ee;
+  border-radius: 14px;
   box-shadow:
-    0 1px 2px rgba(19, 23, 34, 0.04),
-    0 2px 8px rgba(19, 23, 34, 0.04);
+    0 1px 2px rgba(16, 24, 40, 0.03),
+    0 4px 12px rgba(16, 24, 40, 0.035);
   padding: 18px 20px;
 }
 
@@ -1028,21 +1032,32 @@
 .ordertracking-back-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #0f6b3b;
+  gap: 7px;
+  padding: 7px 12px;
+  background: #ffffff;
+  border: none;
+  border-radius: 4px;
+  color: #087443;
+  font-size: 16px;
+  font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .ordertracking-back-link svg {
-  width: 14px;
-  height: 14px;
+  width: 17px;
+  height: 17px;
+  stroke-width: 2.5;
 }
 
 .ordertracking-back-link:hover {
-  text-decoration: underline;
+ 
+  color: #087443;
+  text-decoration: none;
 }
+
+
 
 .ordertracking-more-actions {
   display: inline-flex;

@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaDisease, FaThLarge } from "react-icons/fa";
+import { FaDisease, FaThLarge, FaTrash, FaFileExcel, } from "react-icons/fa";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaTimesCircle } from "react-icons/fa";
 import { BsPlus, BsDownload, BsSearch } from "react-icons/bs";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit,FaCopy } from "react-icons/fa";
 import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
 import BASE_URL from "../../../Base";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import ExcelJS from "exceljs";
 import './Disease.css';
 const Disease = () => {
   const [Loading, setLoading] = useState(false);
@@ -437,6 +438,7 @@ const validateDiseaseForm = () => {
     }
   };
 
+
   useEffect(() => {
     getDiseaseList();
   }, []);
@@ -847,6 +849,240 @@ if (response.ok) {
       setIsDeleting(false);
     }
   };
+const exportToExcel = async () => {
+  if (!FilteredData?.length) {
+    toast.error("No disease data available to export");
+    return;
+  }
+
+  try {
+    const workbook = new ExcelJS.Workbook();
+
+    const worksheet = workbook.addWorksheet("Diseases");
+
+    worksheet.columns = [
+      {
+        header: "#",
+        key: "index",
+        width: 8,
+      },
+      {
+        header: "Disease Name",
+        key: "name",
+        width: 30,
+      },
+      {
+        header: "Health Category",
+        key: "health_category",
+        width: 30,
+      },
+      {
+        header: "Disease Code",
+        key: "code",
+        width: 20,
+      },
+      {
+        header: "Prakriti",
+        key: "prakriti",
+        width: 20,
+      },
+      {
+        header: "Alternate Name",
+        key: "alternate_name",
+        width: 30,
+      },
+      {
+        header: "Description",
+        key: "description",
+        width: 45,
+      },
+      {
+        header: "Symptoms",
+        key: "symptoms",
+        width: 50,
+      },
+      {
+        header: "Disease ID",
+        key: "id",
+        width: 40,
+      },
+      {
+        header: "Image Link",
+        key: "image",
+        width: 45,
+      },
+      {
+        header: "Active Status",
+        key: "status",
+        width: 18,
+      },
+    ];
+
+    FilteredData.forEach((item, index) => {
+      const row = worksheet.addRow({
+        index: index + 1,
+
+        name: item.name || "N/A",
+
+        health_category:
+          item.health_category_name || "N/A",
+
+        code: item.code || "N/A",
+
+        prakriti: item.prakriti || "N/A",
+
+        alternate_name:
+          item.alternate_name || "N/A",
+
+        description:
+          item.description || "N/A",
+
+        symptoms: Array.isArray(item.symptoms)
+          ? item.symptoms.join(", ")
+          : item.symptoms || "N/A",
+
+        id: item.id || "N/A",
+
+        image: item.image_url || "N/A",
+
+        status: item.is_active
+          ? "Active"
+          : "Inactive",
+      });
+
+     
+      if (item.image_url) {
+        const imageCell = row.getCell("image");
+
+        imageCell.value = {
+          text: "View Image",
+          hyperlink: item.image_url,
+        };
+
+        imageCell.font = {
+          color: { argb: "0563C1" },
+          underline: true,
+        };
+      }
+    });
+
+   
+    const headerRow = worksheet.getRow(1);
+
+    headerRow.font = {
+      bold: true,
+      color: { argb: "FFFFFF" },
+    };
+
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "0D614E" },
+    };
+
+    headerRow.alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+    headerRow.height = 25;
+
+ 
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+          left: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+          bottom: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+          right: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+        };
+
+        cell.alignment = {
+          vertical: "top",
+          wrapText: true,
+        };
+      });
+    });
+
+    // Center columns
+    worksheet.getColumn("index").alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+    worksheet.getColumn("code").alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+    worksheet.getColumn("prakriti").alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+    worksheet.getColumn("status").alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+    
+    worksheet.autoFilter = {
+      from: "A1",
+      to: "K1",
+    };
+
+   
+    worksheet.views = [
+      {
+        state: "frozen",
+        ySplit: 1,
+      },
+    ];
+
+    
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+
+    link.download = `Diseases_${new Date()
+      .toISOString()
+      .slice(0, 10)}.xlsx`;
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+
+    toast.success("Disease Excel exported successfully!");
+  } catch (error) {
+    console.error("Disease Excel Export Error:", error);
+
+    toast.error("Failed to export disease Excel");
+  }
+};
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -860,11 +1096,10 @@ if (response.ok) {
         <p className="page-paragraph">Manage diseases, their category and status</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="stats2-grid">
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaDisease size={24} />
+            <FaDisease size={12} />
           </div>
           <div className="stat2-info">
             <h3>Total Diseases</h3>
@@ -874,7 +1109,7 @@ if (response.ok) {
 
         <div className="stat2-card" style={{ borderTopColor: "#28a745" }}>
           <div className="stat2-icon" style={{ background: "#28a74520", color: "#28a745" }}>
-            <FaCheckCircle size={24} />
+            <FaCheckCircle size={12} />
           </div>
           <div className="stat2-info">
             <h3>Active Diseases</h3>
@@ -884,7 +1119,7 @@ if (response.ok) {
 
         <div className="stat2-card" style={{ borderTopColor: "#dc3545" }}>
           <div className="stat2-icon" style={{ background: "#dc354520", color: "#dc3545" }}>
-            <FaTimesCircle size={24} />
+            <FaTimesCircle size={12} />
           </div>
           <div className="stat2-info">
             <h3>Inactive Diseases</h3>
@@ -893,7 +1128,7 @@ if (response.ok) {
         </div>
       </div>
 
-      {/* Filters and Actions */}
+     
       <div className="filter-category">
         <div className="filter-controls">
           <div className="search-wrapper">
@@ -928,8 +1163,16 @@ if (response.ok) {
             </button>
           )}
         </div>
-
-        <button
+        <div  className="category-action-buttons">
+              <button
+                   className="add-customer-btn"
+                    onClick={exportToExcel}
+                    disabled={!FilteredData?.length}
+                  >
+                    <FaFileExcel />
+                    Export Excel
+                  </button>
+   <button
           className="add-customer-btn"
           onClick={() => {
             setFormData({
@@ -951,9 +1194,13 @@ if (response.ok) {
           <BsPlus size={20} />
           Add Disease
         </button>
+     
+        </div>
+
+     
       </div>
 
-      {/* Table */}
+     
       <div className="table-wrapper">
         <table className="data-table">
           <thead>
@@ -989,11 +1236,25 @@ if (response.ok) {
                   <td>{(currentpage - 1) * pagesize + index + 1}</td>
                   <td>
                     <strong>{item.name}</strong>
-                    {item.alternate_name && (
-                      <div style={{ fontSize: "12px", color: "#666" }}>
-                        Alt: {item.alternate_name}
-                      </div>
-                    )}
+                   {item.id && (
+                                                      <div className="category-id-wrapper">
+                                                        <span className="category-id-text">
+                                                          {item.id}
+                                                        </span>
+                                                    
+                                                        <button
+                                                          type="button"
+                                                          className="copy-id-btn"
+                                                          onClick={() => {
+                                                            navigator.clipboard.writeText(item.id);
+                                                            toast.success("Category ID copied!");
+                                                          }}
+                                                          title="Copy Category ID"
+                                                        >
+                                                          <FaCopy size={12} />
+                                                        </button>
+                                                      </div>
+                                                    )}
                   </td>
                   <td>
                     <span className="category-badge">
@@ -1073,7 +1334,7 @@ if (response.ok) {
                     <div>
                       <p>No matching diseases found</p>
                       <button className="clear-filters-btn" onClick={clearFilters}>
-                        Clear Filters
+                      <FiTrash2/>
                       </button>
                     </div>
                   ) : (

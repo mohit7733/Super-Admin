@@ -8,11 +8,14 @@ import {
   FaEdit,
   FaSearch,
   FaTimes,
+    FaCopy,
+   FaFileExcel,
 } from "react-icons/fa";
 import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
+import ExcelJS from "exceljs";
 
 const Healthcategory = () => {
   const [HealthCategoryData, setHealthCategoryData] = useState([]);
@@ -69,7 +72,7 @@ const Healthcategory = () => {
   const [editErrors, setEditErrors] = useState({});
   const [addErrors, setAddErrors] = useState({});
 
-  // Calculate statistics
+ 
   const calculateStats = (data) => {
     const total = data.length;
     const active = data.filter((item) => item.is_active === true).length;
@@ -77,7 +80,7 @@ const Healthcategory = () => {
     setStats({ total, active, inactive });
   };
 
-  // Filter data based on search and status
+ 
   const filterData = (data, search, status) => {
     let filtered = data;
 
@@ -311,6 +314,192 @@ const Healthcategory = () => {
       setHealthLoading(false);
     }
   };
+  const exportToExcel = async () => {
+  if (!FilteredData?.length) {
+    toast.error("No health category data available to export");
+    return;
+  }
+
+  try {
+    const workbook = new ExcelJS.Workbook();
+
+    const worksheet = workbook.addWorksheet("Health Categories");
+
+    worksheet.columns = [
+      {
+        header: "#",
+        key: "index",
+        width: 8,
+      },
+      {
+        header: "Health Category Name",
+        key: "name",
+        width: 30,
+      },
+      {
+        header: "Service Category Name",
+        key: "service_category_name",
+        width: 30,
+      },
+      {
+        header: "Sub Product Category Code",
+        key: "code",
+        width: 28,
+      },
+      {
+        header: " Health Category ID",
+        key: "id",
+        width: 40,
+      },
+      {
+        header: "Image Link",
+        key: "image",
+        width: 45,
+      },
+      {
+        header: "Active Status",
+        key: "status",
+        width: 18,
+      },
+    ];
+
+    FilteredData.forEach((item, index) => {
+      const row = worksheet.addRow({
+        index: index + 1,
+        name: item.name || "N/A",
+        service_category_name:
+          item.service_category_name || "N/A",
+        code: item.code || "N/A",
+        id: item.id || "N/A",
+        image: item.image_url || "N/A",
+        status: item.is_active ? "Active" : "Inactive",
+      });
+
+      // Clickable Image Link
+      if (item.image_url) {
+        const imageCell = row.getCell("image");
+
+        imageCell.value = {
+          text: "View Image",
+          hyperlink: item.image_url,
+        };
+
+        imageCell.font = {
+          color: { argb: "0563C1" },
+          underline: true,
+        };
+      }
+    });
+
+   
+    const headerRow = worksheet.getRow(1);
+
+    headerRow.font = {
+      bold: true,
+      color: { argb: "FFFFFF" },
+    };
+
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "0D614E" },
+    };
+
+    headerRow.alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+    headerRow.height = 25;
+
+   
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+          left: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+          bottom: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+          right: {
+            style: "thin",
+            color: { argb: "D1D5DB" },
+          },
+        };
+
+        cell.alignment = {
+          vertical: "middle",
+        };
+      });
+    });
+
+    worksheet.getColumn("index").alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+    worksheet.getColumn("code").alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+    worksheet.getColumn("status").alignment = {
+      horizontal: "center",
+      vertical: "middle",
+    };
+
+  
+    worksheet.autoFilter = {
+      from: "A1",
+      to: "G1",
+    };
+
+   
+    worksheet.views = [
+      {
+        state: "frozen",
+        ySplit: 1,
+      },
+    ];
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+
+    link.download = `Health_Categories_${new Date()
+      .toISOString()
+      .slice(0, 10)}.xlsx`;
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+
+    toast.success("Excel exported successfully!");
+  } catch (error) {
+    console.error("Excel Export Error:", error);
+
+    toast.error("Failed to export Excel");
+  }
+};
 
   useEffect(() => {
     getHealthCategoryList();
@@ -655,11 +844,11 @@ const Healthcategory = () => {
         <p className="page-paragraph">Manage health categories and their details</p>
       </div>
 
-      {/* Stats Cards */}
+    
       <div className="stats2-grid">
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaUsers size={24} />
+            <FaUsers size={12} />
           </div>
           <div className="stat2-info">
             <h3>Total Categories</h3>
@@ -668,7 +857,7 @@ const Healthcategory = () => {
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#28a745" }}>
           <div className="stat2-icon" style={{ background: "#28a74520", color: "#28a745" }}>
-            <FaChartLine size={24} />
+            <FaChartLine size={12} />
           </div>
           <div className="stat2-info">
             <h3>Active</h3>
@@ -677,7 +866,7 @@ const Healthcategory = () => {
         </div>
         <div className="stat2-card" style={{ borderTopColor: "#dc3545" }}>
           <div className="stat2-icon" style={{ background: "#dc354520", color: "#dc3545" }}>
-            <FaCalendarAlt size={24} />
+            <FaCalendarAlt size={12} />
           </div>
           <div className="stat2-info">
             <h3>Inactive</h3>
@@ -720,8 +909,16 @@ const Healthcategory = () => {
            </button>
           )}
         </div>
-
-        <button
+        <div className="category-action-buttons">
+           <button
+                     className="add-customer-btn"
+                      onClick={exportToExcel}
+                      disabled={!FilteredData?.length}
+                    >
+                      <FaFileExcel />
+                      Export Excel
+                    </button>
+                      <button
           className="add-customer-btn"
           onClick={() => {
             resetForm();
@@ -731,6 +928,10 @@ const Healthcategory = () => {
           <BiPlus />
           Add Health Category
         </button>
+
+        </div>
+
+      
       </div>
 
 
@@ -769,12 +970,25 @@ const Healthcategory = () => {
                   <td>{index + 1}</td>
                   <td>
                     <strong>{item.name}</strong>
-                    {item.description && (
-                      <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
-                        {item.description.substring(0, 30)}
-                        {item.description.length > 30 && "..."}
-                      </div>
-                    )}
+                             {item.id && (
+                                     <div className="category-id-wrapper">
+                                       <span className="category-id-text">
+                                         {item.id}
+                                       </span>
+                                   
+                                       <button
+                                         type="button"
+                                         className="copy-id-btn"
+                                         onClick={() => {
+                                           navigator.clipboard.writeText(item.id);
+                                           toast.success("Category ID copied!");
+                                         }}
+                                         title="Copy Category ID"
+                                       >
+                                         <FaCopy size={12} />
+                                       </button>
+                                     </div>
+                                   )}
                   </td>
                   <td>
                     <span className="service-category-badge">
