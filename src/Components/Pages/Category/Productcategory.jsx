@@ -1106,11 +1106,13 @@ const exportToExcel = async () => {
                   className={addErrors.service_category_id ? "error-input" : ""}
                 >
                   <option value="">Select Service Category</option>
-                  {ServiceCategoryData?.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name} ({cat.code})
-                    </option>
-                  ))}
+                {ServiceCategoryData
+  ?.filter((cat) => cat.is_active === true || cat.is_active === "true")
+  .map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name} ({cat.code})
+    </option>
+  ))}
                 </select>
                 {addErrors.service_category_id && (
                   <p className="error-text">{addErrors.service_category_id}</p>
@@ -1292,11 +1294,15 @@ const exportToExcel = async () => {
                   onChange={handleEditChange}
                 >
                   <option value="">Select Service Category</option>
-                  {ServiceCategoryData?.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name} ({cat.code})
-                    </option>
-                  ))}
+                 {ServiceCategoryData
+  ?.filter(
+    (cat) => cat.is_active === true || cat.is_active === "true"
+  )
+  .map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name} ({cat.code})
+    </option>
+  ))}
                 </select>
                 {editErrors.service_category_id && (
   <p className="error-text">{editErrors.service_category_id}</p>

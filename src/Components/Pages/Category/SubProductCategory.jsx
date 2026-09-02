@@ -37,9 +37,7 @@ const SubProductCategory = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [ServiceCategoryData, setServiceCategoryData] = useState([]);
-  const [ServiceCategoryLoading, setServiceCategoryLoading] = useState(false);
-  const [ServiceCategoryError, setServiceCategoryError] = useState(null);
+ 
   const [SubCategoryData, SetSubCategoryData] = useState([]);
   const [SubCategoryLoading, setSubCategoryLoading] = useState(false);
   const [SubCategoryError, setSubCategoryError] = useState(null);
@@ -1098,25 +1096,32 @@ tax_class_id:item.tax_class_id||"N/A",
             <form className="prakriti-form" onSubmit={handleAddSubSubCategory}>
               <div className="form-group">
                 <label>Product Category <span className="required">*</span></label>
-                <select
-                  name="product_id"
-                  value={SubCategoryForm.product_id}
-                  onChange={handleCategoryChange}
-                  className={AddError.product_id ? "error-input" : ""}
-                >
-                  <option value="">Select Product Category</option>
-                  {SubCategoryData?.length > 0 ? (
-                    SubCategoryData.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name} ({cat.code})
-                      </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      No Product Category Found
-                    </option>
-                  )}
-                </select>
+             <select
+  name="product_id"
+  value={SubCategoryForm.product_id}
+  onChange={handleCategoryChange}
+  className={AddError.product_id ? "error-input" : ""}
+>
+  <option value="">Select Product Category</option>
+
+  {SubCategoryData?.filter(
+    (cat) => cat.is_active === true || cat.is_active === "true"
+  ).length > 0 ? (
+    SubCategoryData
+      .filter(
+        (cat) => cat.is_active === true || cat.is_active === "true"
+      )
+      .map((cat) => (
+        <option key={cat.id} value={cat.id}>
+          {cat.name} ({cat.code})
+        </option>
+      ))
+  ) : (
+    <option value="" disabled>
+      No Active Product Category Found
+    </option>
+  )}
+</select>
                 {AddError.product_id && (
                   <p className="error-text">{AddError.product_id}</p>
                 )}
@@ -1361,25 +1366,32 @@ tax_class_id:item.tax_class_id||"N/A",
             <form className="prakriti-form" onSubmit={handleUpdateSubSubCategory}>
               <div className="form-group">
                 <label>Product Category <span className="required">*</span></label>
-                <select
-                  name="product_id"
-                  value={EditForm.product_id}
-                  onChange={handleEditChange}
-                  className={editErrors.product_id ? "error-input" : ""}
-                >
-                  <option value="">Select Product Category</option>
-                  {SubCategoryData?.length > 0 ? (
-                    SubCategoryData.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name} ({cat.code})
-                      </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      No Product Category Found
-                    </option>
-                  )}
-                </select>
+              <select
+  name="product_id"
+  value={EditForm.product_id}
+  onChange={handleEditChange}
+  className={editErrors.product_id ? "error-input" : ""}
+>
+  <option value="">Select Product Category</option>
+
+  {SubCategoryData?.filter(
+    (cat) => cat.is_active === true || cat.is_active === "true"
+  ).length > 0 ? (
+    SubCategoryData
+      .filter(
+        (cat) => cat.is_active === true || cat.is_active === "true"
+      )
+      .map((cat) => (
+        <option key={cat.id} value={cat.id}>
+          {cat.name} ({cat.code})
+        </option>
+      ))
+  ) : (
+    <option value="" disabled>
+      No Active Product Category Found
+    </option>
+  )}
+</select>
                 {editErrors.product_id && (
                   <p className="error-text">{editErrors.product_id}</p>
                 )}

@@ -10,6 +10,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import HealingIcon from '@mui/icons-material/FitnessCenter';
 import RateReviewIcon from '@mui/icons-material/RateReview';
+import { FaFileContract } from 'react-icons/fa';
 
 import { FiClock } from "react-icons/fi";
 import { FaTag, FaTicketAlt, FaUsers, FaClipboardList, FaHistory, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
@@ -111,6 +112,17 @@ export const SidebarData = () => [
       icon: <FaCircleQuestion size={18} />,
     },
   ],
+},
+{
+  title: "Legal Policies",
+  icon: <FaFileContract size={20} />,
+  path: "#",
+  permission: "manage_legal_policies",
+  children:[
+    {
+
+    }
+  ]
 },
  
   {

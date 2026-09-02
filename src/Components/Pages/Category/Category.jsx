@@ -927,10 +927,10 @@ const exportToExcel = async () => {
               <h3>No Categories Available</h3>
 
               <p>
-                There are no service categories yet. Create your first
-                category to get started.
+                 Create your first
+                category to get started.Click  "on Add Category" to Create
               </p>
-
+{/* 
               <button
                 className="add-customer-btn"
                 onClick={() => {
@@ -944,7 +944,7 @@ const exportToExcel = async () => {
               >
                 <BiPlus />
                 Add Category
-              </button>
+              </button> */}
 
             </div>
           )}

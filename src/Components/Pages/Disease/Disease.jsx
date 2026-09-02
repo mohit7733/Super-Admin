@@ -1409,11 +1409,15 @@ const exportToExcel = async () => {
                     className={diseaseErrors.health_category_id ? "error-input" : ""}
                   >
                     <option value="">Select Health Category</option>
-                    {HealthCategoryData?.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name} ({cat.code})
-                      </option>
-                    ))}
+              {HealthCategoryData
+  ?.filter(
+    (cat) => cat.is_active === true || cat.is_active === "true"
+  )
+  .map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name} ({cat.code})
+    </option>
+  ))}
                   </select>
                   <button
                     type="button"
@@ -1428,7 +1432,7 @@ const exportToExcel = async () => {
                       setCategoryErrors({});
                     }}
                   >
-                    + Add Category
+                    + Health Category
                   </button>
                 </div>
                 {diseaseErrors.health_category_id && (
@@ -1684,11 +1688,15 @@ const exportToExcel = async () => {
                   className={categoryErrors.ServicecategoryId ? "error-input" : ""}
                 >
                   <option value="">-- Select Service Category --</option>
-                  {ServiceCategoryData.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name} ({cat.code})
-                    </option>
-                  ))}
+                  {ServiceCategoryData
+  ?.filter(
+    (cat) => cat.is_active === true || cat.is_active === "true"
+  )
+  .map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name} ({cat.code})
+    </option>
+  ))}
                 </select>
                 {categoryErrors.ServicecategoryId && (
                   <p className="error-text">{categoryErrors.ServicecategoryId}</p>
@@ -1839,7 +1847,7 @@ const exportToExcel = async () => {
         </div>
       )}
 
-      {/* Edit Disease Modal */}
+      
       {editModal && (
         <div className="prakriti-modal-overlay" onClick={() => setEditModal(false)}>
           <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
@@ -1859,11 +1867,15 @@ const exportToExcel = async () => {
                   onChange={handleEditChange}
                 >
                   <option value="">Select Health Category</option>
-                  {HealthCategoryData?.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name} ({cat.code})
-                    </option>
-                  ))}
+              {HealthCategoryData
+  ?.filter(
+    (cat) => cat.is_active === true || cat.is_active === "true"
+  )
+  .map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name} ({cat.code})
+    </option>
+  ))}
                 </select>
               </div>
 

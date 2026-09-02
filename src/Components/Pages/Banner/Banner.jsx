@@ -733,14 +733,16 @@ const handleToggleBannerStatus = async (bannerId, currentStatus) => {
                                           Select Category
                                         </option>
                         
-                                        {CategoryData?.map((cat) => (
-                                          <option
-                                            key={cat.id}
-                                            value={cat.id}
-                                          >
-                                            {cat.name}
-                                          </option>
-                                        ))}
+                                      {CategoryData
+  ?.filter((cat) => cat.is_active === true)
+  .map((cat) => (
+    <option
+      key={cat.id}
+      value={cat.id}
+    >
+      {cat.name}
+    </option>
+  ))}
                                       </select>
                         
                                     
@@ -759,7 +761,7 @@ const handleToggleBannerStatus = async (bannerId, currentStatus) => {
              <div className="form-group">
   <label>Redirect URL</label>
   <input
-    type="url"
+    type="text"
     name="redirect_url"
     value={bannerForm.redirect_url}
     onChange={handleChange}
@@ -888,7 +890,7 @@ const handleToggleBannerStatus = async (bannerId, currentStatus) => {
                                       type="submit"
                                       className="save-btn"
                                     >
-                                   {addbannerLoading ? "Adding..." : "Add Category"}
+                                   {addbannerLoading ? "Adding..." : "Add Banner"}
                                     </button>
                         
                                   </div>

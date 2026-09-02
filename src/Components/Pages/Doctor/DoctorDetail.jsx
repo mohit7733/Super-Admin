@@ -11,6 +11,26 @@ import "./Transaction.css";
 import { FaArrowLeft } from "react-icons/fa";
 import DoctorDietplans from "./DoctorDietplans";
 import {
+  FaWallet,
+  FaRupeeSign,
+  FaPiggyBank,
+  FaClock,
+  FaReceipt,
+  FaUsers,
+  FaStar,
+  FaBullseye,
+  FaSearch,
+  FaTimes,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaUndoAlt,
+ 
+  FaVideo,
+  FaQrcode,
+  FaRegCreditCard,
+} from "react-icons/fa";
+
+import {
   FiList,
   FiBox,
   FiCalendar,
@@ -47,16 +67,11 @@ import {
 } from "react-icons/fi";
 
 import {
-  FaCalendarCheck,
-  FaWallet,
-  FaCheckCircle,
-  FaTimesCircle,
   FaSyncAlt,
   FaExclamationTriangle,
   FaUserClock,
-  FaClock
+
 } from "react-icons/fa";
-import { FaUndoAlt } from "react-icons/fa";
 
 import {
   BiShieldAlt2,
@@ -72,7 +87,7 @@ import {
 
 } from "react-icons/bi";
 
-import { FaUsers,FaBuilding } from "react-icons/fa";
+import { FaBuilding,FaCalendarCheck } from "react-icons/fa";
 
 import { IoLanguageOutline } from "react-icons/io5";
 
@@ -116,7 +131,79 @@ const[TransactionError,setTransactionError]=useState(null);
 const[SlotData,setSlotData]=useState([]);
 const[SlotLoading,setSlotLoading]=useState(false);
 const[SlotError,setSlotError]=useState(null);
+const [doctorTransactionSearch, setDoctorTransactionSearch] =
+  useState("");
 
+const [doctorTransactionStatus, setDoctorTransactionStatus] =
+  useState("all");
+
+const [doctorTransactionSort, setDoctorTransactionSort] =
+  useState("newest");
+
+const [doctorTransactionPeriod, setDoctorTransactionPeriod] =
+  useState("Month");
+
+const [selectedTransaction, setSelectedTransaction] =
+  useState(null);
+
+const [showTransactionModal, setShowTransactionModal] =
+  useState(false);
+  const handleViewTransaction = (transaction) => {
+  setSelectedTransaction(transaction);
+  setShowTransactionModal(true);
+};
+
+
+const doctortransactionList = Array.isArray(TransactionData)
+  ? TransactionData
+  : [];
+
+const doctortransactionTotalRevenue =
+  doctortransactionList.reduce(
+    (total, transaction) =>
+      total + Number(transaction.amount || 0),
+    0
+  );
+
+const doctortransactionPendingCount =
+  doctortransactionList.filter(
+    (transaction) =>
+      transaction.status?.toLowerCase() === "pending"
+  ).length;
+
+const doctortransactionSuccessCount =
+  doctortransactionList.filter(
+    (transaction) =>
+      transaction.status?.toLowerCase() === "success"
+  ).length;
+
+const doctortransactionFailedCount =
+  doctortransactionList.filter(
+    (transaction) =>
+      transaction.status?.toLowerCase() === "failed"
+  ).length;
+
+const doctortransactionRefundedCount =
+  doctortransactionList.filter(
+    (transaction) =>
+      transaction.status?.toLowerCase() === "refunded"
+  ).length;
+
+const doctortransactionAverage =
+  doctortransactionList.length > 0
+    ? doctortransactionTotalRevenue /
+      doctortransactionList.length
+    : 0;
+
+const doctortransactionCollectionRate =
+  doctortransactionList.length > 0
+    ? Math.round(
+        (doctortransactionSuccessCount /
+          doctortransactionList.length) *
+          100
+      )
+    : 0;
+  
 
  const [currentPage, setCurrentPage] = useState(1);
 const [pageSize] = useState(5);
@@ -1362,7 +1449,7 @@ const getAvailability = async () => {
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCalendarCheck size={16} />
+      <FaCalendarCheck size={12} />
     </div>
     <div className="stat2-info">
       <h3>Appointment</h3>
@@ -1376,7 +1463,7 @@ const getAvailability = async () => {
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCheckCircle size={16} />
+      <FaCheckCircle size={12} />
     </div>
     <div className="stat2-info">
       <h3>Confirmed</h3>
@@ -1390,7 +1477,7 @@ const getAvailability = async () => {
       className="stat2-icon"
   style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaSyncAlt size={16} />
+      <FaSyncAlt size={12} />
     </div>
     <div className="stat2-info">
       <h3>Rescheduled</h3>
@@ -1402,7 +1489,7 @@ const getAvailability = async () => {
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCheckCircle size={16} />
+      <FaCheckCircle size={12} />
     </div>
     <div className="stat2-info">
       <h3>Compelted</h3>
@@ -1416,7 +1503,7 @@ const getAvailability = async () => {
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaExclamationTriangle size={16} />
+      <FaExclamationTriangle size={12} />
     </div>
     <div className="stat2-info">
       <h3>Missed</h3>
@@ -1429,7 +1516,7 @@ const getAvailability = async () => {
       className="stat2-icon"
      style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaTimesCircle size={16} />
+      <FaTimesCircle size={12} />
     </div>
     <div className="stat2-info">
       <h3>Cancelled</h3>
@@ -1668,248 +1755,717 @@ const getAvailability = async () => {
           )
         }
       
-
-      {activeTab === "Transaction" && (
-  <div className="transaction-main-card">
-
-
-   <div className="transaction-header">
-
-  <div className="transaction-header-top">
-    <div className="transaction-title-wrap">
-      <div>
-        <h2>Transaction History</h2>
-        <p>Track all payment activities for Consultation and Orders</p>
-      </div>
-    </div>
+{activeTab === "Transaction" && (
+  <div className="consultation-main-card">
 
   
-  </div>
+   
+      <div className="doctortransaction-finance-card doctortransaction-revenue-card">
+
+        <div>
+
+          <p>Total Revenue</p>
+
+          <h2>
+            ₹
+            {doctortransactionTotalRevenue.toLocaleString(
+              "en-IN"
+            )}
+          </h2>
+
+          <span>
+            Total transaction earnings
+          </span>
+
+        </div>
+
+
+        <div className="doctortransaction-big-icon">
+          <FaRupeeSign />
+        </div>
+
+      </div>
+
 
  
 
-</div>
-   
+    {/* <div className="doctortransaction-small-stats">
 
-   
 
- <div className="vendors-stats stats2-grid">
 
-  {/* Pending */}
-  <div className="stat2-card">
-    <div
-      className="stat2-icon"
-       style={{ background: "#0D614E20", color: "#0D614E" }}
-    >
-      <FaClock size={16} />
-    </div>
+      <div className="doctortransaction-small-card">
 
-    <div className="stat2-info">
-      <h3>Pending</h3>
-      {/* <div className="stat2-value">{TransactionStats?.pending || 0}</div> */}
-      {/* <p>₹ {TransactionStats?.pending_amount || 0}</p> */}
-    </div>
-  </div>
+        <div>
 
-  {/* Success */}
-  <div className="stat2-card">
-    <div
-      className="stat2-icon"
-   style={{ background: "#0D614E20", color: "#0D614E" }}
-    >
-      <FaCheckCircle size={16} />
-    </div>
+          <p>Avg. Transaction Fee</p>
 
-    <div className="stat2-info">
-      <h3>Success</h3>
-      {/* <div className="stat2-value">{TransactionStats?.success || 0}</div> */}
-      {/* <p>₹ {TransactionStats?.success_amount || 0}</p> */}
-    </div>
-  </div>
+          <h3>
+            ₹
+            {doctortransactionAverage.toLocaleString(
+              "en-IN",
+              {
+                maximumFractionDigits: 0,
+              }
+            )}
+          </h3>
 
-  {/* Failed */}
-  <div className="stat2-card">
-    <div
-      className="stat2-icon"
-      style={{ background: "#0D614E20", color: "#0D614E" }}
-    >
-      <FaTimesCircle size={16} />
-    </div>
+        </div>
 
-    <div className="stat2-info">
-      <h3>Failed</h3>
-      {/* <div className="stat2-value">{TransactionStats?.failed || 0}</div> */}
-      {/* <p>₹ {TransactionStats?.failed_amount || 0}</p> */}
-    </div>
-  </div>
 
-  {/* Refunded */}
-  <div className="stat2-card">
-    <div
-      className="stat2-icon"
-       style={{ background: "#0D614E20", color: "#0D614E" }}
-    >
-      <FaUndoAlt size={16} />
-    </div>
+        <div className="doctortransaction-small-icon blue">
+          <FaReceipt />
+        </div>
 
-    <div className="stat2-info">
-      <h3>Refunded</h3>
-      {/* <div className="stat2-value">{TransactionStats?.refunded || 0}</div>
-      <p>₹ {TransactionStats?.refunded_amount || 0}</p> */}
-    </div>
-  </div>
-
-  {/* Total Revenue */}
-  <div className="stat2-card">
-    <div
-      className="stat2-icon"
-        style={{ background: "#0D614E20", color: "#0D614E" }}
-    >
-      <FaWallet size={16} />
-    </div>
-
-    <div className="stat2-info">
-      <h3>Total Revenue</h3>
-      {/* <div className="stat2-value">
-        ₹ {TransactionStats?.total_revenue || 0}
       </div>
-      <p>Overall Earnings</p> */}
-    </div>
-  </div>
 
-</div>
 
-    {/* Filters */}
 
-  
+      <div className="doctortransaction-small-card">
+
+        <div>
+
+          <p>Total Transactions</p>
+
+          <h3>
+            {doctortransactionList.length}
+          </h3>
+
+        </div>
+
+
+        <div className="doctortransaction-small-icon green">
+          <FaUsers />
+        </div>
+
+      </div>
+
+
+     
+
+      <div className="doctortransaction-small-card">
+
+        <div>
+
+          <p>Successful Payments</p>
+
+          <h3>
+            {doctortransactionSuccessCount}
+          </h3>
+
+        </div>
+
+
+        <div className="doctortransaction-small-icon yellow">
+          <FaCheckCircle />
+        </div>
+
+      </div>
+
+
     
 
-    <div className="table-wrapper">
+    </div> */}
 
-      <table className="data-table">
 
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Type</th>
-            <th>Patient Name</th>
-            <th>Amount</th>
-            <th>Date</th>
-            <th>Payment Method</th>
-            <th>Status</th>
-          </tr>
-        </thead>
 
-        {TransactionLoading ? (
+    <div className="doctortransaction-table-card">
 
-          Array(4).fill(0).map((_, i) => (
-            <tr key={i}>
-              <td colSpan="7">
-                <div className="transaction-skeleton-row"></div>
-              </td>
-            </tr>
-          ))
 
-        ) : TransactionError ? (
 
-          <tbody>
-            <tr>
-              <td
-                colSpan="7"
-                style={{
-                  textAlign: "center",
-                  color: "red"
-                }}
+      <div className="doctortransaction-table-header">
+
+        <div>
+
+          <h2>Transactions</h2>
+
+          <p>
+            View and manage all financial transactions
+          </p>
+
+        </div>
+
+
+        <div className="doctortransaction-filters">
+
+
+          {/* SEARCH */}
+
+          <div className="doctortransaction-search">
+
+            <FaSearch />
+
+            <input
+              type="text"
+              placeholder="Search transactions..."
+              value={doctorTransactionSearch}
+              onChange={(e) =>
+                setDoctorTransactionSearch(
+                  e.target.value
+                )
+              }
+            />
+
+            {doctorTransactionSearch && (
+              <button
+                type="button"
+                onClick={() =>
+                  setDoctorTransactionSearch("")
+                }
               >
-                {TransactionError}
-              </td>
-            </tr>
-          </tbody>
-
-        ) : (
-
-          <tbody>
-
-            {TransactionData && TransactionData.length > 0 ? (
-
-              TransactionData.map((transaction) => (
-
-                <tr key={transaction.id}>
-
-                  <td>{transaction.transaction_id}</td>
-
-                  <td>
-
-                    <span
-                      className={`transaction-type ${
-                        transaction.type === "Order"
-                          ? "order"
-                          : "consultation"
-                      }`}
-                    >
-                      {transaction.type || "Consultation"}
-                    </span>
-
-                  </td>
-
-                  <td>{transaction.name}</td>
-
-                  <td>₹ {transaction.amount}</td>
-
-                  <td>{transaction.date}</td>
-
-                  <td>{transaction.payment_method}</td>
-
-                  <td>
-
-                    <span
-                      className="transaction-status-badge"
-                      style={getStatusStyle(transaction.status)}
-                    >
-                      {transaction.status}
-                    </span>
-
-                  </td>
-
-                </tr>
-
-              ))
-
-            ) : (
-
-              <tr>
-                <td
-                  colSpan="7"
-                  style={{
-                    textAlign: "center",
-                    padding: "40px"
-                  }}
-                >
-                  No Transaction Found
-                </td>
-              </tr>
-
+                <FaTimes />
+              </button>
             )}
 
-          </tbody>
+          </div>
 
-        )}
 
-      </table>
+        
+
+          <select
+            value={doctorTransactionStatus}
+            onChange={(e) =>
+              setDoctorTransactionStatus(
+                e.target.value
+              )
+            }
+          >
+
+            <option value="all">
+              All Status
+            </option>
+
+            <option value="success">
+              Completed
+            </option>
+
+            <option value="pending">
+              Pending
+            </option>
+
+            <option value="failed">
+              Failed
+            </option>
+
+            <option value="refunded">
+              Refunded
+            </option>
+
+            <option value="cancelled">
+              Cancelled
+            </option>
+
+          </select>
+
+
+          <select
+            value={doctorTransactionSort}
+            onChange={(e) =>
+              setDoctorTransactionSort(
+                e.target.value
+              )
+            }
+          >
+
+            <option value="newest">
+              Newest First
+            </option>
+
+            <option value="oldest">
+              Oldest First
+            </option>
+
+            <option value="high">
+              Amount High to Low
+            </option>
+
+            <option value="low">
+              Amount Low to High
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+
+      <div className="doctortransaction-table-wrapper">
+
+        <table className="doctortransaction-table">
+
+          <thead>
+
+            <tr>
+
+              <th>TRANSACTION ID</th>
+
+              <th>PATIENT</th>
+
+              <th>DATE</th>
+
+              <th>TYPE</th>
+
+              <th>AMOUNT</th>
+
+              <th>PAYMENT METHOD</th>
+
+              <th>STATUS</th>
+
+             
+
+            </tr>
+
+          </thead>
+
+
+        
+
+          {TransactionLoading ? (
+
+            <tbody>
+
+              {Array(5)
+                .fill(null)
+                .map((_, index) => (
+
+                  <tr key={index}>
+
+                    <td colSpan="8">
+
+                      <div className="doctortransaction-skeleton">
+
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+
+                      </div>
+
+                    </td>
+
+                  </tr>
+
+                ))}
+
+            </tbody>
+
+          ) : TransactionError ? (
+
+        
+
+            <tbody>
+
+              <tr>
+
+                <td
+                  colSpan="8"
+                  className="doctortransaction-error"
+                >
+                  {TransactionError}
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          ) : (
+
+            <tbody>
+
+              {(() => {
+
+                let filteredTransactions = [
+                  ...doctortransactionList,
+                ];
+
+
+                /* SEARCH */
+
+                if (
+                  doctorTransactionSearch.trim()
+                ) {
+
+                  const search =
+                    doctorTransactionSearch
+                      .toLowerCase()
+                      .trim();
+
+                  filteredTransactions =
+                    filteredTransactions.filter(
+                      (transaction) =>
+
+                        transaction.transaction_id
+                          ?.toLowerCase()
+                          .includes(search) ||
+
+                        transaction.name
+                          ?.toLowerCase()
+                          .includes(search) ||
+
+                        transaction.payment_method
+                          ?.toLowerCase()
+                          .includes(search) ||
+
+                        transaction.type
+                          ?.toLowerCase()
+                          .includes(search)
+                    );
+
+                }
+
+
+               
+
+                if (
+                  doctorTransactionStatus !==
+                  "all"
+                ) {
+
+                  filteredTransactions =
+                    filteredTransactions.filter(
+                      (transaction) =>
+                        transaction.status
+                          ?.toLowerCase() ===
+                        doctorTransactionStatus
+                    );
+
+                }
+
+
+              
+
+                filteredTransactions.sort(
+                  (a, b) => {
+
+                    if (
+                      doctorTransactionSort ===
+                      "high"
+                    ) {
+
+                      return (
+                        Number(b.amount || 0) -
+                        Number(a.amount || 0)
+                      );
+
+                    }
+
+
+                    if (
+                      doctorTransactionSort ===
+                      "low"
+                    ) {
+
+                      return (
+                        Number(a.amount || 0) -
+                        Number(b.amount || 0)
+                      );
+
+                    }
+
+
+                    if (
+                      doctorTransactionSort ===
+                      "oldest"
+                    ) {
+
+                      return (
+                        new Date(a.date || 0) -
+                        new Date(b.date || 0)
+                      );
+
+                    }
+
+
+                    return (
+                      new Date(b.date || 0) -
+                      new Date(a.date || 0)
+                    );
+
+                  }
+                );
+
+
+
+                if (
+                  filteredTransactions.length ===
+                  0
+                ) {
+
+                  return (
+
+                    <tr>
+
+                      <td
+                        colSpan="8"
+                        className="doctortransaction-empty"
+                      >
+
+                        <FaWallet size={30} />
+
+                        <h3>
+                          No Transaction Found
+                        </h3>
+
+                        <p>
+                          No transactions match
+                          your filters.
+                        </p>
+
+                      </td>
+
+                    </tr>
+
+                  );
+
+                }
+
+
+                /* ROWS */
+
+                return filteredTransactions.map(
+                  (transaction, index) => {
+
+                    const status =
+                      transaction.status
+                        ?.toLowerCase() || "";
+
+                    const type =
+                      transaction.type
+                        ?.toLowerCase() || "";
+
+
+                    return (
+
+                      <tr
+                        key={
+                          transaction.transaction_id ||
+                          transaction.id ||
+                          index
+                        }
+                      >
+
+
+                        {/* TRANSACTION ID */}
+
+                        <td>
+
+                          <div className="doctortransaction-id">
+
+                            <strong>
+                              {
+                                transaction.transaction_id ||
+                                "N/A"
+                              }
+                            </strong>
+
+                          
+
+                          </div>
+
+                        </td>
+
+
+                        {/* PATIENT */}
+
+                        <td>
+
+                          <div className="doctortransaction-patient">
+
+                            <div className="doctortransaction-avatar">
+
+                              {transaction.name
+                                ?.charAt(0)
+                                ?.toUpperCase() || "P"}
+
+                            </div>
+
+
+                            <div>
+
+                              <strong>
+                                {
+                                  transaction.name ||
+                                  "Unknown Patient"
+                                }
+                              </strong>
+
+                          
+
+                            </div>
+
+                          </div>
+
+                        </td>
+
+
+                        {/* DATE */}
+
+                        <td>
+
+                          <div className="doctortransaction-date">
+
+                            <strong>
+                              {transaction.date ||
+                                "N/A"}
+                            </strong>
+
+
+                          </div>
+
+                        </td>
+
+
+                        {/* TYPE */}
+
+                        <td>
+
+                          <span
+                            className={`doctortransaction-type ${
+                              type === "order"
+                                ? "order"
+                                : "consultation"
+                            }`}
+                          >
+
+                            {type === "order" ? (
+                              <FaReceipt />
+                            ) : (
+                              <FaVideo />
+                            )}
+
+                            {type === "order"
+                              ? "Order"
+                              : "Video Consultation"}
+
+                          </span>
+
+                        </td>
+
+
+                        {/* AMOUNT */}
+
+                        <td>
+
+                          <strong className="doctortransaction-amount">
+
+                            ₹
+                            {Number(
+                              transaction.amount ||
+                                0
+                            ).toLocaleString(
+                              "en-IN"
+                            )}
+
+                          </strong>
+
+                        </td>
+
+
+                        {/* PAYMENT METHOD */}
+
+                        <td>
+
+                          <div className="doctortransaction-payment">
+
+                            {transaction.payment_method
+                              ?.toLowerCase()
+                              .includes("upi") ? (
+                              <FaQrcode />
+                            ) : (
+                              <FaRegCreditCard />
+                            )}
+
+                            <span>
+
+                              {transaction.payment_method
+                                ? transaction.payment_method.replace(
+                                    /\b\w/g,
+                                    (char) =>
+                                      char.toUpperCase()
+                                  )
+                                : "N/A"}
+
+                            </span>
+
+                          </div>
+
+                        </td>
+
+
+                        {/* STATUS */}
+
+                        <td>
+
+                          <span
+                            className={`doctortransaction-status ${status}`}
+                          >
+
+                            {status === "success" && (
+                              <FaCheckCircle />
+                            )}
+
+                            {status === "pending" && (
+                              <FaClock />
+                            )}
+
+                            {status === "failed" && (
+                              <FaTimesCircle />
+                            )}
+
+                            {status === "refunded" && (
+                              <FaUndoAlt />
+                            )}
+
+                            {status === "cancelled" && (
+                              <FaTimesCircle />
+                            )}
+
+                            {status === "success"
+                              ? "Completed"
+                              : status
+                                  ? status
+                                      .charAt(0)
+                                      .toUpperCase() +
+                                    status.slice(1)
+                                  : "N/A"}
+
+                          </span>
+
+                        </td>
+
+
+                      
+
+                      </tr>
+
+                    );
+
+                  }
+                );
+
+              })()}
+
+            </tbody>
+
+          )}
+
+        </table>
+
+      </div>
 
     </div>
+
+
+
+   
 
   </div>
 )}
        {
   activeTab === "bank" && (
  <div className="bank-verification-wrapper">
-  {/* <div className="bank-header">
-    <div>
-      <h2>Bank Details & Verification</h2>
-      <p>Review and verify doctor bank accounts</p>
-    </div> */}
-  
+ 
 
  
 
@@ -2042,7 +2598,7 @@ const getAvailability = async () => {
 
 {
   activeTab === "Slot" && (
-    <div className="consultation-main-card">
+    <div className="ltation-main-cardconsu">
 
       <div className="consultation-header">
         <div className="consultation-title-wrap">
