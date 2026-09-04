@@ -909,7 +909,6 @@ const exportToExcel = async () => {
               </p>
 
               <button
-                className="empty-clear-btn"
                 onClick={clearFilters}
               >
                 <FiRefreshCw />

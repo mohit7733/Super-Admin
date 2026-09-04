@@ -429,7 +429,7 @@ const handleAddChoiceChange = (
       ...(prev.choiceErrors || []),
     ];
 
-    // Current choice ke errors ko copy karo
+    
     const currentChoiceErrors =
       Array.isArray(updatedErrors[index])
         ? [...updatedErrors[index]]

@@ -173,9 +173,7 @@ const faqCategories = [
 
   let newErrors = {};
 
-  // =========================
-  // VALIDATION
-  // =========================
+  
 
   if (!faqForm.question.trim()) {
     newErrors.question = "Question is required";
@@ -208,9 +206,6 @@ const faqCategories = [
   try {
     setSubmitLoading(true);
 
-    // =========================
-    // PAYLOAD
-    // =========================
 
     const payload = {
       question: faqForm.question.trim(),
@@ -409,9 +404,7 @@ const handleUpdateFaq = async (e) => {
   try {
     setEditSubmitLoading(true);
 
-    // =========================
-    // PATCH PAYLOAD
-    // =========================
+    
 
     const payload = {
       question: editFaqForm.question.trim(),
@@ -757,17 +750,9 @@ const handleDeleteFaq = async (id) => {
         </tr>
       )}
 
-      {!loading && !error && faqs.length === 0 && (
+     {!loading && !error && filteredFaqs.length === 0 && (
   <tr>
-    <td colSpan="7" className="faq-empty">
-      No FAQs found.
-    </td>
-  </tr>
-)}
-
-    {!loading && !error && filteredFaqs.length === 0 && (
-  <tr>
-    <td colSpan="7" className="faq-empty">
+    <td colSpan="6" className="faq-empty">
       {searchTerm
         ? `No FAQ found for "${searchTerm}"`
         : "No FAQs found."}
