@@ -361,6 +361,8 @@ setSelectedCustomer(null);
       </div>
 
       <div className="table-wrapper">
+
+        
         <table className="data-table" ref={bulktableRef}>
           <thead>
             <tr>
@@ -516,37 +518,147 @@ setSelectedCustomer(null);
             )}
           </tbody>
         </table>
-        {totalPages > 1 && (
-          <div className="pagination">
-            <button
-              onClick={() => getCustomerList(currentPage - 1)}
-              disabled={!previousPage}
-            >
-              Prev
-            </button>
-            {pages.map((page) => (
-              <button
-                key={page}
-                onClick={() => getCustomerList(page)}
-                style={{
+       <div className="order-pagination-container">
 
-                  fontWeight: currentPage === page ? "bold" : "normal",
-                  background: currentPage === page ? "#0D614E" : "#fff",
-                  color: currentPage === page ? "#fff" : "#0D614E",
-                }}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => getCustomerList(currentPage + 1)}
-              disabled={!nextPage}
-            >
-              Next
-            </button>
+  <div className="order-pagination-info">
+    Showing{" "}
+    <strong>
+      {totalCount === 0
+        ? 0
+        : (currentPage - 1) * pageSize + 1}
+    </strong>{" "}
+    to{" "}
+    <strong>
+      {Math.min(currentPage * pageSize, totalCount)}
+    </strong>{" "}
+    of <strong>{totalCount}</strong> customers
+  </div>
 
-          </div>
-        )}
+
+  <div className="order-pagination-buttons">
+
+  
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={currentPage === 1 || Loading}
+      onClick={() => {
+        const newPage = currentPage - 1;
+        setCurrentPage(newPage);
+        getCustomerList(newPage, searchcustomerTerm.trim());
+      }}
+    >
+      ‹
+    </button>
+
+
+   
+    <button
+      className={`order-pagination-btn ${
+        currentPage === 1
+          ? "order-pagination-active"
+          : ""
+      }`}
+      disabled={Loading}
+      onClick={() => {
+        setCurrentPage(1);
+        getCustomerList(1, searchcustomerTerm.trim());
+      }}
+    >
+      1
+    </button>
+
+
+ 
+    {currentPage > 3 && (
+      <span className="order-pagination-dots">
+        ...
+      </span>
+    )}
+
+
+  
+    {Array.from(
+      { length: totalPages },
+      (_, index) => index + 1
+    )
+      .filter((page) => {
+        return (
+          page !== 1 &&
+          page !== totalPages &&
+          page >= currentPage - 1 &&
+          page <= currentPage + 1
+        );
+      })
+      .map((page) => (
+        <button
+          key={page}
+          className={`order-pagination-btn ${
+            currentPage === page
+              ? "order-pagination-active"
+              : ""
+          }`}
+          disabled={Loading}
+          onClick={() => {
+            setCurrentPage(page);
+            getCustomerList(
+              page,
+              searchcustomerTerm.trim()
+            );
+          }}
+        >
+          {page}
+        </button>
+      ))}
+
+
+   
+    {currentPage < totalPages - 2 && (
+      <span className="order-pagination-dots">
+        ...
+      </span>
+    )}
+
+
+   =
+    {totalPages > 1 && (
+      <button
+        className={`order-pagination-btn ${
+          currentPage === totalPages
+            ? "order-pagination-active"
+            : ""
+        }`}
+        disabled={Loading}
+        onClick={() => {
+          setCurrentPage(totalPages);
+          getCustomerList(
+            totalPages,
+            searchcustomerTerm.trim()
+          );
+        }}
+      >
+        {totalPages}
+      </button>
+    )}
+
+
+    =
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={currentPage === totalPages || Loading}
+      onClick={() => {
+        const newPage = currentPage + 1;
+        setCurrentPage(newPage);
+        getCustomerList(
+          newPage,
+          searchcustomerTerm.trim()
+        );
+      }}
+    >
+      ›
+    </button>
+
+  </div>
+</div>
 
       </div>
 

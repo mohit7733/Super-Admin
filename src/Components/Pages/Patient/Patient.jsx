@@ -40,6 +40,7 @@ const Patient = () => {
   const[PatientStatusModal,setPatientStatusModal]=useState(false);
   const[IsUpdating,setIsUpdating]=useState(false);
 
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPatient((prev) => ({ ...prev, [name]: value }));
@@ -321,43 +322,128 @@ setSelectedPatient(null);
 
 
       </table>
-      {totalPages > 1 && (
-        <div className="pagination">
+     {totalPages > 1 && (
+  <div className="order-pagination-container">
 
+   
+    <div className="order-pagination-info">
+      Showing{" "}
+      <strong>
+        {Count === 0
+          ? 0
+          : (Currentpage - 1) * pagesize + 1}
+      </strong>{" "}
+      to{" "}
+      <strong>
+        {Math.min(Currentpage * pagesize, Count)}
+      </strong>{" "}
+      of <strong>{Count}</strong> patients
+    </div>
 
-          <button
-            onClick={() => getAllpatientList(Currentpage - 1,searchTerm)}
-            disabled={!previousPage}
-          >
-            Prev
-          </button>
+ 
+    <div className="order-pagination-buttons">
 
+    
+      <button
+        className="order-pagination-btn order-pagination-arrow"
+        disabled={!previousPage || patientloading}
+        onClick={() =>
+          getAllpatientList(Currentpage - 1, searchTerm)
+        }
+      >
+        ‹
+      </button>
 
-          {pages.map((page) => (
-            <button
-              key={page}
-              onClick={() => getAllpatientList(page,searchTerm)}
-              style={{
+      
+      <button
+        className={`order-pagination-btn ${
+          Currentpage === 1
+            ? "order-pagination-active"
+            : ""
+        }`}
+        disabled={patientloading}
+        onClick={() =>
+          getAllpatientList(1, searchTerm)
+        }
+      >
+        1
+      </button>
 
-                fontWeight: Currentpage === page ? "bold" : "normal",
-                background: Currentpage === page ? "#0D614E" : "#fff",
-                color: Currentpage === page ? "#fff" : "#0D614E",
-              }}
-            >
-              {page}
-            </button>
-          ))}
-
-
-          <button
-            onClick={() => getAllpatientList(Currentpage + 1,searchTerm)}
-            disabled={!Nextpage}
-          >
-            Next
-          </button>
-
-        </div>
+     
+      {Currentpage > 3 && (
+        <span className="order-pagination-dots">
+          ...
+        </span>
       )}
+
+     
+      {Array.from(
+        { length: totalPages },
+        (_, index) => index + 1
+      )
+        .filter((page) => {
+          return (
+            page !== 1 &&
+            page !== totalPages &&
+            page >= Currentpage - 1 &&
+            page <= Currentpage + 1
+          );
+        })
+        .map((page) => (
+          <button
+            key={page}
+            className={`order-pagination-btn ${
+              Currentpage === page
+                ? "order-pagination-active"
+                : ""
+            }`}
+            disabled={patientloading}
+            onClick={() =>
+              getAllpatientList(page, searchTerm)
+            }
+          >
+            {page}
+          </button>
+        ))}
+
+      {/* RIGHT DOTS */}
+      {Currentpage < totalPages - 2 && (
+        <span className="order-pagination-dots">
+          ...
+        </span>
+      )}
+
+      {/* LAST PAGE */}
+      {totalPages > 1 && (
+        <button
+          className={`order-pagination-btn ${
+            Currentpage === totalPages
+              ? "order-pagination-active"
+              : ""
+          }`}
+          disabled={patientloading}
+          onClick={() =>
+            getAllpatientList(totalPages, searchTerm)
+          }
+        >
+          {totalPages}
+        </button>
+      )}
+
+      {/* NEXT */}
+      <button
+        className="order-pagination-btn order-pagination-arrow"
+        disabled={!Nextpage || patientloading}
+        onClick={() =>
+          getAllpatientList(Currentpage + 1, searchTerm)
+        }
+      >
+        ›
+      </button>
+
+    </div>
+  </div>
+)}
 
       {/* {Addform && (
 

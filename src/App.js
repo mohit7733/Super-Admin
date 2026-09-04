@@ -83,6 +83,8 @@ import PatientHistory from './Components/Pages/Doctor/PatientHistory';
 import PrescriptionHistory from './Components/Pages/Patient/PrescriptionHistory'
 import OrderTracking from'./Components/Pages/Order/OrderTracking'
 import DietReview from './Components/Pages/Review/DietReview'
+import Coupons from './Components/Pages/Coupon/Coupons';
+import Reward from './Components/Pages/Reward/Reward';
 
 
 const Layout = ({ children }) => {
@@ -192,7 +194,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-     
+        <Route
+          path="/reward"
+          element={
+            <ProtectedRoute permission="view_reward">
+              <Layout>
+                <Reward/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/main/subcategory"
@@ -702,7 +713,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+  <Route
+          path="/coupons"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Coupons />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
 
         <Route

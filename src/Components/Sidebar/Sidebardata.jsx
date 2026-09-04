@@ -10,6 +10,8 @@ import HistoryIcon from '@mui/icons-material/History';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import HealingIcon from '@mui/icons-material/FitnessCenter';
 import RateReviewIcon from '@mui/icons-material/RateReview';
+import { FaFileContract } from 'react-icons/fa';
+import { FaGift } from 'react-icons/fa6';
 
 import { FiClock } from "react-icons/fi";
 import { FaTag, FaTicketAlt, FaUsers, FaClipboardList, FaHistory, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
@@ -42,6 +44,7 @@ export const SidebarData = () => [
     permission: "view_dashboard",
   },
 
+ 
   
   {
     title: "Category Management",
@@ -97,7 +100,27 @@ export const SidebarData = () => [
       }
     ]
   },
-
+ {
+  title: "Coupons & Reward",
+  path: "#",
+  permission: "view_coupons",
+  icon: <FaTicketAlt size={18} />,
+  children: [
+    {
+      title: "Coupons",
+      path: "/coupons",
+      permission: "view_coupons",
+      icon: <FaTicketAlt size={18} />
+    },
+     {
+      title: "Reward",
+      path: "/reward",
+      permission: "view_reward",
+      icon: <FaGift size={18} />
+    }
+  
+  ]
+},
   {
   title: "FAQ",
   icon: <FaCircleQuestion size={18} />,
@@ -111,6 +134,17 @@ export const SidebarData = () => [
       icon: <FaCircleQuestion size={18} />,
     },
   ],
+},
+{
+  title: "Legal Policies",
+  icon: <FaFileContract size={20} />,
+  path: "#",
+  permission: "manage_legal_policies",
+  children:[
+    {
+
+    }
+  ]
 },
  
   {

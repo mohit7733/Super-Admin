@@ -3384,13 +3384,16 @@ textarea {
 
 .error {
   color: red;
-  font-size: 16px;
+  font-size: 12px;
+  font-weight: 500;
+
   margin-top: -2px;
 }
 
 .errortext {
   color: red;
-  font-size: 16px;
+font-size: 14px;
+  font-weight: 500;
 }
 .prakriti-modal {
   width: 100%;
@@ -8188,4 +8191,608 @@ flex-direction:column;
 .faqorder{
   display: flex;
   gap:3px
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* MAIN STATS */
+
+.doctortransaction-main-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  padding: 35px 28px 18px;
+}
+
+.doctortransaction-finance-card {
+  min-height: 140px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #edf0f2;
+  border-radius: 13px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.04);
+  display: flex;
+  justify-content: space-between;
+}
+
+.doctortransaction-finance-card p {
+  margin: 0 0 8px;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.doctortransaction-finance-card h2 {
+  margin: 0;
+  font-size: 27px;
+  color: #0f172a;
+}
+
+.doctortransaction-finance-card span {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.doctortransaction-revenue-card {
+  background: #0d614e;
+  color: white;
+}
+
+.doctortransaction-revenue-card p,
+.doctortransaction-revenue-card h2,
+.doctortransaction-revenue-card span {
+  color: white;
+}
+
+.doctortransaction-big-icon {
+  width: 53px;
+  height: 53px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doctortransaction-card-icon {
+  width: 43px;
+  height: 43px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doctortransaction-card-icon.green {
+  background: #ecfdf5;
+  color: #00a879;
+}
+
+.doctortransaction-card-icon.yellow {
+  background: #fffbeb;
+  color: #d99a00;
+}
+
+.doctortransaction-pending {
+  color: #d18d00 !important;
+}
+
+
+/* SMALL STATS */
+
+.doctortransaction-small-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  padding: 16px 28px 34px;
+}
+
+.doctortransaction-small-card {
+  background: #fff;
+  border: 1px solid #edf0f2;
+  border-radius: 11px;
+  padding: 17px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.doctortransaction-small-card p {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.doctortransaction-small-card h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.doctortransaction-small-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doctortransaction-small-icon.blue {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.doctortransaction-small-icon.green {
+  background: #ecfdf5;
+  color: #00a879;
+}
+
+.doctortransaction-small-icon.yellow {
+  background: #fffbeb;
+  color: #d99a00;
+}
+
+.doctortransaction-small-icon.purple {
+  background: #f5f3ff;
+  color: #8b5cf6;
+}
+
+
+/* TRANSACTION CARD */
+
+.doctortransaction-table-card {
+ 
+  background: white;
+  border: 1px solid #edf0f2;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.doctortransaction-table-header {
+  padding: 22px 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.doctortransaction-table-header h2 {
+  margin: 0;
+  font-size: 21px;
+  color: #0b2942;
+}
+
+.doctortransaction-table-header p {
+  margin: 7px 0 0;
+  color: #64748b;
+}
+
+
+/* FILTERS */
+
+.doctortransaction-filters {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.doctortransaction-search {
+  width: 280px;
+  height: 35px;
+  border: 1px solid #dfe5ea;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  color: #94a3b8;
+}
+
+.doctortransaction-search input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  font-size: 12px;
+}
+
+.doctortransaction-search button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.doctortransaction-filters select {
+  height: 35px;
+  border: 1px solid #dfe5ea;
+  border-radius: 9px;
+  padding: 0 30px 0 13px;
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+
+/* TABLE */
+
+.doctortransaction-table-wrapper {
+  overflow-x: auto;
+}
+
+.doctortransaction-table {
+  width: 100%;
+  min-width: 1150px;
+  border-collapse: collapse;
+}
+
+.doctortransaction-table thead {
+  background: #f8fafc;
+}
+
+.doctortransaction-table th {
+  padding: 17px 26px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.doctortransaction-table td {
+  padding: 10px 19px;
+  border-top: 1px solid #eef1f3;
+ text-align: center;
+}
+
+.doctortransaction-table tbody tr:hover {
+  background: #fbfdfc;
+}
+
+
+/* ID */
+
+.doctortransaction-id {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.doctortransaction-id strong {
+  font-size: 12px;
+  font-weight: 300;
+}
+
+.doctortransaction-id span {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+
+/* PATIENT */
+
+.doctortransaction-patient {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.doctortransaction-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #0d614e;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+}
+
+.doctortransaction-patient div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.doctortransaction-patient strong {
+  font-size: 12px;
+  font-weight: 200;
+}
+
+.doctortransaction-patient span {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+
+/* DATE */
+
+.doctortransaction-date {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.doctortransaction-date strong {
+  font-size: 12px;
+  font-weight: 200;
+}
+
+.doctortransaction-date span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+
+
+.doctortransaction-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 20px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.doctortransaction-type.consultation {
+  background: #eaf2ff;
+  color: #2563eb;
+}
+
+.doctortransaction-type.order {
+  background: #f1eafe;
+  color: #7c3aed;
+}
+
+
+
+
+.doctortransaction-amount {
+  font-size: 12px;
+  color: #0f172a;
+}
+
+
+
+.doctortransaction-payment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+
+
+.doctortransaction-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.doctortransaction-status.success {
+  background: #d9f8eb;
+  color: #008c65;
+}
+
+.doctortransaction-status.pending {
+  background: #fff4cf;
+  color: #c18400;
+}
+
+.doctortransaction-status.failed {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.doctortransaction-status.refunded {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.doctortransaction-status.cancelled {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+
+
+
+.doctortransaction-actions {
+  display: flex;
+  gap: 14px;
+}
+
+.doctortransaction-actions button {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.doctortransaction-actions button:hover {
+  color: #0d614e;
+}
+
+
+/* EMPTY */
+
+.doctortransaction-empty {
+  height: 240px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.doctortransaction-empty h3 {
+  margin: 12px 0 5px;
+  color: #334155;
+}
+
+.doctortransaction-empty p {
+  margin: 0;
+  font-size: 13px;
+}
+
+
+/* ERROR */
+
+.doctortransaction-error {
+  padding: 50px !important;
+  text-align: center;
+  color: red;
+}
+
+
+/* SKELETON */
+
+.doctortransaction-skeleton {
+  display: flex;
+  gap: 25px;
+  height: 35px;
+  align-items: center;
+}
+
+.doctortransaction-skeleton span {
+  height: 12px;
+  background: #edf1f2;
+  border-radius: 5px;
+  animation: doctortransaction-loading 1.2s infinite;
+}
+
+.doctortransaction-skeleton span:nth-child(1) {
+  width: 180px;
+}
+
+.doctortransaction-skeleton span:nth-child(2) {
+  width: 130px;
+}
+
+.doctortransaction-skeleton span:nth-child(3) {
+  width: 100px;
+}
+
+.doctortransaction-skeleton span:nth-child(4) {
+  width: 120px;
+}
+
+@keyframes doctortransaction-loading {
+  0% {
+    opacity: .5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: .5;
+  }
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1200px) {
+
+  .doctortransaction-main-stats,
+  .doctortransaction-small-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .doctortransaction-table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .doctortransaction-filters {
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .doctortransaction-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .doctortransaction-header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .doctortransaction-period {
+    width: 100%;
+  }
+
+  .doctortransaction-period button {
+    flex: 1;
+  }
+
+  .doctortransaction-payout-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .doctortransaction-main-stats,
+  .doctortransaction-small-stats {
+    grid-template-columns: 1fr;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .doctortransaction-table-card {
+    margin: 0 20px;
+  }
+
+
+
+  .doctortransaction-filters {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .doctortransaction-search {
+    width: auto;
+  }
+
+  .doctortransaction-filters select {
+    width: 100%;
+  }
+
+}
+.errortexts {
+  display: block;
+  width: 100%;
+  margin: 8px 0 0 0;
+  color: red;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
 }
