@@ -4,52 +4,44 @@
 
 .reward-page {
   width: 100%;
-  padding-bottom: 30px;
+  padding-bottom: 12px;
 }
-
-/* =========================================
-   HEADER
-========================================= */
 
 .reward-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .reward-header h1 {
   margin: 0;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   color: #17221f;
 }
 
 .reward-header p {
-  margin: 6px 0 0;
+  margin: 2px 0 0;
   color: #7a8581;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .reward-add-btn {
   border: none;
   background: #0d614e;
   color: #fff;
-  min-height: 42px;
-  padding: 0 18px;
-  border-radius: 8px;
-
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-
+  gap: 6px;
   font-size: 13px;
-  font-weight: 600;
-
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .reward-add-btn:hover {
@@ -66,17 +58,14 @@
 .reward-filter-card {
   background: #ffffff;
   border: 1px solid #e7ecea;
-  border-radius: 10px;
-
-  min-height: 70px;
-  padding: 13px 16px;
-
+  border-radius: 8px;
+  min-height: 0;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .reward-filter-left {

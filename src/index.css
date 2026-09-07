@@ -1,3 +1,5 @@
+@import "./styles/tokens.css";
+
 * {
   box-sizing: border-box;
 }
@@ -7,7 +9,13 @@ body,
 #root {
   margin: 0;
   padding: 0;
-  font-family: "Poppins", sans-serif;
+  font-family: var(--sa-font), "Poppins", sans-serif;
+}
+
+html,
+body {
+  background: var(--sa-bg);
+  color: var(--sa-text);
 }
 
 body {
@@ -19,7 +27,7 @@ button,
 input,
 textarea,
 select {
-  font-family: "Poppins", sans-serif;
+  font-family: inherit;
 }
 
 h1,
@@ -32,10 +40,18 @@ p,
 span,
 label,
 a {
-  font-family: "Poppins", sans-serif;
+  font-family: inherit;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+img {
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
 }

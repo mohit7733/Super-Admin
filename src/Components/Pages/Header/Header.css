@@ -3,23 +3,24 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 70px;
- background: #ffffff;
-  box-shadow: 0 2px 20px rgba(13, 97, 78, 0.2);
+  height: 52px;
+  background: #ffffff;
+  border-bottom: 1px solid #e8ecf1;
+  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
+  padding: 0 16px;
   z-index: 1000;
-  transition: all 0.3s ease;
+  transition: left 0.25s ease;
 }
 
 .head1.collapsed {
-  left: 80px;
+  left: 72px;
 }
 
 .head1.expanded {
-  left: 260px;
+  left: 248px;
 }
 
 /* Header Left Section */
@@ -34,17 +35,17 @@
   border: none;
   color: white;
   cursor: pointer;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 8px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: background-color 0.15s ease;
 }
 
 .sidebar-toggle:hover {
-  background: #0d614dc1;
-  transform: scale(1.05);
+  background: #0a4d3e;
+  transform: none;
 }
 
 .breadcrumb {

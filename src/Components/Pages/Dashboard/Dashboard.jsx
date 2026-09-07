@@ -6,7 +6,6 @@ import { CalendarDays, ChevronDown } from "lucide-react";
 
 import "./Dashboard.css";
 
-import DashboardHeader from "./DahboardHeader";
 import DashboardMetricCard from "./DashboardMetricCard";
 import DahboardRevenue from "./DahboardRevenue";
 import DashboardOrderOverView from "./DashboardOrderOverView";
@@ -82,11 +81,7 @@ const Dashboard = () => {
   const [range, setRange] = useState(false);
 
   return (
-    <>
-   
-      <div className="page-header">
-
-      
+    <div className="dashboard-page">
         <div className="page-heading">
           <div>
             <h1>Dashboard</h1>
@@ -95,8 +90,11 @@ const Dashboard = () => {
 
           <div className="date-wrap">
             <button
+              type="button"
               className="date-button"
               onClick={() => setRange(!range)}
+              aria-expanded={range}
+              aria-haspopup="listbox"
             >
               <CalendarDays size={16} />
               Aug 01, 2025 - Aug 10, 2025
@@ -154,8 +152,7 @@ const Dashboard = () => {
           <QuickActions />
 
         </div>
-      </div>
-    </>
+    </div>
   );
 };
 

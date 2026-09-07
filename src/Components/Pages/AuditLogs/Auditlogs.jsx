@@ -111,11 +111,13 @@ const Auditlogs = () => {
         <table className="data-table">
 
           <thead>
-            <th>Action</th>
-            <th>User</th>
-            <th>Custoner Name</th>
-            <th>Date</th>
-            <th>Details</th>
+            <tr>
+              <th>Action</th>
+              <th>User</th>
+              <th>Customer Name</th>
+              <th>Date</th>
+              <th>Details</th>
+            </tr>
           </thead>
           <tbody>
             {Currentlogs.map((data, index) => (

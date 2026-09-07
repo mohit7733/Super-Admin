@@ -1,0 +1,832 @@
+/* Banner.css - Complete Styles for Banner Management */
+
+/* ===== Page Header ===== */
+.banner-page-header {
+  padding: 0 0 8px;
+  border-bottom: 1px solid #E8ECF1;
+  margin-bottom: 10px;
+}
+
+.banner-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.banner-page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1A2332;
+  margin: 0 0 4px 0;
+}
+
+.banner-page-subtitle {
+  font-size: 14px;
+  color: #6B7A8F;
+  margin: 0;
+}
+
+.banner-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #0D614E;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.banner-add-btn:hover {
+  background: #0A4D3E;
+}
+
+/* ===== Stats Cards ===== */
+.banner-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.banner-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid #E8ECF1;
+  box-shadow: none;
+}
+
+.banner-stat-card:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.banner-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.banner-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.banner-stat-label {
+  font-size: 13px;
+  color: #6B7A8F;
+  font-weight: 400;
+}
+
+.banner-stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1A2332;
+}
+
+/* ===== Table Container ===== */
+.banner-table-container {
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid #E8ECF1;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.banner-table-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid #E8ECF1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.banner-table-title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.banner-table-title-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1A2332;
+  margin: 0;
+}
+
+.banner-count-badge {
+  font-size: 12px;
+  padding: 2px 10px;
+  background: #F0F2F5;
+  color: #6B7A8F;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.banner-table-wrapper {
+  overflow-x: auto;
+  padding: 0 4px 4px 4px;
+}
+
+.banner-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.banner-data-table thead {
+  background: #F7F9FC;
+}
+
+.banner-data-table thead th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: #6B7A8F;
+  border-bottom: 1px solid #E8ECF1;
+}
+
+/* ===== Table Columns ===== */
+.banner-col-sno {
+  width: 50px;
+  text-align: center;
+}
+
+.banner-col-image {
+  width: 80px;
+}
+
+.banner-col-category {
+  min-width: 120px;
+}
+
+.banner-col-redirect {
+  min-width: 200px;
+  max-width: 300px;
+}
+
+.banner-col-status {
+  width: 140px;
+}
+
+.banner-col-actions {
+  width: 100px;
+  text-align: center;
+}
+
+/* ===== Table Rows ===== */
+.banner-table-row {
+  transition: background 0.15s ease;
+}
+
+.banner-table-row:hover {
+  background: #F8FAFC;
+}
+
+.banner-data-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #F0F2F5;
+  vertical-align: middle;
+}
+
+.banner-sno {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  background: #F0F2F5;
+  color: #6B7A8F;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ===== Image Thumbnail ===== */
+.banner-image-wrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid #E8ECF1;
+}
+
+.banner-image-wrapper:hover {
+  border-color: #0D614E;
+}
+
+.banner-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.banner-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.banner-image-wrapper:hover .banner-image-overlay {
+  opacity: 1;
+}
+
+/* ===== Category Badge ===== */
+.banner-category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #F0F7FF;
+  color: #1A6B8A;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ===== Redirect Link ===== */
+.banner-redirect-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #3B82F6;
+  font-size: 13px;
+}
+
+.banner-redirect-link span {
+  color: #3B82F6;
+  word-break: break-all;
+}
+
+/* ===== Status Toggle ===== */
+.banner-status-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.banner-toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.banner-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.banner-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #CBD5E1;
+  border-radius: 24px;
+  transition: background 0.3s ease;
+}
+
+.banner-toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.banner-toggle-switch input:checked + .banner-toggle-slider {
+  background: #0D614E;
+}
+
+.banner-toggle-switch input:checked + .banner-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.banner-status-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.banner-status-badge.active {
+  background: #E6F7E6;
+  color: #00A854;
+}
+
+.banner-status-badge.inactive {
+  background: #FEEBEB;
+  color: #E53E3E;
+}
+
+/* ===== Action Buttons ===== */
+.banner-action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.banner-action-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  background: transparent;
+  color: #6B7A8F;
+}
+
+.banner-action-btn:hover {
+  transform: scale(1.05);
+}
+
+.banner-action-btn.edit {
+  color: #3B82F6;
+}
+
+.banner-action-btn.edit:hover {
+  background: #EBF4FF;
+  color: #2563EB;
+}
+
+.banner-action-btn.delete {
+  color: #EF4444;
+}
+
+.banner-action-btn.delete:hover {
+  background: #FEEBEB;
+  color: #DC2626;
+}
+
+/* ===== Empty State ===== */
+.banner-empty-state {
+  padding: 48px 24px !important;
+  text-align: center !important;
+}
+
+.banner-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #94A3B8;
+}
+
+.banner-empty-content h4 {
+  margin: 0;
+  color: #1A2332;
+  font-size: 16px;
+}
+
+.banner-empty-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #94A3B8;
+}
+
+/* ===== Error & Loading ===== */
+.banner-error-message {
+  padding: 32px !important;
+  text-align: center !important;
+  color: #EF4444 !important;
+}
+
+.banner-skeleton-row {
+  height: 60px;
+  background: linear-gradient(90deg, #F0F2F5 25%, #E8ECF1 50%, #F0F2F5 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== Modals ===== */
+.banner-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.banner-modal {
+  background: #FFFFFF;
+  border-radius: 16px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.banner-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #E8ECF1;
+}
+
+.banner-modal-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1A2332;
+  margin: 0;
+}
+
+.banner-modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #F0F2F5;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6B7A8F;
+  transition: background 0.2s ease;
+}
+
+.banner-modal-close:hover {
+  background: #E8ECF1;
+}
+
+/* ===== Delete Modal ===== */
+.banner-modal.delete-modal {
+  max-width: 440px;
+}
+
+.banner-modal-body {
+  padding: 32px 24px 24px;
+  text-align: center;
+}
+
+.banner-delete-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.banner-modal-body h3 {
+  font-size: 18px;
+  color: #1A2332;
+  margin: 0 0 8px 0;
+}
+
+.banner-modal-body p {
+  color: #6B7A8F;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ===== Preview Modal ===== */
+.banner-modal.preview-modal {
+  max-width: 700px;
+}
+
+.banner-preview-full {
+  padding: 24px;
+}
+
+.banner-preview-full-image {
+  width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* ===== Form Styles ===== */
+.banner-form {
+  padding: 12px 16px;
+}
+
+.banner-form-group {
+  margin-bottom: 10px;
+}
+
+.banner-form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1A2332;
+  margin-bottom: 6px;
+}
+
+.banner-form-group label .required {
+  color: #EF4444;
+}
+
+.banner-form-input,
+.banner-form-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  background: #FFFFFF;
+  color: #1A2332;
+}
+
+.banner-form-input:focus,
+.banner-form-select:focus {
+  outline: none;
+  border-color: #0D614E;
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.1);
+}
+
+.banner-form-input::placeholder {
+  color: #94A3B8;
+}
+
+.banner-file-input {
+  display: none;
+}
+
+.banner-upload-area {
+  border: 2px dashed #E2E8F0;
+  border-radius: 10px;
+  padding: 16px;
+  transition: border-color 0.2s ease;
+  background: #FAFBFC;
+}
+
+.banner-upload-area:hover {
+  border-color: #0D614E;
+}
+
+.banner-upload-label {
+  display: block;
+  cursor: pointer;
+  text-align: center;
+  padding: 24px;
+}
+
+.banner-upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #6B7A8F;
+}
+
+.banner-upload-content svg {
+  color: #94A3B8;
+}
+
+.banner-upload-content p {
+  margin: 0;
+  font-weight: 500;
+  color: #1A2332;
+}
+
+.banner-upload-content small {
+  color: #94A3B8;
+}
+
+.banner-preview-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.banner-preview-image-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #E2E8F0;
+  flex-shrink: 0;
+}
+
+.banner-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.banner-preview-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.banner-preview-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6B7A8F;
+  transition: all 0.2s ease;
+}
+
+.banner-preview-btn:hover {
+  background: #F7F9FC;
+  border-color: #CBD5E1;
+}
+
+.banner-preview-btn.danger:hover {
+  background: #FEEBEB;
+  border-color: #FECACA;
+  color: #EF4444;
+}
+
+.banner-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.banner-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #0D614E;
+  cursor: pointer;
+}
+
+.banner-checkbox-label {
+  font-size: 14px;
+  color: #1A2332;
+  cursor: pointer;
+  margin: 0;
+}
+
+.banner-error-text {
+  color: #EF4444;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ===== Modal Footer ===== */
+.banner-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #E8ECF1;
+}
+
+.banner-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.banner-btn.cancel {
+  background: #F0F2F5;
+  color: #6B7A8F;
+}
+
+.banner-btn.cancel:hover {
+  background: #E2E8F0;
+}
+
+.banner-btn.submit {
+  background: #0D614E;
+  color: #FFFFFF;
+}
+
+.banner-btn.submit:hover {
+  background: #0A4D3E;
+  box-shadow: 0 4px 12px rgba(13, 97, 78, 0.3);
+}
+
+.banner-btn.delete-btn {
+  background: #EF4444;
+  color: #FFFFFF;
+}
+
+.banner-btn.delete-btn:hover {
+  background: #DC2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .banner-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .banner-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .banner-stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .banner-table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .banner-col-redirect {
+    min-width: 150px;
+    max-width: 150px;
+  }
+
+  .banner-modal {
+    margin: 10px;
+    max-width: 100%;
+  }
+
+  .banner-preview-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .banner-stat-card {
+    padding: 12px 16px;
+  }
+
+  .banner-data-table thead th,
+  .banner-data-table tbody td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .banner-col-category,
+  .banner-col-redirect {
+    min-width: 100px;
+  }
+
+  .banner-status-wrapper {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+}

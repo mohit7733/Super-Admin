@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import BASE_URL from "../../../Base";
 import { apiFetch } from "../../../fetchapi";
 import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
@@ -909,6 +909,7 @@ useEffect(()=>{
 
         </div>
       )} */}
+      <ToastContainer position="top-center" autoClose={2000} />
       </>
   );
 };

@@ -4,18 +4,18 @@
 
 .main-content {
   min-height: 100vh;
-  padding: 60px 20px 20px 20px;
-  transition: margin-left 0.3s ease;
-  margin-top: 30px;
-
+  padding: 64px 16px 16px;
+  transition: margin-left 0.25s ease;
+  margin-top: 0;
+  background: var(--sa-bg, #f4f6f8);
 }
 
 .main-content.expanded {
-  margin-left: 260px;
+  margin-left: 248px;
 }
 
 .main-content.collapsed {
-  margin-left: 80px;
+  margin-left: 72px;
 }
 
 .btn-edit,
@@ -6840,20 +6840,19 @@ flex-direction:column;
 }
 
 .data-table th {
-    padding: 14px 12px;
-    text-align: center;
-    font-size: 13px;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 11px;
     font-weight: 600;
     color: #495057;
     white-space: nowrap;
 }
 
 .data-table td {
-    padding: 8px;
+    padding: 8px 10px;
     border-bottom: 1px solid #e9ecef;
     font-size: 13px;
-   
-    text-align: center;
+    text-align: left;
 }
 
 .data-table tbody tr:hover {
