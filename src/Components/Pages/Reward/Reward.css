@@ -617,6 +617,281 @@
 .reward-empty-add-btn:hover {
   background: #094d3e;
 }
+.reward-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.reward-edit-modal {
+  width: 100%;
+  max-width: 850px;
+  max-height: 92vh;
+  background: #fff;
+  border-radius: 14px;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.reward-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e8eeee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reward-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.reward-modal-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #0d614e20;
+  color: #0d614e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.reward-modal-title h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #172b28;
+}
+
+.reward-modal-title p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #71807d;
+}
+
+.reward-modal-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f5f7f7;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #687572;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-modal-close:hover {
+  background: #edf1f0;
+  color: #d64545;
+}
+
+.reward-modal-body {
+  padding: 24px;
+}
+
+.reward-modal-group {
+  margin-bottom: 18px;
+}
+
+.reward-modal-group label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #344541;
+}
+
+.reward-modal-group label span {
+  color: #e04b4b;
+}
+
+.reward-modal-group input,
+.reward-modal-group select {
+  width: 100%;
+  height: 44px;
+  padding: 0 13px;
+  border: 1px solid #d8e1df;
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.reward-modal-group input:focus,
+.reward-modal-group select:focus {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 3px #0d614e12;
+}
+
+.reward-modal-section {
+  background: #f8faf9;
+  border: 1px solid #e1e9e7;
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.reward-modal-section-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  color: #0d614e;
+}
+
+.reward-modal-section-title > svg {
+  margin-top: 3px;
+}
+
+.reward-modal-section-title h3 {
+  margin: 0;
+  color: #243a35;
+  font-size: 15px;
+}
+
+.reward-modal-section-title p {
+  margin: 4px 0 0;
+  color: #7a8784;
+  font-size: 12px;
+}
+
+.reward-modal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.reward-amount-input {
+  position: relative;
+}
+
+.reward-amount-input span {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 600;
+  color: #697773;
+}
+
+.reward-amount-input input {
+  padding-left: 30px;
+}
+
+.reward-modal-active-box {
+  border: 1px solid #dce7e4;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #fbfcfc;
+}
+
+.reward-modal-active-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reward-modal-active-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #0d614e18;
+  color: #0d614e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-modal-active-content strong {
+  display: block;
+  font-size: 14px;
+  color: #263b37;
+}
+
+.reward-modal-active-content p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7a8784;
+}
+
+.reward-modal-footer {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid #e8eeee;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.reward-modal-cancel,
+.reward-modal-save {
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reward-modal-cancel {
+  border: 1px solid #d7e0de;
+  background: #fff;
+  color: #52625e;
+}
+
+.reward-modal-save {
+  border: none;
+  background: #0d614e;
+  color: #fff;
+}
+
+.reward-modal-save:hover {
+  background: #095442;
+}
+
+@media (max-width: 650px) {
+  .reward-modal-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .reward-modal-overlay {
+    padding: 10px;
+  }
+
+  .reward-edit-modal {
+    max-height: 96vh;
+  }
+
+  .reward-modal-header,
+  .reward-modal-body,
+  .reward-modal-footer {
+    padding: 16px;
+  }
+}
 
 /* =========================================
    RESPONSIVE

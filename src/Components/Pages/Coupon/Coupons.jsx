@@ -238,7 +238,7 @@ const validateCouponForm = () => {
     errors.code =
       "Coupon code can contain only uppercase letters, numbers, hyphen and underscore.";
   }
-  // Maximum Total Uses
+  
 if (
   couponForm.max_total_uses === "" ||
   couponForm.max_total_uses === null
@@ -1750,7 +1750,7 @@ const handleEditCouponChange = (e) => {
                     </td>
 
 
-                    {/* SOURCE */}
+                   
 
                     <td>
 
@@ -1768,7 +1768,7 @@ const handleEditCouponChange = (e) => {
                     </td>
 
 
-                    {/* APPLIES TO */}
+                    
 
                     <td>
 
@@ -1796,7 +1796,7 @@ const handleEditCouponChange = (e) => {
                     </td>
 
 
-                    {/* DISCOUNT */}
+                   
 
                     <td>
 
@@ -1936,7 +1936,7 @@ const handleEditCouponChange = (e) => {
                     </td>
 
 
-                    {/* ACTION */}
+                   
 
                     <td>
 

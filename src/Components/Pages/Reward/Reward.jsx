@@ -14,6 +14,7 @@ import {
 
 import { FaSearch , FaEdit, } from "react-icons/fa";
 import { FaTimes } from "react-icons/fa";
+import { FaSave } from "react-icons/fa";
 
 import { BiPlus } from "react-icons/bi";
 import { toast, ToastContainer } from "react-toastify";
@@ -33,12 +34,32 @@ const Reward = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+const [deleteModal, setDeleteModal] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
     inactive: 0,
   });
+   const [RewardId, setRewardId] = useState(null);
+  const initialEditForm = {
+  name: "",
+  trigger: "",
+  coupon_id: "",
+  complete_on: "",
+  min_amount: "",
+  min_count: "",
+  window: "",
+  max_times_per_customer: "",
+  is_active: false,
+};
+
+const [showEditModal, setShowEditModal] = useState(false);
+const [editForm, setEditForm] = useState(initialEditForm);
+const [editErrors, setEditErrors] = useState({});
+const [editLoading, setEditLoading] = useState(false);
+
+const [coupons, setCoupons] = useState([]);
+const [couponLoading, setCouponLoading] = useState(false);
 
   const getRewards = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -148,15 +169,301 @@ const Reward = () => {
       setLoading(false);
     }
   };
+  const getCoupons = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setCouponLoading(true);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/promotions/admin/coupons/`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+      setCoupons(data.data?.results || data.data || []);
+    } else {
+      toast.error(data.message || "Failed to fetch coupons");
+    }
+  } catch (error) {
+    console.error("Coupon Error:", error);
+    toast.error("Failed to fetch coupons");
+  } finally {
+    setCouponLoading(false);
+  }
+};
 
 
+useEffect(() => {
+  getRewards();
+  getCoupons();
+}, []);
+const handleEditChange = (e) => {
+  const { name, value, type, checked } = e.target;
 
-  useEffect(() => {
+  setEditForm((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
+
+  if (editErrors[name]) {
+    setEditErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  }
+};
+const handleEditTriggerChange = (e) => {
+  const trigger = e.target.value;
+
+  setEditForm((prev) => ({
+    ...prev,
+    trigger,
+    complete_on: "",
+    min_amount: "",
+    min_count: "",
+    window: "",
+  }));
+
+  setEditErrors({});
+};
+const validateEditForm = () => {
+  const errors = {};
+
+  if (!editForm.name.trim()) {
+    errors.name = "Reward name is required";
+  }
+
+  if (!editForm.trigger) {
+    errors.trigger = "Please select a trigger";
+  }
+
+  if (!editForm.coupon_id) {
+    errors.coupon_id = "Private coupon is required";
+  }
+
+  if (editForm.trigger === "referral") {
+    if (!editForm.complete_on) {
+      errors.complete_on = "Please select completion event";
+    }
+  }
+
+  if (
+    editForm.trigger === "order" ||
+    editForm.trigger === "consultation"
+  ) {
+    if (!editForm.window) {
+      errors.window = "Please select a window";
+    }
+
+    if (!editForm.min_amount && !editForm.min_count) {
+      errors.ruleCondition =
+        "Enter either minimum amount or minimum count";
+    }
+
+    if (
+      editForm.min_amount !== "" &&
+      (Number(editForm.min_amount) < 0 ||
+        Number.isNaN(Number(editForm.min_amount)))
+    ) {
+      errors.min_amount = "Enter a valid amount";
+    }
+
+    if (
+      editForm.min_count !== "" &&
+      (Number(editForm.min_count) < 1 ||
+        !Number.isInteger(Number(editForm.min_count)))
+    ) {
+      errors.min_count =
+        "Minimum count must be a positive whole number";
+    }
+  }
+
+  if (
+    editForm.max_times_per_customer !== "" &&
+    (Number(editForm.max_times_per_customer) < 1 ||
+      !Number.isInteger(
+        Number(editForm.max_times_per_customer)
+      ))
+  ) {
+    errors.max_times_per_customer =
+      "Enter a valid positive whole number";
+  }
+
+  setEditErrors(errors);
+
+  if (Object.keys(errors).length > 0) {
+    toast.error(Object.values(errors)[0]);
+    return false;
+  }
+
+  return true;
+};
+const handleUpdateReward = async (e) => {
+  e.preventDefault();
+
+  if (!validateEditForm()) return;
+
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setEditLoading(true);
+
+  try {
+    const payload = {
+      name: editForm.name.trim(),
+      trigger: editForm.trigger,
+      coupon_id: editForm.coupon_id,
+      is_active: editForm.is_active,
+    };
+
+    if (editForm.trigger === "referral") {
+      payload.complete_on = editForm.complete_on;
+    }
+
+    if (
+      editForm.trigger === "order" ||
+      editForm.trigger === "consultation"
+    ) {
+      payload.window = editForm.window;
+
+      if (editForm.min_amount !== "") {
+        payload.min_amount = Number(editForm.min_amount);
+      }
+
+      if (editForm.min_count !== "") {
+        payload.min_count = Number(editForm.min_count);
+      }
+    }
+
+    if (editForm.max_times_per_customer !== "") {
+      payload.max_times_per_customer = Number(
+        editForm.max_times_per_customer
+      );
+    }
+
+    console.log("REWARD UPDATE PAYLOAD:", payload);
+
+    const response = await fetch(
+      `${BASE_URL}/promotions/admin/reward-rules/?id=${editForm.id}`,
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("REWARD UPDATE RESPONSE:", data);
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    if (data.success === true || data.status === "success") {
+      toast.success(
+        data.message || "Reward updated successfully"
+      );
+
+      setShowEditModal(false);
+      getRewards();
+    } else {
+      toast.error(
+        data.message || "Failed to update reward"
+      );
+    }
+  } catch (error) {
+    console.error("Update Reward Error:", error);
+    toast.error("Something went wrong while updating reward");
+  } finally {
+    setEditLoading(false);
+  }
+};
+
+ const handleDelete = async (id) => {
+    const token = sessionStorage.getItem("superadmin_token");
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/promotions/admin/reward-rules/?id=${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok || data.success === false) {
+        const errorMsg = data?.message || "Failed to delete Reward";
+        toast.error(errorMsg);
+        return;
+      }
+
+      toast.success("Reward deleted successfully");
+      setDeleteModal(false);
     getRewards();
-  }, []);
+
+     } catch (error) {
+    console.error("Delete Error:", error);
+    toast.error("Something went wrong while deleting Reward");
+  }
+};
 
   
-
   useEffect(() => {
     const search = searchTerm.trim().toLowerCase();
 
@@ -231,8 +538,40 @@ const Reward = () => {
     navigate("/Add-Reward");
   };
 
-const handleEditReward = (id) => {
-  navigate(`/reward/edit/${id}`);
+const handleEditReward = (reward) => {
+  setEditForm({
+    id: reward.id, // IMPORTANT
+
+    name: reward.name || "",
+    trigger: reward.trigger || "",
+    coupon_id: reward.coupon_id || "",
+    complete_on: reward.complete_on || "",
+
+    min_amount:
+      reward.min_amount !== null &&
+      reward.min_amount !== undefined
+        ? String(reward.min_amount)
+        : "",
+
+    min_count:
+      reward.min_count !== null &&
+      reward.min_count !== undefined
+        ? String(reward.min_count)
+        : "",
+
+    window: reward.window || "",
+
+    max_times_per_customer:
+      reward.max_times_per_customer !== null &&
+      reward.max_times_per_customer !== undefined
+        ? String(reward.max_times_per_customer)
+        : "",
+
+    is_active: reward.is_active === true,
+  });
+
+  setEditErrors({});
+  setShowEditModal(true);
 };
   return (
    
@@ -682,7 +1021,7 @@ const handleEditReward = (id) => {
 <button
   className="coupon-action-btn coupon-edit-btn"
   title="Edit Reward"
-  onClick={() => handleEditReward(reward.id)}
+  onClick={() => handleEditReward(reward)}
 >
   <FaEdit />
 </button>
@@ -690,12 +1029,17 @@ const handleEditReward = (id) => {
                           <button
                          className="coupon-action-btn coupon-delete-btn"
                             title="Delete Reward"
-                            onClick={() =>
-                              console.log(
-                                "Delete:",
-                                reward.id
-                              )
-                            }
+                            onClick={() => {
+
+                            setRewardId(
+                            reward.id
+                            );
+
+                            setDeleteModal(
+                              true
+                            );
+
+                          }}
                           >
                             <FaTrash />
                           </button>
@@ -718,20 +1062,453 @@ const handleEditReward = (id) => {
         </div>
 
       </div>
+      {showEditModal && (
+  <div
+    className="reward-modal-overlay"
+    onClick={() => {
+      if (!editLoading) {
+        setShowEditModal(false);
+      }
+    }}
+  >
+    <div
+      className="reward-edit-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="reward-modal-header">
+        <div className="reward-modal-title">
+          <div className="reward-modal-icon">
+            <FaGift />
+          </div>
 
-      <ToastContainer position="top-center" autoClose={2000} />
+          <div>
+            <h2>Edit Reward Rule</h2>
+            <p>
+              Update your reward configuration
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="reward-modal-close"
+          onClick={() => setShowEditModal(false)}
+          disabled={editLoading}
+        >
+          <FaTimes />
+        </button>
+      </div>
+
+      <form onSubmit={handleUpdateReward}>
+        <div className="reward-modal-body">
+
+          {/* Reward Name */}
+          <div className="reward-modal-group">
+            <label>
+              Reward Name <span>*</span>
+            </label>
+
+            <input
+              type="text"
+              name="name"
+              value={editForm.name}
+              onChange={handleEditChange}
+              placeholder="Enter reward name"
+              className={
+                editErrors.name ? "input-error" : ""
+              }
+            />
+
+            {editErrors.name && (
+              <small className="field-error">
+                {editErrors.name}
+              </small>
+            )}
+          </div>
+
+          {/* Trigger */}
+          <div className="reward-modal-group">
+            <label>
+              Trigger <span>*</span>
+            </label>
+
+            <select
+              name="trigger"
+              value={editForm.trigger}
+              onChange={handleEditTriggerChange}
+              className={
+                editErrors.trigger ? "input-error" : ""
+              }
+            >
+              <option value="">
+                Select trigger
+              </option>
+
+              <option value="referral">
+                Referral
+              </option>
+
+              <option value="order">
+                Order
+              </option>
+
+              <option value="consultation">
+                Consultation
+              </option>
+            </select>
+
+            {editErrors.trigger && (
+              <small className="field-error">
+                {editErrors.trigger}
+              </small>
+            )}
+          </div>
+
+          {/* Coupon */}
+          <div className="reward-modal-group">
+            <label>
+              Private Coupon <span>*</span>
+            </label>
+
+            <select
+              name="coupon_id"
+              value={editForm.coupon_id}
+              onChange={handleEditChange}
+              disabled={couponLoading}
+              className={
+                editErrors.coupon_id
+                  ? "input-error"
+                  : ""
+              }
+            >
+              <option value="">
+                {couponLoading
+                  ? "Loading coupons..."
+                  : "Select private coupon"}
+              </option>
+
+              {coupons.map((coupon) => (
+                <option
+                  key={coupon.id}
+                  value={coupon.id}
+                >
+                  {coupon.code}
+                </option>
+              ))}
+            </select>
+
+            {editErrors.coupon_id && (
+              <small className="field-error">
+                {editErrors.coupon_id}
+              </small>
+            )}
+          </div>
+
+          {/* REFERRAL */}
+          {editForm.trigger === "referral" && (
+            <div className="reward-modal-section">
+
+              <div className="reward-modal-section-title">
+                <FaBolt />
+
+                <div>
+                  <h3>Referral Conditions</h3>
+                  <p>
+                    Configure when the referral is completed.
+                  </p>
+                </div>
+              </div>
+
+              <div className="reward-modal-group">
+                <label>
+                  Complete On <span>*</span>
+                </label>
+
+                <select
+                  name="complete_on"
+                  value={editForm.complete_on}
+                  onChange={handleEditChange}
+                  className={
+                    editErrors.complete_on
+                      ? "input-error"
+                      : ""
+                  }
+                >
+                  <option value="">
+                    Select completion event
+                  </option>
+
+                  <option value="register">
+                    Friend Registration
+                  </option>
+
+                  <option value="first_order">
+                    Friend's First Order
+                  </option>
+                </select>
+
+                {editErrors.complete_on && (
+                  <small className="field-error">
+                    {editErrors.complete_on}
+                  </small>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ORDER / CONSULTATION */}
+          {(editForm.trigger === "order" ||
+            editForm.trigger === "consultation") && (
+            <div className="reward-modal-section">
+
+              <div className="reward-modal-section-title">
+                <FaBolt />
+
+                <div>
+                  <h3>
+                    {editForm.trigger === "order"
+                      ? "Order Conditions"
+                      : "Consultation Conditions"}
+                  </h3>
+
+                  <p>
+                    Set the qualifying condition.
+                  </p>
+                </div>
+              </div>
+
+              {/* Window */}
+              <div className="reward-modal-group">
+                <label>
+                  Window <span>*</span>
+                </label>
+
+                <select
+                  name="window"
+                  value={editForm.window}
+                  onChange={handleEditChange}
+                  className={
+                    editErrors.window
+                      ? "input-error"
+                      : ""
+                  }
+                >
+                  <option value="">
+                    Select window
+                  </option>
+
+                  <option value="event">
+                    Event
+                  </option>
+
+                  <option value="day">
+                    Day
+                  </option>
+
+                  <option value="all_time">
+                    All Time
+                  </option>
+                </select>
+
+                {editErrors.window && (
+                  <small className="field-error">
+                    {editErrors.window}
+                  </small>
+                )}
+              </div>
+
+              {/* Amount + Count */}
+              <div className="reward-modal-row">
+
+                <div className="reward-modal-group">
+                  <label>Minimum Amount</label>
+
+                  <div className="reward-amount-input">
+                    <span>₹</span>
+
+                    <input
+                      type="number"
+                      name="min_amount"
+                      min="0"
+                      step="0.01"
+                      value={editForm.min_amount}
+                      onChange={handleEditChange}
+                      placeholder="e.g. 500"
+                    />
+                  </div>
+
+                  {editErrors.min_amount && (
+                    <small className="field-error">
+                      {editErrors.min_amount}
+                    </small>
+                  )}
+                </div>
+
+                <div className="reward-modal-group">
+                  <label>Minimum Count</label>
+
+                  <input
+                    type="number"
+                    name="min_count"
+                    min="1"
+                    step="1"
+                    value={editForm.min_count}
+                    onChange={handleEditChange}
+                    placeholder="e.g. 3"
+                  />
+
+                  {editErrors.min_count && (
+                    <small className="field-error">
+                      {editErrors.min_count}
+                    </small>
+                  )}
+                </div>
+
+              </div>
+
+              {editErrors.ruleCondition && (
+                <div className="condition-error">
+                  {editErrors.ruleCondition}
+                </div>
+              )}
+
+            </div>
+          )}
+
+          {/* MAX TIMES */}
+          {editForm.trigger && (
+            <div className="reward-modal-group">
+              <label>
+                Maximum Times Per Customer
+              </label>
+
+              <input
+                type="number"
+                name="max_times_per_customer"
+                min="1"
+                step="1"
+                value={
+                  editForm.max_times_per_customer
+                }
+                onChange={handleEditChange}
+                placeholder="Leave empty for no cap"
+                className={
+                  editErrors.max_times_per_customer
+                    ? "input-error"
+                    : ""
+                }
+              />
+
+              {editErrors.max_times_per_customer && (
+                <small className="field-error">
+                  {editErrors.max_times_per_customer}
+                </small>
+              )}
+            </div>
+          )}
+
+          {/* ACTIVE */}
+          <div className="reward-modal-active-box">
+
+            <div className="reward-modal-active-content">
+              <div className="reward-modal-active-icon">
+                <FaCircleCheck />
+              </div>
+
+              <div>
+                <strong>Active Rule</strong>
+                <p>
+                  Customers can earn this reward when
+                  conditions are satisfied.
+                </p>
+              </div>
+            </div>
+
+            <label className="switch">
+              <input
+                type="checkbox"
+                name="is_active"
+                checked={editForm.is_active}
+                onChange={handleEditChange}
+              />
+
+              <span className="slider"></span>
+            </label>
+
+          </div>
+
+        </div>
+
+      
+        <div className="reward-modal-footer">
+
+          <button
+            type="button"
+            className="reward-modal-cancel"
+            onClick={() => setShowEditModal(false)}
+            disabled={editLoading}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            className="reward-modal-save"
+            disabled={editLoading}
+          >
+            {editLoading ? (
+              <>
+                <span className="button-spinner"></span>
+                Saving...
+              </>
+            ) : (
+              <>
+                <FaSave />
+                Save Changes
+              </>
+            )}
+          </button>
+
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+   {deleteModal && (
+  <div className="modal">
+    <div className="modal-content">
+      <h3>
+        Are you sure you want to delete this Coupon?
+      </h3>
+
+      <div className="form-buttons">
+        <button
+          className="otp-btn verify-btn"
+          onClick={() => {
+            handleDelete(RewardId);
+            setDeleteModal(false);
+          }}
+
+
+        >
+          Yes
+        </button>
+
+        <button
+          onClick={() => setDeleteModal(false)}
+        >
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 </>
     
     
 
    
 
-     
-
-    
-
-
-   
 
    
   );
