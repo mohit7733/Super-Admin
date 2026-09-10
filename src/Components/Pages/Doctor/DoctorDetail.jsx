@@ -29,7 +29,7 @@ import {
   FaQrcode,
   FaRegCreditCard,
 } from "react-icons/fa";
-
+import { FiAlertCircle } from "react-icons/fi";
 import {
   FiList,
   FiBox,
@@ -776,7 +776,7 @@ const getAvailability = async () => {
               </div>
             </div>
 
-            {/* Info Section */}
+          
             <div className="profile-info-section">
               <div className="profile-header">
                 <h1>
@@ -854,13 +854,29 @@ const getAvailability = async () => {
 
             </div>
             <div className="action-buttons-column">
+ <button
+  type="button"
+  className={`btn btn-approve ${
+    doctorData?.approval_status === "approved" ||
+    doctorData?.policies_accepted !== true
+      ? "btn-approve-disabled"
+      : ""
+  }`}
+  onClick={() => {
+    if (doctorData?.approval_status === "approved") {
+      return;
+    }
 
-             <button
-  className="btn btn-approve"
-  onClick={() => setApproveModal(true)}
-  disabled={loadingAction}
+    if (doctorData?.policies_accepted !== true) {
+      toast.error("Doctor has not accepted the policies yet.");
+      return;
+    }
+
+    setApproveModal(true);
+  }}
 >
-  <FiCheckCircle size={16} /> Approve
+  <FiCheckCircle size={16} />
+  Approve
 </button>
    <button
   className="btn btn-suspend"

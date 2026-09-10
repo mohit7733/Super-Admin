@@ -96,6 +96,10 @@ p {
   color: white;
   border: 1px solid #0D614E;
 }
+.btn-approve-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .btn-suspend {
   background: white;

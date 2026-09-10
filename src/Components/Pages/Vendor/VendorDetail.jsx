@@ -29,64 +29,7 @@ import BASE_URL from "../../../Base";
             const[Loading,setLoading]=useState(false);
 const { vendorId } = useParams();
         
-//             const vendor = {
-//                 name: "GreenLeaf Organic Store",
-//                 owner: "Rajesh Kumar",
-//                 email: "rajesh@greenleaf.com",
-//                 phone: "+91 98765 43210",
-//                 altPhone: "+91 99887 76655",
-//                 dob: "15 Aug 1985",
-//                 gender: "Male",
-//                 address: "123, Sector 14, Gurugram, Haryana - 122001",
-//                 storeType: "Grocery Store",
-//                 category: "Organic Food, Vegetables, Dairy",
-//                 gst: "06AABCU9603R1Z8",
-//                 pan: "ABCDE1234F",
-//                 regNumber: "UDYAM-HR-01-1234567",
-//                 businessAddress: "45, Industrial Area, Phase 2, Gurugram",
-//                 joiningDate: "12 Jan 2023",
-//                 status: "Approved",
-//                 kycStatus: "Verified",
-//                 totalProducts: 245,
-//                 totalOrders: 1890,
-//                 totalSales: 457200,
-//                 commission: "10%",
-//                 walletBalance: 28500,
-//                 vendorStatus: "Active",
-//                 accountStatus: "Active",
-//             };
-// const doc = [
-//   {
-//     id: 1,
-//     name: "Aadhaar Card",
-//     status: "Verified",
-//     date: "05 Jun 2026",
-//   },
-//   {
-//     id: 2,
-//     name: "PAN Card",
-//     status: "Verified",
-//     date: "05 Jun 2026",
-//   },
-//   {
-//     id: 3,
-//     name: "GST Certificate",
-//     status: "Verified",
-//     date: "05 Jun 2026",
-//   },
-//   {
-//     id: 4,
-//     name: "Cancelled Cheque",
-//     status: "Pending",
-//     date: "02 Jun 2026",
-//   },
-//   {
-//     id: 5,
-//     name: "Bank Statement",
-//     status: "Pending",
-//     date: "02 Jun 2026",
-//   },
-// ];
+//       
 const [vendorData, setVendorData] = useState({});
 const [vendorLoadingAction, setVendorLoadingAction] = useState(false);
 const [vendorActionType, setVendorActionType] = useState(null);
@@ -702,9 +645,25 @@ const handleVendorReasonSubmit = async () => {
 </button>
  
 <button
-  className="btn btn-approve"
-  onClick={() => setApproveModal(true)}
-  disabled={vendorLoadingAction}
+   className={`btn btn-approve ${
+    vendorData?.approval_status === "approved" ||
+  vendorData?.policies_accepted !== true
+      ? "btn-approve-disabled"
+      : ""
+  }`}
+
+   onClick={() => {
+    if (vendorData?.approval_status === "approved") {
+      return;
+    }
+
+    if (vendorData?.policies_accepted !== true) {
+      toast.error("Vendor has not accepted the policies yet.");
+      return;
+    }
+
+    setApproveModal(true);
+  }}
 >
   <FiCheckCircle size={16} /> Approve
 </button>
