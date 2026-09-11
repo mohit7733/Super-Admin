@@ -2,16 +2,22 @@
 // new one 
 
 import HomeIcon from '@mui/icons-material/Home';
+import PersonIcon from '@mui/icons-material/Person';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import ReorderIcon from '@mui/icons-material/Reorder';
+import HistoryIcon from '@mui/icons-material/History';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import HealingIcon from '@mui/icons-material/FitnessCenter';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import { FaFileContract } from 'react-icons/fa';
 import { FaGift } from 'react-icons/fa6';
-import { FaTicketAlt, FaUsers, FaClipboardList, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck } from "react-icons/fa";
-import { MdQuiz, MdCategory, MdBrandingWatermark, MdPhotoSizeSelectActual, MdReviews, MdOndemandVideo } from "react-icons/md";
+
+import { FiClock } from "react-icons/fi";
+import { FaTag, FaTicketAlt, FaUsers, FaClipboardList, FaHistory, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
+import { MdQuiz, MdRestaurantMenu, MdSpa, MdCategory, MdInventory, MdBrandingWatermark, MdPhotoSizeSelectActual, MdReviews, MdOndemandVideo } from "react-icons/md";
 import { FaCircleQuestion } from "react-icons/fa6";
-import { FaBoxOpen, FaTags, FaChartLine, FaHeadset, FaUserInjured, FaStore, FaUserMd, FaListAlt } from "react-icons/fa";
+import { FaAppleAlt, FaBoxOpen, FaTags, FaChartLine, FaHeadset, FaUserInjured, FaStore, FaUserMd, FaUserShield, FaListAlt } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
@@ -19,9 +25,11 @@ import { GiLotus, GiLotusFlower } from "react-icons/gi";
 import { BiCategoryAlt, BiPulse } from "react-icons/bi";
 import { MdAdminPanelSettings } from "react-icons/md";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import { MdReceiptLong } from "react-icons/md";
+import { MdReceiptLong, MdPercent } from "react-icons/md";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { GiMeal } from "react-icons/gi";
+
+import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { BiPlusCircle } from "react-icons/bi";
 import { FiUploadCloud } from "react-icons/fi";
 
@@ -32,7 +40,7 @@ export const SidebarData = () => [
   {
     title: "Dashboard",
     icon: <HomeIcon sx={{ fontSize: 20 }} />,
-    path: "/dashboard",
+    path: "/Dashboard",
     permission: "view_dashboard",
   },
 
@@ -127,13 +135,17 @@ export const SidebarData = () => [
     },
   ],
 },
-  {
-    title: "Legal Policies",
-    icon: <FaFileContract size={20} />,
-    path: "#",
-    permission: "manage_legal_policies",
-    children: [],
-  },
+{
+  title: "Legal Policies",
+  icon: <FaFileContract size={20} />,
+  path: "#",
+  permission: "manage_legal_policies",
+  children:[
+    {
+
+    }
+  ]
+},
  
   {
     title: "User Management",
@@ -144,7 +156,7 @@ export const SidebarData = () => [
      
       {
         title: "Vendors",
-        path: "/vendor",
+        path: "/Vendor",
         permission: "view_vendors",
         icon: <FaStore size={18} />
       },
@@ -156,7 +168,7 @@ export const SidebarData = () => [
       },
        {
         title: "Customers",
-        path: "/customer",
+        path: "/Customer",
         permission: "view_customers",
         icon: <FaUsers size={18} />
       },
@@ -315,7 +327,7 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
     children: [
       {
         title: "Products Management",
-        path: "/product",
+        path: "/Product",
         permission: "view_products",
         icon: <FaBoxOpen size={18} />
       },

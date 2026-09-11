@@ -148,15 +148,15 @@
 }
 
 .page-heading h1 {
-  font-size: 18px;
-  line-height: 1.2;
-  margin: 0;
-  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.1;
+  margin: 0 0 5px;
+  font-weight: 700;
 }
 
 .page-heading p {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   color: #60708b;
 }
 
@@ -199,8 +199,8 @@
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 15px;
 }
 
 .metric-card,
@@ -212,8 +212,9 @@
 }
 
 .metric-card {
-  min-height: 0;
-  padding: 16px;
+ 
+    min-height: 165px;
+  padding: 18px;
   position: relative;
   overflow: hidden;
 }
@@ -296,8 +297,8 @@
 .main-grid {
   display: grid;
   grid-template-columns: 1.65fr 1.12fr 1.55fr;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 15px;
+  margin-top: 15px;
 }
 
 .panel {
@@ -536,9 +537,9 @@
 .bottom-grid {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 8px !important;
+  gap: 15px !important;
   width: 100% !important;
-  margin-top: 8px !important;
+  margin-top: 15px !important;
 }
 
 .bottom-grid > .panel {
@@ -1002,8 +1003,8 @@
 /* Main analytics row */
 .main-grid {
   grid-template-columns: 1.65fr 1.12fr 1.55fr;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 15px;
+  margin-top: 15px;
 }
 
 .panel {
@@ -1087,17 +1088,17 @@
 /* Bottom six-card row */
 .bottom-grid {
   grid-template-columns: 1.05fr 1.05fr 1fr 1fr 1fr 1.05fr;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 15px;
+  margin-top: 15px;
 }
 
 .bottom-grid .panel {
-  min-height: 0;
+  min-height: 312px;
 }
 
 /* Bottom-card headers */
 .bottom-grid .panel-heading {
-  padding: 8px 12px 6px;
+  padding: 12px 14px 10px;
 }
 
 .bottom-grid .panel-heading h2 {

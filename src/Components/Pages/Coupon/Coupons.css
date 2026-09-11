@@ -4,23 +4,16 @@
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  background: #ffffff;
-  border: 1px solid #e5e9e7;
-  border-radius: 8px;
-  box-shadow: none;
-}
 
-.coupon-table-head th {
-  background: #f7f9f8;
-  padding: 8px 10px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: #34403b;
-  text-transform: none;
-  letter-spacing: 0.02em;
-  border-bottom: 1px solid #e5e9e7;
-  white-space: nowrap;
+  background: #ffffff;
+
+  border: 1px solid #e5e9e7;
+  border-radius: 14px;
+
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5d1 transparent;
 }
 
 
@@ -38,23 +31,40 @@
 
 
 .coupon-table-head th {
-  padding: 8px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: none;
+  background: #f7f9f8;
+
+  padding: 16px 18px;
+
+  text-align: left;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  color: #34403b;
+
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+
+  border-bottom: 1px solid #e5e9e7;
+
+  white-space: nowrap;
 }
 
 
 
 .coupon-table-head th:first-child {
-  padding-left: 10px;
+  padding-left: 24px;
+
+  border-top-left-radius: 14px;
 }
 
 
 
 
 .coupon-table-head th:last-child {
-  padding-right: 10px;
+  padding-right: 24px;
+
+  border-top-right-radius: 14px;
 }
 
 
@@ -100,11 +110,16 @@
 
 
 .coupon-table-body td {
-  padding: 8px 10px;
+  padding: 18px;
+
   vertical-align: middle;
+
   font-size: 13px;
+
   color: #4d5954;
+
   border-bottom: 1px solid #edf0ee;
+
   background: #ffffff;
 }
 
@@ -132,14 +147,14 @@
 c1e
 
 .coupon-table-row td:first-child {
-  padding-left: 10px;
+  padding-left: 24px;
 }
 
 
 
 
 .coupon-table-row td:last-child {
-  padding-right: 10px;
+  padding-right: 24px;
 }
 
 
