@@ -220,20 +220,7 @@ setTodayCount(data.data.today_count || 0);
     }
   };
 
-// useEffect(() => {
-//   const delay = setTimeout(() => {
-//     if (searchcustomerTerm.trim() === "") {
-//       getCustomerList(1, "");
-//       return;
-//     }
 
-//     if (searchcustomerTerm.trim().length >= 0) {
-//       getCustomerList(1, searchcustomerTerm);
-//     }
-//   }, 500);
-
-//   return () => clearTimeout(delay);
-// }, [searchcustomerTerm]);
 
 useEffect(() => {
   const delay = setTimeout(() => {
