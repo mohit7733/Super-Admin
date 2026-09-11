@@ -454,7 +454,6 @@ const modalRef = useRef(null);
 const filterDoctors = () => {
   let filtered = [...allDoctorData];
 
-  // Search
   if (doctorsearch.trim()) {
     const search = doctorsearch.toLowerCase();
 
@@ -548,7 +547,6 @@ const filterDoctors = () => {
       }
 
       if (response.status === 200 || response.status === 201) {
-        // await getDoctorStats();
         setDoctorData((prev) =>
           prev.map((doctor) =>
             doctor.id === doctorId ? { ...doctor, approval_status: newStatus } : doctor,
@@ -559,7 +557,7 @@ const filterDoctors = () => {
 
     } catch (err) {
       console.error(err)
-      toast.error("Error updating vendor status")
+      toast.error("Error updating Doctor status")
     }
   } 
 
@@ -724,7 +722,7 @@ const filterDoctors = () => {
   <td>{item.email || "NA"}</td>
 
 
-  <td>{item.secondary_number || "NA"}</td>
+  <td>{item.verified_phone_number || "NA"}</td>
 
   
   <td>
@@ -819,7 +817,7 @@ const filterDoctors = () => {
     </button>
 
 
-    {/* ADD / REMOVE DIETICIAN */}
+   
     <button
       className="action-btn1"
       title={
@@ -981,12 +979,28 @@ const filterDoctors = () => {
 </div>
 
       <div className="info-box">
-        <span className="info-icon">ℹ</span>
+  <span className="info-icon">ℹ</span>
 
-        <span>
-          This action will grant Doctor access to the platform.
-        </span>
+  <span>
+    This action will grant Doctor access to the platform.
+  </span>
+</div>
+{!selectedDoctor?.policies_accepted && (
+  <div className="policy-warning">
+    <span className="policy-warning-icon">i</span>
+
+    <span>
+      Doctor has not accepted the policy yet. Please ask the doctor to
+      accept the policy before approval.
+    </span>
+  </div>
+)}
+
+
+<div className="confirm-buttons">
+
       </div>
+      
 
       <div className="confirm-buttons">
 
@@ -1000,11 +1014,15 @@ const filterDoctors = () => {
           Cancel
         </button>
 
-       <button
-  className="approve-btn"
-  disabled={isApproving}
+    <button
+  className={`approve-btn ${
+    isApproving || !selectedDoctor?.policies_accepted
+      ? "approve-btn-disabled"
+      : ""
+  }`}
+  disabled={isApproving || !selectedDoctor?.policies_accepted}
   onClick={async () => {
-    if (isApproving) return;
+    if (isApproving || !selectedDoctor?.policies_accepted) return;
 
     setIsApproving(true);
 

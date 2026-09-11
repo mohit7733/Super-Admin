@@ -604,152 +604,81 @@ const getServiceCategories = async () => {
   }
 };
 
-  const getCoupons = async () => {
+ const getCoupons = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-    const token =
-      sessionStorage.getItem(
-        "superadmin_token"
-      );
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
 
+  setLoading(true);
+  setError(null);
 
-    if (!token) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/promotions/admin/coupons/`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
 
-      toast.error(
-        "Session expired. Please login again"
-      );
+    console.log("Coupon HTTP Status:", response.status);
 
+    // Unauthorized
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+
+      toast.error("Session expired. Please login again");
       navigate("/login");
-
       return;
     }
 
+    const data = await response.json();
 
-    setLoading(true);
+    console.log("Coupon API Response:", data);
 
-    setError(null);
+    // API response uses success: true
+    if (response.ok && data.success === true) {
+      const couponData = Array.isArray(data.data)
+        ? data.data
+        : [];
 
-
-    try {
-
-      const response = await fetch(
-        `${BASE_URL}/promotions/admin/coupons/`,
-        {
-          method: "GET",
-
-          headers: {
-
-            Accept:
-              "application/json",
-
-            Authorization:
-              `Bearer ${token}`,
-
-            "ngrok-skip-browser-warning":
-              "true",
-          },
-        }
+      // Latest created coupon first
+      const sortedData = [...couponData].sort(
+        (a, b) =>
+          new Date(b.created_at) - new Date(a.created_at)
       );
 
+      setCoupons(sortedData);
+      setError(null);
+    } else {
+      const errorMessage =
+        data.message || "Failed to fetch coupons";
 
-      console.log(
-        "Coupon HTTP Status:",
-        response.status
-      );
-
-
-      if (
-        response.status === 401 ||
-        response.status === 403
-      ) {
-
-        sessionStorage.removeItem(
-          "superadmin_token"
-        );
-
-        toast.error(
-          "Session expired. Please login again"
-        );
-
-        navigate("/login");
-
-        return;
-      }
-
-
-      const data =
-        await response.json();
-
-
-      console.log(
-        "FULL COUPON RESPONSE:",
-        data
-      );
-
-      console.log(
-        "COUPON DATA:",
-        data.data
-      );
-
-
-      if (data.status === "success") {
-
-        const couponData =
-          Array.isArray(data.data)
-            ? data.data
-            : [];
-
-
-        const sortedData =
-          [...couponData].sort(
-            (a, b) =>
-              new Date(b.created_at) -
-              new Date(a.created_at)
-          );
-
-
-        setCoupons(sortedData);
-
-      } else {
-
-        toast.error(
-          data.message ||
-          "Failed to get coupons"
-        );
-
-        setError(
-          data.message ||
-          "Failed to fetch coupons"
-        );
-
-        setCoupons([]);
-      }
-
-    } catch (error) {
-
-      console.error(
-        "Coupon Fetch Error:",
-        error
-      );
-
-
-      setError(
-        "Something went wrong while fetching coupon data."
-      );
-
-
-      toast.error(
-        "Failed to fetch coupon data"
-      );
-
-
+      toast.error(errorMessage);
+      setError(errorMessage);
       setCoupons([]);
-
-    } finally {
-
-      setLoading(false);
-
     }
-  };
+  } catch (error) {
+    console.error("Coupon Fetch Error:", error);
+
+    const errorMessage =
+      "Something went wrong while fetching coupon data.";
+
+    setError(errorMessage);
+    toast.error("Failed to fetch coupon data");
+    setCoupons([]);
+  } finally {
+    setLoading(false);
+  }
+};
 const resetEditCouponForm = () => {
   setEditCouponForm(initialCouponForm);
   setEditCouponErrors({});
@@ -1102,7 +1031,7 @@ const handleUpdateCoupon = async (e) => {
   try {
     let imageUrl = editExistingImage;
 
-    // New image selected
+    
     if (editCouponImage) {
       imageUrl =
         await uploadCouponImage(editCouponImage);

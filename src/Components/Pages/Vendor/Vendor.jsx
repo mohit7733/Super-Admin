@@ -1473,6 +1473,18 @@ console.log("Vendor list fetched");
           This action will grant vendor access to the platform.
         </span>
       </div>
+      {
+        !SelectedVendor?.policies_accepted && (
+           <div className="policy-warning">
+    <span className="policy-warning-icon">i</span>
+
+    <span>
+      Vendor has not accepted the policy yet. Please ask the vendor to
+      accept the policy before approval.
+    </span>
+  </div>
+        )
+      }
 
       <div className="confirm-buttons">
 
@@ -1487,8 +1499,12 @@ console.log("Vendor list fetched");
         </button>
 
        <button
-  className="approve-btn"
-  disabled={isApproving}
+   className={`approve-btn ${
+    isApproving || !SelectedVendor?.policies_accepted
+      ? "approve-btn-disabled"
+      : ""
+  }`}
+disabled={isApproving || !SelectedVendor ?.policies_accepted}
   onClick={async () => {
     if (isApproving) return;
 

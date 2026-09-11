@@ -40,9 +40,6 @@ const Reward = () => {
     inactive: 0,
   });
 
-  // ==============================
-  // GET REWARDS
-  // ==============================
   const getRewards = async () => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -158,9 +155,7 @@ const Reward = () => {
     getRewards();
   }, []);
 
-  // ==============================
-  // SEARCH
-  // ==============================
+  
 
   useEffect(() => {
     const search = searchTerm.trim().toLowerCase();
@@ -182,9 +177,7 @@ const Reward = () => {
     setFilteredRewards(filtered);
   }, [searchTerm, rewards]);
 
-  // ==============================
-  // DATE FORMAT
-  // ==============================
+
 
   const formatDate = (date) => {
     if (!date) return "-";
@@ -235,25 +228,14 @@ const Reward = () => {
 
 
   const handleAddReward = () => {
-    navigate("/reward/add");
+    navigate("/Add-Reward");
   };
 
-
-
-  const handleViewReward = (reward) => {
-    navigate(`/reward/view/${reward.id}`);
-  };
-
-  
-
-  const handleEditReward = (reward) => {
-    navigate(`/reward/edit/${reward.id}`);
-  };
-
+const handleEditReward = (id) => {
+  navigate(`/reward/edit/${id}`);
+};
   return (
-  
-
-  
+   
 <>
   <div className="page-header">
 
@@ -262,13 +244,146 @@ const Reward = () => {
         </h1>
 
       </div>
-  <div className="reward-filter-card">
+   <div className="stats2-grid">
 
-        <div className="reward-filter-left">
 
-          <div className="reward-search-wrapper">
 
-            <FaSearch className="reward-search-icon" />
+        <div
+          className="stat2-card"
+          style={{
+            borderTopColor:
+              "#0D614E",
+          }}
+        >
+
+          <div
+            className="stat2-icon"
+            style={{
+              background:
+                "#0D614E20",
+
+              color:
+                "#0D614E",
+            }}
+          >
+
+            <FaGift
+              size={16}
+            />
+
+          </div>
+
+
+          <div className="stat2-info">
+
+            <h3>
+              Total Reward
+            </h3>
+
+            <div className="stat2-value">
+            0
+            </div>
+
+          </div>
+
+        </div>
+
+
+       
+
+        <div
+          className="stat2-card"
+          style={{
+            borderTopColor:
+              "#0D614E",
+          }}
+        >
+
+          <div
+            className="stat2-icon"
+            style={{
+              background:
+                "#0D614E20",
+
+              color:
+                "#0D614E",
+            }}
+          >
+
+            <FaCircleCheck
+              size={16}
+            />
+
+          </div>
+
+
+          <div className="stat2-info">
+
+            <h3>
+              Active Coupons
+            </h3>
+
+            <div className="stat2-value">
+            0
+            </div>
+
+          </div>
+
+        </div>
+
+
+       
+
+        <div
+          className="stat2-card"
+          style={{
+            borderTopColor:
+              "#0D614E",
+          }}
+        >
+
+          <div
+            className="stat2-icon"
+            style={{
+              background:
+                "#0D614E20",
+
+              color:
+                "#0D614E",
+            }}
+          >
+
+            <FaCircleXmark
+              size={16}
+            />
+
+          </div>
+
+
+          <div className="stat2-info">
+
+            <h3>
+              Inactive Coupons
+            </h3>
+
+            <div className="stat2-value">
+            0
+            </div>
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+  <div className="filter-category">
+
+        <div className="filter-controls">
+
+          <div  className="search-wrapper">
+
+            <FaSearch  className="search-icon" />
 
             <input
               type="text"
@@ -277,7 +392,7 @@ const Reward = () => {
               onChange={(e) =>
                 setSearchTerm(e.target.value)
               }
-              className="reward-search-input"
+               className="search-input"
             />
 
             {searchTerm && (
@@ -295,19 +410,16 @@ const Reward = () => {
           </div>
 
         </div>
-
-        <div className="reward-result-count">
-          <span>
-            {filteredRewards.length}
-          </span>{" "}
-          reward
-          {filteredRewards.length !== 1
-            ? "s"
-            : ""}
-        </div>
+<button onClick={handleAddReward}
+     className="add-customer-btn"
+>
+  <BiPlus />
+  Add Reward
+</button>
+      
 
       </div>
-   <div className="reward-table-card">
+   <div className="filter-category">
 
      
 
@@ -422,7 +534,7 @@ const Reward = () => {
 
                     <tr key={reward.id}>
 
-                      {/* NUMBER */}
+                
 
                       <td>
                         <span className="reward-row-number">
@@ -438,9 +550,7 @@ const Reward = () => {
                       <td>
                         <div className="reward-name-cell">
 
-                          <div className="reward-avatar">
-                            <FaGift />
-                          </div>
+                         
 
                           <div>
                             <div className="reward-name">
@@ -449,20 +559,15 @@ const Reward = () => {
 
                             <div className="reward-id">
                               ID:{" "}
-                              {reward.id
-                                ? `${reward.id.slice(
-                                    0,
-                                    8
-                                  )}...`
-                                : "-"}
+                              {reward.id}
+                               
                             </div>
                           </div>
 
                         </div>
                       </td>
 
-                      {/* TRIGGER */}
-
+                   
                       <td>
                         <span className="trigger-badge">
                           <FaBolt size={11} />
@@ -495,10 +600,10 @@ const Reward = () => {
                         </div>
                       </td>
 
-                      {/* COMPLETE ON */}
+                     
 
                       <td>
-                        <span className="completion-badge">
+                        <span className="window-text">
                           {formatTrigger(
                             reward.complete_on
                           )}
@@ -573,32 +678,17 @@ const Reward = () => {
 
                         <div className="reward-actions">
 
-                          <button
-                            className="reward-action view"
-                            title="View Reward"
-                            onClick={() =>
-                              handleViewReward(
-                                reward
-                              )
-                            }
-                          >
-                            <FaEye />
-                          </button>
+                       
+<button
+  className="coupon-action-btn coupon-edit-btn"
+  title="Edit Reward"
+  onClick={() => handleEditReward(reward.id)}
+>
+  <FaEdit />
+</button>
 
                           <button
-                            className="reward-action edit"
-                            title="Edit Reward"
-                            onClick={() =>
-                              handleEditReward(
-                                reward
-                              )
-                            }
-                          >
-                            <FaEdit />
-                          </button>
-
-                          <button
-                            className="reward-action delete"
+                         className="coupon-action-btn coupon-delete-btn"
                             title="Delete Reward"
                             onClick={() =>
                               console.log(

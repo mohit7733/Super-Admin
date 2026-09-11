@@ -85,6 +85,8 @@ import OrderTracking from'./Components/Pages/Order/OrderTracking'
 import DietReview from './Components/Pages/Review/DietReview'
 import Coupons from './Components/Pages/Coupon/Coupons';
 import Reward from './Components/Pages/Reward/Reward';
+import AddReward from './Components/Pages/Reward/AddReward';
+import EditReward from './Components/Pages/Reward/EditReward';
 
 
 const Layout = ({ children }) => {
@@ -130,6 +132,27 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+           <Route
+          path="/Add-Reward"
+          element={
+            <ProtectedRoute permission="view_add_reward">
+              <Layout>
+                <AddReward/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+       <Route
+  path="/reward/edit/:id"
+  element={
+    <ProtectedRoute permission="view_edit_reward">
+      <Layout>
+        <EditReward />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
         <Route
           path="/question"
           element={
