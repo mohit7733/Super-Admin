@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
-import { ToastContainer, toast } from 'react-toastify'
+import { toast } from 'react-toastify'
 import BASE_URL from "../../../Base";
 import { apiFetch } from "../../../fetchapi";
 import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
@@ -16,6 +16,8 @@ import { FaCalendarCheck } from "react-icons/fa";
 
 
 const userId = localStorage.getItem("USER_ID")
+
+console.log("USER_ID", userId)
 
 const initialCustomerFormState = {
   profile_picture: "",
@@ -766,7 +768,6 @@ setSelectedCustomer(null);
 )}
 
 
-      <ToastContainer position="top-center" autoClose={2000} />
       </>
   )
 

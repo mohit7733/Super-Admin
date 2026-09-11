@@ -629,7 +629,6 @@ const Reward = () => {
 
       </div>
 
-      <ToastContainer position="top-center" autoClose={2000} />
 </>
     
     

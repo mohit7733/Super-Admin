@@ -454,28 +454,21 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     return userPermissions.includes(code);
   }, [userRole, userPermissions]);
 
-  const isPathActive = (path) => {
-    if (!path || path === "#") return false;
-    return location.pathname.toLowerCase() === path.toLowerCase();
-  };
-
+  // Filter sidebar items based on permissions
   const filteredSidebarItems = useMemo(() => {
     const filterRecursive = (items) => {
       return items
-        .map((item) => {
-          if (!item?.title) return null;
-
+        .map(item => {
           if (item.children) {
             const filteredChildren = filterRecursive(item.children);
-            if (filteredChildren.length === 0) return null;
-            return {
-              ...item,
-              children: filteredChildren,
-            };
+            if (filteredChildren.length > 0 || !item.permission || hasPermission(item.permission)) {
+              return {
+                ...item,
+                children: filteredChildren
+              };
+            }
+            return null;
           }
-
-          if (!item.path || item.path === "#") return null;
-
           if (!item.permission || hasPermission(item.permission)) {
             return item;
           }
@@ -527,7 +520,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
             <li key={key} className="submenu-item">
               <Link
                 to={child.path}
-                className={`submenu-link ${isPathActive(child.path) ? "active" : ""}`}
+                className={`submenu-link ${location.pathname === child.path ? 'active' : ''}`}
               >
                 <span className="submenu-icon">{child.icon}</span>
                 <span className="submenu-text">{child.title}</span>
@@ -549,18 +542,8 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     return (
       <li key={key} className="menu-item has-children">
         <div
-          className={`nav-link nav-link-parent ${isOpen ? "open" : ""}`}
+          className={`nav-link nav-link-parent ${isOpen ? 'open' : ''}`}
           onClick={() => !collapsed && handleToggleMenu(key)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              if (!collapsed) handleToggleMenu(key);
-            }
-          }}
-          role="button"
-          tabIndex={0}
-          aria-expanded={isOpen}
-          data-tooltip={item.title}
         >
           <span className="nav-icon">{item.icon}</span>
           {!collapsed && (
@@ -583,8 +566,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
       <li key={key} className="menu-item">
         <Link
           to={item.path}
-          className={`nav-link ${isPathActive(item.path) ? "active" : ""}`}
-          data-tooltip={item.title}
+          className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
         >
           <span className="nav-icon">{item.icon}</span>
           {!collapsed && <span className="nav-text">{item.title}</span>}
@@ -658,7 +640,6 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
               <span className="user-status">Online</span>
             </div>
             <button
-              type="button"
               className="logout-btn"
               onClick={handleLogout}
               aria-label="Logout"

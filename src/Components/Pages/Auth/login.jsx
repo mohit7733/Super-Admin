@@ -97,7 +97,6 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (isLoading) return;
 
     if (!validateForm()) {
       toast.error("Please fix the errors before submitting");

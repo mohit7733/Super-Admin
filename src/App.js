@@ -1,9 +1,8 @@
 
+
 import './App.css';
-import './styles/admin-ui.css';
-import 'react-toastify/dist/ReactToastify.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 
 import Sidebar from './Components/Sidebar/Sidebar';
@@ -101,14 +100,6 @@ const Layout = ({ children }) => {
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
       />
-      {!sidebarCollapsed && (
-        <button
-          type="button"
-          className="sa-sidebar-backdrop"
-          aria-label="Close sidebar"
-          onClick={() => setSidebarCollapsed(true)}
-        />
-      )}
       <div className={`main-content ${sidebarCollapsed ? "collapsed" : "expanded"}`}>
         {children}
       </div>
@@ -617,6 +608,29 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <CustomerDetailPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/CustomerDetailPage/:customerId"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CustomerDetailPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        
+         <Route
+          path="/CustomerDetailPage/:customerId"
+          element={
+            <ProtectedRoute>
+              <Layout>
+              
               </Layout>
             </ProtectedRoute>
           }

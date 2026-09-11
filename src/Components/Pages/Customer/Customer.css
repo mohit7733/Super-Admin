@@ -1,31 +1,32 @@
 /* Stats Grid */
 .stats2-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 8px;
-    margin-bottom: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
 }
 
 .stat2-card {
     background: white;
-    border-radius: 8px;
-    padding: 8px 12px;
+    border-radius: 16px;
+    padding: 20px 24px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    box-shadow: none;
-    border: 1px solid #e8ecf1;
-    border-top: 1px solid #e8ecf1;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-top: 3px solid;
+    transition: all 0.3s ease;
 }
 
 .stat2-card:hover {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 
 .stat2-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -36,17 +37,17 @@
 }
 
 .stat2-info h3 {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 500;
     color: #6c757d;
-    margin: 0 0 2px 0;
-    text-transform: none;
-    letter-spacing: 0;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .stat2-value {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 32px;
+    font-weight: 700;
     color: #1a1a2e;
 }
 
@@ -55,8 +56,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 20px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
 }
 
@@ -106,9 +107,9 @@
 }
 
 .btn-primary:hover {
-    background: #0A4D3E;
-    color: #fff;
-    border: 1px solid #0A4D3E;
+    background: white;
+    color: #495057;
+    border: 1px solid #dee2e6;
 }
 
 .btn-secondary {
@@ -136,7 +137,7 @@
 
 .table-container {
     background: white;
-    border-radius: 10px;
+    border-radius: 16px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
@@ -154,17 +155,17 @@
 }
 
 .customers-table th {
-    padding: 8px 10px;
+    padding: 16px 20px;
     text-align: left;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     color: #495057;
-    text-transform: none;
-    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .customers-table td {
-    padding: 8px 10px;
+    padding: 16px 20px;
     border-bottom: 1px solid #f0f0f0;
     vertical-align: middle;
 }
