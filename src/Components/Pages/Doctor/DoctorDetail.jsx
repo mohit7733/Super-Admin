@@ -2956,6 +2956,13 @@ const getAvailability = async () => {
       </p>
 
       <div className="vendor-info-card">
+
+
+
+
+
+
+
         <div className="vendor-row">
           <span className="label">Doctor Name</span>
 
