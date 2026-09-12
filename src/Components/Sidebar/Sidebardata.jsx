@@ -14,10 +14,10 @@ import { FaFileContract } from 'react-icons/fa';
 import { FaGift } from 'react-icons/fa6';
 
 import { FiClock } from "react-icons/fi";
-import { FaTag, FaTicketAlt, FaUsers, FaClipboardList, FaHistory, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
-import { MdQuiz, MdRestaurantMenu, MdSpa, MdCategory, MdInventory, MdBrandingWatermark, MdPhotoSizeSelectActual, MdReviews, MdOndemandVideo } from "react-icons/md";
+import { FaTag, FaTicketAlt, FaUsers, FaClipboardList,FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
+import { MdQuiz, MdCategory,MdBrandingWatermark, MdPhotoSizeSelectActual, MdReviews, MdOndemandVideo } from "react-icons/md";
 import { FaCircleQuestion } from "react-icons/fa6";
-import { FaAppleAlt, FaBoxOpen, FaTags, FaChartLine, FaHeadset, FaUserInjured, FaStore, FaUserMd, FaUserShield, FaListAlt } from "react-icons/fa";
+import { FaBoxOpen, FaTags, FaChartLine, FaHeadset, FaUserInjured, FaStore, FaUserMd,FaListAlt } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi";
 import { IoSettingsOutline } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
@@ -25,11 +25,10 @@ import { GiLotus, GiLotusFlower } from "react-icons/gi";
 import { BiCategoryAlt, BiPulse } from "react-icons/bi";
 import { MdAdminPanelSettings } from "react-icons/md";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import { MdReceiptLong, MdPercent } from "react-icons/md";
+import { MdReceiptLong } from "react-icons/md";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { GiMeal } from "react-icons/gi";
 
-import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { BiPlusCircle } from "react-icons/bi";
 import { FiUploadCloud } from "react-icons/fi";
 
