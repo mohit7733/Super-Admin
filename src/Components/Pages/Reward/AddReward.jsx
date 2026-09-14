@@ -522,7 +522,7 @@ const [couponLoading, setCouponLoading] = useState(false);
                     )}
                   </div>
 
-                  <div className="info-box">
+                  <div className="infoss-box">
                     <FaCircleCheck />
 
                     <div>

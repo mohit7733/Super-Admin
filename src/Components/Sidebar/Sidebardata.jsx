@@ -31,6 +31,7 @@ import { GiMeal } from "react-icons/gi";
 
 import { BiPlusCircle } from "react-icons/bi";
 import { FiUploadCloud } from "react-icons/fi";
+import {FaCapsules}  from  "react-icons/fa";
 
 
 
@@ -193,6 +194,12 @@ export const SidebarData = () => [
       permission: "view_cancellation_request",
       icon: <FaCalendarCheck size={18} />,
     },
+    {
+  title: "Medicine Approval",
+  path: "/Magement/MedicineApproval",
+  permission: "view_medicine_approval",
+  icon: <FaCapsules size={18} />,
+},
   ],
 },
 

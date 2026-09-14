@@ -8844,3 +8844,505 @@ flex-direction:column;
   line-height: 20px;
   font-weight: 500;
 }
+/* ================= MEDICINE ACTIONS ================= */
+
+.medicine-action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+`
+
+.medicine-action-btn {
+  height: 20px;
+  min-width: 15px;
+  padding: 0 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* Approve */
+
+.medicine-approve-btn {
+  color: #0d614e;
+  background: #edf8f5;
+  border: 1px solid #cce9e1;
+}
+
+.medicine-approve-btn svg {
+  font-size: 13px;
+}
+
+.medicine-approve-btn:hover {
+  background: #0d614e;
+  border-color: #0d614e;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(13, 97, 78, 0.15);
+}
+
+/* Reject */
+
+.medicine-reject-btn {
+  color: #d64545;
+  background: #fff2f2;
+  border: 1px solid #f2d1d1;
+}
+
+.medicine-reject-btn svg {
+  font-size: 13px;
+}
+
+.medicine-reject-btn:hover {
+  background: #d64545;
+  border-color: #d64545;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(214, 69, 69, 0.15);
+}
+
+/* Active click */
+
+.medicine-action-btn:active {
+  transform: translateY(0);
+}
+
+/* Approved / Rejected status */
+
+.medicine-action-status {
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.medicine-approved-text {
+  color: #0d614e;
+  background: #edf8f5;
+  border: 1px solid #cce9e1;
+}
+
+.medicine-rejected-text {
+  color: #d64545;
+  background: #fff2f2;
+  border: 1px solid #f2d1d1;
+}
+.medicine-approval-modal {
+  width: 620px;
+  max-width: 94%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.medicine-patient-card {
+  margin-bottom: 18px;
+}
+
+.medicine-patient-card .vendor-row + .vendor-row {
+  margin-top: 10px;
+}
+
+.medicine-approval-section {
+  margin-top: 18px;
+  text-align: left;
+}
+
+.medicine-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.medicine-section-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+}
+
+.medicine-section-header p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #777;
+}
+
+.medicine-selected-count {
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #0d614e15;
+  color: #0d614e;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.medicine-approval-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.medicine-approval-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  background: #fff;
+  transition: 0.2s ease;
+}
+
+.medicine-approval-item:hover {
+  border-color: #b9d8d0;
+  background: #fafdfc;
+}
+
+.medicine-approval-item-selected {
+  border-color: #0d614e;
+  background: #f4faf8;
+}
+
+.medicine-select-checkbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.medicine-select-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.medicine-checkmark {
+  width: 19px;
+  height: 19px;
+  border: 1.5px solid #c9cfd4;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: #fff;
+  transition: 0.2s ease;
+}
+
+.medicine-approval-item-selected
+  .medicine-checkmark {
+  background: #0d614e;
+  border-color: #0d614e;
+}
+
+.medicine-checkmark svg {
+  font-size: 11px;
+}
+
+.medicine-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.medicine-details strong {
+  display: block;
+  color: #222;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.medicine-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: #777;
+  font-size: 10px;
+}
+
+.medicine-meta span {
+  position: relative;
+}
+
+.medicine-meta span:not(:last-child)::after {
+  content: "•";
+  margin-left: 7px;
+  color: #bbb;
+}
+
+.medicine-quantity {
+  width: 78px;
+  flex-shrink: 0;
+}
+
+.medicine-quantity label {
+  display: block;
+  margin-bottom: 5px;
+  color: #777;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.medicine-quantity input {
+  width: 100%;
+  height: 32px;
+  border: 1px solid #dfe3e6;
+  border-radius: 6px;
+  padding: 0 8px;
+  font-size: 12px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.medicine-quantity input:focus {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 2px #0d614e12;
+}
+
+.medicine-quantity input:disabled {
+  background: #f3f4f6;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.medicine-admin-notes {
+  margin-top: 17px;
+  text-align: left;
+}
+
+.medicine-admin-notes label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #444;
+}
+
+.medicine-admin-notes textarea {
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid #dfe3e6;
+  border-radius: 7px;
+  padding: 9px 10px;
+  outline: none;
+  font-family: inherit;
+  font-size: 11px;
+  color: #333;
+}
+
+.medicine-admin-notes textarea:focus {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 2px #0d614e12;
+}
+
+.medicine-approval-modal .policy-warning {
+  margin-top: 14px;
+}
+
+.medicine-approval-modal
+  .approve-btn-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+  .medicine-approval-modal {
+    width: 94%;
+    padding: 20px;
+  }
+
+  .medicine-approval-item {
+    align-items: flex-start;
+  }
+
+  .medicine-quantity {
+    width: 65px;
+  }
+
+  .medicine-section-header {
+    align-items: flex-start;
+  }
+}
+
+.medicine-reject-modal .reject-card {
+  margin-bottom: 18px;
+}
+
+.medicine-reject-modal .vendor-row + .vendor-row {
+  margin-top: 10px;
+}
+
+
+.reject-medicines-section {
+  margin-top: 18px;
+  text-align: left;
+}
+
+.reject-medicines-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.reject-medicines-header h3 {
+  margin: 0;
+  color: #222;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.reject-medicines-header p {
+  margin: 4px 0 0;
+  color: #777;
+  font-size: 11px;
+}
+
+.reject-medicine-count {
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #fff1f1;
+  color: #d64545;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Medicine List */
+
+.reject-medicines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 190px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.reject-medicine-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.reject-medicine-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.reject-medicine-name {
+  color: #292929;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.reject-medicine-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #777;
+  font-size: 10px;
+}
+
+.reject-medicine-meta span {
+  position: relative;
+}
+
+.reject-medicine-meta span:not(:last-child)::after {
+  content: "•";
+  margin-left: 6px;
+  color: #bbb;
+}
+
+.reject-medicine-stock {
+  min-width: 52px;
+  text-align: right;
+  color: #999;
+  font-size: 9px;
+}
+
+.reject-medicine-stock strong {
+  display: block;
+  margin-top: 2px;
+  color: #555;
+  font-size: 11px;
+}
+
+/* Reason */
+
+.medicine-reject-modal .reason-field {
+  margin-top: 17px;
+}
+
+.medicine-reject-modal .reject-reason-box {
+  min-height: 78px;
+  resize: vertical;
+}
+
+/* Info */
+
+.medicine-reject-modal .reject-info-box {
+  margin-top: 13px;
+}
+
+/* Button */
+
+.medicine-reject-modal .rejects-btn {
+  background: #d64545;
+  border-color: #d64545;
+}
+
+.medicine-reject-modal .rejects-btn:hover {
+  background: #c53636;
+  border-color: #c53636;
+}
+
+@media (max-width: 650px) {
+
+  .medicine-reject-modal {
+    width: 94%;
+    padding: 20px;
+  }
+
+  .reject-medicines-header {
+    align-items: flex-start;
+  }
+
+  .reject-medicine-item {
+    align-items: flex-start;
+  }
+
+  .reject-medicine-stock {
+    min-width: 45px;
+  }
+}

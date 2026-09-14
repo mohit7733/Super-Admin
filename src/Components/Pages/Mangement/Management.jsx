@@ -285,7 +285,6 @@ const handleAppointmentAction = async (action) => {
     </div>
   </div>
 
-  {/* Approved Requests */}
   <div className="stat2-card">
     <div
       className="stat2-icon"
@@ -305,7 +304,7 @@ const handleAppointmentAction = async (action) => {
   <div className="stat2-card">
     <div
       className="stat2-icon"
-      style={{ background: "#FEE2E2", color: "#DC2626" }}
+       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
       <FaTimesCircle size={24} />
     </div>
