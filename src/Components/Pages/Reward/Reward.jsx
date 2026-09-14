@@ -1011,7 +1011,7 @@ const handleEditReward = (reward) => {
                         </div>
                       </td>
 
-                      {/* ACTIONS */}
+                  
 
                       <td>
 

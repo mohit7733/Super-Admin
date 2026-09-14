@@ -87,6 +87,7 @@ import Coupons from './Components/Pages/Coupon/Coupons';
 import Reward from './Components/Pages/Reward/Reward';
 import AddReward from './Components/Pages/Reward/AddReward';
 import EditReward from './Components/Pages/Reward/EditReward';
+import DiseaseMangement from './Components/Pages/Mangement/DiseaseMangement';
 
 
 const Layout = ({ children }) => {
@@ -223,6 +224,16 @@ function App() {
             <ProtectedRoute permission="view_reward">
               <Layout>
                 <Reward/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+           <Route
+          path="/Magement/MedicineApproval"
+          element={
+            <ProtectedRoute permission="view_medicine_approval">
+              <Layout>
+            <DiseaseMangement/>
               </Layout>
             </ProtectedRoute>
           }
