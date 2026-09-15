@@ -33,6 +33,7 @@ import { MdOutlineRestaurantMenu } from "react-icons/md";
 import { BiPlusCircle } from "react-icons/bi";
 import { FiUploadCloud } from "react-icons/fi";
 import {FaCapsules}  from  "react-icons/fa";
+import {FaFileAlt}  from  "react-icons/fa";
 
 
 
@@ -141,11 +142,14 @@ export const SidebarData = () => [
   icon: <FaFileContract size={20} />,
   path: "#",
   permission: "manage_legal_policies",
-  children:[
+  children: [
     {
-
-    }
-  ]
+      title: "Legal",
+      icon: <FaFileAlt size={16} />,
+      path: "/LegalPolicies",
+      permission: "manage_legal_policies",
+    },
+  ],
 },
  
   {
