@@ -40,76 +40,59 @@ const Medical = () => {
   const [previousPage, setPreviousPage] = useState(null);
 
 
-  const getAllMedicalQuestion = async (page = 1) => {
-    const token = sessionStorage.getItem("superadmin_token");
+ const getAllMedicalQuestion = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-    if (!token) {
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    Navigate("/login");
+    return;
+  }
+
+  setLoading(true);
+  setError(null);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?experience_type=medical_history`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+
       toast.error("Session expired. Please login again");
+
       Navigate("/login");
+
       return;
     }
 
-    setLoading(true);
+    const data = await response.json();
 
-    try {
-      const response = await fetch(
-        `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?experience_type=medical_history&page=${page}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
+    console.log("Medical Questions:", data);
 
 
-      if (
-        response.status === 401 ||
-        response.status === 403
-      ) {
-        sessionStorage.removeItem("superadmin_token");
+    setData(Array.isArray(data?.data) ? data.data : []);
 
-        toast.error(
-          "Session expired. Please login again"
-        );
+  } catch (error) {
+    console.error("Medical Question Error:", error);
 
-        Navigate("/login");
+    setError("Something went wrong while fetching data.");
 
-        return;
-      }
-
-      const data = await response.json();
-
-      console.log("Medical Questions:", data);
-
-      setData(data?.data?.results);
-
-
-      setCurrentPage(page);
-
-      setTotalCount(data?.data?.count || 0);
-
-      setNextpage(data?.data?.next);
-
-      setPreviousPage(data?.data?.previous);
-
-    } catch (error) {
-      console.error(error);
-
-      setError(
-        "Something went wrong while fetching data."
-      );
-
-      toast.error(
-        "Failed to fetch Medical Questions"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    toast.error("Failed to fetch Medical Questions");
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     if (!fetchOnce.current) {
       getAllMedicalQuestion();

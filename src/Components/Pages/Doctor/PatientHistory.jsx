@@ -38,9 +38,7 @@ const PatientHistory = () => {
   const [prescriptionLoading, setPrescriptionLoading] = useState(false);
   const [prescriptionError, setPrescriptionError] = useState(null);
 
-  // =========================
-  // FORMAT DATE
-  // =========================
+ 
   const formatDate = (date) => {
     if (!date) return "N/A";
 
@@ -58,9 +56,6 @@ const PatientHistory = () => {
     });
   };
 
-  // =========================
-  // FORMAT TIME
-  // =========================
   const formatTime = (time) => {
     if (!time) return "N/A";
 
@@ -77,9 +72,7 @@ const PatientHistory = () => {
     });
   };
 
-  // =========================
-  // GET PRESCRIPTION
-  // =========================
+  
   const getPrescription = async (appointmentId) => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -148,34 +141,20 @@ const PatientHistory = () => {
     }
   };
 
-  // =========================
-  // API CALL
-  // =========================
+  
   useEffect(() => {
     if (consultationId) {
       getPrescription(consultationId);
     }
   }, [consultationId]);
 
-  // =========================
-  // PATIENT DATA
-  // =========================
-  const patientData = prescriptionData?.patient;
 
-  // =========================
-  // PRESCRIPTIONS / HISTORY
-  // =========================
+  const patientData = prescriptionData?.patient;
   const prescriptions =
     prescriptionData?.prescriptions?.results || [];
-
-  // =========================
-  // CURRENT PRESCRIPTION
-  // =========================
   const currentPrescription = prescriptions[0];
 
-  // =========================
-  // BMI
-  // =========================
+  
   const calculateBMI = () => {
     const height = Number(patientData?.height);
     const weight = Number(patientData?.weight);
@@ -191,9 +170,7 @@ const PatientHistory = () => {
     return bmi.toFixed(1);
   };
 
-  // =========================
-  // TOGGLE HISTORY
-  // =========================
+ 
   const toggleHistory = (id) => {
     setOpenHistory((previous) =>
       previous === id ? null : id
@@ -203,9 +180,7 @@ const PatientHistory = () => {
   return (
     <div className="patient-history-page">
 
-      {/* =========================
-          BACK BUTTON
-      ========================= */}
+  
 
       <button
         type="button"
