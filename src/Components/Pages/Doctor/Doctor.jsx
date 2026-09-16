@@ -476,7 +476,6 @@ const filterDoctors = () => {
     });
   }
 
-  // Status Filter
   if (statusFilter !== "All") {
     filtered = filtered.filter(
       (doctor) => doctor.approval_status === statusFilter

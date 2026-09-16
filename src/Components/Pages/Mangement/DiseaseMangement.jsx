@@ -30,6 +30,15 @@ const [isApproving, setIsApproving] = useState(false);
   const navigate = useNavigate();
   const [RejectionVendorModal, setRejectionModal] = useState(false);
 const [Reason, setReason] = useState("");
+const [ProductData, setProductData] = useState([]);
+const [ProductLoading, setProductLoading] = useState(false);
+
+const [addedMedicines, setAddedMedicines] = useState([]);
+const [medicineSearch, setMedicineSearch] = useState("");
+
+const [selectedMedicineVariants, setSelectedMedicineVariants] =
+  useState({});
+  const [expandedSearchProducts, setExpandedSearchProducts] = useState({});
 
   const getMedicineApprovalList = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -88,6 +97,118 @@ const [Reason, setReason] = useState("");
       setApprovalRequestLoading(false);
     }
   };
+  const getAllProducts = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setProductLoading(true);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/product/?page=1`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      toast.error(data.message || "Failed to fetch products");
+      return;
+    }
+
+    // Abhi sirf first page
+    setProductData(data.data?.results || []);
+  } catch (error) {
+    console.error("Get Products Error:", error);
+    toast.error("Failed to fetch products");
+  } finally {
+    setProductLoading(false);
+  }
+};
+const getSelectedMedicineDetails = () => {
+  const medicines = [];
+
+  
+  (SelectedApprovalRequest?.requested_variants || []).forEach(
+    (requestedItem) => {
+      const medicine = requestedItem?.variant;
+      const variantId = medicine?.variant_id;
+
+      if (!variantId) return;
+
+      if (selectedVariantIds.includes(variantId)) {
+        medicines.push({
+          variantId,
+          name: medicine?.variant_title || "Medicine",
+          brand: medicine?.brand_name || "No Brand",
+          size: medicine?.size || "-",
+          sellingPrice: medicine?.selling_price || 0,
+        });
+      }
+    }
+  );
+
+
+  ProductData.forEach((product) => {
+    (product?.variants || []).forEach((variant) => {
+      const variantId = variant?.id || variant?.variant_id;
+
+      if (!variantId) return;
+
+      if (
+        selectedVariantIds.includes(variantId) &&
+        !medicines.some(
+          (item) => item.variantId === variantId
+        )
+      ) {
+        medicines.push({
+          variantId,
+          name:
+            variant?.title ||
+            variant?.variant_title ||
+            variant?.name ||
+            "Medicine",
+          brand:
+            product?.brand_name ||
+            variant?.brand_name ||
+            "No Brand",
+          size: variant?.size || "-",
+          sellingPrice:
+            variant?.selling_price ||
+            variant?.price ||
+            0,
+        });
+      }
+    });
+  });
+
+  return medicines;
+};
+const toggleSearchProductVariants = (productId) => {
+  setExpandedSearchProducts((prev) => ({
+    ...prev,
+    [productId]: !prev[productId],
+  }));
+};
   const handleApproveRequest = async () => {
   if (!SelectedApprovalRequest) return;
 
@@ -205,9 +326,31 @@ const closeApproveModal = () => {
       value === "" ? "" : Math.max(1, Number(value)),
   }));
 };
+const searchedProducts = ProductData.filter((product) => {
+  const search = medicineSearch.trim().toLowerCase();
 
+  if (!search) return false;
+
+  const productName =
+    product.name?.toLowerCase() || "";
+
+  const brandName =
+    product.brand_name?.toLowerCase() || "";
+
+  const variantMatch =
+    product.variants?.some((variant) =>
+      variant.title?.toLowerCase().includes(search)
+    );
+
+  return (
+    productName.includes(search) ||
+    brandName.includes(search) ||
+    variantMatch
+  );
+}).slice(0, 8);
   useEffect(() => {
     getMedicineApprovalList();
+    getAllProducts();
   }, []);
 
   const formatDate = (date) => {
@@ -327,20 +470,31 @@ const closeApproveModal = () => {
   }
 };
 
-  const filteredRequests = ApprovalRequestData.filter((item) => {
-    const medicine = item.requested_variants?.[0]?.variant;
+ const filteredRequests = ApprovalRequestData.filter((item) => {
+  const medicines = item.requested_variants || [];
 
-    const searchText = `
-      ${item.patient_name || ""}
-      ${medicine?.brand_name || ""}
-      ${medicine?.variant_title || ""}
-      ${medicine?.size || ""}
-      ${item.status || ""}
-    `.toLowerCase();
+  const medicineText = medicines
+    .map((requestedItem) => {
+      const medicine = requestedItem?.variant;
 
-    return searchText.includes(approvalSearch.toLowerCase());
-  });
+      return `
+        ${medicine?.brand_name || ""}
+        ${medicine?.variant_title || ""}
+        ${medicine?.size || ""}
+      `;
+    })
+    .join(" ");
 
+  const searchText = `
+    ${item.patient_name || ""}
+    ${medicineText}
+    ${item.status || ""}
+  `.toLowerCase();
+
+  return searchText.includes(
+    approvalSearch.toLowerCase().trim()
+  );
+});
   // Stats
   const totalRequests = ApprovalRequestData.length;
 
@@ -358,6 +512,28 @@ const closeApproveModal = () => {
       item.status === "rejected"
   ).length;
 
+  const handleOpenApproveModal = (item) => {
+  setSelectedApprovalRequest(item);
+
+  const initialVariantIds = [];
+  const initialQuantities = {};
+
+  (item?.requested_variants || []).forEach((requestedItem) => {
+    const variantId = requestedItem?.variant?.variant_id;
+
+    if (variantId) {
+      initialVariantIds.push(variantId);
+      initialQuantities[variantId] = requestedItem?.quantity || 1;
+    }
+  });
+
+  setSelectedVariantIds(initialVariantIds);
+  setApprovedQuantities(initialQuantities);
+  setAdminNotes("");
+  setMedicineSearch("");
+  setExpandedSearchProducts({});
+  setApproveModal(true);
+};
   return (
     <>
       <div className="page-header">
@@ -536,8 +712,7 @@ const closeApproveModal = () => {
 
               filteredRequests.map((item, index) => {
 
-                const medicine =
-                  item.requested_variants?.[0]?.variant;
+              const medicines = item.requested_variants || [];
 
                 return (
                   <tr key={item.id}>
@@ -602,42 +777,111 @@ const closeApproveModal = () => {
                     </td>
 
                     
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "3px",
-                        }}
-                      >
-                        <strong>
-                          {medicine?.variant_title || "-"}
-                        </strong>
+                  <td>
+  <div className="medicine-table-list">
+    {medicines.length > 0 ? (
+      medicines.map((requestedItem, medicineIndex) => {
+        const medicine = requestedItem?.variant;
+        const quantity = Number(
+          requestedItem?.quantity || 1
+        );
 
-                        {medicine?.prescription_required }
-                      </div>
-                    </td>
+        const price = Number(
+          medicine?.selling_price || 0
+        );
 
+        const itemTotal = price * quantity;
+
+        return (
+          <div
+            key={
+              requestedItem?.id ||
+              medicine?.variant_id ||
+              medicineIndex
+            }
+            className="medicine-table-item"
+          >
+            <strong>
+              {medicine?.variant_title || "-"}
+            </strong>
+
+           
+          </div>
+        );
+      })
+    ) : (
+      "-"
+    )}
+  </div>
+</td>
               
 
-                    <td>
-                      {medicine?.brand_name || "-"}
-                    </td>
+                   <td>
+  <div className="medicine-table-list">
+    {medicines.length > 0 ? (
+      medicines.map((requestedItem, medicineIndex) => {
+        const medicine = requestedItem?.variant;
+
+        return (
+          <span
+            key={
+              requestedItem?.id ||
+              medicine?.variant_id ||
+              medicineIndex
+            }
+          >
+            {medicine?.brand_name || "-"}
+          </span>
+        );
+      })
+    ) : (
+      "-"
+    )}
+  </div>
+</td>
 
                   
+<td>
+  <div className="medicine-table-list">
+    {medicines.length > 0 ? (
+      medicines.map((requestedItem, medicineIndex) => {
+        const medicine = requestedItem?.variant;
 
-                    <td>
-                      {medicine?.size || "-"}
-                    </td>
+        return (
+          <span
+            key={
+              requestedItem?.id ||
+              medicine?.variant_id ||
+              medicineIndex
+            }
+          >
+            {medicine?.size || "-"}
+          </span>
+        );
+      })
+    ) : (
+      "-"
+    )}
+  </div>
+</td>
 
 
-                    <td>
-                      {medicine?.selling_price !== undefined
-                        ? `₹${Number(
-                            medicine.selling_price
-                          ).toFixed(2)}`
-                        : "-"}
-                    </td>
+     <td>
+  ₹
+  {medicines
+    .reduce((total, requestedItem) => {
+      const price = Number(
+        requestedItem?.variant?.selling_price || 0
+      );
+
+      const quantity = Number(
+        requestedItem?.quantity || 1
+      );
+
+      return total + price * quantity;
+    }, 0)
+    .toFixed(2)}
+</td>
 
    <td>
   <div className="created-cell">
@@ -675,24 +919,7 @@ const closeApproveModal = () => {
   type="button"
   className="medicine-action-btn medicine-approve-btn"
   title="Approve Request"
- onClick={() => {
-  setSelectedApprovalRequest(item);
-
-  const initialQuantities = {};
-
-  (item.requested_variants || []).forEach((requestedItem) => {
-    const variantId = requestedItem?.variant?.variant_id;
-
-    if (variantId) {
-      initialQuantities[variantId] = 1;
-    }
-  });
-
-  setSelectedVariantIds([]);
-  setApprovedQuantities(initialQuantities);
-  setAdminNotes("");
-  setApproveModal(true);
-}}
+onClick={() => handleOpenApproveModal(item)}
 >
   <FaCheckCircle />
 </button>
@@ -734,7 +961,7 @@ const closeApproveModal = () => {
 
             ) : (
 
-              /* Empty */
+            
 
               <tr>
                 <td
@@ -887,6 +1114,345 @@ const closeApproveModal = () => {
 )}
         </div>
       </div>
+      <div className="add-medicine-section">
+
+{getSelectedMedicineDetails().length > 0 && (
+  <div className="selected-medicines-section">
+
+    <div className="selected-medicines-header">
+
+      <div>
+        <h3>Selected Medicines</h3>
+
+        <p>
+          These medicines will be included in the approval.
+        </p>
+      </div>
+
+      <span className="selected-medicines-count">
+        {getSelectedMedicineDetails().length} Selected
+      </span>
+
+    </div>
+
+    <div className="selected-medicines-list">
+
+      {getSelectedMedicineDetails().map((medicine) => (
+
+        <div
+          key={medicine.variantId}
+          className="selected-medicine-item"
+        >
+
+          {/* CHECK */}
+          <div className="selected-medicine-check">
+            <FaCheckCircle />
+          </div>
+
+          {/* DETAILS */}
+          <div className="selected-medicine-details">
+
+            <strong>
+              {medicine.name}
+            </strong>
+
+            <div className="selected-medicine-meta">
+
+              <span>
+                {medicine.brand}
+              </span>
+
+              <span>
+                Size: {medicine.size}
+              </span>
+
+              <span className="selected-medicine-price">
+                ₹{Number(medicine.sellingPrice).toFixed(2)}
+              </span>
+
+            </div>
+
+          </div>
+
+          {/* QUANTITY */}
+          <div className="selected-medicine-quantity">
+
+            <label>
+              Qty
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              value={
+                approvedQuantities[medicine.variantId] ?? 1
+              }
+              onChange={(e) =>
+                handleQuantityChange(
+                  medicine.variantId,
+                  e.target.value
+                )
+              }
+            />
+
+          </div>
+
+          {/* REMOVE */}
+          <button
+            type="button"
+            className="selected-medicine-remove"
+            title="Remove medicine"
+            onClick={() =>
+              handleVariantSelection(medicine.variantId)
+            }
+          >
+            <IoClose />
+          </button>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+)}
+
+  <div className="add-medicine-search-wrapper">
+
+    <BsSearch className="add-medicine-search-icon" />
+
+    <input
+      type="text"
+      value={medicineSearch}
+      onChange={(e) => {
+        setMedicineSearch(e.target.value);
+      }}
+      placeholder="Search medicine, brand or variant..."
+      className="add-medicine-search-input"
+    />
+
+    {medicineSearch && (
+      <button
+        type="button"
+        className="add-medicine-clear"
+        onClick={() => setMedicineSearch("")}
+      >
+        <IoClose />
+      </button>
+    )}
+
+  </div>
+
+
+ {/* SEARCH RESULT */}
+
+{medicineSearch.trim() && (
+  <div className="add-medicine-results">
+
+    {ProductLoading ? (
+      <div className="add-medicine-empty">
+        Loading medicines...
+      </div>
+    ) : searchedProducts.length > 0 ? (
+
+      searchedProducts.map((product) => {
+
+        const availableVariants =
+          product?.variants?.filter(
+            (variant) =>
+              variant?.approval_status === "approved" &&
+              !variant?.out_of_stock &&
+              Number(variant?.quantity) > 0
+          ) || [];
+
+        const isExpanded =
+          expandedSearchProducts[product.id];
+
+        return (
+          <div
+            key={product.id}
+            className="add-medicine-product"
+          >
+
+            {/* PRODUCT ROW */}
+
+            <div className="add-medicine-product-row">
+
+              <div className="add-medicine-result-info">
+
+                <strong>
+                  {product?.name || "Unnamed Product"}
+                </strong>
+
+                <span>
+                  {product?.brand_name || "No Brand"}
+                </span>
+
+              </div>
+
+              <button
+                type="button"
+                className="view-variants-btn"
+                disabled={availableVariants.length === 0}
+                onClick={() =>
+                  toggleSearchProductVariants(product.id)
+                }
+              >
+                <FaEye />
+
+                {isExpanded
+                  ? "Hide Variants"
+                  : "View Variants"}
+              </button>
+
+            </div>
+
+
+            {/* VARIANTS */}
+
+            {isExpanded && (
+              <div className="add-medicine-variants">
+
+                {availableVariants.length > 0 ? (
+
+                  availableVariants.map((variant) => {
+
+                    const variantId =
+                      variant?.id || variant?.variant_id;
+
+                    const isSelected =
+                      selectedVariantIds.includes(variantId);
+
+                    return (
+                      <div
+                        key={variantId}
+                        className={`add-medicine-variant-row ${
+                          isSelected
+                            ? "add-medicine-variant-selected"
+                            : ""
+                        }`}
+                      >
+
+                        {/* CHECKBOX */}
+
+                        <label className="medicine-select-checkbox">
+
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+
+                              if (!variantId) return;
+
+                              handleVariantSelection(
+                                variantId
+                              );
+
+                            }}
+                          />
+
+                          <span className="medicine-checkmark">
+                            {isSelected && (
+                              <FaCheckCircle />
+                            )}
+                          </span>
+
+                        </label>
+
+
+                        {/* VARIANT INFO */}
+
+                        <div className="add-medicine-variant-info">
+
+                          <strong>
+                            {variant?.title ||
+                              variant?.variant_title ||
+                              variant?.name ||
+                              "Variant"}
+                          </strong>
+
+                          <div className="add-medicine-variant-meta">
+
+                            <span>
+                              Size:{" "}
+                              {variant?.size || "-"}
+                            </span>
+
+                            <span>
+                              ₹
+                              {variant?.selling_price !==
+                              undefined
+                                ? Number(
+                                    variant.selling_price
+                                  ).toFixed(2)
+                                : "0.00"}
+                            </span>
+
+                          </div>
+
+                        </div>
+
+
+                        {/* QUANTITY */}
+
+                        {isSelected && (
+                          <div className="medicine-quantity">
+
+                            <label>
+                              Quantity
+                            </label>
+
+                            <input
+                              type="number"
+                              min="1"
+                              value={
+                                approvedQuantities[
+                                  variantId
+                                ] ?? 1
+                              }
+                              onChange={(e) =>
+                                handleQuantityChange(
+                                  variantId,
+                                  e.target.value
+                                )
+                              }
+                            />
+
+                          </div>
+                        )}
+
+                      </div>
+                    );
+
+                  })
+
+                ) : (
+
+                  <div className="add-medicine-empty">
+                    No approved variants available
+                  </div>
+
+                )}
+
+              </div>
+            )}
+
+          </div>
+        );
+      })
+
+    ) : (
+
+      <div className="add-medicine-empty">
+        No medicine found
+      </div>
+
+    )}
+
+  </div>
+)}
+</div>
 
    
       <div className="medicine-admin-notes">
