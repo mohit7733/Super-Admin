@@ -11,11 +11,16 @@ import {
   FaExternalLinkAlt,
   FaChevronLeft,
   FaChevronRight,
+  FaSearch,
+  FaPlus,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 import BASE_URL from "../../../Base";
+
+import { BiPlus } from "react-icons/bi";
 import "./Policy.css";
+
 
 const Policy = () => {
   const [policyData, setPolicyData] = useState([]);
@@ -27,6 +32,7 @@ const Policy = () => {
 
   const [nextUrl, setNextUrl] = useState(null);
   const [previousUrl, setPreviousUrl] = useState(null);
+  const[searchTerm,setSearchTerm]=useState("");
 
   const navigate = useNavigate();
 
@@ -145,6 +151,41 @@ const Policy = () => {
           Manage legal policies and their details
         </p>
       </div>
+      
+            
+            <div className="filter-category">
+              <div className="filter-controls">
+                <div className="search-wrapper">
+                  <FaSearch className="search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search by Policy Name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="search-input"
+                  />
+                  {searchTerm && (
+                    <button className="clear-search" onClick={() => setSearchTerm("")}>
+                      <FaTimes />
+                    </button>
+                  )}
+                </div>
+      
+              
+      
+              </div>
+              <div className="category-action-buttons">
+       
+           <button
+  type="button"
+  className="policy-create-btn"
+  onClick={() => navigate("/AddPolicy")}
+>
+  <FaPlus />
+  Create Policy
+</button>
+              </div>
+            </div>
 
   
       <div className="table-wrapper policy-table-wrapper">
@@ -294,7 +335,7 @@ const Policy = () => {
         </table>
       </div>
 
-      {/* Pagination */}
+    
       {!loadingPolicy && policyData.length > 0 && (
         <div className="policy-pagination">
           <button
@@ -321,7 +362,7 @@ const Policy = () => {
         </div>
       )}
 
-      {/* Policy Details Modal */}
+    
       {policyModal && selectedPolicy && (
         <div
           className="policy-modal-overlay"
@@ -359,17 +400,17 @@ const Policy = () => {
               </button>
             </div>
 
-            {/* Modal Body */}
+            
             <div className="policy-modal-body">
 
-              {/* Subtitle */}
+           
               {selectedPolicy.subtitle && (
                 <div className="policy-subtitle-box">
                   {selectedPolicy.subtitle}
                 </div>
               )}
 
-              {/* Basic Information */}
+         
               <div className="policy-section">
                 <h3>Basic Information</h3>
 
@@ -445,7 +486,7 @@ const Policy = () => {
                 </div>
               </div>
 
-              {/* Target Roles */}
+      
               <div className="policy-section">
                 <h3>
                   <FaUserShield />
@@ -470,7 +511,7 @@ const Policy = () => {
                 </div>
               </div>
 
-              {/* Dates */}
+       
               <div className="policy-section">
                 <h3>
                   <FaCalendarAlt />
@@ -555,7 +596,6 @@ const Policy = () => {
 
             </div>
 
-            {/* Modal Footer */}
             <div className="policy-modal-footer">
               <button
                 className="policy-modal-close"

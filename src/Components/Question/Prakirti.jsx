@@ -99,98 +99,57 @@ const uploadImage = async (file) => {
 };
 
 
- const getQuestionData = async (page = 1) => {
-  const token = sessionStorage.getItem(
-    "superadmin_token"
-  );
+ const getQuestionData = async () => {
+  const token = sessionStorage.getItem("superadmin_token");
 
   if (!token) {
-    toast.error(
-      "Session expired. Please login again"
-    );
-
+    toast.error("Session expired. Please login again");
     navigate("/login");
-
     return;
   }
 
   setLoading(true);
+  setError(null);
 
   try {
     const response = await fetch(
-      `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?experience_type=prakriti&page=${page}`,
+      `${BASE_URL}/customers/admin/customer-onboarding/questionnaires/questions/?experience_type=prakriti`,
       {
         method: "GET",
-
         headers: {
           Accept: "application/json",
-
-          "Content-Type":
-            "application/json",
-
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-
-          "ngrok-skip-browser-warning":
-            "true",
+          "ngrok-skip-browser-warning": "true",
         },
       }
     );
 
-
-
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
-      sessionStorage.removeItem(
-        "superadmin_token"
-      );
-
-      toast.error(
-        "Session expired. Please login again"
-      );
-
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
       navigate("/login");
-
       return;
     }
 
     const data = await response.json();
 
-    console.log(
-      "Question API Response:",
-      data
-    );
+    console.log("Question API Response:", data);
 
-    setQuestionData(
-      data?.data?.results || []
-    );
+    // New API response:
+    // {
+    //   success: true,
+    //   message: "...",
+    //   data: [...]
+    // }
 
-    setCurrentPage(page);
-
-    setTotalCount(
-      data?.data?.count || 0
-    );
-
-    setNextpage(data?.data?.next);
-
-    setPreviousPage(
-      data?.data?.previous
-    );
+    setQuestionData(Array.isArray(data?.data) ? data.data : []);
 
   } catch (error) {
-    console.error(
-      "Question Error:",
-      error
-    );
+    console.error("Question Error:", error);
 
-    setError(
-      "Something went wrong while fetching data."
-    );
-
-    toast.error(
-      "Failed to fetch Question Data"
-    );
+    setError("Something went wrong while fetching data.");
+    toast.error("Failed to fetch Question Data");
   } finally {
     setLoading(false);
   }
