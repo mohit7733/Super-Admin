@@ -83,8 +83,6 @@ const convertHtmlToPolicyContent = (html) => {
   return content;
 };
 
-
-
 const formatLabel = (key = "") => {
   return key
     .replace(/_/g, " ")
@@ -431,417 +429,12 @@ editorial_policy: {
   },
 
   "terms_and_conditions": {
-  "customer": {
-    "account": {
-      "registration_required_for_restricted_features": false,
-      "accurate_information_required": false,
-      "legally_competent_required": false,
-      "guardian_access_allowed": false,
-      "account_deactivation_allowed": false,
-      "account_deletion_allowed": false
-    },
-    "authentication": {
-      "otp_verification_enabled": false,
-      "otp_confidentiality_required": false,
-      "otp_attempt_limits_enabled": false,
-      "reverification_allowed": false,
-      "additional_verification_allowed": false
-    },
-    "account_security": {
-      "credential_confidentiality_required": false,
-      "unauthorized_account_use_prohibited": false,
-      "impersonation_prohibited": false,
-      "security_incident_reporting_required": false
-    },
-    "healthcare": {
-      "medical_information_accuracy_required": false,
-      "healthcare_professional_independent_judgment": false,
-      "medical_outcome_guaranteed": false,
-      "emergency_service_provided": false,
-      "emergency_care_substitute": false
-    },
-    "appointments": {
-      "booking_subject_to_professional_availability": false,
-      "rescheduling_allowed": false,
-      "rescheduling_subject_to_availability": false,
-      "user_cancellation_allowed": false,
-      "doctor_cancellation_allowed": false,
-      "platform_cancellation_allowed": false,
-      "no_show_policy_applicable": false
-    },
-    "consultations": {
-      "chat_enabled": false,
-      "audio_enabled": false,
-      "video_enabled": false,
-      "recording_or_reproduction_restricted": false,
-      "appropriate_conduct_required": false
-    },
-    "prescriptions": {
-      "prescription_issued_by_healthcare_professional": false,
-      "prescription_modification_prohibited": false,
-      "invalid_prescription_submission_prohibited": false,
-      "prescription_sharing_restrictions": false
-    },
-    "medicines": {
-      "prescription_required_where_applicable": false,
-      "prescription_verification_required": false,
-      "medicine_substitution_subject_to_law": false,
-      "order_cancellation_for_invalid_prescription_allowed": false
-    },
-    "orders": {
-      "product_information_review_required": false,
-      "returns_subject_to_return_policy": false,
-      "cancellations_subject_to_cancellation_policy": false,
-      "refunds_subject_to_refund_policy": false
-    },
-    "payments": {
-      "fraudulent_payment_methods_prohibited": false,
-      "third_party_payment_processing": false,
-      "taxes_applicable": false,
-      "cod_refund_verification_required": false
-    },
-    "fraud_abuse": {
-      "false_identity_prohibited": false,
-      "impersonation_prohibited": false,
-      "forged_prescription_prohibited": false,
-      "fraudulent_refund_claims_prohibited": false,
-      "false_return_claims_prohibited": false,
-      "review_manipulation_prohibited": false,
-      "unauthorized_access_prohibited": false,
-      "platform_exploitation_prohibited": false
-    },
-    "user_content": {
-      "reviews_allowed": false,
-      "truthful_content_required": false,
-      "lawful_content_required": false,
-      "misleading_content_prohibited": false,
-      "abusive_content_prohibited": false,
-      "platform_removal_allowed": false
-    },
-    "communications": {
-      "service_communications_allowed": false,
-      "promotional_communications_subject_to_consent": false,
-      "promotional_opt_out_allowed": false,
-      "essential_service_communications_may_continue": false
-    }
-  },
-  "doctor": {
-    "onboarding": {
-      "identity_verification_required": false,
-      "qualification_verification_required": false,
-      "registration_verification_required": false,
-      "professional_credentials_required": false,
-      "kyc_required": false,
-      "bank_payment_information_required": false
-    },
-    "professional_requirements": {
-      "valid_registration_required": false,
-      "valid_qualification_required": false,
-      "professional_licence_requirements_applicable": false,
-      "independent_professional_judgment": false,
-      "medical_outcome_guaranteed": false
-    },
-    "consultation": {
-      "appointment_availability_subject_to_schedule": false,
-      "consultation_refusal_allowed_when_professionally_necessary": false,
-      "consultation_discontinuation_allowed_when_professionally_necessary": false,
-      "prescription_issuance_allowed_where_legally_permitted": false,
-      "follow_up_consultation_subject_to_professional_assessment": false
-    },
-    "account_status": {
-      "approval_required": false,
-      "restriction_allowed": false,
-      "suspension_allowed": false,
-      "reactivation_subject_to_verification": false
-    }
-  },
-  "vendor": {
-    "onboarding": {
-      "kyc_required": false,
-      "business_verification_required": false,
-      "bank_verification_required": false,
-      "product_verification_required": false
-    },
-    "operations": {
-      "product_information_accuracy_required": false,
-      "fulfilment_requirements_applicable": false,
-      "regulatory_compliance_required": false,
-      "return_refund_obligations_policy_based": false,
-      "settlement_adjustments_allowed": false
-    },
-    "account_status": {
-      "approval_required": false,
-      "rejection_allowed": false,
-      "suspension_allowed": false,
-      "restriction_allowed": false,
-      "reactivation_allowed": false
-    }
-  },
-  "admin": {
-    "account_management": {
-      "registration_restriction_allowed": false,
-      "additional_verification_allowed": false,
-      "account_restriction_allowed": false,
-      "account_suspension_allowed": false,
-      "account_deactivation_allowed": false,
-      "account_reactivation_subject_to_review": false
-    },
-    "fraud_abuse": {
-      "investigation_enabled": false,
-      "additional_verification_allowed": false,
-      "cod_restriction_allowed": false,
-      "refund_restriction_allowed": false,
-      "return_restriction_allowed": false,
-      "transaction_cancellation_allowed": false,
-      "transaction_processing_hold_allowed": false,
-      "legal_regulatory_action_allowed": false
-    },
-    "content_moderation": {
-      "review_content_allowed": false,
-      "remove_violating_content_allowed": false,
-      "restrict_violating_content_allowed": false
-    },
-    "vendor_management": {
-      "vendor_approval_allowed": false,
-      "vendor_rejection_allowed": false,
-      "vendor_suspension_allowed": false,
-      "vendor_reactivation_allowed": false
-    },
-    "doctor_management": {
-      "professional_verification_allowed": false,
-      "doctor_approval_allowed": false,
-      "doctor_rejection_allowed": false,
-      "doctor_restriction_allowed": false,
-      "doctor_suspension_allowed": false,
-      "doctor_reactivation_allowed": false
-    }
-  },
-  "system": {
-    "platform": {
-      "service_facilitation_model": false,
-      "third_party_service_provider_model": false,
-      "continuous_availability_guaranteed": false,
-      "error_free_operation_guaranteed": false
-    },
-    "authentication": {
-      "otp_verification_supported": false,
-      "otp_attempt_limiting_enabled": false,
-      "account_recovery_supported": false,
-      "additional_recovery_verification_allowed": false
-    },
-    "healthcare": {
-      "emergency_service": false,
-      "medical_outcome_guarantee": false,
-      "healthcare_professional_independent": false
-    },
-    "orders": {
-      "medicine_orders_supported": false,
-      "wellness_products_supported": false,
-      "skincare_products_supported": false,
-      "food_products_supported": false,
-      "utensils_supported": false,
-      "order_cancellation_subject_to_policy": false
-    },
-    "delivery": {
-      "delivery_partner_supported": false,
-      "delivery_timelines_indicative": false,
-      "delivery_serviceability_required": false,
-      "shipping_policy_applies": false
-    },
-    "payments": {
-      "third_party_payment_provider_supported": false,
-      "tax_calculation_applicable": false,
-      "refund_policy_applies": false,
-      "cod_refund_requires_verified_details": false
-    },
-    "data": {
-      "personal_data_processing_subject_to_privacy_policy": false,
-      "health_data_processing_subject_to_privacy_policy": false,
-      "lawful_retention_allowed": false,
-      "legal_disclosure_allowed": false
-    },
-    "legal": {
-      "governing_law": "India",
-      "consumer_statutory_rights_preserved": false,
-      "grievance_mechanism_available": false,
-      "dispute_resolution_required": false,
-      "severability_enabled": false,
-      "waiver_not_automatic": false,
-      "survival_of_applicable_provisions": false
-    },
-    "policy_relationships": {
-      "privacy_policy": false,
-      "account_deletion_policy": false,
-      "grievance_redressal_policy": false,
-      "refund_policy": false,
-      "cancellation_policy": false,
-      "return_policy": false,
-      "shipping_delivery_policy": false,
-      "medical_telemedicine_policy": false
-    },
-    "terms_update": {
-      "modification_allowed": false,
-      "revised_effective_date_required": false,
-      "material_change_communication_when_required": false,
-      "continued_use_constitutes_acceptance": false
-    }
-  }
+  
 },
 
   privacy_policy: {
   
-  "customer": {
-    "data_collection": {
-      "account_information": false,
-      "verification_information": false,
-      "health_information": false,
-      "appointment_information": false,
-      "consultation_data": false,
-      "prescription_information": false,
-      "lab_data": false,
-      "order_information": false,
-      "payment_information": false,
-      "support_information": false
-    },
-    "authentication": {
-      "otp_verification": false,
-      "otp_for_advertising": false,
-      "account_recovery": false,
-      "fraud_prevention": false
-    },
-    "location": {
-      "location_collection": false,
-      "permission_required": false
-    },
-    "rights": {
-      "access": false,
-      "correction": false,
-      "withdraw_consent": false,
-      "deletion": false,
-      "nomination": false,
-      "grievance": false
-    },
-    "children": {
-      "minimum_age_18": false,
-      "guardian_required_for_minor": false
-    }
-  },
-  "doctor": {
-    "data_collection": {
-      "identity_information": false,
-      "kyc_information": false,
-      "professional_registration": false,
-      "qualification_information": false,
-      "certificates_and_licenses": false,
-      "profile_information": false,
-      "consultation_information": false,
-      "prescription_records": false,
-      "payment_information": false,
-      "grievance_information": false,
-      "account_status_information": false
-    },
-    "verification": {
-      "professional_verification": false,
-      "regulatory_verification": false
-    }
-  },
-  "vendor": {
-    "data_collection": {
-      "identity_information": false,
-      "kyc_information": false,
-      "business_information": false,
-      "license_information": false,
-      "bank_information": false,
-      "product_information": false,
-      "order_information": false,
-      "return_refund_information": false,
-      "complaint_information": false,
-      "account_status_information": false
-    },
-    "verification": {
-      "vendor_verification": false,
-      "business_verification": false
-    }
-  },
-  "admin": {
-    "data_access": {
-      "need_to_know_access": false,
-      "health_data_access": false,
-      "consultation_data_access": false,
-      "prescription_data_access": false,
-      "account_verification_access": false
-    },
-    "security": {
-      "role_based_access": false,
-      "authentication_controls": false,
-      "security_monitoring": false,
-      "security_logging": false,
-      "periodic_security_review": false,
-      "incident_response": false
-    },
-    "fraud_abuse": {
-      "monitoring_enabled": false,
-      "additional_verification": false,
-      "transaction_restriction": false,
-      "account_suspension": false,
-      "account_deactivation": false
-    }
-  },
-  "system": {
-    "data_sharing": {
-      "healthcare_professionals": false,
-      "pharmacy_partners": false,
-      "diagnostic_laboratories": false,
-      "logistics_partners": false,
-      "payment_providers": false,
-      "technology_providers": false,
-      "verification_sources": false,
-      "regulators": false,
-      "law_enforcement": false
-    },
-    "health_data": {
-      "sold_to_advertisers": false,
-      "sold_to_data_brokers": false,
-      "encryption": false,
-      "retention_required": false
-    },
-    "payments": {
-      "full_card_details_stored": false,
-      "payment_provider_processing": false
-    },
-    "cookies_analytics": {
-      "cookies_enabled": false,
-      "sdk_enabled": false,
-      "pixels_enabled": false,
-      "analytics_enabled": false,
-      "advertising_tracking_enabled": false,
-      "apple_att_permission_required": false
-    },
-    "data_retention": {
-      "medical_records": false,
-      "prescriptions": false,
-      "appointment_records": false,
-      "kyc_records": false,
-      "payment_records": false,
-      "tax_records": false,
-      "complaint_records": false,
-      "fraud_records": false,
-      "legal_records": false,
-      "secure_deletion": false,
-      "anonymization": false
-    },
-    "account_deletion": {
-      "deletion_request_allowed": false,
-      "verification_required": false,
-      "immediate_deletion": false,
-      "retention_after_deletion": false
-    },
-    "marketing": {
-      "marketing_communications": false,
-      "consent_required": false,
-      "opt_out_available": false
-    }
-  }
+  
 
   },
   
@@ -1895,220 +1488,231 @@ const AddFieldButton = ({
     setShowForm(false);
   };
 
- const handleAdd = () => {
-  const fieldKey = createFieldKey(fieldData.name);
+// const handleAdd = () => {
+//   const fieldKey = createFieldKey(fieldData.name);
 
-  if (!fieldKey) {
-    toast.error("Please enter field name");
-    return;
-  }
+//   if (!fieldKey) {
+//     toast.error("Please enter field name");
+//     return;
+//   }
 
-  let value;
+//   const fullPath = parentPath
+//     ? `${parentPath}.${fieldKey}`
+//     : fieldKey;
 
-  if (fieldData.type === "boolean") {
-    value = Boolean(fieldData.value);
-  } else if (fieldData.type === "number") {
-    value =
-      fieldData.value === ""
-        ? ""
-        : Number(fieldData.value);
-  } else if (fieldData.type === "array") {
-    value = fieldData.value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  } else {
-    value = fieldData.value;
-  }
+//   let value;
 
-  onChange(
-    parentPath
-      ? `${parentPath}.${fieldKey}`
-      : fieldKey,
-    value,
-    true
-  );
+//   switch (fieldData.type) {
+//     case "boolean":
+//       value = Boolean(fieldData.value);
+//       break;
 
-  reset();
-};
-  return (
-    <div className="dynamic-add-field-wrapper">
-      {!showForm ? (
-        <button
-          type="button"
-          className="dynamic-add-field-btn"
-          onClick={() => setShowForm(true)}
-        >
-          <FaPlus />
-          Add Field
-        </button>
-      ) : (
-        <div className="dynamic-add-field-form">
-          <div className="dynamic-add-field-header">
-            <div>
-              <strong>Add Configuration Field</strong>
-              <span>
-                Add a new setting inside this section.
-              </span>
-            </div>
+//     case "number":
+//       value =
+//         fieldData.value === ""
+//           ? ""
+//           : Number(fieldData.value);
+//       break;
 
-            <button
-              type="button"
-              onClick={reset}
-              className="dynamic-close-btn"
-            >
-              <FaTimes />
-            </button>
-          </div>
+//     case "array":
+//       value = String(fieldData.value || "")
+//         .split(",")
+//         .map((item) => item.trim())
+//         .filter(Boolean);
+//       break;
 
-          <div className="dynamic-add-field-grid">
-            <div>
-              <label>Field Name</label>
+//     default:
+//       value = fieldData.value || "";
+//   }
 
-              <input
-                type="text"
-                value={fieldData.name}
-                onChange={(e) =>
-                  setFieldData((prev) => ({
-                    ...prev,
-                    name: e.target.value,
-                  }))
-                }
-                placeholder="e.g. Follow Up Fee"
-              />
-            </div>
+//   console.log("ADDING NEW FIELD:", {
+//     parentPath,
+//     fullPath,
+//     value,
+//   });
 
-            <div>
-              <label>Field Type</label>
+//   onChange(fullPath, value);
 
-              <select
-                value={fieldData.type}
-                onChange={(e) =>
-                  setFieldData((prev) => ({
-                    ...prev,
-                    type: e.target.value,
-                    value: "",
-                  }))
-                }
-              >
-                <option value="string">
-                  Text
-                </option>
+//   reset();
+// };
+  // return (
+  //   <div className="dynamic-add-field-wrapper">
+  //     {!showForm ? (
+  //       <button
+  //         type="button"
+  //         className="dynamic-add-field-btn"
+  //         onClick={() => setShowForm(true)}
+  //       >
+  //         <FaPlus />
+  //         Add Field
+  //       </button>
+  //     ) : (
+  //       <div className="dynamic-add-field-form">
+  //         <div className="dynamic-add-field-header">
+  //           <div>
+  //             <strong>Add Configuration Field</strong>
+  //             <span>
+  //               Add a new setting inside this section.
+  //             </span>
+  //           </div>
 
-                <option value="number">
-                  Number
-                </option>
+  //           <button
+  //             type="button"
+  //             onClick={reset}
+  //             className="dynamic-close-btn"
+  //           >
+  //             <FaTimes />
+  //           </button>
+  //         </div>
 
-                <option value="boolean">
-                  Toggle
-                </option>
+  //         <div className="dynamic-add-field-grid">
+  //           <div>
+  //             <label>Field Name</label>
 
-                <option value="array">
-                  Multiple Values
-                </option>
-              </select>
-            </div>
-          </div>
+  //             <input
+  //               type="text"
+  //               value={fieldData.name}
+  //               onChange={(e) =>
+  //                 setFieldData((prev) => ({
+  //                   ...prev,
+  //                   name: e.target.value,
+  //                 }))
+  //               }
+  //               placeholder="e.g. Follow Up Fee"
+  //             />
+  //           </div>
 
-          {fieldData.type === "string" && (
-            <div>
-              <label>Value</label>
+  //           <div>
+  //             <label>Field Type</label>
 
-              <input
-                type="text"
-                value={fieldData.value}
-                onChange={(e) =>
-                  setFieldData((prev) => ({
-                    ...prev,
-                    value: e.target.value,
-                  }))
-                }
-                placeholder="Enter value"
-              />
-            </div>
-          )}
+  //             <select
+  //               value={fieldData.type}
+  //               onChange={(e) =>
+  //                 setFieldData((prev) => ({
+  //                   ...prev,
+  //                   type: e.target.value,
+  //                   value: "",
+  //                 }))
+  //               }
+  //             >
+  //               <option value="string">
+  //                 Text
+  //               </option>
 
-          {fieldData.type === "number" && (
-            <div>
-              <label>Value</label>
+  //               <option value="number">
+  //                 Number
+  //               </option>
 
-              <input
-                type="number"
-                value={fieldData.value}
-                onChange={(e) =>
-                  setFieldData((prev) => ({
-                    ...prev,
-                    value: e.target.value,
-                  }))
-                }
-                placeholder="Enter number"
-              />
-            </div>
-          )}
+  //               <option value="boolean">
+  //                 Toggle
+  //               </option>
 
-          {fieldData.type === "boolean" && (
-            <div className="dynamic-add-toggle">
-              <label>Default Value</label>
+  //               <option value="array">
+  //                 Multiple Values
+  //               </option>
+  //             </select>
+  //           </div>
+  //         </div>
 
-              <label className="dynamic-switch">
-                <input
-                  type="checkbox"
-                  checked={Boolean(
-                    fieldData.value
-                  )}
-                  onChange={(e) =>
-                    setFieldData((prev) => ({
-                      ...prev,
-                      value: e.target.checked,
-                    }))
-                  }
-                />
+  //         {fieldData.type === "string" && (
+  //           <div>
+  //             <label>Value</label>
 
-                <span className="dynamic-slider"></span>
-              </label>
-            </div>
-          )}
+  //             <input
+  //               type="text"
+  //               value={fieldData.value}
+  //               onChange={(e) =>
+  //                 setFieldData((prev) => ({
+  //                   ...prev,
+  //                   value: e.target.value,
+  //                 }))
+  //               }
+  //               placeholder="Enter value"
+  //             />
+  //           </div>
+  //         )}
 
-          {fieldData.type === "array" && (
-            <div>
-              <label>Values</label>
+  //         {fieldData.type === "number" && (
+  //           <div>
+  //             <label>Value</label>
 
-              <input
-                type="text"
-                value={fieldData.value}
-                onChange={(e) =>
-                  setFieldData((prev) => ({
-                    ...prev,
-                    value: e.target.value,
-                  }))
-                }
-                placeholder="e.g. Audio, Video, Chat"
-              />
-            </div>
-          )}
+  //             <input
+  //               type="number"
+  //               value={fieldData.value}
+  //               onChange={(e) =>
+  //                 setFieldData((prev) => ({
+  //                   ...prev,
+  //                   value: e.target.value,
+  //                 }))
+  //               }
+  //               placeholder="Enter number"
+  //             />
+  //           </div>
+  //         )}
 
-          <div className="dynamic-add-field-actions">
-            <button
-              type="button"
-              className="dynamic-secondary-btn"
-              onClick={reset}
-            >
-              Cancel
-            </button>
+  //         {fieldData.type === "boolean" && (
+  //           <div className="dynamic-add-toggle">
+  //             <label>Default Value</label>
 
-            <button
-              type="button"
-              className="dynamic-primary-btn"
-              onClick={handleAdd}
-            >
-              <FaPlus />
-              Add Field
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  //             <label className="dynamic-switch">
+  //               <input
+  //                 type="checkbox"
+  //                 checked={Boolean(
+  //                   fieldData.value
+  //                 )}
+  //                 onChange={(e) =>
+  //                   setFieldData((prev) => ({
+  //                     ...prev,
+  //                     value: e.target.checked,
+  //                   }))
+  //                 }
+  //               />
+
+  //               <span className="dynamic-slider"></span>
+  //             </label>
+  //           </div>
+  //         )}
+
+  //         {fieldData.type === "array" && (
+  //           <div>
+  //             <label>Values</label>
+
+  //             <input
+  //               type="text"
+  //               value={fieldData.value}
+  //               onChange={(e) =>
+  //                 setFieldData((prev) => ({
+  //                   ...prev,
+  //                   value: e.target.value,
+  //                 }))
+  //               }
+  //               placeholder="e.g. Audio, Video, Chat"
+  //             />
+  //           </div>
+  //         )}
+
+  //         <div className="dynamic-add-field-actions">
+  //           <button
+  //             type="button"
+  //             className="dynamic-secondary-btn"
+  //             onClick={reset}
+  //           >
+  //             Cancel
+  //           </button>
+
+  //           <button
+  //             type="button"
+  //             className="dynamic-primary-btn"
+  //             onClick={handleAdd}
+  //           >
+  //             <FaPlus />
+  //             Add Field
+  //           </button>
+  //         </div>
+  //       </div>
+  //     )}
+  //   </div>
+  // );
 };
 
 
@@ -2436,34 +2040,38 @@ const handlePolicyTypeChange = (e) => {
   };
 
   
-  const setNestedValue = (
-    object,
-    path,
-    value
-  ) => {
-    const keys = path.split(".");
-    const result = cloneObject(object);
+ const setNestedValue = (object, path, value) => {
+  const keys = path.split(".");
 
-    let current = result;
-
-    keys.forEach((key, index) => {
-      if (index === keys.length - 1) {
-        current[key] = value;
-      } else {
-        if (
-          !current[key] ||
-          typeof current[key] !== "object"
-        ) {
-          current[key] = {};
-        }
-
-        current = current[key];
-      }
-    });
-
-    return result;
+  const result = {
+    ...(object || {}),
   };
 
+  let current = result;
+
+  keys.forEach((key, index) => {
+    if (index === keys.length - 1) {
+      current[key] = value;
+      return;
+    }
+
+    if (
+      current[key] &&
+      typeof current[key] === "object" &&
+      !Array.isArray(current[key])
+    ) {
+      current[key] = {
+        ...current[key],
+      };
+    } else {
+      current[key] = {};
+    }
+
+    current = current[key];
+  });
+
+  return result;
+};
   
 
   const deleteNestedValue = (
@@ -2491,26 +2099,36 @@ const handlePolicyTypeChange = (e) => {
   };
 
  
+const handleConfigurationChange = (path, value) => {
+  setFormData((prev) => {
+    const keys = path.split(".");
+    const configuration = { ...prev.configuration };
 
-  const handleConfigurationChange = (
-    path,
-    value,
-    isNewField = false
-  ) => {
-    setFormData((prev) => {
-      const updated =
-        setNestedValue(
-          prev.configuration,
-          path,
-          value
-        );
+    let current = configuration;
 
-      return {
-        ...prev,
-        configuration: updated,
-      };
+    keys.forEach((key, index) => {
+      if (index === keys.length - 1) {
+        current[key] = value;
+      } else {
+        current[key] = {
+          ...(current[key] || {}),
+        };
+
+        current = current[key];
+      }
     });
-  };
+
+    console.log(
+      "FINAL CONFIGURATION:",
+      JSON.stringify(configuration, null, 2)
+    );
+
+    return {
+      ...prev,
+      configuration,
+    };
+  });
+};
 
  
 
@@ -2794,7 +2412,7 @@ const handlePolicyTypeChange = (e) => {
 
           <div className="policy-form-grid">
 
-            {/* POLICY TYPE */}
+          
 
             <div className="policy-field">
               <label>
@@ -2937,7 +2555,7 @@ const handlePolicyTypeChange = (e) => {
             </label>
           </div>
 
-          {/* TARGET ROLES */}
+        
 
           <div className="policy-role-section">
             <label>
@@ -3355,8 +2973,8 @@ const handlePolicyTypeChange = (e) => {
                 />
               )}
 
-              {/* ADD ROOT SECTION */}
-
+            
+{/* 
               {!showSectionForm ? (
                 <button
                   type="button"
@@ -3421,7 +3039,7 @@ const handlePolicyTypeChange = (e) => {
                     </button>
                   </div>
                 </div>
-              )}
+              )} */}
             </>
           )}
         </div>

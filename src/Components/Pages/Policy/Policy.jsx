@@ -13,6 +13,7 @@ import {
   FaChevronRight,
   FaSearch,
   FaPlus,
+  FaEdit
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
@@ -74,7 +75,7 @@ const Policy = () => {
 
       console.log("Policy API Response:", data);
 
-      if (data.status === "success") {
+      if (data.success === true) {
         setPolicyData(data.data || []);
         setNextUrl(data.next || null);
         setPreviousUrl(data.previous || null);
@@ -249,28 +250,27 @@ const Policy = () => {
                     </div>
                   </td>
 
-                  {/* Policy Type */}
+                
                   <td>
                     <span className="policy-type">
                       {formatPolicyType(item.policy_type)}
                     </span>
                   </td>
 
-                  {/* Category */}
                   <td>
                     <span className="policy-category">
                       {item.category || "-"}
                     </span>
                   </td>
 
-                  {/* Version */}
+                
                   <td>
                     <span className="policy-version">
                       v{item.version || 1}
                     </span>
                   </td>
 
-                  {/* Status */}
+               
                   <td>
                     <span className={getStatusClass(item.status)}>
                       {item.status === "published" ? (
@@ -283,7 +283,7 @@ const Policy = () => {
                     </span>
                   </td>
 
-                  {/* Active */}
+               
                   <td>
                     {item.is_active ? (
                       <span className="policy-active active">
@@ -298,26 +298,32 @@ const Policy = () => {
                     )}
                   </td>
 
-                  {/* Effective */}
+                  
                   <td>
                     <div className="policy-date">
                       <FaCalendarAlt />
                       {formatDate(item.effective_from)}
                     </div>
                   </td>
+       <td>
 
-                  {/* Action */}
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        className="action-btn view"
-                        title="View Policy"
-                        onClick={() => openPolicyModal(item)}
-                      >
-                        <FaEye />
-                      </button>
-                    </div>
-                  </td>
+                      <div className="coupon-actions">
+
+                       <button
+  type="button"
+  className="coupon-action-btn coupon-edit-btn"
+  title="Edit Policy"
+  onClick={() => navigate(`/Policy/Edit_Policy/${item.id}`)}
+>
+  <FaEdit size={13} />
+</button>
+
+
+                  
+
+                      </div>
+
+                    </td>
                 </tr>
               ))
             ) : (
@@ -336,31 +342,7 @@ const Policy = () => {
       </div>
 
     
-      {!loadingPolicy && policyData.length > 0 && (
-        <div className="policy-pagination">
-          <button
-            disabled={!previousUrl}
-            onClick={() => getPolicyList(previousUrl)}
-            className="policy-pagination-btn"
-          >
-            <FaChevronLeft />
-            Previous
-          </button>
-
-          <span className="policy-page-info">
-            Showing {policyData.length} policies
-          </span>
-
-          <button
-            disabled={!nextUrl}
-            onClick={() => getPolicyList(nextUrl)}
-            className="policy-pagination-btn"
-          >
-            Next
-            <FaChevronRight />
-          </button>
-        </div>
-      )}
+      
 
     
       {policyModal && selectedPolicy && (

@@ -8848,9 +8848,9 @@ flex-direction:column;
 
 .medicine-action-group {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+  gap: 6px;
 }
 
 .medicine-action-btn {

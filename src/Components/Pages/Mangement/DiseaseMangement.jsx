@@ -664,9 +664,7 @@ const searchedProducts = ProductData.filter((product) => {
 
               <th>Medicine</th>
 
-              <th>Brand</th>
-
-              <th>Size</th>
+            
 
               <th>Price</th>
 
@@ -717,14 +715,13 @@ const searchedProducts = ProductData.filter((product) => {
                 return (
                   <tr key={item.id}>
 
-                    {/* ID */}
+                  
 
                     <td>
                       {index + 1}
                     </td>
 
-                    {/* Patient */}
-
+                  
                     <td>
                       <div
                         style={{
@@ -777,68 +774,10 @@ const searchedProducts = ProductData.filter((product) => {
                     </td>
 
                     
-                  <td>
-  <div className="medicine-table-list">
-    {medicines.length > 0 ? (
-      medicines.map((requestedItem, medicineIndex) => {
-        const medicine = requestedItem?.variant;
-        const quantity = Number(
-          requestedItem?.quantity || 1
-        );
-
-        const price = Number(
-          medicine?.selling_price || 0
-        );
-
-        const itemTotal = price * quantity;
-
-        return (
-          <div
-            key={
-              requestedItem?.id ||
-              medicine?.variant_id ||
-              medicineIndex
-            }
-            className="medicine-table-item"
-          >
-            <strong>
-              {medicine?.variant_title || "-"}
-            </strong>
-
-           
-          </div>
-        );
-      })
-    ) : (
-      "-"
-    )}
-  </div>
-</td>
+     
               
 
-                   <td>
-  <div className="medicine-table-list">
-    {medicines.length > 0 ? (
-      medicines.map((requestedItem, medicineIndex) => {
-        const medicine = requestedItem?.variant;
-
-        return (
-          <span
-            key={
-              requestedItem?.id ||
-              medicine?.variant_id ||
-              medicineIndex
-            }
-          >
-            {medicine?.brand_name || "-"}
-          </span>
-        );
-      })
-    ) : (
-      "-"
-    )}
-  </div>
-</td>
+    
 
                   
 <td>

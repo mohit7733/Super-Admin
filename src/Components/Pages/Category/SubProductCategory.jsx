@@ -928,6 +928,7 @@ tax_class_id:item.tax_class_id||"N/A",
             <tr>
               <th>#</th>
               <th>Name</th>
+              <th>Service Category</th>
               <th>Product Category</th>
               <th>Code</th>
               <th>HSN Code</th>
@@ -976,6 +977,9 @@ tax_class_id:item.tax_class_id||"N/A",
                                        </button>
                                      </div>
                                    )}
+                  </td>
+                  <td>
+                    {item?.service_category_name||"-"}
                   </td>
                   <td>
                     <span className="service-category-badge">
@@ -1113,7 +1117,7 @@ tax_class_id:item.tax_class_id||"N/A",
       )
       .map((cat) => (
         <option key={cat.id} value={cat.id}>
-          {cat.name} ({cat.code})
+          {cat.name} ({cat.code}) - {cat.service_category_name}
         </option>
       ))
   ) : (
@@ -1217,7 +1221,7 @@ tax_class_id:item.tax_class_id||"N/A",
     onChange={(e) => {
       const value = e.target.value.toUpperCase();
 
-      // Number ya special character enter kare to toast
+     
       if (/[^A-Z]/.test(value)) {
         toast.error("Only letters (A-Z) are allowed in sub category code");
         return;
@@ -1383,7 +1387,7 @@ tax_class_id:item.tax_class_id||"N/A",
       )
       .map((cat) => (
         <option key={cat.id} value={cat.id}>
-          {cat.name} ({cat.code})
+          {cat.name} ({cat.code}) - {cat.service_category_name}
         </option>
       ))
   ) : (
