@@ -58,6 +58,7 @@ const [deleteLoading, setDeleteLoading] = useState(false);
 const [editFaqErrors, setEditFaqErrors] = useState({});
 const [editSubmitLoading, setEditSubmitLoading] = useState(false);
 
+
 const faqCategories = [
   { label: "General", value: "general" },
   { label: "Account", value: "account" },
@@ -1073,7 +1074,7 @@ const handleDeleteFaq = async (id) => {
       onClick={(e) => e.stopPropagation()}
     >
 
-      {/* HEADER */}
+      
       <div className="prakriti-modal-header">
         <div>
           <h2>Edit FAQ</h2>
@@ -1092,13 +1093,13 @@ const handleDeleteFaq = async (id) => {
         </button>
       </div>
 
-      {/* FORM */}
+      
       <form
         className="prakriti-form"
         onSubmit={handleUpdateFaq}
       >
 
-        {/* QUESTION */}
+      
         <div className="form-group">
           <label>
             Question <span className="required">*</span>
@@ -1130,7 +1131,7 @@ const handleDeleteFaq = async (id) => {
           )}
         </div>
 
-        {/* ANSWER */}
+     
         <div className="form-group">
           <label>
             Answer <span className="required">*</span>
@@ -1162,7 +1163,7 @@ const handleDeleteFaq = async (id) => {
           )}
         </div>
 
-        {/* CATEGORY */}
+        
         <div className="form-group">
           <label>
             Category <span className="required">*</span>
@@ -1203,7 +1204,7 @@ const handleDeleteFaq = async (id) => {
           )}
         </div>
 
-        {/* DISPLAY ORDER */}
+       
         <div className="form-group">
           <label>Display Order</label>
 
@@ -1234,7 +1235,7 @@ const handleDeleteFaq = async (id) => {
           )}
         </div>
 
-        {/* STATUS */}
+       
         <div className="form-group">
           <label>Status</label>
 

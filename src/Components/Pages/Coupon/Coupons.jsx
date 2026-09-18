@@ -1858,8 +1858,7 @@ const handleEditCouponChange = (e) => {
                     </td>
 
 
-                    {/* VALIDITY */}
-
+                    
                     <td>
 
                       <div className="coupon-validity">
