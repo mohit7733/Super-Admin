@@ -1346,39 +1346,10 @@ const exportToExcel = async () => {
           </tbody>
         </table>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="pagination">
-            <button
-              onClick={() => getDiseaseList(currentpage - 1)}
-              disabled={!previousPage}
-              className="pagination-btn"
-            >
-              Prev
-            </button>
-
-            {pages.map((page) => (
-              <button
-                key={page}
-                onClick={() => getDiseaseList(page)}
-                className={`pagination-btn ${currentpage === page ? "active" : ""}`}
-              >
-                {page}
-              </button>
-            ))}
-
-            <button
-              onClick={() => getDiseaseList(currentpage + 1)}
-              disabled={!Nextpage}
-              className="pagination-btn"
-            >
-              Next
-            </button>
-          </div>
-        )}
+     
       </div>
 
-      {/* Add Disease Modal */}
+      
       {AddDiseaseformModal && (
         <div className="prakriti-modal-overlay" onClick={() => {
           setAddDiseaseformModal(false);
@@ -1415,7 +1386,7 @@ const exportToExcel = async () => {
   )
   .map((cat) => (
     <option key={cat.id} value={cat.id}>
-      {cat.name} ({cat.code})
+      {cat.name} ({cat.code}) -{cat.service_category_name}
     </option>
   ))}
                   </select>
@@ -1653,7 +1624,7 @@ const exportToExcel = async () => {
         </div>
       )}
 
-      {/* Add Category Modal */}
+     
       {AddcategoryModal && (
         <div className="prakriti-modal-overlay" onClick={() => {
           setAddCategoryModal(false);
@@ -1873,7 +1844,7 @@ const exportToExcel = async () => {
   )
   .map((cat) => (
     <option key={cat.id} value={cat.id}>
-      {cat.name} ({cat.code})
+      {cat.name}({cat.code}) - {cat.service_category_name}
     </option>
   ))}
                 </select>
@@ -2193,7 +2164,7 @@ const exportToExcel = async () => {
 )}
 
 
-      {/* Image Preview Modal */}
+  
       {previewModal && (
         <div
           className="prakriti-modal-overlay"

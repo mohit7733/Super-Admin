@@ -89,7 +89,8 @@ import AddReward from './Components/Pages/Reward/AddReward';
 import EditReward from './Components/Pages/Reward/EditReward';
 import DiseaseMangement from './Components/Pages/Mangement/DiseaseMangement';
 import Policy from './Components/Pages/Policy/Policy';
-import AddPolicy from './Components/Pages/Policy/AddPolicy'
+import AddPolicy from './Components/Pages/Policy/AddPolicy';
+import EditPolicy from './Components/Pages/Policy/EditPolicy';
 
 
 const Layout = ({ children }) => {
@@ -131,6 +132,17 @@ function App() {
             <ProtectedRoute permission="view_dashboard">
               <Layout>
                 <Dashboard />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+          <Route
+          path="/Policy/Edit_Policy/:id"
+          element={
+            <ProtectedRoute permission="edit_Policy">
+              <Layout>
+                <EditPolicy />
               </Layout>
             </ProtectedRoute>
           }
