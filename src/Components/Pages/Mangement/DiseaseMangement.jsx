@@ -35,6 +35,7 @@ const [ProductLoading, setProductLoading] = useState(false);
 
 const [addedMedicines, setAddedMedicines] = useState([]);
 const [medicineSearch, setMedicineSearch] = useState("");
+const [variantQuantities, setVariantQuantities] = useState({});
 
 const [selectedMedicineVariants, setSelectedMedicineVariants] =
   useState({});
@@ -147,7 +148,6 @@ const [selectedMedicineVariants, setSelectedMedicineVariants] =
 const getSelectedMedicineDetails = () => {
   const medicines = [];
 
-  
   (SelectedApprovalRequest?.requested_variants || []).forEach(
     (requestedItem) => {
       const medicine = requestedItem?.variant;
@@ -155,13 +155,29 @@ const getSelectedMedicineDetails = () => {
 
       if (!variantId) return;
 
-      if (selectedVariantIds.includes(variantId)) {
+      const isSelected =
+        selectedVariantIds.some(
+          (id) =>
+            String(id) === String(variantId)
+        );
+
+      if (isSelected) {
         medicines.push({
           variantId,
-          name: medicine?.variant_title || "Medicine",
-          brand: medicine?.brand_name || "No Brand",
-          size: medicine?.size || "-",
-          sellingPrice: medicine?.selling_price || 0,
+          name:
+            medicine?.variant_title ||
+            "Medicine",
+          brand:
+            medicine?.brand_name ||
+            "No Brand",
+          size:
+            medicine?.size || "-",
+          sellingPrice:
+            medicine?.selling_price || 0,
+          stock:
+            Number(
+              medicine?.quantity || 0
+            ),
         });
       }
     }
@@ -169,36 +185,54 @@ const getSelectedMedicineDetails = () => {
 
 
   ProductData.forEach((product) => {
-    (product?.variants || []).forEach((variant) => {
-      const variantId = variant?.id || variant?.variant_id;
+    (product?.variants || []).forEach(
+      (variant) => {
+        const variantId =
+          variant?.id ||
+          variant?.variant_id;
 
-      if (!variantId) return;
+        if (!variantId) return;
 
-      if (
-        selectedVariantIds.includes(variantId) &&
-        !medicines.some(
-          (item) => item.variantId === variantId
-        )
-      ) {
-        medicines.push({
-          variantId,
-          name:
-            variant?.title ||
-            variant?.variant_title ||
-            variant?.name ||
-            "Medicine",
-          brand:
-            product?.brand_name ||
-            variant?.brand_name ||
-            "No Brand",
-          size: variant?.size || "-",
-          sellingPrice:
-            variant?.selling_price ||
-            variant?.price ||
-            0,
-        });
+        const isSelected =
+          selectedVariantIds.some(
+            (id) =>
+              String(id) ===
+              String(variantId)
+          );
+
+        if (
+          isSelected &&
+          !medicines.some(
+            (item) =>
+              String(item.variantId) ===
+              String(variantId)
+          )
+        ) {
+          medicines.push({
+            variantId,
+            name:
+              variant?.title ||
+              variant?.variant_title ||
+              variant?.name ||
+              "Medicine",
+            brand:
+              product?.brand_name ||
+              variant?.brand_name ||
+              "No Brand",
+            size:
+              variant?.size || "-",
+            sellingPrice:
+              variant?.selling_price ||
+              variant?.price ||
+              0,
+            stock:
+              Number(
+                variant?.quantity || 0
+              ),
+          });
+        }
       }
-    });
+    );
   });
 
   return medicines;
@@ -311,19 +345,72 @@ const closeApproveModal = () => {
   setSelectedVariantIds([]);
   setApprovedQuantities({});
   setAdminNotes("");
-};const handleVariantSelection = (variantId) => {
+};
+const handleVariantSelection = (variantId) => {
+  const normalizedId = String(variantId);
+
   setSelectedVariantIds((prev) => {
-    if (prev.includes(variantId)) {
-      return prev.filter((id) => id !== variantId);
+    const alreadySelected = prev.some(
+      (id) => String(id) === normalizedId
+    );
+
+    if (alreadySelected) {
+      setApprovedQuantities((prevQuantities) => {
+        const updated = { ...prevQuantities };
+        delete updated[variantId];
+        return updated;
+      });
+
+      return prev.filter(
+        (id) => String(id) !== normalizedId
+      );
     }
+
+    setApprovedQuantities((prevQuantities) => ({
+      ...prevQuantities,
+      [variantId]: 1,
+    }));
 
     return [...prev, variantId];
   });
-};const handleQuantityChange = (variantId, value) => {
+};
+const handleQuantityChange = (variantId, value, stock) => {
+  const availableStock = Number(stock || 0);
+
+  if (value === "") {
+    setApprovedQuantities((prev) => ({
+      ...prev,
+      [variantId]: "",
+    }));
+    return;
+  }
+
+  const quantity = Number(value);
+
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    setApprovedQuantities((prev) => ({
+      ...prev,
+      [variantId]: 1,
+    }));
+    return;
+  }
+
+  if (quantity > availableStock) {
+    toast.error(
+      `Only ${availableStock} units are available in stock.`
+    );
+
+    setApprovedQuantities((prev) => ({
+      ...prev,
+      [variantId]: availableStock,
+    }));
+
+    return;
+  }
+
   setApprovedQuantities((prev) => ({
     ...prev,
-    [variantId]:
-      value === "" ? "" : Math.max(1, Number(value)),
+    [variantId]: quantity,
   }));
 };
 const searchedProducts = ProductData.filter((product) => {
@@ -514,26 +601,32 @@ const searchedProducts = ProductData.filter((product) => {
 
   const handleOpenApproveModal = (item) => {
   setSelectedApprovalRequest(item);
+const initialVariantIds = [];
+const initialQuantities = {};
 
-  const initialVariantIds = [];
-  const initialQuantities = {};
+(item?.requested_variants || []).forEach((requestedItem) => {
+  const variantId = requestedItem?.variant?.variant_id;
 
-  (item?.requested_variants || []).forEach((requestedItem) => {
-    const variantId = requestedItem?.variant?.variant_id;
+  if (variantId) {
+    initialVariantIds.push(variantId);
 
-    if (variantId) {
-      initialVariantIds.push(variantId);
-      initialQuantities[variantId] = requestedItem?.quantity || 1;
-    }
-  });
+    const stock = Number(requestedItem?.variant?.quantity || 0);
+    const requestedQuantity = Number(requestedItem?.quantity || 1);
 
-  setSelectedVariantIds(initialVariantIds);
-  setApprovedQuantities(initialQuantities);
-  setAdminNotes("");
-  setMedicineSearch("");
-  setExpandedSearchProducts({});
-  setApproveModal(true);
-};
+    initialQuantities[variantId] =
+      stock > 0
+        ? Math.min(requestedQuantity, stock)
+        : 0;
+  }
+});
+
+setSelectedVariantIds(initialVariantIds);
+setApprovedQuantities(initialQuantities);
+setAdminNotes("");
+setMedicineSearch("");
+setExpandedSearchProducts({});
+setApproveModal(true)
+  };
   return (
     <>
       <div className="page-header">
@@ -1095,21 +1188,28 @@ onClick={() => handleOpenApproveModal(item)}
               {medicine.name}
             </strong>
 
-            <div className="selected-medicine-meta">
+           <div className="selected-medicine-meta">
 
-              <span>
-                {medicine.brand}
-              </span>
+  <span>
+    {medicine.brand}
+  </span>
 
-              <span>
-                Size: {medicine.size}
-              </span>
+  <span>
+    Size: {medicine.size}
+  </span>
 
-              <span className="selected-medicine-price">
-                ₹{Number(medicine.sellingPrice).toFixed(2)}
-              </span>
+  <span>
+    Stock: {medicine.stock}
+  </span>
 
-            </div>
+  <span className="selected-medicine-price">
+    ₹
+    {Number(
+      medicine.sellingPrice
+    ).toFixed(2)}
+  </span>
+
+</div>
 
           </div>
 
@@ -1121,18 +1221,22 @@ onClick={() => handleOpenApproveModal(item)}
             </label>
 
             <input
-              type="number"
-              min="1"
-              value={
-                approvedQuantities[medicine.variantId] ?? 1
-              }
-              onChange={(e) =>
-                handleQuantityChange(
-                  medicine.variantId,
-                  e.target.value
-                )
-              }
-            />
+  type="number"
+  min="1"
+  max={medicine.stock}
+  value={
+    approvedQuantities[
+      medicine.variantId
+    ] ?? 1
+  }
+  onChange={(e) =>
+    handleQuantityChange(
+      medicine.variantId,
+      e.target.value,
+      medicine.stock
+    )
+  }
+/>
 
           </div>
 
@@ -1184,26 +1288,22 @@ onClick={() => handleOpenApproveModal(item)}
   </div>
 
 
- {/* SEARCH RESULT */}
+{/* ================= SEARCH RESULT ================= */}
 
 {medicineSearch.trim() && (
   <div className="add-medicine-results">
 
     {ProductLoading ? (
+
       <div className="add-medicine-empty">
         Loading medicines...
       </div>
+
     ) : searchedProducts.length > 0 ? (
 
       searchedProducts.map((product) => {
 
-        const availableVariants =
-          product?.variants?.filter(
-            (variant) =>
-              variant?.approval_status === "approved" &&
-              !variant?.out_of_stock &&
-              Number(variant?.quantity) > 0
-          ) || [];
+        const allVariants = product?.variants || [];
 
         const isExpanded =
           expandedSearchProducts[product.id];
@@ -1214,7 +1314,7 @@ onClick={() => handleOpenApproveModal(item)}
             className="add-medicine-product"
           >
 
-            {/* PRODUCT ROW */}
+            {/* ================= PRODUCT ROW ================= */}
 
             <div className="add-medicine-product-row">
 
@@ -1233,7 +1333,7 @@ onClick={() => handleOpenApproveModal(item)}
               <button
                 type="button"
                 className="view-variants-btn"
-                disabled={availableVariants.length === 0}
+                disabled={allVariants.length === 0}
                 onClick={() =>
                   toggleSearchProductVariants(product.id)
                 }
@@ -1248,137 +1348,247 @@ onClick={() => handleOpenApproveModal(item)}
             </div>
 
 
-            {/* VARIANTS */}
+            {/* ================= NO VARIANT MESSAGE ================= */}
 
-            {isExpanded && (
-              <div className="add-medicine-variants">
-
-                {availableVariants.length > 0 ? (
-
-                  availableVariants.map((variant) => {
-
-                    const variantId =
-                      variant?.id || variant?.variant_id;
-
-                    const isSelected =
-                      selectedVariantIds.includes(variantId);
-
-                    return (
-                      <div
-                        key={variantId}
-                        className={`add-medicine-variant-row ${
-                          isSelected
-                            ? "add-medicine-variant-selected"
-                            : ""
-                        }`}
-                      >
-
-                        {/* CHECKBOX */}
-
-                        <label className="medicine-select-checkbox">
-
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => {
-
-                              if (!variantId) return;
-
-                              handleVariantSelection(
-                                variantId
-                              );
-
-                            }}
-                          />
-
-                          <span className="medicine-checkmark">
-                            {isSelected && (
-                              <FaCheckCircle />
-                            )}
-                          </span>
-
-                        </label>
+            {allVariants.length === 0 && (
+              <div className="variant-unavailable-message">
+                No variants available for this product.
+              </div>
+            )}
 
 
-                        {/* VARIANT INFO */}
+           {isExpanded && allVariants.length > 0 && (
+  <div className="add-medicine-variants">
 
-                        <div className="add-medicine-variant-info">
+    {allVariants.map((variant) => {
+      const variantId =
+        variant?.id ||
+        variant?.variant_id;
 
-                          <strong>
-                            {variant?.title ||
-                              variant?.variant_title ||
-                              variant?.name ||
-                              "Variant"}
-                          </strong>
+      if (!variantId) {
+        return null;
+      }
 
-                          <div className="add-medicine-variant-meta">
+      const quantity = Number(
+        variant?.quantity || 0
+      );
 
-                            <span>
-                              Size:{" "}
-                              {variant?.size || "-"}
-                            </span>
+      const approvalStatus =
+        variant?.approval_status || "";
 
-                            <span>
-                              ₹
-                              {variant?.selling_price !==
-                              undefined
-                                ? Number(
-                                    variant.selling_price
-                                  ).toFixed(2)
-                                : "0.00"}
-                            </span>
+      const isOutOfStock =
+        variant?.out_of_stock ||
+        quantity <= 0;
 
-                          </div>
+      const isApproved =
+        approvalStatus === "approved";
 
-                        </div>
+      const canSelect =
+        isApproved && !isOutOfStock;
+
+      const isSelected =
+        selectedVariantIds.some(
+          (id) =>
+            String(id) === String(variantId)
+        );
+
+      let unavailableReason = "";
+
+      if (!isApproved) {
+        if (approvalStatus === "rejected") {
+          unavailableReason =
+            "This variant is rejected.";
+        } else if (
+          approvalStatus === "pending" ||
+          approvalStatus === "pending_review"
+        ) {
+          unavailableReason =
+            "This variant is pending approval.";
+        } else if (
+          approvalStatus === "suspended"
+        ) {
+          unavailableReason =
+            "This variant is suspended.";
+        } else {
+          unavailableReason =
+            "This variant is not approved.";
+        }
+      } else if (isOutOfStock) {
+        unavailableReason =
+          "This variant is out of stock.";
+      }
+
+      return (
+        <div
+          key={variantId}
+          className={`add-medicine-variant-row ${
+            isSelected
+              ? "add-medicine-variant-selected"
+              : ""
+          } ${
+            !canSelect
+              ? "add-medicine-variant-disabled"
+              : ""
+          }`}
+        >
+
+          {/* CHECKBOX */}
+
+          <label
+            className={`medicine-select-checkbox ${
+              !canSelect
+                ? "medicine-checkbox-disabled"
+                : ""
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              disabled={!canSelect}
+              onChange={() => {
+                if (!canSelect) return;
+
+                handleVariantSelection(
+                  variantId
+                );
+              }}
+            />
+
+            <span className="medicine-checkmark">
+              {isSelected && (
+                <FaCheckCircle />
+              )}
+            </span>
+          </label>
 
 
-                        {/* QUANTITY */}
+          {/* VARIANT INFORMATION */}
 
-                        {isSelected && (
-                          <div className="medicine-quantity">
+          <div className="add-medicine-variant-info">
 
-                            <label>
-                              Quantity
-                            </label>
+            <strong>
+              {variant?.title ||
+                variant?.variant_title ||
+                variant?.name ||
+                "Variant"}
+            </strong>
 
-                            <input
-                              type="number"
-                              min="1"
-                              value={
-                                approvedQuantities[
-                                  variantId
-                                ] ?? 1
-                              }
-                              onChange={(e) =>
-                                handleQuantityChange(
-                                  variantId,
-                                  e.target.value
-                                )
-                              }
-                            />
+            <div className="add-medicine-variant-meta">
 
-                          </div>
-                        )}
+              {/* STOCK */}
 
-                      </div>
-                    );
+              <span>
+                Stock:{" "}
+                <strong>
+                  {quantity}
+                </strong>
+              </span>
 
-                  })
+              {/* PRICE */}
 
-                ) : (
+              <span>
+                ₹
+                {variant?.selling_price !==
+                undefined
+                  ? Number(
+                      variant.selling_price
+                    ).toFixed(2)
+                  : "0.00"}
+              </span>
 
-                  <div className="add-medicine-empty">
-                    No approved variants available
-                  </div>
+              {/* AVAILABLE STATUS */}
 
-                )}
+              <span
+                className={
+                  quantity > 0
+                    ? "variant-status-approved"
+                    : "variant-status-rejected"
+                }
+              >
+                {quantity > 0
+                  ? "Available"
+                  : "Out of Stock"}
+              </span>
 
+            </div>
+
+
+            {/* APPROVAL STATUS */}
+
+            {approvalStatus &&
+              approvalStatus !== "approved" && (
+                <div className="variant-unavailable-reason">
+                  Status:{" "}
+                  {approvalStatus.replace(
+                    /_/g,
+                    " "
+                  )}
+                </div>
+              )}
+
+
+            {/* UNAVAILABLE REASON */}
+
+            {!canSelect && (
+              <div className="variant-unavailable-reason">
+                {unavailableReason}
               </div>
             )}
 
           </div>
+
+
+          {/* QUANTITY */}
+
+          {isSelected && canSelect && (
+            <div className="medicine-quantity">
+
+              <label>
+                Quantity
+              </label>
+
+              <input
+                type="number"
+                min="1"
+                max={quantity}
+                value={
+                  approvedQuantities[
+                    variantId
+                  ] ?? 1
+                }
+                onChange={(e) =>
+                  handleQuantityChange(
+                    variantId,
+                    e.target.value,
+                    quantity
+                  )
+                }
+              />
+
+              <small
+                style={{
+                  display: "block",
+                  marginTop: "4px",
+                  fontSize: "9px",
+                  color: "#7b8582",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Max: {quantity}
+              </small>
+
+            </div>
+          )}
+
+        </div>
+      );
+    })}
+
+  </div>
+)}
+          </div>
         );
+
       })
 
     ) : (
@@ -1411,7 +1621,7 @@ onClick={() => handleOpenApproveModal(item)}
 
       </div>
 
-      {/* Validation */}
+     
       {selectedVariantIds.length === 0 && (
         <div className="policy-warning">
 
@@ -1427,7 +1637,7 @@ onClick={() => handleOpenApproveModal(item)}
         </div>
       )}
 
-      {/* Buttons */}
+     
       <div className="confirm-buttons">
 
         <button
