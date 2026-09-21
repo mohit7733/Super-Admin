@@ -606,7 +606,7 @@ setSelectedCustomer(null);
     )}
 
 
-   =
+
     {totalPages > 1 && (
       <button
         className={`order-pagination-btn ${
@@ -628,7 +628,7 @@ setSelectedCustomer(null);
     )}
 
 
-    =
+    
     <button
       className="order-pagination-btn order-pagination-arrow"
       disabled={currentPage === totalPages || Loading}

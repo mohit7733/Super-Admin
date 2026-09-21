@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,useParams} from "react-router-dom";
 import {
   FaEye,
   FaFileAlt,
@@ -20,6 +20,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import { FaArrowRotateLeft } from "react-icons/fa6";
 import { FaUndo } from "react-icons/fa";
+import { FaEllipsisV } from "react-icons/fa";
 
 import BASE_URL from "../../../Base";
 
@@ -46,6 +47,7 @@ const [PublishModal, setPublishModal] = useState(false);
 const [publishLoading, setPublishLoading] = useState(false);
 
   const navigate = useNavigate();
+const { id } = useParams();
 
   const getPolicyList = async (url = null) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -515,61 +517,92 @@ const handleRollbackPolicy = async (id) => {
                     </div>
                   </td>
        <td>
+<div className="policy-action-menu">
+  <button
+    type="button"
+    className="policy-menu-trigger"
+    title="Actions"
+    onClick={(e) => {
+      e.stopPropagation();
+      setSelectedPolicy(
+        selectedPolicy?.id === item.id ? null : item
+      );
+    }}
+  >
+    <FaEllipsisV size={14} />
+  </button>
 
-                      <div className="coupon-actions">
+  {selectedPolicy?.id === item.id && (
+    <div className="policy-dropdown-menu">
 
- 
-
-  
-
-                       <button
-  type="button"
-  className="coupon-action-btn coupon-edit-btn"
-  title="Edit Policy"
-  onClick={() => navigate(`/Policy/Edit_Policy/${item.id}`)}
->
-  <FaEdit size={13} />
-</button>
       <button
+        type="button"
+        className="policy-dropdown-item"
+        onClick={() => {
+          navigate(`/Policy/Edit_Policy/${item.id}`);
+          setSelectedPolicy(null);
+        }}
+      >
+        <FaEdit />
+        <span>Edit Policy</span>
+      </button>
+
+    
+      <button
+        type="button"
+        className="policy-dropdown-item policy-dropdown-delete"
+        onClick={() => {
+          setSelectedPolicy(item);
+          setDeleteModal(true);
+        }}
+      >
+        <FiTrash2 />
+        <span>Delete Policy</span>
+      </button>
+<button
   type="button"
-  className="faq-action-btn faq-delete-btn"
-  title="Delete FAQ"
+  className="policy-dropdown-item"
   onClick={() => {
-    setSelectedPolicy(item);
-    setDeleteModal(true);
+    navigate(`/Policy/History/${item.id}`);
+    setSelectedPolicy(null);
   }}
 >
-  <FiTrash2 size={12} />
+  <FaFileAlt />
+  <span>Policy History</span>
 </button>
+   
+      {item.status === "archived" && (
+        <button
+          type="button"
+          className="policy-dropdown-item"
+          onClick={() => {
+            setSelectedPolicy(item);
+            setRollbackModal(true);
+          }}
+        >
+          <FaArrowRotateLeft />
+          <span>Rollback Policy</span>
+        </button>
+      )}
 
-{item.status === "archived" && (
-  <button
-    type="button"
-    className="coupon-action-btn policy-rollback-btn"
-    title="Rollback Policy"
-    onClick={() => {
-      setSelectedPolicy(item);
-      setRollbackModal(true);
-    }}
-  >
-    <FaArrowRotateLeft size={13} />
-  </button>
-)}
-                  
- {item.status !== "published" && (
-  <button
-    type="button"
-    className="coupon-action-btn policy-publish-btn"
-    title="Publish Policy"
-    onClick={() => {
-      setSelectedPolicy(item);
-      setPublishModal(true);
-    }}
-  >
-    <FaCheckCircle size={13} />
-  </button>
-)}
-                      </div>
+      {/* Publish */}
+      {item.status !== "published" && (
+        <button
+          type="button"
+          className="policy-dropdown-item policy-dropdown-publish"
+          onClick={() => {
+            setSelectedPolicy(item);
+            setPublishModal(true);
+          }}
+        >
+          <FaCheckCircle />
+          <span>Publish Policy</span>
+        </button>
+      )}
+
+    </div>
+  )}
+</div>
 
                     </td>
                 </tr>

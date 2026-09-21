@@ -26,7 +26,7 @@ const Product = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
 
   const [totalCount, setTotalCount] = useState(0);
   const [nextPage, setNextPage] = useState(null);

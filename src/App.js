@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from './Components/Sidebar/Sidebar';
 
 import Header from './Components/Pages/Header/Header'
-
+import PolicyHistory from './Components/Pages/Policy/PolicyHistory';
 
 import Login from './Components/Pages/Auth/login';
 import ProtectedRoute from './Components/Pages/Auth/ProtectedRoute';
@@ -728,15 +728,23 @@ function App() {
           }
         />
 
-
         <Route
-          path="/Patientdetail/:PatientId"
+         path="/Policy/History/:id"
           element={
-
-
             <ProtectedRoute>
               <Layout>
-                <PatientDetails />
+                <PolicyHistory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/StarRating"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <StarRating />
               </Layout>
             </ProtectedRoute>
           }
