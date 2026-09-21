@@ -11,11 +11,15 @@ import {
   FaExternalLinkAlt,
   FaChevronLeft,
   FaChevronRight,
-  FaSearch,
+  FaSearch, 
   FaPlus,
   FaEdit
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+
+import { FiTrash2 } from "react-icons/fi";
+import { ToastContainer, toast } from "react-toastify";
+import { FaArrowRotateLeft } from "react-icons/fa6";
+import { FaUndo } from "react-icons/fa";
 
 import BASE_URL from "../../../Base";
 
@@ -27,6 +31,9 @@ const Policy = () => {
   const [policyData, setPolicyData] = useState([]);
   const [loadingPolicy, setLoadingPolicy] = useState(false);
   const [errorPolicy, setErrorPolicy] = useState(null);
+  const[deleteLoading,setDeleteLoading]=useState(false);
+  const [RollbackModal, setRollbackModal] = useState(false);
+const [rollbackLoading, setRollbackLoading] = useState(false);
 
   const [selectedPolicy, setSelectedPolicy] = useState(null);
   const [policyModal, setPolicyModal] = useState(false);
@@ -34,6 +41,9 @@ const Policy = () => {
   const [nextUrl, setNextUrl] = useState(null);
   const [previousUrl, setPreviousUrl] = useState(null);
   const[searchTerm,setSearchTerm]=useState("");
+  const [DeleteModal,setDeleteModal]=useState(false);
+const [PublishModal, setPublishModal] = useState(false);
+const [publishLoading, setPublishLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -95,7 +105,206 @@ const Policy = () => {
       setLoadingPolicy(false);
     }
   };
+const handleDeletePolicy = async (id) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    setDeleteLoading(true);
+
+    const response = await fetch(
+      `${BASE_URL}/policies/admin/legal/?id=${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    console.log("Policy DELETE Response:", data);
+
+   
+    if (!response.ok || data.success === false) {
+      const errorMessage =
+        data?.message ||
+        data?.errors?.status?.[0] ||
+        data?.errors?.detail?.[0] ||
+        data?.errors?.non_field_errors?.[0] ||
+        "Failed to delete policy";
+
+      toast.error(errorMessage);
+      return;
+    }
+
+    toast.success(
+      data?.message || "Policy deleted successfully"
+    );
+
+    setDeleteModal(false);
+    setSelectedPolicy(null);
+
+    getPolicyList();
+
+  } catch (error) {
+    console.error("Delete Policy Error:", error);
+
+    toast.error(
+      "Something went wrong while deleting the policy"
+    );
+  } finally {
+    setDeleteLoading(false);
+  }
+};
+const handlePublishPolicy = async (id) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    setPublishLoading(true);
+
+    const response = await fetch(
+      `${BASE_URL}/policies/admin/legal/publish/?id=${id}`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    console.log("Policy Publish Response:", data);
+
+    if (!response.ok || data.success === false) {
+      toast.error(
+        data?.message || "Failed to publish policy"
+      );
+      return;
+    }
+
+    toast.success(
+      data?.message || "Policy published successfully"
+    );
+
+    setPublishModal(false);
+    setSelectedPolicy(null);
+
+    getPolicyList();
+
+  } catch (error) {
+    console.error("Publish Policy Error:", error);
+
+    toast.error(
+      "Something went wrong while publishing the policy"
+    );
+  } finally {
+    setPublishLoading(false);
+  }
+};
+const handleRollbackPolicy = async (id) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    setRollbackLoading(true);
+
+    const response = await fetch(
+      `${BASE_URL}/policies/admin/legal/rollback/?id=${id}`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          id: id,
+        }),
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    console.log("Policy Rollback Response:", data);
+
+    if (!response.ok || data.success === false) {
+      const errorMessage =
+        data?.message ||
+        data?.errors?.id?.[0] ||
+        data?.errors?.detail?.[0] ||
+        data?.errors?.non_field_errors?.[0] ||
+        "Failed to rollback policy";
+
+      toast.error(errorMessage);
+      return;
+    }
+
+    toast.success(
+      data?.message || "Policy rolled back successfully"
+    );
+
+    setRollbackModal(false);
+    setSelectedPolicy(null);
+
+    getPolicyList();
+
+  } catch (error) {
+    console.error("Policy Rollback Error:", error);
+
+    toast.error(
+      "Something went wrong while rolling back the policy"
+    );
+  } finally {
+    setRollbackLoading(false);
+  }
+};
   useEffect(() => {
     getPolicyList();
   }, []);
@@ -179,7 +388,7 @@ const Policy = () => {
        
            <button
   type="button"
-  className="policy-create-btn"
+   className="add-customer-btn"
   onClick={() => navigate("/AddPolicy")}
 >
   <FaPlus />
@@ -228,10 +437,10 @@ const Policy = () => {
             ) : policyData?.length > 0 ? (
               policyData.map((item, index) => (
                 <tr key={item.id}>
-                  {/* ID */}
+                 
                   <td>{index + 1}</td>
 
-                  {/* Policy */}
+               
                   <td>
                     <div className="policy-name-wrapper">
                       <div className="policy-icon">
@@ -309,6 +518,10 @@ const Policy = () => {
 
                       <div className="coupon-actions">
 
+ 
+
+  
+
                        <button
   type="button"
   className="coupon-action-btn coupon-edit-btn"
@@ -317,10 +530,45 @@ const Policy = () => {
 >
   <FaEdit size={13} />
 </button>
+      <button
+  type="button"
+  className="faq-action-btn faq-delete-btn"
+  title="Delete FAQ"
+  onClick={() => {
+    setSelectedPolicy(item);
+    setDeleteModal(true);
+  }}
+>
+  <FiTrash2 size={12} />
+</button>
 
-
+{item.status === "archived" && (
+  <button
+    type="button"
+    className="coupon-action-btn policy-rollback-btn"
+    title="Rollback Policy"
+    onClick={() => {
+      setSelectedPolicy(item);
+      setRollbackModal(true);
+    }}
+  >
+    <FaArrowRotateLeft size={13} />
+  </button>
+)}
                   
-
+ {item.status !== "published" && (
+  <button
+    type="button"
+    className="coupon-action-btn policy-publish-btn"
+    title="Publish Policy"
+    onClick={() => {
+      setSelectedPolicy(item);
+      setPublishModal(true);
+    }}
+  >
+    <FaCheckCircle size={13} />
+  </button>
+)}
                       </div>
 
                     </td>
@@ -541,7 +789,7 @@ const Policy = () => {
                 </div>
               </div>
 
-              {/* Documents */}
+         
               <div className="policy-section">
                 <h3>Documents</h3>
 
@@ -589,6 +837,332 @@ const Policy = () => {
           </div>
         </div>
       )}
+  {DeleteModal && selectedPolicy && (
+  <div
+    className="activeModal-overlay"
+    onClick={() => {
+      if (!deleteLoading) {
+        setDeleteModal(false);
+        setSelectedPolicy(null);
+      }
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+    
+      <button
+        className="activeModal-close"
+        disabled={deleteLoading}
+        onClick={() => {
+          setDeleteModal(false);
+          setSelectedPolicy(null);
+        }}
+      >
+        ×
+      </button>
+
+    
+      <div className="activeModal-icon">
+        <FiTrash2 />
+      </div>
+
+  
+      <h2 className="activeModal-title">
+        Confirm Policy Deletion
+      </h2>
+
+      {/* Message */}
+      <p className="activeModal-text">
+        Are you sure you want to
+        <span className="inactive-text">
+          {" delete "}
+        </span>
+        this policy?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>
+          {selectedPolicy.name || "Policy"}
+        </h4>
+
+        <p>
+          {selectedPolicy.policy_type || "No policy type"}
+        </p>
+
+        <span>
+          {selectedPolicy.category || "-"}
+        </span>
+      </div>
+
+   
+      <div className="activeModal-footer">
+
+        <button
+          type="button"
+          className="activeModal-cancel"
+          disabled={deleteLoading}
+          onClick={() => {
+            setDeleteModal(false);
+            setSelectedPolicy(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="activeModal-confirm deactivate-btn"
+          disabled={deleteLoading}
+          onClick={() => {
+            handleDeletePolicy(selectedPolicy.id);
+          }}
+        >
+          {deleteLoading ? (
+            "Deleting..."
+          ) : (
+            <>
+              <FiTrash2 />
+              Yes, Delete
+            </>
+          )}
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+{PublishModal && selectedPolicy && (
+  <div
+    className="policyPublishModal-overlay"
+    onClick={() => {
+      if (!publishLoading) {
+        setPublishModal(false);
+        setSelectedPolicy(null);
+      }
+    }}
+  >
+    <div
+      className="policyPublishModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <button
+        type="button"
+        className="policyPublishModal-close"
+        disabled={publishLoading}
+        onClick={() => {
+          setPublishModal(false);
+          setSelectedPolicy(null);
+        }}
+      >
+        ×
+      </button>
+
+   
+      <div className="policyPublishModal-icon">
+        <FaCheckCircle />
+      </div>
+
+      
+      <h2 className="policyPublishModal-title">
+        Confirm Policy Publish
+      </h2>
+
+   
+      <p className="policyPublishModal-text">
+        Are you sure you want to
+        <span className="policyPublishModal-highlight">
+          {" publish "}
+        </span>
+        this policy?
+      </p>
+
+      
+      <div className="policyPublishModal-card">
+
+        <div className="policyPublishModal-card-icon">
+          <FaFileAlt />
+        </div>
+
+        <div className="policyPublishModal-card-content">
+          <h4>
+            {selectedPolicy.name || "Policy"}
+          </h4>
+
+          <p>
+            {formatPolicyType(
+              selectedPolicy.policy_type
+            )}
+          </p>
+
+          <span>
+            {selectedPolicy.category || "-"}
+          </span>
+        </div>
+
+      </div>
+
+   
+      <div className="policyPublishModal-warning">
+        <FaCheckCircle />
+
+        <span>
+          Once published, this policy will become
+          active and available to users.
+        </span>
+      </div>
+
+    
+      <div className="policyPublishModal-footer">
+
+        <button
+          type="button"
+          className="policyPublishModal-cancel"
+          disabled={publishLoading}
+          onClick={() => {
+            setPublishModal(false);
+            setSelectedPolicy(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="policyPublishModal-confirm"
+          disabled={publishLoading}
+          onClick={() => {
+            handlePublishPolicy(selectedPolicy.id);
+          }}
+        >
+          {publishLoading ? (
+            "Publishing..."
+          ) : (
+            <>
+              <FaCheckCircle />
+              Yes, Publish
+            </>
+          )}
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+{RollbackModal && selectedPolicy && (
+  <div
+    className="policyRollbackModal-overlay"
+    onClick={() => {
+      if (!rollbackLoading) {
+        setRollbackModal(false);
+        setSelectedPolicy(null);
+      }
+    }}
+  >
+    <div
+      className="policyRollbackModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        className="policyRollbackModal-close"
+        disabled={rollbackLoading}
+        onClick={() => {
+          setRollbackModal(false);
+          setSelectedPolicy(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="policyRollbackModal-icon">
+        <FaUndo />
+      </div>
+
+      <h2 className="policyRollbackModal-title">
+        Confirm Policy Rollback
+      </h2>
+
+      <p className="policyRollbackModal-text">
+        Are you sure you want to
+        <span className="policyRollbackModal-highlight">
+          {" rollback "}
+        </span>
+        this archived policy?
+      </p>
+
+      <div className="policyRollbackModal-card">
+        <div className="policyRollbackModal-card-icon">
+          <FaFileAlt />
+        </div>
+
+        <div className="policyRollbackModal-card-content">
+          <h4>
+            {selectedPolicy.name || "Policy"}
+          </h4>
+
+          <p>
+            {formatPolicyType(
+              selectedPolicy.policy_type
+            )}
+          </p>
+
+          <span>
+            {selectedPolicy.category || "-"}
+          </span>
+        </div>
+      </div>
+
+      <div className="policyRollbackModal-warning">
+        <FaUndo />
+
+        <span>
+          This archived version will become the currently
+          published version. The existing published version
+          will be archived.
+        </span>
+      </div>
+
+      <div className="policyRollbackModal-footer">
+        <button
+          type="button"
+          className="policyRollbackModal-cancel"
+          disabled={rollbackLoading}
+          onClick={() => {
+            setRollbackModal(false);
+            setSelectedPolicy(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="policyRollbackModal-confirm"
+          disabled={rollbackLoading}
+          onClick={() => {
+            handleRollbackPolicy(selectedPolicy.id);
+          }}
+        >
+          {rollbackLoading ? (
+            "Rolling Back..."
+          ) : (
+            <>
+              <FaUndo />
+              Yes, Rollback
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+ <ToastContainer position="top-center" autoClose={2000} />
     </>
   );
 };
