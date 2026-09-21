@@ -8,7 +8,12 @@ import {
   FaEdit,
 } from "react-icons/fa";
 
-import { FiTrash2, FiEye, FiUpload } from "react-icons/fi";
+import {
+  FiTrash2,
+  FiEye,
+  FiUpload,
+} from "react-icons/fi";
+
 import { BsPlus } from "react-icons/bs";
 
 import BASE_URL from "../../../Base";
@@ -26,15 +31,16 @@ const Banner = () => {
   const [Error, setError] = useState(null);
 
   const [showBannerModal, setShowBannerModal] = useState(false);
+
   const [addbannerLoading, setaddbannerloading] = useState(false);
 
   const [BannerError, setBannerError] = useState({});
   const [BannerImage, setBannerImage] = useState(null);
 
-  const [ShowDeleteModal, setShowDeleteModal] = useState(false);
   const [DeleteBannerModal, setDeleteBannerModal] = useState(false);
 
   const [SelectedBanner, setSelectedBanner] = useState(null);
+
   const [BannerPreviewImage, setBannerPreviewImage] = useState("");
 
   // =========================================================
@@ -43,6 +49,7 @@ const Banner = () => {
 
   const [CategoryData, setCategoryData] = useState([]);
   const [CategoryLoading, setCategoryLoading] = useState(false);
+
   const [CategoryError, setCategoryError] = useState(null);
 
   // =========================================================
@@ -51,6 +58,7 @@ const Banner = () => {
 
   const [ServiceData, setServiceData] = useState([]);
   const [ServiceLoading, setServiceLoading] = useState(false);
+
   const [ServiceError, setServiceError] = useState(null);
 
   // =========================================================
@@ -58,15 +66,18 @@ const Banner = () => {
   // =========================================================
 
   const [showEditModal, setShowEditModal] = useState(false);
+
   const [editBannerId, setEditBannerId] = useState(null);
+
   const [editBannerImage, setEditBannerImage] = useState(null);
+
   const [editBannerError, setEditBannerError] = useState({});
 
   // =========================================================
   // ADD FORM
   // =========================================================
 
-  const intialbannerform = {
+  const initialBannerForm = {
     image_url: null,
     redirect_url: "",
     service_category_id: "",
@@ -74,11 +85,9 @@ const Banner = () => {
     is_active: false,
   };
 
-  const [bannerForm, setBannerForm] = useState(intialbannerform);
+  const [bannerForm, setBannerForm] = useState(initialBannerForm);
 
-  // =========================================================
-  // EDIT FORM
-  // =========================================================
+ 
 
   const initialEditBannerForm = {
     image_url: "",
@@ -92,9 +101,26 @@ const Banner = () => {
     initialEditBannerForm
   );
 
-  // =========================================================
-  // SCREEN MAP
-  // =========================================================
+
+
+  const serviceCategoryMap = {
+    doctors: "consultation",
+    doctor: "consultation",
+
+    products: "product",
+    product: "product",
+
+    diets: "diet",
+    diet: "diet",
+
+    medicine: "medicine",
+    medicines: "medicine",
+
+    yoga: "yoga",
+    yogas: "yoga",
+  };
+
+  
 
   const screenMap = {
     doctors: {
@@ -127,14 +153,15 @@ const Banner = () => {
       detail: "DietDetails",
     },
 
+    
     medicine: {
       base: "MedicineScreen",
-      detail: null,
+   detail: "ProductDetails",
     },
 
     medicines: {
       base: "MedicineScreen",
-      detail: null,
+      detail: "ProductDetails",
     },
 
     yoga: {
@@ -148,21 +175,79 @@ const Banner = () => {
     },
   };
 
-  // =========================================================
-  // RESET ADD FORM
-  // =========================================================
+ 
+
+  const getCategoryName = (categoryId) => {
+    const category = CategoryData.find(
+      (cat) => String(cat.id) === String(categoryId)
+    );
+
+    return category?.name?.trim().toLowerCase();
+  };
+
+  
+
+  const isVariantCategory = (categoryName) => {
+    return (
+      categoryName === "product" ||
+      categoryName === "products" ||
+      categoryName === "medicine" ||
+      categoryName === "medicines"
+    );
+  };
+
+  
+
+  const getServiceId = (service) => {
+    const categoryName = getCategoryName(
+      bannerForm.service_category_id
+    );
+
+    if (isVariantCategory(categoryName)) {
+      return service?.variant_id || "";
+    }
+
+    return service?.id || "";
+  };
+
+  
+
+  const getEditServiceId = (service) => {
+    const categoryName = getCategoryName(
+      editBannerForm.service_category_id
+    );
+
+    if (isVariantCategory(categoryName)) {
+      return service?.variant_id || "";
+    }
+
+    return service?.id || "";
+  };
+
+ 
+
+  const getServiceLabel = (service, categoryName) => {
+    if (isVariantCategory(categoryName)) {
+      return (
+        service?.variant_name ||
+        service?.name ||
+        "Unnamed Service"
+      );
+    }
+
+    return service?.name || "Unnamed Service";
+  };
+
+  
 
   const resetBannerForm = () => {
-    setBannerForm(intialbannerform);
+    setBannerForm(initialBannerForm);
     setBannerImage(null);
     setBannerError({});
     setServiceData([]);
     setServiceError(null);
   };
 
-  // =========================================================
-  // RESET EDIT FORM
-  // =========================================================
 
   const resetEditBannerForm = () => {
     setEditBannerForm(initialEditBannerForm);
@@ -173,48 +258,225 @@ const Banner = () => {
     setServiceError(null);
   };
 
-  // =========================================================
-  // HANDLE ADD FORM CHANGE
-  // =========================================================
+
+  const getCategoryList = async () => {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    setCategoryLoading(true);
+    setCategoryError(null);
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/user/admin/service-category/`,
+        {
+          method: "GET",
+
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem("superadmin_token");
+
+        toast.error("Session expired. Please login again");
+
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      console.log("CATEGORY API RESPONSE:", data);
+
+      if (data.success) {
+        const categories = Array.isArray(data.data)
+          ? data.data
+          : Array.isArray(data.data?.results)
+          ? data.data.results
+          : [];
+
+        setCategoryData(categories);
+      } else {
+        setCategoryData([]);
+
+        setCategoryError(
+          data.message || "Failed to fetch categories"
+        );
+
+        toast.error(
+          data.message || "Failed to fetch categories"
+        );
+      }
+    } catch (error) {
+      console.error("Category Fetch Error:", error);
+
+      setCategoryData([]);
+
+      setCategoryError("Failed to fetch categories");
+
+      toast.error("Failed to fetch categories");
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
+ 
+
+  const getServiceList = async (categorySlug) => {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    if (!categorySlug) {
+      setServiceData([]);
+      return;
+    }
+
+    setServiceLoading(true);
+    setServiceError(null);
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/user/admin/services/?category=${encodeURIComponent(
+          categorySlug
+        )}`,
+        {
+          method: "GET",
+
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem("superadmin_token");
+
+        toast.error("Session expired. Please login again");
+
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      console.log("SERVICE API RESPONSE:", data);
+
+      if (data.success) {
+        const services = Array.isArray(data.data)
+          ? data.data
+          : Array.isArray(data.data?.results)
+          ? data.data.results
+          : Array.isArray(data.data?.services)
+          ? data.data.services
+          : [];
+
+        console.log(
+          "NORMALIZED SERVICE DATA:",
+          services
+        );
+
+        setServiceData(services);
+      } else {
+        setServiceData([]);
+
+        setServiceError(
+          data.message || "Failed to fetch services"
+        );
+
+        toast.error(
+          data.message || "Failed to fetch services"
+        );
+      }
+    } catch (error) {
+      console.error("Service Fetch Error:", error);
+
+      setServiceData([]);
+
+      setServiceError("Failed to fetch services");
+
+      toast.error("Failed to fetch services");
+    } finally {
+      setServiceLoading(false);
+    }
+  };
+
+  
 
   const handleChange = (e) => {
-    const { name, value, checked, type } = e.target;
+    const {
+      name,
+      value,
+      checked,
+      type,
+    } = e.target;
 
-    // ---------------------------------------------------------
-    // CATEGORY CHANGE
-    // ---------------------------------------------------------
+    
 
     if (name === "service_category_id") {
       const selectedCategory = CategoryData.find(
-        (cat) => String(cat.id) === String(value)
+        (cat) =>
+          String(cat.id) === String(value)
       );
 
-      console.log("======================================");
-      console.log("CATEGORY SELECTED:", selectedCategory);
+      const categoryName =
+        selectedCategory?.name
+          ?.trim()
+          .toLowerCase();
 
-      const categoryName = selectedCategory?.name
-        ?.trim()
-        .toLowerCase();
-
-      console.log("CATEGORY NAME:", categoryName);
+      const serviceCategory =
+        serviceCategoryMap[categoryName];
 
       const config = screenMap[categoryName];
 
-      console.log("CONFIG:", config);
+      console.log(
+        "CATEGORY SELECTED:",
+        selectedCategory
+      );
+
+      console.log(
+        "CATEGORY NAME:",
+        categoryName
+      );
+
+      console.log(
+        "SERVICE API CATEGORY:",
+        serviceCategory
+      );
 
       setBannerForm((prev) => ({
         ...prev,
         service_category_id: value,
         service_id: "",
-        redirect_url: config ? config.base : "",
+        redirect_url: config?.base || "",
       }));
 
-      // Clear old services
       setServiceData([]);
 
-      // Fetch services for selected category
-      if (selectedCategory?.name) {
-        getServiceList(selectedCategory.name);
+      if (serviceCategory) {
+        getServiceList(serviceCategory);
       }
 
       setBannerError((prev) => ({
@@ -227,31 +489,25 @@ const Banner = () => {
       return;
     }
 
-    // ---------------------------------------------------------
-    // SERVICE CHANGE
-    // ---------------------------------------------------------
+    // =======================================================
+    // SERVICE
+    // =======================================================
 
     if (name === "service_id") {
-      console.log("======================================");
-      console.log("SERVICE SELECTED ID:", value);
-
       const selectedCategory = CategoryData.find(
         (cat) =>
           String(cat.id) ===
-          String(bannerForm.service_category_id)
+          String(
+            bannerForm.service_category_id
+          )
       );
 
-      console.log("CATEGORY SELECTED:", selectedCategory);
-
-      const categoryName = selectedCategory?.name
-        ?.trim()
-        .toLowerCase();
-
-      console.log("CATEGORY NAME:", categoryName);
+      const categoryName =
+        selectedCategory?.name
+          ?.trim()
+          .toLowerCase();
 
       const config = screenMap[categoryName];
-
-      console.log("CONFIG:", config);
 
       let redirectUrl = "";
 
@@ -263,7 +519,20 @@ const Banner = () => {
         }
       }
 
-      console.log("FINAL REDIRECT URL:", redirectUrl);
+      console.log(
+        "SELECTED SERVICE ID:",
+        value
+      );
+
+      console.log(
+        "CATEGORY:",
+        categoryName
+      );
+
+      console.log(
+        "REDIRECT URL:",
+        redirectUrl
+      );
 
       setBannerForm((prev) => ({
         ...prev,
@@ -280,13 +549,16 @@ const Banner = () => {
       return;
     }
 
-    // ---------------------------------------------------------
-    // NORMAL INPUT
-    // ---------------------------------------------------------
+    // =======================================================
+    // OTHER INPUTS
+    // =======================================================
 
     setBannerForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
     }));
 
     setBannerError((prev) => ({
@@ -296,38 +568,46 @@ const Banner = () => {
   };
 
   // =========================================================
-  // HANDLE EDIT CHANGE
+  // EDIT FORM CHANGE
   // =========================================================
 
   const handleEditChange = (e) => {
-    const { name, value, checked, type } = e.target;
+    const {
+      name,
+      value,
+      checked,
+      type,
+    } = e.target;
 
-    // ---------------------------------------------------------
-    // EDIT CATEGORY
-    // ---------------------------------------------------------
+   
 
     if (name === "service_category_id") {
       const selectedCategory = CategoryData.find(
-        (cat) => String(cat.id) === String(value)
+        (cat) =>
+          String(cat.id) === String(value)
       );
 
-      const categoryName = selectedCategory?.name
-        ?.trim()
-        .toLowerCase();
+      const categoryName =
+        selectedCategory?.name
+          ?.trim()
+          .toLowerCase();
 
       const config = screenMap[categoryName];
+
+      const serviceCategory =
+        serviceCategoryMap[categoryName];
 
       setEditBannerForm((prev) => ({
         ...prev,
         service_category_id: value,
         service_id: "",
-        redirect_url: config ? config.base : "",
+        redirect_url: config?.base || "",
       }));
 
       setServiceData([]);
 
-      if (selectedCategory?.name) {
-        getServiceList(selectedCategory.name);
+      if (serviceCategory) {
+        getServiceList(serviceCategory);
       }
 
       setEditBannerError((prev) => ({
@@ -340,20 +620,21 @@ const Banner = () => {
       return;
     }
 
-    // ---------------------------------------------------------
-    // EDIT SERVICE
-    // ---------------------------------------------------------
+    
 
     if (name === "service_id") {
       const selectedCategory = CategoryData.find(
         (cat) =>
           String(cat.id) ===
-          String(editBannerForm.service_category_id)
+          String(
+            editBannerForm.service_category_id
+          )
       );
 
-      const categoryName = selectedCategory?.name
-        ?.trim()
-        .toLowerCase();
+      const categoryName =
+        selectedCategory?.name
+          ?.trim()
+          .toLowerCase();
 
       const config = screenMap[categoryName];
 
@@ -366,6 +647,21 @@ const Banner = () => {
           redirectUrl = config.base;
         }
       }
+
+      console.log(
+        "EDIT SELECTED SERVICE ID:",
+        value
+      );
+
+      console.log(
+        "EDIT CATEGORY:",
+        categoryName
+      );
+
+      console.log(
+        "EDIT REDIRECT URL:",
+        redirectUrl
+      );
 
       setEditBannerForm((prev) => ({
         ...prev,
@@ -382,9 +678,16 @@ const Banner = () => {
       return;
     }
 
+    // =======================================================
+    // OTHER INPUTS
+    // =======================================================
+
     setEditBannerForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
     }));
 
     setEditBannerError((prev) => ({
@@ -393,58 +696,7 @@ const Banner = () => {
     }));
   };
 
-  
 
- const getServiceList = async () => {
-  const token = sessionStorage.getItem("superadmin_token");
-
-  if (!token) {
-    toast.error("Session expired. Please login again");
-    navigate("/login");
-    return;
-  }
-
-  setCategoryLoading(true);
-  setCategoryError(null);
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/user/admin/service-category/`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
-    );
-
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
-
-    const data = await response.json();
-
-    console.log("CATEGORY API RESPONSE:", data);
-
-    if (data.success && Array.isArray(data.data)) {
-      setCategoryData(data.data);
-    } else {
-      setCategoryData([]);
-      setCategoryError(data.message || "Failed to fetch categories");
-    }
-  } catch (error) {
-    console.error("Category Fetch Error:", error);
-    setCategoryData([]);
-    setCategoryError("Something went wrong while fetching categories");
-  } finally {
-    setCategoryLoading(false);
-  }
-};
 
   const uploadImage = async (file) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -465,9 +717,11 @@ const Banner = () => {
         `${BASE_URL}/user/upload/`,
         {
           method: "POST",
+
           headers: {
             Authorization: `Bearer ${token}`,
           },
+
           body: formData,
         }
       );
@@ -479,6 +733,7 @@ const Banner = () => {
         sessionStorage.removeItem("superadmin_token");
 
         toast.error("Session expired. Please login again");
+
         navigate("/login");
 
         return null;
@@ -486,7 +741,7 @@ const Banner = () => {
 
       const data = await response.json();
 
-      console.log("Upload Response:", data);
+      console.log("UPLOAD RESPONSE:", data);
 
       return data?.data?.url || null;
     } catch (error) {
@@ -498,16 +753,16 @@ const Banner = () => {
     }
   };
 
-  // =========================================================
-  // GET BANNER LIST
-  // =========================================================
+ 
 
   const getBannerList = async () => {
     const token = sessionStorage.getItem("superadmin_token");
 
     if (!token) {
       toast.error("Session expired. Please login again");
+
       navigate("/login");
+
       return;
     }
 
@@ -519,6 +774,7 @@ const Banner = () => {
         `${BASE_URL}/user/admin/banner/`,
         {
           method: "GET",
+
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
@@ -534,6 +790,7 @@ const Banner = () => {
         sessionStorage.removeItem("superadmin_token");
 
         toast.error("Session expired. Please login again");
+
         navigate("/login");
 
         return;
@@ -541,59 +798,78 @@ const Banner = () => {
 
       const data = await response.json();
 
-      console.log("Banner API Response:", data);
+      console.log("BANNER API RESPONSE:", data);
 
       if (data.success) {
         setBannerData(data?.data || []);
       } else {
         setError(
-          data.message || "Failed to fetch banners"
+          data.message ||
+            "Failed to fetch banners"
         );
 
         toast.error(
-          data.message || "Failed to fetch banners"
+          data.message ||
+            "Failed to fetch banners"
         );
       }
     } catch (error) {
-      console.error("Banner Fetch Error:", error);
+      console.error(
+        "Banner Fetch Error:",
+        error
+      );
 
       setError(
         "Something went wrong while fetching banners."
       );
 
-      toast.error("Failed to fetch banner data");
+      toast.error(
+        "Failed to fetch banner data"
+      );
     } finally {
       setBannerLoading(false);
     }
   };
 
- 
+  
+
   useEffect(() => {
-    getServiceList();
+    getCategoryList();
     getBannerList();
   }, []);
 
-  
+ 
 
   const handleAddBanner = async (e) => {
     e.preventDefault();
 
-    const token = sessionStorage.getItem("superadmin_token");
+    const token =
+      sessionStorage.getItem(
+        "superadmin_token"
+      );
 
     if (!token) {
-      toast.error("Session expired. Please login again");
+      toast.error(
+        "Session expired. Please login again"
+      );
+
       navigate("/login");
+
       return;
     }
 
     const errors = {};
 
-    if (!bannerForm.service_category_id) {
+    if (
+      !bannerForm.service_category_id
+    ) {
       errors.service_category_id =
         "Please select a category";
     }
 
-    if (!bannerForm.redirect_url.trim()) {
+    if (
+      !bannerForm.redirect_url?.trim()
+    ) {
       errors.redirect_url =
         "Redirect URL is required";
     }
@@ -603,7 +879,9 @@ const Banner = () => {
         "Banner image is required";
     }
 
-    if (Object.keys(errors).length > 0) {
+    if (
+      Object.keys(errors).length > 0
+    ) {
       setBannerError(errors);
       return;
     }
@@ -616,58 +894,100 @@ const Banner = () => {
 
       if (BannerImage) {
         uploadedImageUrl =
-          await uploadImage(BannerImage);
+          await uploadImage(
+            BannerImage
+          );
       }
 
       if (!uploadedImageUrl) {
-        toast.error("Image upload failed");
+        toast.error(
+          "Image upload failed"
+        );
+
         return;
       }
 
       const payload = {
-        image_url: uploadedImageUrl,
-        redirect_url: bannerForm.redirect_url,
+        image_url:
+          uploadedImageUrl,
+
+        redirect_url:
+          bannerForm.redirect_url,
+
         service_category_id:
           bannerForm.service_category_id,
+
         service_id:
-          bannerForm.service_id || null,
-        is_active: bannerForm.is_active,
+          bannerForm.service_id ||
+          null,
+
+        is_active:
+          bannerForm.is_active,
       };
 
-      console.log("Banner Payload:", payload);
-
-      const response = await fetch(
-        `${BASE_URL}/user/admin/banner/`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify(payload),
-        }
+      console.log(
+        "FINAL BANNER PAYLOAD:",
+        payload
       );
+
+      const response =
+        await fetch(
+          `${BASE_URL}/user/admin/banner/`,
+          {
+            method: "POST",
+
+            headers: {
+              Accept:
+                "application/json",
+
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+
+              "ngrok-skip-browser-warning":
+                "true",
+            },
+
+            body: JSON.stringify(
+              payload
+            ),
+          }
+        );
 
       if (
         response.status === 401 ||
         response.status === 403
       ) {
-        sessionStorage.removeItem("superadmin_token");
+        sessionStorage.removeItem(
+          "superadmin_token"
+        );
 
-        toast.error("Session expired. Please login again");
+        toast.error(
+          "Session expired. Please login again"
+        );
+
         navigate("/login");
 
         return;
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      console.log("Banner Response:", data);
+      console.log(
+        "BANNER RESPONSE:",
+        data
+      );
 
-      if (response.ok && data.success !== false) {
-        toast.success("Banner Added Successfully");
+      if (
+        response.ok &&
+        data.success !== false
+      ) {
+        toast.success(
+          "Banner Added Successfully"
+        );
 
         resetBannerForm();
 
@@ -676,33 +996,43 @@ const Banner = () => {
         await getBannerList();
       } else {
         toast.error(
-          data?.message || "Failed to add banner"
+          data?.message ||
+            "Failed to add banner"
         );
       }
     } catch (error) {
-      console.error("Add Banner Error:", error);
+      console.error(
+        "Add Banner Error:",
+        error
+      );
 
-      toast.error("Something went wrong");
+      toast.error(
+        "Something went wrong"
+      );
     } finally {
       setaddbannerloading(false);
     }
   };
 
-  // =========================================================
-  // UPDATE BANNER
-  // =========================================================
+ 
 
-  const handleUpdateBanner = async (e) => {
+  const handleUpdateBanner = async (
+    e
+  ) => {
     e.preventDefault();
 
     const errors = {};
 
-    if (!editBannerForm.service_category_id) {
+    if (
+      !editBannerForm.service_category_id
+    ) {
       errors.service_category_id =
         "Please select a category";
     }
 
-    if (!editBannerForm.redirect_url.trim()) {
+    if (
+      !editBannerForm.redirect_url?.trim()
+    ) {
       errors.redirect_url =
         "Redirect URL is required";
     }
@@ -715,80 +1045,133 @@ const Banner = () => {
         "Banner image is required";
     }
 
-    if (Object.keys(errors).length > 0) {
+    if (
+      Object.keys(errors).length > 0
+    ) {
       setEditBannerError(errors);
+
       return;
     }
 
     setEditBannerError({});
 
     const token =
-      sessionStorage.getItem("superadmin_token");
+      sessionStorage.getItem(
+        "superadmin_token"
+      );
 
     if (!token) {
-      toast.error("Session expired. Please login again");
+      toast.error(
+        "Session expired. Please login again"
+      );
+
       navigate("/login");
+
       return;
     }
 
     try {
-      let imageUrl = editBannerForm.image_url;
+      let imageUrl =
+        editBannerForm.image_url;
 
       if (editBannerImage) {
         imageUrl =
-          await uploadImage(editBannerImage);
+          await uploadImage(
+            editBannerImage
+          );
+      }
+
+      if (!imageUrl) {
+        toast.error(
+          "Image upload failed"
+        );
+
+        return;
       }
 
       const payload = {
         image_url: imageUrl,
+
         redirect_url:
           editBannerForm.redirect_url,
+
         service_category_id:
           editBannerForm.service_category_id,
+
         service_id:
-          editBannerForm.service_id || null,
+          editBannerForm.service_id ||
+          null,
+
         is_active:
           editBannerForm.is_active,
       };
 
-      console.log("Update Banner Payload:", payload);
-
-      const response = await fetch(
-        `${BASE_URL}/user/admin/banner/?id=${editBannerId}`,
-        {
-          method: "PUT",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify(payload),
-        }
+      console.log(
+        "UPDATE BANNER PAYLOAD:",
+        payload
       );
+
+      const response =
+        await fetch(
+          `${BASE_URL}/user/admin/banner/?id=${editBannerId}`,
+          {
+            method: "PUT",
+
+            headers: {
+              Accept:
+                "application/json",
+
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+
+              "ngrok-skip-browser-warning":
+                "true",
+            },
+
+            body: JSON.stringify(
+              payload
+            ),
+          }
+        );
 
       if (
         response.status === 401 ||
         response.status === 403
       ) {
-        sessionStorage.removeItem("superadmin_token");
+        sessionStorage.removeItem(
+          "superadmin_token"
+        );
 
-        toast.error("Session expired. Please login again");
+        toast.error(
+          "Session expired. Please login again"
+        );
+
         navigate("/login");
 
         return;
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      console.log("Update Banner Response:", data);
+      console.log(
+        "UPDATE BANNER RESPONSE:",
+        data
+      );
 
-      if (response.ok && data.success !== false) {
+      if (
+        response.ok &&
+        data.success !== false
+      ) {
         toast.success(
           "Banner Updated Successfully"
         );
 
         setShowEditModal(false);
+
         resetEditBannerForm();
 
         await getBannerList();
@@ -799,19 +1182,23 @@ const Banner = () => {
         );
       }
     } catch (error) {
-      console.error("Update Banner Error:", error);
+      console.error(
+        "Update Banner Error:",
+        error
+      );
 
-      toast.error("Something went wrong");
+      toast.error(
+        "Something went wrong"
+      );
     }
   };
 
-  // =========================================================
-  // DELETE BANNER
-  // =========================================================
-
+ 
   const handleDeleteBanner = async () => {
     const token =
-      sessionStorage.getItem("superadmin_token");
+      sessionStorage.getItem(
+        "superadmin_token"
+      );
 
     if (!token) {
       toast.error(
@@ -819,28 +1206,38 @@ const Banner = () => {
       );
 
       navigate("/login");
+
       return;
     }
 
-    if (!SelectedBanner) return;
+    if (!SelectedBanner) {
+      return;
+    }
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/user/admin/banner/?id=${SelectedBanner.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
+      const response =
+        await fetch(
+          `${BASE_URL}/user/admin/banner/?id=${SelectedBanner.id}`,
+          {
+            method: "DELETE",
+
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+
+              "ngrok-skip-browser-warning":
+                "true",
+            },
+          }
+        );
 
       if (
         response.status === 401 ||
         response.status === 403
       ) {
-        sessionStorage.removeItem("superadmin_token");
+        sessionStorage.removeItem(
+          "superadmin_token"
+        );
 
         toast.error(
           "Session expired. Please login again"
@@ -851,14 +1248,21 @@ const Banner = () => {
         return;
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      if (response.ok && data.success !== false) {
+      if (
+        response.ok &&
+        data.success !== false
+      ) {
         toast.success(
           "Banner deleted successfully 🗑️"
         );
 
-        setDeleteBannerModal(false);
+        setDeleteBannerModal(
+          false
+        );
+
         setSelectedBanner(null);
 
         await getBannerList();
@@ -869,22 +1273,27 @@ const Banner = () => {
         );
       }
     } catch (error) {
-      console.error("Delete Banner Error:", error);
+      console.error(
+        "Delete Banner Error:",
+        error
+      );
 
-      toast.error("Failed to delete banner");
+      toast.error(
+        "Failed to delete banner"
+      );
     }
   };
 
-  // =========================================================
-  // TOGGLE BANNER STATUS
-  // =========================================================
+  
 
   const handleToggleBannerStatus = async (
     bannerId,
     currentStatus
   ) => {
     const token =
-      sessionStorage.getItem("superadmin_token");
+      sessionStorage.getItem(
+        "superadmin_token"
+      );
 
     if (!token) {
       toast.error(
@@ -892,30 +1301,42 @@ const Banner = () => {
       );
 
       navigate("/login");
+
       return;
     }
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/user/admin/banner/?id=${bannerId}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify({
-            is_active: !currentStatus,
-          }),
-        }
-      );
+      const response =
+        await fetch(
+          `${BASE_URL}/user/admin/banner/?id=${bannerId}`,
+          {
+            method: "PATCH",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+
+              "ngrok-skip-browser-warning":
+                "true",
+            },
+
+            body: JSON.stringify({
+              is_active:
+                !currentStatus,
+            }),
+          }
+        );
 
       if (
         response.status === 401 ||
         response.status === 403
       ) {
-        sessionStorage.removeItem("superadmin_token");
+        sessionStorage.removeItem(
+          "superadmin_token"
+        );
 
         toast.error(
           "Session expired. Please login again"
@@ -926,9 +1347,13 @@ const Banner = () => {
         return;
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      if (response.ok && data.success) {
+      if (
+        response.ok &&
+        data.success
+      ) {
         toast.success(
           `Banner ${
             !currentStatus
@@ -942,7 +1367,8 @@ const Banner = () => {
             item.id === bannerId
               ? {
                   ...item,
-                  is_active: !currentStatus,
+                  is_active:
+                    !currentStatus,
                 }
               : item
           )
@@ -959,24 +1385,30 @@ const Banner = () => {
         error
       );
 
-      toast.error("Something went wrong");
+      toast.error(
+        "Something went wrong"
+      );
     }
   };
 
-  // =========================================================
-  // OPEN EDIT MODAL
-  // =========================================================
+ 
 
   const openEditModal = (item) => {
     setEditBannerId(item.id);
 
     setEditBannerForm({
-      image_url: item.image_url || "",
+      image_url:
+        item.image_url || "",
+
       redirect_url:
         item.redirect_url || "",
+
       service_category_id:
         item.service_category_id || "",
-      service_id: item.service_id || "",
+
+      service_id:
+        item.service_id || "",
+
       is_active:
         item.is_active || false,
     });
@@ -984,50 +1416,65 @@ const Banner = () => {
     setEditBannerImage(null);
     setEditBannerError({});
 
-    // Load services for selected category
+    // =======================================================
+    // LOAD SERVICES
+    // =======================================================
+
     if (item.service_category_id) {
       const selectedCategory =
         CategoryData.find(
           (cat) =>
             String(cat.id) ===
-            String(item.service_category_id)
+            String(
+              item.service_category_id
+            )
         );
 
-      if (selectedCategory?.name) {
-        getServiceList(
+      if (
+        selectedCategory?.name
+      ) {
+        const categoryName =
           selectedCategory.name
-        );
+            .trim()
+            .toLowerCase();
+
+        const serviceCategory =
+          serviceCategoryMap[
+            categoryName
+          ];
+
+        if (serviceCategory) {
+          getServiceList(
+            serviceCategory
+          );
+        }
       }
     }
 
     setShowEditModal(true);
   };
 
-  // =========================================================
-  // STATISTICS
-  // =========================================================
-
-  const totalBanner = BannerData?.length || 0;
+  
+  const totalBanner =
+    BannerData?.length || 0;
 
   const activeBanner =
     BannerData?.filter(
-      (item) => item.is_active === true
+      (item) =>
+        item.is_active === true
     ).length || 0;
 
   const inactiveBanner =
     BannerData?.filter(
-      (item) => item.is_active === false
+      (item) =>
+        item.is_active === false
     ).length || 0;
 
-  // =========================================================
-  // RETURN
-  // =========================================================
+  
 
   return (
     <>
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
+  
 
       <div className="page-header">
         <h1>Banner Management</h1>
@@ -1037,18 +1484,20 @@ const Banner = () => {
         </p>
       </div>
 
-      {/* =====================================================
-          STATS
-      ===================================================== */}
+      
 
       <div className="vendors-stats stats2-grid">
+
+       
 
         <div className="stat2-card">
           <div
             className="stat2-icon"
             style={{
-              background: "#0D614E20",
-              color: "#0D614E",
+              background:
+                "#0D614E20",
+              color:
+                "#0D614E",
             }}
           >
             <FaImages size={16} />
@@ -1063,12 +1512,16 @@ const Banner = () => {
           </div>
         </div>
 
+      
+
         <div className="stat2-card">
           <div
             className="stat2-icon"
             style={{
-              background: "#0D614E20",
-              color: "#0D614E",
+              background:
+                "#0D614E20",
+              color:
+                "#0D614E",
             }}
           >
             <FaCheckCircle size={16} />
@@ -1083,12 +1536,16 @@ const Banner = () => {
           </div>
         </div>
 
+       
+
         <div className="stat2-card">
           <div
             className="stat2-icon"
             style={{
-              background: "#0D614E20",
-              color: "#0D614E",
+              background:
+                "#0D614E20",
+              color:
+                "#0D614E",
             }}
           >
             <FaTimesCircle size={16} />
@@ -1102,13 +1559,9 @@ const Banner = () => {
             </div>
           </div>
         </div>
-
       </div>
 
-      {/* =====================================================
-          ADD BUTTON
-      ===================================================== */}
-
+     
       <div className="Question-controls">
         <div className="filter-controls">
 
@@ -1116,22 +1569,23 @@ const Banner = () => {
             className="add-customer-btn"
             onClick={() => {
               resetBannerForm();
-              setShowBannerModal(true);
+
+              setShowBannerModal(
+                true
+              );
             }}
           >
             <BsPlus size={18} />
+
             Add Banner
           </button>
 
         </div>
       </div>
 
-      {/* =====================================================
-          TABLE
-      ===================================================== */}
+     
 
       <div className="table-wrapper">
-
         <table className="data-table">
 
           <thead>
@@ -1146,7 +1600,6 @@ const Banner = () => {
           <tbody>
 
             {BannerLoading ? (
-
               Array(3)
                 .fill(0)
                 .map((_, i) => (
@@ -1156,137 +1609,151 @@ const Banner = () => {
                     </td>
                   </tr>
                 ))
-
             ) : Error ? (
-
               <tr>
                 <td
                   colSpan="4"
-                  style={{ color: "red" }}
+                  style={{
+                    color: "red",
+                  }}
                 >
                   {Error}
                 </td>
               </tr>
-
             ) : BannerData?.length > 0 ? (
+              BannerData.map(
+                (
+                  item,
+                  index
+                ) => (
+                  <tr
+                    key={
+                      item.id
+                    }
+                  >
 
-              BannerData.map((item, index) => (
+                    <td>
+                      {index + 1}
+                    </td>
 
-                <tr key={item.id}>
-
-                  <td>{index + 1}</td>
-
-                  <td>
-
-                    <img
-                      src={item.image_url}
-                      alt="banner"
-                      style={{
-                        width: "30px",
-                        height: "30px",
-                        objectFit: "cover",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                      }}
-                      onClick={() =>
-                        setBannerPreviewImage(
+                    <td>
+                      <img
+                        src={
                           item.image_url
-                        )
-                      }
-                    />
-
-                  </td>
-
-                  <td>
-
-                    <label className="switch">
-
-                      <input
-                        type="checkbox"
-                        checked={
-                          item.is_active
                         }
-                        onChange={() =>
-                          handleToggleBannerStatus(
-                            item.id,
-                            item.is_active
+                        alt="banner"
+                        style={{
+                          width:
+                            "30px",
+
+                          height:
+                            "30px",
+
+                          objectFit:
+                            "cover",
+
+                          borderRadius:
+                            "6px",
+
+                          cursor:
+                            "pointer",
+                        }}
+                        onClick={() =>
+                          setBannerPreviewImage(
+                            item.image_url
                           )
                         }
                       />
+                    </td>
 
-                      <span className="slider round"></span>
+                    <td>
+                      <label className="switch">
 
-                    </label>
+                        <input
+                          type="checkbox"
+                          checked={
+                            item.is_active
+                          }
+                          onChange={() =>
+                            handleToggleBannerStatus(
+                              item.id,
+                              item.is_active
+                            )
+                          }
+                        />
 
-                  </td>
+                        <span className="slider round"></span>
 
-                  <td>
+                      </label>
+                    </td>
 
-                    <div className="action-buttons">
+                    <td>
+                      <div className="action-buttons">
 
-                      <button
-                        className="action-btn edit"
-                        onClick={() =>
-                          openEditModal(item)
-                        }
-                      >
-                        <FaEdit />
-                      </button>
+                        <button
+                          className="action-btn edit"
+                          onClick={() =>
+                            openEditModal(
+                              item
+                            )
+                          }
+                        >
+                          <FaEdit />
+                        </button>
 
-                      <button
-                        className="action-btn delete"
-                        onClick={() => {
-                          setSelectedBanner(item);
-                          setDeleteBannerModal(true);
-                        }}
-                      >
-                        <span className="icon-delete">
-                          <FiTrash2 />
-                        </span>
-                      </button>
+                        <button
+                          className="action-btn delete"
+                          onClick={() => {
+                            setSelectedBanner(
+                              item
+                            );
 
-                    </div>
+                            setDeleteBannerModal(
+                              true
+                            );
+                          }}
+                        >
+                          <span className="icon-delete">
+                            <FiTrash2 />
+                          </span>
+                        </button>
 
-                  </td>
+                      </div>
+                    </td>
 
-                </tr>
-
-              ))
-
+                  </tr>
+                )
+              )
             ) : (
-
               <tr>
-
                 <td
                   colSpan="4"
                   style={{
-                    textAlign: "center",
+                    textAlign:
+                      "center",
                   }}
                 >
                   No data found
                 </td>
-
               </tr>
-
             )}
 
           </tbody>
 
         </table>
-
       </div>
 
-      {/* =====================================================
-          ADD BANNER MODAL
-      ===================================================== */}
+     
 
       {showBannerModal && (
-
         <div
           className="prakriti-modal-overlay"
           onClick={() => {
             resetBannerForm();
-            setShowBannerModal(false);
+
+            setShowBannerModal(
+              false
+            );
           }}
         >
 
@@ -1299,13 +1766,18 @@ const Banner = () => {
 
             <div className="prakriti-modal-header">
 
-              <h2>Add Banner</h2>
+              <h2>
+                Add Banner
+              </h2>
 
               <button
                 className="close-btn"
                 onClick={() => {
                   resetBannerForm();
-                  setShowBannerModal(false);
+
+                  setShowBannerModal(
+                    false
+                  );
                 }}
               >
                 ✕
@@ -1315,7 +1787,9 @@ const Banner = () => {
 
             <form
               className="prakriti-form"
-              onSubmit={handleAddBanner}
+              onSubmit={
+                handleAddBanner
+              }
             >
 
               {/* CATEGORY */}
@@ -1331,28 +1805,42 @@ const Banner = () => {
                   value={
                     bannerForm.service_category_id
                   }
-                  onChange={handleChange}
+                  onChange={
+                    handleChange
+                  }
+                  disabled={
+                    CategoryLoading
+                  }
                 >
 
                   <option value="">
-                    Select Category
+                    {CategoryLoading
+                      ? "Loading categories..."
+                      : "Select Category"}
                   </option>
 
                   {CategoryData
                     ?.filter(
                       (cat) =>
-                        cat.is_active === true
+                        cat.is_active ===
+                        true
                     )
-                    .map((cat) => (
-
-                      <option
-                        key={cat.id}
-                        value={cat.id}
-                      >
-                        {cat.name}
-                      </option>
-
-                    ))}
+                    .map(
+                      (cat) => (
+                        <option
+                          key={
+                            cat.id
+                          }
+                          value={
+                            cat.id
+                          }
+                        >
+                          {
+                            cat.name
+                          }
+                        </option>
+                      )
+                    )}
 
                 </select>
 
@@ -1379,7 +1867,9 @@ const Banner = () => {
                   value={
                     bannerForm.service_id
                   }
-                  onChange={handleChange}
+                  onChange={
+                    handleChange
+                  }
                   disabled={
                     !bannerForm.service_category_id ||
                     ServiceLoading
@@ -1387,36 +1877,72 @@ const Banner = () => {
                 >
 
                   <option value="">
-
                     {ServiceLoading
                       ? "Loading services..."
                       : "Select Service"}
-
                   </option>
 
                   {ServiceData?.map(
-                    (service) => (
+                    (
+                      service
+                    ) => {
 
-                      <option
-                        key={service.id}
-                        value={service.id}
-                      >
-                        {service.name}
-                      </option>
+                      const categoryName =
+                        getCategoryName(
+                          bannerForm.service_category_id
+                        );
 
-                    )
+                      const serviceId =
+                        getServiceId(
+                          service
+                        );
+
+                      const serviceLabel =
+                        getServiceLabel(
+                          service,
+                          categoryName
+                        );
+
+                      return (
+                        <option
+                          key={
+                            serviceId
+                          }
+                          value={
+                            serviceId
+                          }
+                        >
+                          {
+                            serviceLabel
+                          }
+                        </option>
+                      );
+                    }
                   )}
 
                 </select>
 
+                {ServiceError && (
+                  <p className="error-text">
+                    {
+                      ServiceError
+                    }
+                  </p>
+                )}
+
                 {BannerError.service_id && (
                   <p className="error-text">
-                    {BannerError.service_id}
+                    {
+                      BannerError.service_id
+                    }
                   </p>
                 )}
 
               </div>
 
+              {/* PRODUCT / MEDICINE INFORMATION */}
+
+        
               {/* REDIRECT URL */}
 
               <div className="form-group">
@@ -1431,8 +1957,10 @@ const Banner = () => {
                   value={
                     bannerForm.redirect_url
                   }
-                  onChange={handleChange}
-                  placeholder="ProductDetails/123"
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="ProductDetails/variant-id"
                   className="form-control"
                 />
 
@@ -1461,28 +1989,38 @@ const Banner = () => {
                     accept="image/*"
                     id="categoryUpload"
                     style={{
-                      display: "none",
+                      display:
+                        "none",
                     }}
                     onChange={(e) => {
 
                       const file =
-                        e.target.files[0];
+                        e.target
+                          .files?.[0];
 
-                      if (!file) return;
+                      if (!file) {
+                        return;
+                      }
 
-                      setBannerImage(file);
+                      setBannerImage(
+                        file
+                      );
 
                       setBannerForm(
                         (prev) => ({
                           ...prev,
-                          image_url: file,
+
+                          image_url:
+                            file,
                         })
                       );
 
                       setBannerError(
                         (prev) => ({
                           ...prev,
-                          image_url: "",
+
+                          image_url:
+                            "",
                         })
                       );
 
@@ -1490,7 +2028,6 @@ const Banner = () => {
                   />
 
                   {BannerImage ? (
-
                     <div className="banner-preview-wrapper">
 
                       <div className="banner-preview-left">
@@ -1534,6 +2071,7 @@ const Banner = () => {
                             setBannerForm(
                               (prev) => ({
                                 ...prev,
+
                                 image_url:
                                   null,
                               })
@@ -1547,14 +2085,11 @@ const Banner = () => {
                       </div>
 
                     </div>
-
                   ) : (
-
                     <label
                       htmlFor="categoryUpload"
                       className="upload-label"
                     >
-
                       <div className="upload-content">
 
                         <span className="upload-icon">
@@ -1570,16 +2105,16 @@ const Banner = () => {
                         </small>
 
                       </div>
-
                     </label>
-
                   )}
 
                 </div>
 
                 {BannerError.image_url && (
                   <p className="error-text">
-                    {BannerError.image_url}
+                    {
+                      BannerError.image_url
+                    }
                   </p>
                 )}
 
@@ -1601,7 +2136,9 @@ const Banner = () => {
                     checked={
                       bannerForm.is_active
                     }
-                    onChange={handleChange}
+                    onChange={
+                      handleChange
+                    }
                   />
 
                   <span>
@@ -1623,7 +2160,10 @@ const Banner = () => {
                   className="cancel-btn"
                   onClick={() => {
                     resetBannerForm();
-                    setShowBannerModal(false);
+
+                    setShowBannerModal(
+                      false
+                    );
                   }}
                 >
                   Cancel
@@ -1648,20 +2188,19 @@ const Banner = () => {
           </div>
 
         </div>
-
       )}
 
-      {/* =====================================================
-          EDIT BANNER MODAL
-      ===================================================== */}
+    
 
       {showEditModal && (
-
         <div
           className="prakriti-modal-overlay"
           onClick={() => {
             resetEditBannerForm();
-            setShowEditModal(false);
+
+            setShowEditModal(
+              false
+            );
           }}
         >
 
@@ -1674,13 +2213,18 @@ const Banner = () => {
 
             <div className="prakriti-modal-header">
 
-              <h2>Edit Banner</h2>
+              <h2>
+                Edit Banner
+              </h2>
 
               <button
                 className="close-btn"
                 onClick={() => {
                   resetEditBannerForm();
-                  setShowEditModal(false);
+
+                  setShowEditModal(
+                    false
+                  );
                 }}
               >
                 ✕
@@ -1690,7 +2234,9 @@ const Banner = () => {
 
             <form
               className="prakriti-form"
-              onSubmit={handleUpdateBanner}
+              onSubmit={
+                handleUpdateBanner
+              }
             >
 
               {/* CATEGORY */}
@@ -1706,28 +2252,42 @@ const Banner = () => {
                   value={
                     editBannerForm.service_category_id
                   }
-                  onChange={handleEditChange}
+                  onChange={
+                    handleEditChange
+                  }
+                  disabled={
+                    CategoryLoading
+                  }
                 >
 
                   <option value="">
-                    Select Category
+                    {CategoryLoading
+                      ? "Loading categories..."
+                      : "Select Category"}
                   </option>
 
                   {CategoryData
                     ?.filter(
                       (cat) =>
-                        cat.is_active === true
+                        cat.is_active ===
+                        true
                     )
-                    .map((cat) => (
-
-                      <option
-                        key={cat.id}
-                        value={cat.id}
-                      >
-                        {cat.name}
-                      </option>
-
-                    ))}
+                    .map(
+                      (cat) => (
+                        <option
+                          key={
+                            cat.id
+                          }
+                          value={
+                            cat.id
+                          }
+                        >
+                          {
+                            cat.name
+                          }
+                        </option>
+                      )
+                    )}
 
                 </select>
 
@@ -1754,7 +2314,9 @@ const Banner = () => {
                   value={
                     editBannerForm.service_id
                   }
-                  onChange={handleEditChange}
+                  onChange={
+                    handleEditChange
+                  }
                   disabled={
                     !editBannerForm.service_category_id ||
                     ServiceLoading
@@ -1762,27 +2324,58 @@ const Banner = () => {
                 >
 
                   <option value="">
-
                     {ServiceLoading
                       ? "Loading services..."
                       : "Select Service"}
-
                   </option>
 
                   {ServiceData?.map(
-                    (service) => (
+                    (
+                      service
+                    ) => {
 
-                      <option
-                        key={service.id}
-                        value={service.id}
-                      >
-                        {service.name}
-                      </option>
+                      const categoryName =
+                        getCategoryName(
+                          editBannerForm.service_category_id
+                        );
 
-                    )
+                      const serviceId =
+                        getEditServiceId(
+                          service
+                        );
+
+                      const serviceLabel =
+                        getServiceLabel(
+                          service,
+                          categoryName
+                        );
+
+                      return (
+                        <option
+                          key={
+                            serviceId
+                          }
+                          value={
+                            serviceId
+                          }
+                        >
+                          {
+                            serviceLabel
+                          }
+                        </option>
+                      );
+                    }
                   )}
 
                 </select>
+
+                {ServiceError && (
+                  <p className="error-text">
+                    {
+                      ServiceError
+                    }
+                  </p>
+                )}
 
                 {editBannerError.service_id && (
                   <p className="error-text">
@@ -1793,6 +2386,121 @@ const Banner = () => {
                 )}
 
               </div>
+
+              {/* PRODUCT / MEDICINE INFORMATION */}
+
+              {isVariantCategory(
+                getCategoryName(
+                  editBannerForm.service_category_id
+                )
+              ) &&
+                editBannerForm.service_id && (
+                  <div
+                    style={{
+                      padding:
+                        "10px 12px",
+                      background:
+                        "#f5faf8",
+                      border:
+                        "1px solid #dceee9",
+                      borderRadius:
+                        "8px",
+                      marginBottom:
+                        "15px",
+                      fontSize:
+                        "13px",
+                    }}
+                  >
+                    {(() => {
+
+                      const selectedService =
+                        ServiceData.find(
+                          (service) =>
+                            String(
+                              service.variant_id
+                            ) ===
+                            String(
+                              editBannerForm.service_id
+                            )
+                        );
+
+                      if (
+                        !selectedService
+                      ) {
+                        return null;
+                      }
+
+                      const currentCategory =
+                        getCategoryName(
+                          editBannerForm.service_category_id
+                        );
+
+                      const isMedicine =
+                        currentCategory ===
+                          "medicine" ||
+                        currentCategory ===
+                          "medicines";
+
+                      return (
+                        <>
+                          <div>
+                            <strong>
+                              {isMedicine
+                                ? "Medicine:"
+                                : "Product:"}
+                            </strong>{" "}
+                            {
+                              selectedService.name
+                            }
+                          </div>
+
+                          <div>
+                            <strong>
+                              Variant:
+                            </strong>{" "}
+                            {
+                              selectedService.variant_name
+                            }
+                          </div>
+
+                          {selectedService.size && (
+                            <div>
+                              <strong>
+                                Size:
+                              </strong>{" "}
+                              {
+                                selectedService.size
+                              }
+                            </div>
+                          )}
+
+                          {selectedService.weightage && (
+                            <div>
+                              <strong>
+                                Unit:
+                              </strong>{" "}
+                              {
+                                selectedService.weightage
+                              }
+                            </div>
+                          )}
+
+                          {selectedService.brand_name && (
+                            <div>
+                              <strong>
+                                Brand:
+                              </strong>{" "}
+                              {
+                                selectedService.brand_name
+                              }
+                            </div>
+                          )}
+                        </>
+                      );
+
+                    })()}
+                  </div>
+                )}
 
               {/* REDIRECT URL */}
 
@@ -1808,7 +2516,10 @@ const Banner = () => {
                   value={
                     editBannerForm.redirect_url
                   }
-                  onChange={handleEditChange}
+                  onChange={
+                    handleEditChange
+                  }
+                  className="form-control"
                 />
 
                 {editBannerError.redirect_url && (
@@ -1836,34 +2547,37 @@ const Banner = () => {
                     accept="image/*"
                     id="editBannerUpload"
                     style={{
-                      display: "none",
+                      display:
+                        "none",
                     }}
                     onChange={(e) => {
 
                       const file =
-                        e.target.files[0];
+                        e.target
+                          .files?.[0];
 
-                      if (file) {
-                        setEditBannerImage(
-                          file
-                        );
-
-                        setEditBannerError(
-                          (prev) => ({
-                            ...prev,
-                            image_url: "",
-                          })
-                        );
+                      if (!file) {
+                        return;
                       }
+
+                      setEditBannerImage(
+                        file
+                      );
+
+                      setEditBannerError(
+                        (prev) => ({
+                          ...prev,
+
+                          image_url:
+                            "",
+                        })
+                      );
 
                     }}
                   />
 
-                  {(
-                    editBannerImage ||
-                    editBannerForm.image_url
-                  ) ? (
-
+                  {editBannerImage ||
+                  editBannerForm.image_url ? (
                     <div className="banner-preview-wrapper">
 
                       <div className="banner-preview-left">
@@ -1909,7 +2623,7 @@ const Banner = () => {
                               .getElementById(
                                 "editBannerUpload"
                               )
-                              .click()
+                              ?.click()
                           }
                         >
                           <FiUpload />
@@ -1927,6 +2641,7 @@ const Banner = () => {
                             setEditBannerForm(
                               (prev) => ({
                                 ...prev,
+
                                 image_url:
                                   "",
                               })
@@ -1940,9 +2655,7 @@ const Banner = () => {
                       </div>
 
                     </div>
-
                   ) : (
-
                     <label
                       htmlFor="editBannerUpload"
                       className="upload-label"
@@ -1965,7 +2678,6 @@ const Banner = () => {
                       </div>
 
                     </label>
-
                   )}
 
                 </div>
@@ -1996,7 +2708,9 @@ const Banner = () => {
                     checked={
                       editBannerForm.is_active
                     }
-                    onChange={handleEditChange}
+                    onChange={
+                      handleEditChange
+                    }
                   />
 
                   <span>
@@ -2018,7 +2732,10 @@ const Banner = () => {
                   className="cancel-btn"
                   onClick={() => {
                     resetEditBannerForm();
-                    setShowEditModal(false);
+
+                    setShowEditModal(
+                      false
+                    );
                   }}
                 >
                   Cancel
@@ -2038,15 +2755,9 @@ const Banner = () => {
           </div>
 
         </div>
-
       )}
 
-      {/* =====================================================
-          DELETE MODAL
-      ===================================================== */}
-
       {DeleteBannerModal && (
-
         <div className="modal">
 
           <div className="modal-content">
@@ -2059,15 +2770,22 @@ const Banner = () => {
 
               <button
                 className="otp-btn verify-btn"
-                onClick={handleDeleteBanner}
+                onClick={
+                  handleDeleteBanner
+                }
               >
                 Yes
               </button>
 
               <button
                 onClick={() => {
-                  setDeleteBannerModal(false);
-                  setSelectedBanner(null);
+                  setDeleteBannerModal(
+                    false
+                  );
+
+                  setSelectedBanner(
+                    null
+                  );
                 }}
               >
                 No
@@ -2078,15 +2796,11 @@ const Banner = () => {
           </div>
 
         </div>
-
       )}
 
-      {/* =====================================================
-          IMAGE PREVIEW
-      ===================================================== */}
+    
 
       {BannerPreviewImage && (
-
         <div
           className="prakriti-modal-overlay"
           onClick={() =>
@@ -2120,18 +2834,24 @@ const Banner = () => {
 
             <div
               style={{
-                textAlign: "center",
+                textAlign:
+                  "center",
               }}
             >
 
               <img
-                src={BannerPreviewImage}
+                src={
+                  BannerPreviewImage
+                }
                 alt="preview"
                 style={{
                   width: "100%",
-                  maxHeight: "500px",
-                  objectFit: "contain",
-                  borderRadius: "10px",
+                  maxHeight:
+                    "500px",
+                  objectFit:
+                    "contain",
+                  borderRadius:
+                    "10px",
                 }}
               />
 
@@ -2153,9 +2873,7 @@ const Banner = () => {
           </div>
 
         </div>
-
       )}
-
     </>
   );
 };
