@@ -367,12 +367,12 @@ if (Error) {
 
  
 
-   <button
+   {/* <button
     className={activeTab === "Prescription" ? "active-tab" : ""}
     onClick={() => setActiveTab("Prescription")}
   >
     Prescription
-  </button>
+  </button> */}
 
 </div>
 

@@ -1008,4 +1008,77 @@
 .policyRollbackModal-confirm:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}.policy-action-menu {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.policy-menu-trigger {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #d9ebe6;
+  background: #f3faf8;
+  color: #0d614e;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.policy-menu-trigger:hover {
+  background: #0d614e;
+  color: #fff;
+}
+
+.policy-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  min-width: 165px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 5px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+}
+
+.policy-dropdown-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.policy-dropdown-item:hover {
+  background: #f0f8f6;
+  color: #0d614e;
+}
+
+.policy-dropdown-item svg {
+  width: 13px;
+  height: 13px;
+}
+
+.policy-dropdown-delete:hover {
+  background: #fff4f4;
+  color: #dc2626;
+}
+
+.policy-dropdown-publish:hover {
+  background: #eefaf5;
+  color: #0d614e;
 }

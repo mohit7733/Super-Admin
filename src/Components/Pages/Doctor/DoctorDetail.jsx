@@ -206,7 +206,7 @@ const doctortransactionCollectionRate =
   
 
  const [currentPage, setCurrentPage] = useState(1);
-const [pageSize] = useState(5);
+const [pageSize] = useState(10);
 
 const [totalCount, setTotalCount] = useState(0);
 const [totalPages, setTotalPages] = useState(1);
