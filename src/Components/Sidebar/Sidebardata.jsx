@@ -208,8 +208,8 @@ export const SidebarData = () => [
     },
     {
     title: "Reschedule Request",
-      path: "/Magement/Appointment",
-      permission: "view_cancellation_request",
+      path: "/Management/Reschedule",
+      permission: "view_reschudle_request",
      icon: <FaSyncAlt size={12} />,
     },
     

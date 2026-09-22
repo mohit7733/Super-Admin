@@ -91,6 +91,7 @@ import DiseaseMangement from './Components/Pages/Mangement/DiseaseMangement';
 import Policy from './Components/Pages/Policy/Policy';
 import AddPolicy from './Components/Pages/Policy/AddPolicy';
 import EditPolicy from './Components/Pages/Policy/EditPolicy';
+import ReschudleRequest from './Components/Pages/Mangement/ReschudleRequest';
 
 
 const Layout = ({ children }) => {
@@ -715,7 +716,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+<Route
+          path="/Management/Reschedule"
+          element={
+            <ProtectedRoute permission="view_cancellation_request">
+              <Layout>
+                <ReschudleRequest/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/StarRating"

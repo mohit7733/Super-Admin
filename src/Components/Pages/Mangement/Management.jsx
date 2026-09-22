@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState,useEffect } from 'react';
+import { useState,useEffect} from 'react';
  import {
   FaTimesCircle,
   FaUser,
@@ -156,7 +156,7 @@ const token = sessionStorage.getItem("superadmin_token");
 
     const data = await response.json();
 
-    console.log("Category API Response:", data);
+   
 if (data.success) {
   setAvailableslotData(data.data.availability);
 } else {
@@ -523,105 +523,155 @@ const handleAppointmentAction = async (action) => {
   </div>
 )}
 {showRescheduleModal && (
- <div className="reschedule-overlay">
-  <div className="reschedule-modal">
+  <div className="appointment-reschedule-overlay">
+    <div className="appointment-reschedule-modal">
 
-    {/* Sticky Header */}
-    <div className="reschedule-header">
+      {/* Close Button */}
       <button
-        className="reschedule-close"
+        type="button"
+        className="appointment-reschedule-close"
         onClick={() => {
           setShowRescheduleModal(false);
           setSelectedSlot(null);
+          setRescheduleReason("");
         }}
       >
-        <MdClose size={28} />
+        <MdClose size={24} />
       </button>
 
-      <div className="reschedule-icon">
-        <MdEventRepeat size={40} color="#fff" />
+      {/* Header */}
+      <div className="appointment-reschedule-header">
+        <div className="appointment-reschedule-icon">
+          <MdEventRepeat size={30} />
+        </div>
+
+        <h2>Reschedule Appointment</h2>
+
+        <p>
+          Select a new available slot for this appointment.
+        </p>
       </div>
-
-      <h2>Reschedule Appointment</h2>
-      <p>Please select a new available slot for this appointment.</p>
-    </div>
-
-    {/* Scrollable Body */}
-    <div className="slot-list">
-
-      {AvailableslotLoading ? (
-        Array(2).fill(0).map((_, index) => (
-          <div className="slot-card" key={index}>
-            <div className="skeleton-slot"></div>
-          </div>
-        ))
-      ) : AvailableslotError ? (
-        <div className="slot-error">{AvailableslotError}</div>
-      ) : (
-        AvailableslotData.map((availability) =>
-          availability.slots.map((slot) => (
-            <label className="slot-card" key={slot.id}>
-              <div className="slot-left">
-                <input
-                  type="radio"
-                  name="slot"
-                  checked={selectedSlot === slot.id}
-                  onChange={() => setSelectedSlot(slot.id)}
-                />
-
-                <div className="slot-date">
-                  <h4>{formatDate(availability.date)}</h4>
-                  <span>{slot.consultation_type}</span>
-                </div>
-              </div>
-
-              <div className="slot-time">
-                {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
-              </div>
-            </label>
-          ))
-        )
-      )}
 
     
+      <div className="appointment-reschedule-body">
 
-    </div>
+        {AvailableslotLoading ? (
+          <div className="appointment-reschedule-slot-grid">
+            {Array(5)
+              .fill(0)
+              .map((_, index) => (
+                <div
+                  className="appointment-reschedule-slot skeleton-reschedule-slot"
+                  key={index}
+                >
+                  <div className="reschedule-skeleton-line large"></div>
+                  <div className="reschedule-skeleton-line small"></div>
+                  <div className="reschedule-skeleton-line time"></div>
+                </div>
+              ))}
+          </div>
+        ) : AvailableslotError ? (
+          <div className="appointment-reschedule-error">
+            {AvailableslotError}
+          </div>
+        ) : AvailableslotData.length > 0 ? (
+          <div className="appointment-reschedule-slot-grid">
 
-      <div className="reschdule-form-group">
-        <label>
-          Reschedule Reason <span>*</span>
-        </label>
+            {AvailableslotData.flatMap((availability) =>
+              availability.slots.map((slot) => (
+                <label
+                  className={`appointment-reschedule-slot ${
+                    selectedSlot === slot.id
+                      ? "appointment-reschedule-slot-selected"
+                      : ""
+                  }`}
+                  key={slot.id}
+                >
+                  <input
+                    type="radio"
+                    name="appointment-reschedule-slot"
+                    value={slot.id}
+                    checked={selectedSlot === slot.id}
+                    onChange={() => setSelectedSlot(slot.id)}
+                  />
 
-        <textarea
-          rows={4}
-          placeholder="Enter reschedule reason"
-          value={rescheduleReason}
-          onChange={(e) => setRescheduleReason(e.target.value)}
-        />
+                  <div className="appointment-reschedule-slot-content">
+
+                    <div className="appointment-reschedule-slot-top">
+                      <span className="appointment-reschedule-date">
+                        {formatDate(availability.date)}
+                      </span>
+
+                      <span className="appointment-reschedule-type">
+                        {slot.consultation_type || "Video"}
+                      </span>
+                    </div>
+
+                    <div className="appointment-reschedule-time">
+                      <FaClock size={12} />
+
+                      <span>
+                        {formatTime(slot.start_time)} -{" "}
+                        {formatTime(slot.end_time)}
+                      </span>
+                    </div>
+
+                  </div>
+                </label>
+              ))
+            )}
+
+          </div>
+        ) : (
+          <div className="appointment-reschedule-empty">
+            No available slots found.
+          </div>
+        )}
+
+        {/* Reason */}
+        <div className="appointment-reschedule-reason">
+          <label>
+            Reschedule Reason <span>*</span>
+          </label>
+
+          <textarea
+            rows={3}
+            placeholder="Enter reason for rescheduling..."
+            value={rescheduleReason}
+            onChange={(e) => setRescheduleReason(e.target.value)}
+          />
+        </div>
+
       </div>
 
-    {/* Sticky Footer */}
-    <div className="reschudlecancel-modal-footer">
-      <button
-        className="appcancel-btn"
-        onClick={() => {
-          setShowRescheduleModal(false);
-          setSelectedSlot(null);
-        }}
-      >
-        Cancel
-      </button>
+      {/* Footer */}
+      <div className="appointment-reschedule-footer">
 
-      <button
-        className="reschudlesubmit-btn"
-        onClick={() => handleAppointmentAction("reschedule")}
-      >
-        Confirm Reschedule
-      </button>
+        <button
+          type="button"
+          className="appointment-reschedule-cancel"
+          onClick={() => {
+            setShowRescheduleModal(false);
+            setSelectedSlot(null);
+            setRescheduleReason("");
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="appointment-reschedule-submit"
+          onClick={() => handleAppointmentAction("reschedule")}
+        >
+          <MdEventRepeat size={18} />
+          Confirm Reschedule
+        </button>
+
+      </div>
+
     </div>
-
   </div>
-</div>
 )}
 
 
