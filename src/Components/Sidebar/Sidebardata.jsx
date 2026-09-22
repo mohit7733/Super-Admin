@@ -12,6 +12,7 @@ import HealingIcon from '@mui/icons-material/FitnessCenter';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import { FaFileContract } from 'react-icons/fa';
 import { FaGift } from 'react-icons/fa6';
+import {FaSyncAlt} from 'react-icons/fa';
 
 import { FiClock } from "react-icons/fi";
 import { FaTag, FaTicketAlt, FaUsers, FaClipboardList, FaHistory, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
@@ -194,11 +195,24 @@ export const SidebarData = () => [
   permission: "view_mangement",
   children: [
     {
-      title: "Appointment Management",
+      title: "Consultation History",
+      path: "/Mangement/History",
+      permission: "view_cancellation_request",
+     icon: <FaSyncAlt size={12} />,
+    },
+    {
+      title: "Cancellation Request",
       path: "/Magement/Appointment",
       permission: "view_cancellation_request",
-      icon: <FaCalendarCheck size={18} />,
+      icon: <FaCalendarCheck size={12} />,
     },
+    {
+    title: "Reschedule Request",
+      path: "/Magement/Appointment",
+      permission: "view_cancellation_request",
+     icon: <FaSyncAlt size={12} />,
+    },
+    
     {
   title: "Medicine Approval",
   path: "/Magement/MedicineApproval",

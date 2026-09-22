@@ -29,7 +29,7 @@ import Doctor from './Components/Pages/Doctor/Doctor';
 import DoctorDetail from './Components/Pages/Doctor/DoctorDetail';
 import ActiveOrders from './Components/Pages/Order/ActiveOrders';
 
-
+import MangementHistory from './Components/Pages/Mangement/MangementHistory';
 import Patient from './Components/Pages/Patient/Patient';
 
 
@@ -723,6 +723,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <StarRating />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/Mangement/History"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <MangementHistory/>
               </Layout>
             </ProtectedRoute>
           }
