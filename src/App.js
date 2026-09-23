@@ -81,7 +81,7 @@ import Faq from './Components/Pages/Faq/Faq';
 import BulkUpload from './Components/Pages/Product/BulkUpload';
 import PatientHistory from './Components/Pages/Doctor/PatientHistory';
 import PrescriptionHistory from './Components/Pages/Patient/PrescriptionHistory'
-import OrderTracking from'./Components/Pages/Order/OrderTracking'
+import OrderTracking from './Components/Pages/Order/OrderTracking'
 import DietReview from './Components/Pages/Review/DietReview'
 import Coupons from './Components/Pages/Coupon/Coupons';
 import Reward from './Components/Pages/Reward/Reward';
@@ -94,6 +94,12 @@ import EditPolicy from './Components/Pages/Policy/EditPolicy';
 import ReschudleRequest from './Components/Pages/Mangement/ReschudleRequest';
 import ConsultationRefundRequest from './Components/Pages/Order/ConsultationRefundRequest';
 import BannerEvent from './Components/Pages/Banner/BannerEvent';
+
+import Subscription from './Components/Pages/Subscription/Subscription';
+import EventBanner from './Components/Pages/Banner/Eventbanner';
+
+
+
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -138,7 +144,7 @@ function App() {
           }
         />
 
-          <Route
+        <Route
           path="/Policy/Edit_Policy/:id"
           element={
             <ProtectedRoute permission="edit_Policy">
@@ -149,16 +155,47 @@ function App() {
           }
         />
 
-           <Route
+        <Route
           path="/Add-Reward"
           element={
             <ProtectedRoute permission="view_add_reward">
               <Layout>
-                <AddReward/>
+                <AddReward />
               </Layout>
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/reward/edit/:id"
+          element={
+            <ProtectedRoute permission="view_edit_reward">
+              <Layout>
+                <EditReward />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/AddPolicy"
+          element={
+            <ProtectedRoute permission="Add_Policy">
+              <Layout>
+                <AddPolicy />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/LegalPolicies"
+          element={
+            <ProtectedRoute permission="manage_legal_policies">
+              <Layout>
+                <Policy />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
        <Route
   path="/reward/edit/:id"
   element={
@@ -209,6 +246,7 @@ function App() {
     </ProtectedRoute>
   }
 />
+
         <Route
           path="/question"
           element={
@@ -232,7 +270,7 @@ function App() {
         />
 
 
-           <Route
+        <Route
           path="/admin/role"
           element={
             <ProtectedRoute permission="view_role">
@@ -242,18 +280,18 @@ function App() {
             </ProtectedRoute>
           }
         />
- 
-            <Route
+
+        <Route
           path="/admin/bulk-upload-products"
           element={
             <ProtectedRoute permission="manage_product_bulk">
               <Layout>
-                <BulkUpload/>
+                <BulkUpload />
               </Layout>
             </ProtectedRoute>
           }
         />
-          <Route
+        <Route
           path="/diet/add"
           element={
             <ProtectedRoute permission="add_diet_plan">
@@ -263,7 +301,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/Review/Diet"
           element={
             <ProtectedRoute permission="view_diet_review">
@@ -278,17 +316,27 @@ function App() {
           element={
             <ProtectedRoute permission="view_reward">
               <Layout>
-                <Reward/>
+                <Reward />
               </Layout>
             </ProtectedRoute>
           }
         />
-           <Route
+        <Route
+          path="/subscription/packages"
+          element={
+            <ProtectedRoute permission="manage_subscription_packages">
+              <Layout>
+                <Subscription />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/Magement/MedicineApproval"
           element={
             <ProtectedRoute permission="view_medicine_approval">
               <Layout>
-            <DiseaseMangement/>
+                <DiseaseMangement />
               </Layout>
             </ProtectedRoute>
           }
@@ -304,7 +352,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/OrderTracking/:OrderId"
           element={
             <ProtectedRoute permission="view_Order_Tracking">
@@ -314,9 +362,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-     
 
-      <Route
+
+        <Route
           path="/FAQ/Management"
           element={
             <ProtectedRoute permission="view_faq">
@@ -358,29 +406,29 @@ function App() {
             </ProtectedRoute>
           }
         />
- <Route
-  path="/PatientHistory/:consultationId"
-  element={
-    <ProtectedRoute permission="view_patient_history">
-      <Layout>
-        <PatientHistory />
-      </Layout>
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/PatientHistory/:consultationId"
+          element={
+            <ProtectedRoute permission="view_patient_history">
+              <Layout>
+                <PatientHistory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
- <Route
-  path="/PrescriptionHistory/:PatientHistoryId"
-  element={
-    <ProtectedRoute permission="view_patient_history">
-      <Layout>
-        <PrescriptionHistory />
-      </Layout>
-    </ProtectedRoute>
-  }
-/>
- 
-  <Route
+        <Route
+          path="/PrescriptionHistory/:PatientHistoryId"
+          element={
+            <ProtectedRoute permission="view_patient_history">
+              <Layout>
+                <PrescriptionHistory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/ActiveOrder"
           element={
             <ProtectedRoute permission="view_orders">
@@ -410,7 +458,7 @@ function App() {
             </ProtectedRoute>
           }
         />
- <Route
+        <Route
           path="/yoga/category"
           element={
             <ProtectedRoute permission="view_yoga_category">
@@ -420,7 +468,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path="/yoga/sessions"
           element={
             <ProtectedRoute permission="view_yoga_sessions">
@@ -437,6 +485,17 @@ function App() {
             <ProtectedRoute permission="manage_banner">
               <Layout>
                 <Banner />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+<Route
+          path="/content/eventbanner"
+          element={
+            <ProtectedRoute permission="manage_event_banner">
+              <Layout>
+                <EventBanner />
               </Layout>
             </ProtectedRoute>
           }
@@ -496,7 +555,7 @@ function App() {
           }
         />
 
-      
+
 
 
         <Route
@@ -545,12 +604,12 @@ function App() {
             </ProtectedRoute>
           }
         />
-          <Route
+        <Route
           path="/tax-class"
           element={
             <ProtectedRoute permission="manage_tax_class" >
               <Layout>
-                <Unicommerece/>
+                <Unicommerece />
               </Layout>
             </ProtectedRoute>
           }
@@ -702,7 +761,7 @@ function App() {
           }
         />
 
-         <Route
+        <Route
           path="/CustomerDetailPage/:customerId"
           element={
             <ProtectedRoute>
@@ -713,35 +772,35 @@ function App() {
           }
         />
 
-        
-         <Route
+
+        <Route
           path="/CustomerDetailPage/:customerId"
           element={
             <ProtectedRoute>
               <Layout>
-              
+
               </Layout>
             </ProtectedRoute>
           }
         />
 
 
-   <Route
+        <Route
           path="/Magement/Appointment"
           element={
             <ProtectedRoute permission="view_cancellation_request">
               <Layout>
-                <Management/>
+                <Management />
               </Layout>
             </ProtectedRoute>
           }
         />
-<Route
+        <Route
           path="/Management/Reschedule"
           element={
             <ProtectedRoute permission="view_cancellation_request">
               <Layout>
-                <ReschudleRequest/>
+                <ReschudleRequest />
               </Layout>
             </ProtectedRoute>
           }
@@ -762,14 +821,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Layout>
-                <MangementHistory/>
+                <MangementHistory />
               </Layout>
             </ProtectedRoute>
           }
         />
 
         <Route
-         path="/Policy/History/:id"
+          path="/Policy/History/:id"
           element={
             <ProtectedRoute>
               <Layout>
@@ -804,7 +863,7 @@ function App() {
           }
         />
 
-         <Route
+        <Route
           path="/diet/all"
           element={
 
@@ -818,7 +877,7 @@ function App() {
         />
 
 
-     
+
         <Route
           path="/Items/:PaymentId"
           element={
@@ -829,7 +888,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-  <Route
+        <Route
           path="/coupons"
           element={
             <ProtectedRoute>
