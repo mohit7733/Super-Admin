@@ -138,6 +138,7 @@ const hasFetched = useRef(false);
   { label: "Diet", value: "DietScreen" },
   { label: "Products", value: "ProductsScreen" },
   { label: "Yoga", value: "YogaScreen" },
+  {label:"Doctor",value:"ConsultScreen"},
 ];
 
 

@@ -13,6 +13,8 @@ import RateReviewIcon from '@mui/icons-material/RateReview';
 import { FaFileContract } from 'react-icons/fa';
 import { FaGift } from 'react-icons/fa6';
 import {FaSyncAlt} from 'react-icons/fa';
+import {FaMoneyBillWave} from 'react-icons/fa';
+
 
 import { FiClock } from "react-icons/fi";
 import { FaTag, FaTicketAlt, FaUsers, FaClipboardList, FaHistory, FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
@@ -270,6 +272,13 @@ export const SidebarData = () => [
         path: "/content/banner",
         permission: "manage_banner",
       },
+       {
+        title: "Banner Events",
+        icon: <MdPhotoSizeSelectActual style={{ fontSize: 18 }} />,
+        path: "/content/bannerEvent",
+        permission: "manage_banner",
+      },
+
     ],
   },
 {
@@ -428,21 +437,26 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
 },
 
   // ========== ORDER MANAGEMENT ==========
-  {
-    title: "Order Management",
-    icon: <ReorderIcon sx={{ fontSize: 20 }} />,
-    path: "#",
-    permission: "manage_orders",
-    children: [
-      {
-        title: "OrderHistory",
-        path: "/ActiveOrder",
-        permission: "view_orders",
-        icon: <FaClipboardList size={18} />
-      },
-     
-    ],
-  },
+ {
+  title: "Order Management",
+  icon: <ReorderIcon sx={{ fontSize: 20 }} />,
+  path: "#",
+  permission: "manage_orders",
+  children: [
+    {
+      title: "Order History",
+      path: "/ActiveOrder",
+      permission: "view_orders",
+      icon: <FaClipboardList size={18} />
+    },
+    {
+      title: "Consultation Refund Requests",
+      path: "/Order/ConsultationRefundRequests",
+      permission: "view_consultation_refund",
+      icon: <FaMoneyBillWave size={18} />
+    },
+  ],
+},
 
   // ========== REPORTS & ANALYTICS ==========
   {

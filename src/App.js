@@ -92,8 +92,8 @@ import Policy from './Components/Pages/Policy/Policy';
 import AddPolicy from './Components/Pages/Policy/AddPolicy';
 import EditPolicy from './Components/Pages/Policy/EditPolicy';
 import ReschudleRequest from './Components/Pages/Mangement/ReschudleRequest';
-
-
+import ConsultationRefundRequest from './Components/Pages/Order/ConsultationRefundRequest';
+import BannerEvent from './Components/Pages/Banner/BannerEvent';
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -170,11 +170,31 @@ function App() {
   }
 />
    <Route
+  path="/Order/ConsultationRefundRequests"
+  element={
+    <ProtectedRoute permission="view_consultation_Requests">
+      <Layout>
+        <ConsultationRefundRequest />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
+   <Route
   path="/AddPolicy"
   element={
     <ProtectedRoute permission="Add_Policy">
       <Layout>
     <AddPolicy/>
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/content/bannerEvent"
+  element={
+    <ProtectedRoute permission="view_banner_events">
+      <Layout>
+    <BannerEvent/>
       </Layout>
     </ProtectedRoute>
   }
