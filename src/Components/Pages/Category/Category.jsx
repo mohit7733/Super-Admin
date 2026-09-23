@@ -1026,11 +1026,11 @@ const Category = () => {
                   onChange={(e) => setRedirectUrl(e.target.value)}
                 >
                   <option value="">Select Redirect Screen</option>
-                  <option value="PrakritiProfile">Prakriti</option>
-                  <option value="MedicineScreen">Medicine</option>
-                  <option value="DietScreen">Diet</option>
-                  <option value="ProductsScreen">Products</option>
-                  <option value="YogaScreen">Yoga</option>
+                 {redirectScreenOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
 
                 </select>
               </div>
