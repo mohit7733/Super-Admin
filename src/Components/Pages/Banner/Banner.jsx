@@ -149,12 +149,12 @@ const Banner = () => {
 
     diets: {
       base: "DietScreen",
-      detail: "DietDetails",
+      detail: "DietPlanDetail",
     },
 
     diet: {
       base: "DietScreen",
-      detail: "DietDetails",
+      detail: "DietPlanDetail",
     },
 
 
