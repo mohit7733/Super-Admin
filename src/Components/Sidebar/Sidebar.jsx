@@ -447,14 +447,14 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     }
   }, [location.pathname]);
 
-  // Check if user has permission
+  
   const hasPermission = useCallback((code) => {
     if (!code) return true;
     if (userRole === "SUPERADMIN") return true;
     return userPermissions.includes(code);
   }, [userRole, userPermissions]);
 
-  // Filter sidebar items based on permissions
+ 
   const filteredSidebarItems = useMemo(() => {
     const filterRecursive = (items) => {
       return items
@@ -479,7 +479,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     return filterRecursive(SidebarData());
   }, [hasPermission]);
 
-  // Toggle menu open/close
+ 
   const handleToggleMenu = (key) => {
     setOpenMenus(prev => ({
       ...prev,
@@ -487,7 +487,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     }));
   };
 
-  // Render submenu items recursively
+ 
   const renderSubmenu = (children, parentKey, level = 1) => {
     if (!children || children.length === 0) return null;
 
@@ -532,7 +532,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     );
   };
 
-  // Render parent menu item
+  
   const renderParentMenuItem = (item, key) => {
     const isOpen = openMenus[key];
     const hasChildren = item.children && item.children.length > 0;
@@ -560,7 +560,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     );
   };
 
-  // Render single menu item (no children)
+ 
   const renderSingleMenuItem = (item, key) => {
     return (
       <li key={key} className="menu-item">
@@ -575,7 +575,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     );
   };
 
-  // Handle logout
+ 
   const handleLogout = () => {
     sessionStorage.clear();
     navigate("/login");
@@ -586,7 +586,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
       className={`sidebar ${collapsed ? 'collapsed' : 'expanded'}`}
       aria-label="Main navigation"
     >
-      {/* Sidebar Header */}
+    
       <div className="sidebar-header">
         <div className="logo-container">
           {collapsed ? (
@@ -615,7 +615,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
         )}
       </div>
 
-      {/* Navigation Menu */}
+    
       <nav className="nav-menu" role="navigation" aria-label="Main menu">
         <ul role="menubar" aria-orientation="vertical">
           {filteredSidebarItems.map((item, index) => {

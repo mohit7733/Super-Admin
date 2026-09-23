@@ -73,9 +73,13 @@ const Banner = () => {
 
   const [editBannerError, setEditBannerError] = useState({});
 
-  // =========================================================
-  // ADD FORM
-  // =========================================================
+ 
+const [BrandData, setBrandData] = useState([]);
+const [BrandLoading, setBrandLoading] = useState(false);
+const [BrandError, setBrandError] = useState(null);
+
+const [bannerType, setBannerType] = useState("");
+const [selectedBrand, setSelectedBrand] = useState("");
 
   const initialBannerForm = {
     image_url: null,
@@ -752,7 +756,46 @@ const Banner = () => {
       return null;
     }
   };
+const getBrandList = async () => {
+  try {
+    setBrandLoading(true);
+    setBrandError(null);
 
+    const token = sessionStorage.getItem("superadmin_token");
+
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/brand-name/`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    if (data?.success) {
+      setBrandData(data?.data || []);
+    } else {
+      setBrandData([]);
+      setBrandError(data?.message || "Failed to fetch brands");
+    }
+  } catch (error) {
+    console.error("Brand API Error:", error);
+    setBrandData([]);
+    setBrandError("Failed to fetch brands");
+  } finally {
+    setBrandLoading(false);
+  }
+};
  
 
   const getBannerList = async () => {
@@ -836,6 +879,7 @@ const Banner = () => {
   useEffect(() => {
     getCategoryList();
     getBannerList();
+     getBrandList();
   }, []);
 
  
@@ -1853,97 +1897,113 @@ const Banner = () => {
                 )}
 
               </div>
+     <div className="form-group">
+  <label>Type *</label>
 
-              {/* SERVICE */}
+  <div className="type-options">
+    <label>
+      <input
+        type="checkbox"
+        checked={bannerType === "brand"}
+        onChange={() => {
+          setBannerType("brand");
+          setSelectedBrand("");
+          setBannerForm((prev) => ({
+            ...prev,
+            service_id: "",
+          }));
+        }}
+      />
+      Brand
+    </label>
 
-              <div className="form-group">
+    <label>
+      <input
+        type="checkbox"
+        checked={bannerType === "service"}
+        onChange={() => {
+          setBannerType("service");
+          setSelectedBrand("");
+        }}
+      />
+      Service
+    </label>
+  </div>
+</div>
+{bannerType === "brand" && (
+  <div className="form-group">
+    <label>Brand *</label>
 
-                <label>
-                  Service
-                </label>
+    <select
+      value={selectedBrand}
+     onChange={(e) => {
+  const brandId = e.target.value;
 
-                <select
-                  name="service_id"
-                  value={
-                    bannerForm.service_id
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  disabled={
-                    !bannerForm.service_category_id ||
-                    ServiceLoading
-                  }
-                >
+  setSelectedBrand(brandId);
 
-                  <option value="">
-                    {ServiceLoading
-                      ? "Loading services..."
-                      : "Select Service"}
-                  </option>
+  const redirectUrl = brandId
+    ? `CategoryProduct/${brandId}`
+    : "";
 
-                  {ServiceData?.map(
-                    (
-                      service
-                    ) => {
+  setBannerForm((prev) => ({
+    ...prev,
+    service_id: "",
+    redirect_url: redirectUrl,
+  }));
 
-                      const categoryName =
-                        getCategoryName(
-                          bannerForm.service_category_id
-                        );
+  setBannerError((prev) => ({
+    ...prev,
+    redirect_url: "",
+  }));
+}}
+      className="form-control"
+    >
+      <option value="">
+        {BrandLoading ? "Loading brands..." : "Select Brand"}
+      </option>
 
-                      const serviceId =
-                        getServiceId(
-                          service
-                        );
+      {BrandData
+        .filter((brand) => brand.is_active)
+        .map((brand) => (
+          <option key={brand.id} value={brand.id}>
+            {brand.name}
+          </option>
+        ))}
+    </select>
 
-                      const serviceLabel =
-                        getServiceLabel(
-                          service,
-                          categoryName
-                        );
+    {BrandError && (
+      <span className="error-text">{BrandError}</span>
+    )}
+  </div>
+)}
 
-                      return (
-                        <option
-                          key={
-                            serviceId
-                          }
-                          value={
-                            serviceId
-                          }
-                        >
-                          {
-                            serviceLabel
-                          }
-                        </option>
-                      );
-                    }
-                  )}
+{bannerType === "service" && (
+  <div className="form-group">
+    <label>Service </label>
 
-                </select>
+    <select
+      value={bannerForm.service_id}
+      onChange={handleChange}
+      className="form-control"
+    >
+      <option value="">Select Service</option>
 
-                {ServiceError && (
-                  <p className="error-text">
-                    {
-                      ServiceError
-                    }
-                  </p>
-                )}
+      {ServiceData.map((service) => (
+        <option
+          key={getServiceId(service)}
+          value={getServiceId(service)}
+        >
+          {getServiceLabel(
+            service,
+            getCategoryName(bannerForm.service_category_id)
+          )}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
-                {BannerError.service_id && (
-                  <p className="error-text">
-                    {
-                      BannerError.service_id
-                    }
-                  </p>
-                )}
-
-              </div>
-
-              {/* PRODUCT / MEDICINE INFORMATION */}
-
-        
-              {/* REDIRECT URL */}
+             
 
               <div className="form-group">
 
@@ -2387,8 +2447,7 @@ const Banner = () => {
 
               </div>
 
-              {/* PRODUCT / MEDICINE INFORMATION */}
-
+             
               {isVariantCategory(
                 getCategoryName(
                   editBannerForm.service_category_id

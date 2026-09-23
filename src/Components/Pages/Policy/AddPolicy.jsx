@@ -142,6 +142,7 @@ const DEFAULT_CONFIGURATIONS = {
         free_cancellation_before_minutes: 0,
         rescheduling_enabled: false,
         no_show_refund_eligible: false,
+
       },
 
       orders: {
@@ -429,13 +430,9 @@ editorial_policy: {
   },
 
   "terms_and_conditions": {
-  
 },
 
   privacy_policy: {
-  
-  
-
   },
   
   return: {
@@ -502,6 +499,7 @@ editorial_policy: {
 
 
   },
+
   refund: {
    
   "customer": {
@@ -563,6 +561,7 @@ editorial_policy: {
   }
 
   },
+
  shipping_delivery: {
   admin: {
     support: {
@@ -1012,6 +1011,7 @@ editorial_policy: {
     },
   },
 },
+
 grievance_redressal: {
   customer: {
     grievance: {
@@ -1121,6 +1121,7 @@ grievance_redressal: {
     },
   },
 },
+
  account_data_deletion: {
   customer: {
     account: {
@@ -1214,9 +1215,7 @@ const DynamicConfiguration = ({
           ? `${path}.${key}`
           : key;
 
-        /* ---------------------------------------------
-           OBJECT
-        --------------------------------------------- */
+        
 
         if (isPlainObject(fieldValue)) {
           return (

@@ -18,6 +18,7 @@ const Category = () => {
   const [showModal, setShowModal] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [categoryName, setCategoryName] = useState("");
+  const [redirectUrl, setRedirectUrl] = useState("");
   const [CategoryCode, setCategoryCode] = useState("");
   const [categoryImage, setCategoryImage] = useState(null);
   const [isActive, setIsActive] = useState(false);
@@ -131,7 +132,15 @@ const hasFetched = useRef(false);
       setLoading(false);
     }
   };
- 
+ const redirectScreenOptions = [
+  { label: "Prakriti", value: "PrakritiProfile" },
+  { label: "Medicine", value: "MedicineScreen" },
+  { label: "Diet", value: "DietScreen" },
+  { label: "Products", value: "ProductsScreen" },
+  { label: "Yoga", value: "YogaScreen" },
+];
+
+
  
 useEffect(() => {
   if (hasFetched.current) return;
@@ -229,13 +238,15 @@ if (!code) {
         }
       }
 
-      const payload = {
-        name: categoryName.trim(),
-        image_url: imageUrl,
-        is_active: isActive,
-        code: CategoryCode.toUpperCase().trim(),
-      };
+     const payload = {
+  name: categoryName.trim(),
+  image_url: imageUrl,
+  is_active: isActive,
+  code: CategoryCode.toUpperCase().trim(),
+  redirect_url: redirectUrl,
+};
 
+   
       const response = await fetch(
         `${BASE_URL}/user/admin/service-category/`,
         {
@@ -345,6 +356,7 @@ if (Object.keys(newErrors).length > 0) {
         name: editCategoryName.trim(),
         image_url: imageUrl,
         is_active: isActive,
+          redirect_url: redirectUrl,
       };
 
       const response = await fetch(
@@ -872,6 +884,7 @@ const exportToExcel = async () => {
                   setEditModal(true);
                   setEditCategoryCode(item.code || "");
                   setEditErrors({});
+                  setRedirectUrl(item.redirect_url || "");
                 }}
               >
                 <FaEdit />
@@ -964,6 +977,7 @@ const exportToExcel = async () => {
       setCategoryCode("");
       setCategoryImage(null);
       setErrors({});
+        setRedirectUrl("");
     }}
   >
     <div
@@ -1002,6 +1016,22 @@ const exportToExcel = async () => {
                   <p className="error-text">{errors.categoryName}</p>
                 )}
               </div>
+
+          <div className="form-group">
+  <label>Redirect Screen</label>
+
+  <select
+    value={redirectUrl}
+    onChange={(e) => setRedirectUrl(e.target.value)}
+  >
+    <option value="">Select Redirect Screen</option>
+    <option value="PrakritiProfile">Prakriti</option>
+    <option value="MedicineScreen">Medicine</option>
+    <option value="DietScreen">Diet</option>
+    <option value="ProductsScreen">Products</option>
+    <option value="YogaScreen">Yoga</option>
+  </select>
+</div>
 
               <div className="form-group">
                 <label>Category Code <span className="required">*</span></label>
@@ -1095,6 +1125,7 @@ const exportToExcel = async () => {
                 )}
               </div>
 
+
               <div className="form-group">
                 <label>Status</label>
                 <div className="checkbox-row">
@@ -1117,6 +1148,7 @@ const exportToExcel = async () => {
                     setCategoryCode("");
                     setCategoryImage(null);
                     setErrors({});
+                      setRedirectUrl("");
                   }}
                 >
                   Cancel
@@ -1184,7 +1216,22 @@ const exportToExcel = async () => {
   </p>
 )}
               </div>
+<div className="form-group">
+  <label>Redirect Screen</label>
 
+  <select
+    value={redirectUrl}
+    onChange={(e) => setRedirectUrl(e.target.value)}
+  >
+    <option value="">Select Redirect Screen</option>
+
+    {redirectScreenOptions.map((option) => (
+      <option key={option.value} value={option.value}>
+        {option.label}
+      </option>
+    ))}
+  </select>
+</div>
 
               <div className="form-group">
                 <label>Category Image</label>

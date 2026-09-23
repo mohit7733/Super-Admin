@@ -29,7 +29,7 @@ import Doctor from './Components/Pages/Doctor/Doctor';
 import DoctorDetail from './Components/Pages/Doctor/DoctorDetail';
 import ActiveOrders from './Components/Pages/Order/ActiveOrders';
 
-
+import MangementHistory from './Components/Pages/Mangement/MangementHistory';
 import Patient from './Components/Pages/Patient/Patient';
 
 
@@ -91,6 +91,7 @@ import DiseaseMangement from './Components/Pages/Mangement/DiseaseMangement';
 import Policy from './Components/Pages/Policy/Policy';
 import AddPolicy from './Components/Pages/Policy/AddPolicy';
 import EditPolicy from './Components/Pages/Policy/EditPolicy';
+import ReschudleRequest from './Components/Pages/Mangement/ReschudleRequest';
 
 
 const Layout = ({ children }) => {
@@ -715,7 +716,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+<Route
+          path="/Management/Reschedule"
+          element={
+            <ProtectedRoute permission="view_cancellation_request">
+              <Layout>
+                <ReschudleRequest/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/StarRating"
@@ -723,6 +733,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <StarRating />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/Mangement/History"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <MangementHistory/>
               </Layout>
             </ProtectedRoute>
           }
