@@ -16,7 +16,7 @@ import {FaSyncAlt} from 'react-icons/fa';
 
 import { FiClock } from "react-icons/fi";
 import { FaTag, FaTicketAlt, FaUsers, FaClipboardList,FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
-import { MdQuiz, MdCategory,MdBrandingWatermark, MdPhotoSizeSelectActual, MdReviews, MdOndemandVideo } from "react-icons/md";
+import { MdQuiz, MdCategory,MdBrandingWatermark, MdPhotoSizeSelectActual, MdReviews, MdOndemandVideo, MdCardMembership, MdEventAvailable, MdEvent } from "react-icons/md";
 import { FaCircleQuestion } from "react-icons/fa6";
 import { FaBoxOpen, FaTags, FaChartLine, FaHeadset, FaUserInjured, FaStore, FaUserMd,FaListAlt } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi";
@@ -123,6 +123,12 @@ export const SidebarData = () => [
   
   ]
 },
+// {
+//   title: "Manage Subscriptions",
+//   icon: <MdCardMembership size={20} />,
+//   path: "/subscription/packages",
+//   permission: "manage_subscription_packages",
+// },
   {
   title: "FAQ",
   icon: <FaCircleQuestion size={18} />,
@@ -269,6 +275,12 @@ export const SidebarData = () => [
         path: "/content/banner",
         permission: "manage_banner",
       },
+      {
+        title: "Event Banner Management",
+        icon: <MdEvent style={{ fontSize: 18 }} />,
+        path: "/content/eventbanner",
+        permission: "manage_event_banner",
+      }
     ],
   },
 {

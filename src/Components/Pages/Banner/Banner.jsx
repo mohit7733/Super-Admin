@@ -73,13 +73,13 @@ const Banner = () => {
 
   const [editBannerError, setEditBannerError] = useState({});
 
- 
-const [BrandData, setBrandData] = useState([]);
-const [BrandLoading, setBrandLoading] = useState(false);
-const [BrandError, setBrandError] = useState(null);
 
-const [bannerType, setBannerType] = useState("");
-const [selectedBrand, setSelectedBrand] = useState("");
+  const [BrandData, setBrandData] = useState([]);
+  const [BrandLoading, setBrandLoading] = useState(false);
+  const [BrandError, setBrandError] = useState(null);
+
+  const [bannerType, setBannerType] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("");
 
   const initialBannerForm = {
     image_url: null,
@@ -91,7 +91,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
 
   const [bannerForm, setBannerForm] = useState(initialBannerForm);
 
- 
+
 
   const initialEditBannerForm = {
     image_url: "",
@@ -124,7 +124,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
     yogas: "yoga",
   };
 
-  
+
 
   const screenMap = {
     doctors: {
@@ -157,10 +157,10 @@ const [selectedBrand, setSelectedBrand] = useState("");
       detail: "DietDetails",
     },
 
-    
+
     medicine: {
       base: "MedicineScreen",
-   detail: "ProductDetails",
+      detail: "ProductDetails",
     },
 
     medicines: {
@@ -179,7 +179,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
     },
   };
 
- 
+
 
   const getCategoryName = (categoryId) => {
     const category = CategoryData.find(
@@ -189,7 +189,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
     return category?.name?.trim().toLowerCase();
   };
 
-  
+
 
   const isVariantCategory = (categoryName) => {
     return (
@@ -200,7 +200,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
     );
   };
 
-  
+
 
   const getServiceId = (service) => {
     const categoryName = getCategoryName(
@@ -214,7 +214,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
     return service?.id || "";
   };
 
-  
+
 
   const getEditServiceId = (service) => {
     const categoryName = getCategoryName(
@@ -228,7 +228,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
     return service?.id || "";
   };
 
- 
+
 
   const getServiceLabel = (service, categoryName) => {
     if (isVariantCategory(categoryName)) {
@@ -242,7 +242,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
     return service?.name || "Unnamed Service";
   };
 
-  
+
 
   const resetBannerForm = () => {
     setBannerForm(initialBannerForm);
@@ -309,8 +309,8 @@ const [selectedBrand, setSelectedBrand] = useState("");
         const categories = Array.isArray(data.data)
           ? data.data
           : Array.isArray(data.data?.results)
-          ? data.data.results
-          : [];
+            ? data.data.results
+            : [];
 
         setCategoryData(categories);
       } else {
@@ -337,7 +337,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
     }
   };
 
- 
+
 
   const getServiceList = async (categorySlug) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -392,10 +392,10 @@ const [selectedBrand, setSelectedBrand] = useState("");
         const services = Array.isArray(data.data)
           ? data.data
           : Array.isArray(data.data?.results)
-          ? data.data.results
-          : Array.isArray(data.data?.services)
-          ? data.data.services
-          : [];
+            ? data.data.results
+            : Array.isArray(data.data?.services)
+              ? data.data.services
+              : [];
 
         console.log(
           "NORMALIZED SERVICE DATA:",
@@ -427,7 +427,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
     }
   };
 
-  
+
 
   const handleChange = (e) => {
     const {
@@ -437,7 +437,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
       type,
     } = e.target;
 
-    
+
 
     if (name === "service_category_id") {
       const selectedCategory = CategoryData.find(
@@ -583,7 +583,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
       type,
     } = e.target;
 
-   
+
 
     if (name === "service_category_id") {
       const selectedCategory = CategoryData.find(
@@ -624,7 +624,7 @@ const [selectedBrand, setSelectedBrand] = useState("");
       return;
     }
 
-    
+
 
     if (name === "service_id") {
       const selectedCategory = CategoryData.find(
@@ -756,47 +756,47 @@ const [selectedBrand, setSelectedBrand] = useState("");
       return null;
     }
   };
-const getBrandList = async () => {
-  try {
-    setBrandLoading(true);
-    setBrandError(null);
+  const getBrandList = async () => {
+    try {
+      setBrandLoading(true);
+      setBrandError(null);
 
-    const token = sessionStorage.getItem("superadmin_token");
+      const token = sessionStorage.getItem("superadmin_token");
 
-    const response = await fetch(
-      `${BASE_URL}/vendors/admin/brand-name/`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
+      const response = await fetch(
+        `${BASE_URL}/vendors/admin/brand-name/`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        navigate("/login");
+        return;
       }
-    );
 
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
-      navigate("/login");
-      return;
-    }
+      const data = await response.json();
 
-    const data = await response.json();
-
-    if (data?.success) {
-      setBrandData(data?.data || []);
-    } else {
+      if (data?.success) {
+        setBrandData(data?.data || []);
+      } else {
+        setBrandData([]);
+        setBrandError(data?.message || "Failed to fetch brands");
+      }
+    } catch (error) {
+      console.error("Brand API Error:", error);
       setBrandData([]);
-      setBrandError(data?.message || "Failed to fetch brands");
+      setBrandError("Failed to fetch brands");
+    } finally {
+      setBrandLoading(false);
     }
-  } catch (error) {
-    console.error("Brand API Error:", error);
-    setBrandData([]);
-    setBrandError("Failed to fetch brands");
-  } finally {
-    setBrandLoading(false);
-  }
-};
- 
+  };
+
 
   const getBannerList = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -848,12 +848,12 @@ const getBrandList = async () => {
       } else {
         setError(
           data.message ||
-            "Failed to fetch banners"
+          "Failed to fetch banners"
         );
 
         toast.error(
           data.message ||
-            "Failed to fetch banners"
+          "Failed to fetch banners"
         );
       }
     } catch (error) {
@@ -874,15 +874,15 @@ const getBrandList = async () => {
     }
   };
 
-  
+
 
   useEffect(() => {
     getCategoryList();
     getBannerList();
-     getBrandList();
+    getBrandList();
   }, []);
 
- 
+
 
   const handleAddBanner = async (e) => {
     e.preventDefault();
@@ -1041,7 +1041,7 @@ const getBrandList = async () => {
       } else {
         toast.error(
           data?.message ||
-            "Failed to add banner"
+          "Failed to add banner"
         );
       }
     } catch (error) {
@@ -1058,7 +1058,7 @@ const getBrandList = async () => {
     }
   };
 
- 
+
 
   const handleUpdateBanner = async (
     e
@@ -1222,7 +1222,7 @@ const getBrandList = async () => {
       } else {
         toast.error(
           data?.message ||
-            "Failed to update banner"
+          "Failed to update banner"
         );
       }
     } catch (error) {
@@ -1237,7 +1237,7 @@ const getBrandList = async () => {
     }
   };
 
- 
+
   const handleDeleteBanner = async () => {
     const token =
       sessionStorage.getItem(
@@ -1313,7 +1313,7 @@ const getBrandList = async () => {
       } else {
         toast.error(
           data?.message ||
-            "Failed to delete banner"
+          "Failed to delete banner"
         );
       }
     } catch (error) {
@@ -1328,7 +1328,7 @@ const getBrandList = async () => {
     }
   };
 
-  
+
 
   const handleToggleBannerStatus = async (
     bannerId,
@@ -1399,10 +1399,9 @@ const getBrandList = async () => {
         data.success
       ) {
         toast.success(
-          `Banner ${
-            !currentStatus
-              ? "Activated"
-              : "Deactivated"
+          `Banner ${!currentStatus
+            ? "Activated"
+            : "Deactivated"
           } Successfully`
         );
 
@@ -1410,17 +1409,17 @@ const getBrandList = async () => {
           prev.map((item) =>
             item.id === bannerId
               ? {
-                  ...item,
-                  is_active:
-                    !currentStatus,
-                }
+                ...item,
+                is_active:
+                  !currentStatus,
+              }
               : item
           )
         );
       } else {
         toast.error(
           data.message ||
-            "Failed to update status"
+          "Failed to update status"
         );
       }
     } catch (error) {
@@ -1435,7 +1434,7 @@ const getBrandList = async () => {
     }
   };
 
- 
+
 
   const openEditModal = (item) => {
     setEditBannerId(item.id);
@@ -1484,7 +1483,7 @@ const getBrandList = async () => {
 
         const serviceCategory =
           serviceCategoryMap[
-            categoryName
+          categoryName
           ];
 
         if (serviceCategory) {
@@ -1498,7 +1497,7 @@ const getBrandList = async () => {
     setShowEditModal(true);
   };
 
-  
+
   const totalBanner =
     BannerData?.length || 0;
 
@@ -1514,11 +1513,11 @@ const getBrandList = async () => {
         item.is_active === false
     ).length || 0;
 
-  
+
 
   return (
     <>
-  
+
 
       <div className="page-header">
         <h1>Banner Management</h1>
@@ -1528,11 +1527,11 @@ const getBrandList = async () => {
         </p>
       </div>
 
-      
+
 
       <div className="vendors-stats stats2-grid">
 
-       
+
 
         <div className="stat2-card">
           <div
@@ -1556,7 +1555,7 @@ const getBrandList = async () => {
           </div>
         </div>
 
-      
+
 
         <div className="stat2-card">
           <div
@@ -1580,7 +1579,7 @@ const getBrandList = async () => {
           </div>
         </div>
 
-       
+
 
         <div className="stat2-card">
           <div
@@ -1605,7 +1604,7 @@ const getBrandList = async () => {
         </div>
       </div>
 
-     
+
       <div className="Question-controls">
         <div className="filter-controls">
 
@@ -1627,7 +1626,7 @@ const getBrandList = async () => {
         </div>
       </div>
 
-     
+
 
       <div className="table-wrapper">
         <table className="data-table">
@@ -1787,7 +1786,7 @@ const getBrandList = async () => {
         </table>
       </div>
 
-     
+
 
       {showBannerModal && (
         <div
@@ -1897,113 +1896,113 @@ const getBrandList = async () => {
                 )}
 
               </div>
-     <div className="form-group">
-  <label>Type *</label>
+              <div className="form-group">
+                <label>Type *</label>
 
-  <div className="type-options">
-    <label>
-      <input
-        type="checkbox"
-        checked={bannerType === "brand"}
-        onChange={() => {
-          setBannerType("brand");
-          setSelectedBrand("");
-          setBannerForm((prev) => ({
-            ...prev,
-            service_id: "",
-          }));
-        }}
-      />
-      Brand
-    </label>
+                <div className="type-options">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={bannerType === "brand"}
+                      onChange={() => {
+                        setBannerType("brand");
+                        setSelectedBrand("");
+                        setBannerForm((prev) => ({
+                          ...prev,
+                          service_id: "",
+                        }));
+                      }}
+                    />
+                    Brand
+                  </label>
 
-    <label>
-      <input
-        type="checkbox"
-        checked={bannerType === "service"}
-        onChange={() => {
-          setBannerType("service");
-          setSelectedBrand("");
-        }}
-      />
-      Service
-    </label>
-  </div>
-</div>
-{bannerType === "brand" && (
-  <div className="form-group">
-    <label>Brand *</label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={bannerType === "service"}
+                      onChange={() => {
+                        setBannerType("service");
+                        setSelectedBrand("");
+                      }}
+                    />
+                    Service
+                  </label>
+                </div>
+              </div>
+              {bannerType === "brand" && (
+                <div className="form-group">
+                  <label>Brand *</label>
 
-    <select
-      value={selectedBrand}
-     onChange={(e) => {
-  const brandId = e.target.value;
+                  <select
+                    value={selectedBrand}
+                    onChange={(e) => {
+                      const brandId = e.target.value;
 
-  setSelectedBrand(brandId);
+                      setSelectedBrand(brandId);
 
-  const redirectUrl = brandId
-    ? `CategoryProduct/${brandId}`
-    : "";
+                      const redirectUrl = brandId
+                        ? `CategoryProduct/${brandId}`
+                        : "";
 
-  setBannerForm((prev) => ({
-    ...prev,
-    service_id: "",
-    redirect_url: redirectUrl,
-  }));
+                      setBannerForm((prev) => ({
+                        ...prev,
+                        service_id: "",
+                        redirect_url: redirectUrl,
+                      }));
 
-  setBannerError((prev) => ({
-    ...prev,
-    redirect_url: "",
-  }));
-}}
-      className="form-control"
-    >
-      <option value="">
-        {BrandLoading ? "Loading brands..." : "Select Brand"}
-      </option>
+                      setBannerError((prev) => ({
+                        ...prev,
+                        redirect_url: "",
+                      }));
+                    }}
+                    className="form-control"
+                  >
+                    <option value="">
+                      {BrandLoading ? "Loading brands..." : "Select Brand"}
+                    </option>
 
-      {BrandData
-        .filter((brand) => brand.is_active)
-        .map((brand) => (
-          <option key={brand.id} value={brand.id}>
-            {brand.name}
-          </option>
-        ))}
-    </select>
+                    {BrandData
+                      .filter((brand) => brand.is_active)
+                      .map((brand) => (
+                        <option key={brand.id} value={brand.id}>
+                          {brand.name}
+                        </option>
+                      ))}
+                  </select>
 
-    {BrandError && (
-      <span className="error-text">{BrandError}</span>
-    )}
-  </div>
-)}
+                  {BrandError && (
+                    <span className="error-text">{BrandError}</span>
+                  )}
+                </div>
+              )}
 
-{bannerType === "service" && (
-  <div className="form-group">
-    <label>Service </label>
+              {bannerType === "service" && (
+                <div className="form-group">
+                  <label>Service </label>
 
-    <select
-      value={bannerForm.service_id}
-      onChange={handleChange}
-      className="form-control"
-    >
-      <option value="">Select Service</option>
+                  <select
+                    value={bannerForm.service_id}
+                    onChange={handleChange}
+                    className="form-control"
+                  >
+                    <option value="">Select Service</option>
 
-      {ServiceData.map((service) => (
-        <option
-          key={getServiceId(service)}
-          value={getServiceId(service)}
-        >
-          {getServiceLabel(
-            service,
-            getCategoryName(bannerForm.service_category_id)
-          )}
-        </option>
-      ))}
-    </select>
-  </div>
-)}
+                    {ServiceData.map((service) => (
+                      <option
+                        key={getServiceId(service)}
+                        value={getServiceId(service)}
+                      >
+                        {getServiceLabel(
+                          service,
+                          getCategoryName(bannerForm.service_category_id)
+                        )}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-             
+
 
               <div className="form-group">
 
@@ -2250,7 +2249,7 @@ const getBrandList = async () => {
         </div>
       )}
 
-    
+
 
       {showEditModal && (
         <div
@@ -2447,7 +2446,7 @@ const getBrandList = async () => {
 
               </div>
 
-             
+
               {isVariantCategory(
                 getCategoryName(
                   editBannerForm.service_category_id
@@ -2496,9 +2495,9 @@ const getBrandList = async () => {
 
                       const isMedicine =
                         currentCategory ===
-                          "medicine" ||
+                        "medicine" ||
                         currentCategory ===
-                          "medicines";
+                        "medicines";
 
                       return (
                         <>
@@ -2636,7 +2635,7 @@ const getBrandList = async () => {
                   />
 
                   {editBannerImage ||
-                  editBannerForm.image_url ? (
+                    editBannerForm.image_url ? (
                     <div className="banner-preview-wrapper">
 
                       <div className="banner-preview-left">
@@ -2645,8 +2644,8 @@ const getBrandList = async () => {
                           src={
                             editBannerImage
                               ? URL.createObjectURL(
-                                  editBannerImage
-                                )
+                                editBannerImage
+                              )
                               : editBannerForm.image_url
                           }
                           alt="preview"
@@ -2664,8 +2663,8 @@ const getBrandList = async () => {
                             window.open(
                               editBannerImage
                                 ? URL.createObjectURL(
-                                    editBannerImage
-                                  )
+                                  editBannerImage
+                                )
                                 : editBannerForm.image_url,
                               "_blank"
                             )
@@ -2857,7 +2856,7 @@ const getBrandList = async () => {
         </div>
       )}
 
-    
+
 
       {BannerPreviewImage && (
         <div
