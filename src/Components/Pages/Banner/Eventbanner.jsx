@@ -1106,7 +1106,7 @@ const EventBanner = () => {
                                                         End live
                                                     </button>
                                                 )}
-                                                {status !== "live" && new Date(item.starts_at) > new Date() && (
+                                                {status !== "live" && new Date(item.ends_at) > new Date() && (
                                                     <button
                                                         type="button"
                                                         className="banner-text-btn primary"
