@@ -1025,13 +1025,15 @@ const Category = () => {
                   value={redirectUrl}
                   onChange={(e) => setRedirectUrl(e.target.value)}
                 >
-                  <option value="">Select Redirect Screen</option>
-                 {redirectScreenOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                 <option value="">Select Redirect Screen</option>
 
+{redirectScreenOptions.map((option) => (
+  <option key={option.value} value={option.value}>
+    {option.label}
+  </option>
+))}
+                 
+                  
                 </select>
               </div>
 

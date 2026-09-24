@@ -604,7 +604,7 @@ const getServiceCategories = async () => {
   }
 };
 
- const getCoupons = async () => {
+const getCoupons = async () => {
   const token = sessionStorage.getItem("superadmin_token");
 
   if (!token) {
@@ -634,7 +634,6 @@ const getServiceCategories = async () => {
     // Unauthorized
     if (response.status === 401 || response.status === 403) {
       sessionStorage.removeItem("superadmin_token");
-
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
@@ -644,13 +643,11 @@ const getServiceCategories = async () => {
 
     console.log("Coupon API Response:", data);
 
-    // API response uses success: true
     if (response.ok && data.success === true) {
       const couponData = Array.isArray(data.data)
         ? data.data
         : [];
 
-      // Latest created coupon first
       const sortedData = [...couponData].sort(
         (a, b) =>
           new Date(b.created_at) - new Date(a.created_at)
@@ -658,13 +655,17 @@ const getServiceCategories = async () => {
 
       setCoupons(sortedData);
       setError(null);
+
+     
     } else {
       const errorMessage =
         data.message || "Failed to fetch coupons";
 
-      toast.error(errorMessage);
       setError(errorMessage);
       setCoupons([]);
+
+     
+      toast.error(errorMessage);
     }
   } catch (error) {
     console.error("Coupon Fetch Error:", error);
@@ -673,8 +674,9 @@ const getServiceCategories = async () => {
       "Something went wrong while fetching coupon data.";
 
     setError(errorMessage);
-    toast.error("Failed to fetch coupon data");
     setCoupons([]);
+
+    toast.error(errorMessage);
   } finally {
     setLoading(false);
   }
