@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUsers, FaChartLine, FaCalendarAlt, FaEdit, FaSearch, FaTimes , FaCopy, FaFileExcel,} from 'react-icons/fa';
+import { FaUsers, FaChartLine, FaCalendarAlt, FaEdit, FaSearch, FaTimes, FaCopy, FaFileExcel, } from 'react-icons/fa';
 import { FiTrash2, FiUpload, FiEye } from 'react-icons/fi';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -37,17 +37,17 @@ const Category = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [editCategoryCode, setEditCategoryCode] = useState("");
-const [editErrors, setEditErrors] = useState({});
+  const [editErrors, setEditErrors] = useState({});
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
     inactive: 0
   });
-const hasFetched = useRef(false);
+  const hasFetched = useRef(false);
   const addFileRef = useRef(null);
   const editFileRef = useRef(null);
 
-  
+
   const calculateStats = (data) => {
     const total = data.length;
     const active = data.filter(item => item.is_active === true).length;
@@ -55,7 +55,7 @@ const hasFetched = useRef(false);
     setStats({ total, active, inactive });
   };
 
- 
+
   const filterData = (data, search, status) => {
     let filtered = data;
 
@@ -67,7 +67,7 @@ const hasFetched = useRef(false);
       );
     }
 
-   
+
     if (status === "active") {
       filtered = filtered.filter(item => item.is_active === true);
     } else if (status === "inactive") {
@@ -114,8 +114,8 @@ const hasFetched = useRef(false);
 
       if (data.success) {
         const sortedData = [...data.data].sort(
-    (a, b) => new Date(b.created_at) - new Date(a.created_at)
-  );
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
         setData(sortedData);
         calculateStats(data.data);
         setFilteredData(filterData(data.data, searchTerm, statusFilter));
@@ -132,24 +132,23 @@ const hasFetched = useRef(false);
       setLoading(false);
     }
   };
- const redirectScreenOptions = [
-  { label: "Prakriti", value: "PrakritiProfile" },
-  { label: "Medicine", value: "MedicineScreen" },
-  { label: "Diet", value: "DietScreen" },
-  { label: "Products", value: "ProductsScreen" },
-  { label: "Yoga", value: "YogaScreen" },
-  {label:"Doctor",value:"ConsultScreen"},
-];
+  const redirectScreenOptions = [
+    { label: "Prakriti", value: "PrakritiProfile" },
+    { label: "Medicine", value: "MedicineScreen" },
+    { label: "Diet", value: "DietScreen" },
+    { label: "Products", value: "ProductsScreen" },
+    { label: "Yoga", value: "YogaScreen" },
+  ];
 
 
- 
-useEffect(() => {
-  if (hasFetched.current) return;
 
-  hasFetched.current = true;
-  getCategoryList();
-}, []);
- 
+  useEffect(() => {
+    if (hasFetched.current) return;
+
+    hasFetched.current = true;
+    getCategoryList();
+  }, []);
+
   useEffect(() => {
     setFilteredData(filterData(Data, searchTerm, statusFilter));
   }, [Data, searchTerm, statusFilter]);
@@ -208,15 +207,15 @@ useEffect(() => {
     if (!categoryName.trim()) {
       newErrors.categoryName = "Category name is required";
     }
-  const code = CategoryCode.trim().toUpperCase();
+    const code = CategoryCode.trim().toUpperCase();
 
-if (!code) {
-  newErrors.CategoryCode = "Category Code is required";
-} else if (code.length !== 5) {
-  newErrors.CategoryCode = "Code must be exactly 5 characters";
-} else if (!/^[A-Z]+$/.test(code)) {
-  newErrors.CategoryCode = "Only uppercase letters are allowed";
-}
+    if (!code) {
+      newErrors.CategoryCode = "Category Code is required";
+    } else if (code.length !== 5) {
+      newErrors.CategoryCode = "Code must be exactly 5 characters";
+    } else if (!/^[A-Z]+$/.test(code)) {
+      newErrors.CategoryCode = "Only uppercase letters are allowed";
+    }
     if (!categoryImage) {
       newErrors.categoryImage = "Category image is required";
     }
@@ -239,15 +238,15 @@ if (!code) {
         }
       }
 
-     const payload = {
-  name: categoryName.trim(),
-  image_url: imageUrl,
-  is_active: isActive,
-  code: CategoryCode.toUpperCase().trim(),
-  redirect_url: redirectUrl,
-};
+      const payload = {
+        name: categoryName.trim(),
+        image_url: imageUrl,
+        is_active: isActive,
+        code: CategoryCode.toUpperCase().trim(),
+        redirect_url: redirectUrl,
+      };
 
-   
+
       const response = await fetch(
         `${BASE_URL}/user/admin/service-category/`,
         {
@@ -280,31 +279,31 @@ if (!code) {
         setErrors({});
         getCategoryList();
       } else {
-  let apiErrors = {};
+        let apiErrors = {};
 
-  if (data.errors) {
-    Object.keys(data.errors).forEach((key) => {
-      if (key === "name") {
-        apiErrors.categoryName = data.errors[key][0];
+        if (data.errors) {
+          Object.keys(data.errors).forEach((key) => {
+            if (key === "name") {
+              apiErrors.categoryName = data.errors[key][0];
+            }
+
+            if (key === "code") {
+              apiErrors.CategoryCode = data.errors[key][0];
+            }
+
+            if (key === "image_url") {
+              apiErrors.categoryImage = data.errors[key][0];
+            }
+          });
+
+          setErrors(apiErrors);
+
+
+          Object.values(apiErrors).forEach((msg) => toast.error(msg));
+        } else {
+          toast.error(data.message || "Failed to add category");
+        }
       }
-
-      if (key === "code") {
-        apiErrors.CategoryCode = data.errors[key][0];
-      }
-
-      if (key === "image_url") {
-        apiErrors.categoryImage = data.errors[key][0];
-      }
-    });
-
-    setErrors(apiErrors);
-
-    
-    Object.values(apiErrors).forEach((msg) => toast.error(msg));
-  } else {
-    toast.error(data.message || "Failed to add category");
-  }
-}
     } catch (error) {
       console.error("Add Category Error:", error);
       toast.error("Something went wrong");
@@ -325,21 +324,21 @@ if (!code) {
 
     let newErrors = {};
 
-if (!editCategoryName.trim()) {
-  newErrors.categoryName = "Category name is required";
-}
+    if (!editCategoryName.trim()) {
+      newErrors.categoryName = "Category name is required";
+    }
 
 
 
-if (!editCategoryImage && !existingImage) {
-  newErrors.categoryImage = "Category image is required";
-}
+    if (!editCategoryImage && !existingImage) {
+      newErrors.categoryImage = "Category image is required";
+    }
 
-setEditErrors(newErrors);
+    setEditErrors(newErrors);
 
-if (Object.keys(newErrors).length > 0) {
-  return;
-}
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
 
     try {
       setSubmitLoading(true);
@@ -357,7 +356,7 @@ if (Object.keys(newErrors).length > 0) {
         name: editCategoryName.trim(),
         image_url: imageUrl,
         is_active: isActive,
-          redirect_url: redirectUrl,
+        redirect_url: redirectUrl,
       };
 
       const response = await fetch(
@@ -382,41 +381,41 @@ if (Object.keys(newErrors).length > 0) {
 
       const data = await response.json();
 
-    if (response.ok) {
-  toast.success("Category updated successfully");
-  setEditModal(false);
-  setEditCategoryName("");
-  setEditCategoryCode("");
-  setEditCategoryImage(null);
-  setEditCategoryId(null);
-  setExistingImage("");
-  setEditErrors({});
-  getCategoryList();
-} else {
-  let apiErrors = {};
+      if (response.ok) {
+        toast.success("Category updated successfully");
+        setEditModal(false);
+        setEditCategoryName("");
+        setEditCategoryCode("");
+        setEditCategoryImage(null);
+        setEditCategoryId(null);
+        setExistingImage("");
+        setEditErrors({});
+        getCategoryList();
+      } else {
+        let apiErrors = {};
 
-  if (data.errors) {
-    Object.keys(data.errors).forEach((key) => {
-      if (key === "name") {
-        apiErrors.categoryName = data.errors.name[0];
+        if (data.errors) {
+          Object.keys(data.errors).forEach((key) => {
+            if (key === "name") {
+              apiErrors.categoryName = data.errors.name[0];
+            }
+
+            if (key === "code") {
+              apiErrors.CategoryCode = data.errors.code[0];
+            }
+
+            if (key === "image_url") {
+              apiErrors.categoryImage = data.errors.image_url[0];
+            }
+          });
+
+          setEditErrors(apiErrors);
+
+          Object.values(apiErrors).forEach((msg) => toast.error(msg));
+        } else {
+          toast.error(data.message || "Failed to update category");
+        }
       }
-
-      if (key === "code") {
-        apiErrors.CategoryCode = data.errors.code[0];
-      }
-
-      if (key === "image_url") {
-        apiErrors.categoryImage = data.errors.image_url[0];
-      }
-    });
-
-    setEditErrors(apiErrors);
-
-    Object.values(apiErrors).forEach((msg) => toast.error(msg));
-  } else {
-    toast.error(data.message || "Failed to update category");
-  }
-}
     } catch (error) {
       console.error("Update Category Error:", error);
       toast.error("Something went wrong");
@@ -524,126 +523,126 @@ if (Object.keys(newErrors).length > 0) {
     setSearchTerm("");
     setStatusFilter("all");
   };
-const exportToExcel = async () => {
-  if (!FilteredData?.length) {
-    toast.error("No category data available to export");
-    return;
-  }
+  const exportToExcel = async () => {
+    if (!FilteredData?.length) {
+      toast.error("No category data available to export");
+      return;
+    }
 
-  try {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Categories");
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Categories");
 
-    worksheet.columns = [
-      { header: "#", key: "index", width: 8 },
-      { header: " Service Category Name", key: "name", width: 30 },
-      { header: " Service Category ID", key: "id", width: 40 },
-      { header: "Category Code", key: "code", width: 20 },
-      { header: "Image Link", key: "image", width: 50 },
-      { header: "Status", key: "status", width: 15 },
-      { header: "Created At", key: "created_at", width: 20 },
-    ];
+      worksheet.columns = [
+        { header: "#", key: "index", width: 8 },
+        { header: " Service Category Name", key: "name", width: 30 },
+        { header: " Service Category ID", key: "id", width: 40 },
+        { header: "Category Code", key: "code", width: 20 },
+        { header: "Image Link", key: "image", width: 50 },
+        { header: "Status", key: "status", width: 15 },
+        { header: "Created At", key: "created_at", width: 20 },
+      ];
 
-    FilteredData.forEach((item, index) => {
-      const row = worksheet.addRow({
-        index: index + 1,
-        name: item.name || "N/A",
-        id: item.id || "N/A",
-        code: item.code || "N/A",
-        image: item.image_url || "N/A",
-        status: item.is_active ? "Active" : "Inactive",
-        created_at: item.created_at
-          ? new Date(item.created_at).toLocaleDateString()
-          : "N/A",
+      FilteredData.forEach((item, index) => {
+        const row = worksheet.addRow({
+          index: index + 1,
+          name: item.name || "N/A",
+          id: item.id || "N/A",
+          code: item.code || "N/A",
+          image: item.image_url || "N/A",
+          status: item.is_active ? "Active" : "Inactive",
+          created_at: item.created_at
+            ? new Date(item.created_at).toLocaleDateString()
+            : "N/A",
+        });
+
+        // Image URL ko clickable hyperlink banana
+        if (item.image_url) {
+          const imageCell = row.getCell("image");
+
+          imageCell.value = {
+            text: "View Image",
+            hyperlink: item.image_url,
+          };
+
+          imageCell.font = {
+            color: { argb: "0563C1" },
+            underline: true,
+          };
+        }
       });
 
-      // Image URL ko clickable hyperlink banana
-      if (item.image_url) {
-        const imageCell = row.getCell("image");
 
-        imageCell.value = {
-          text: "View Image",
-          hyperlink: item.image_url,
-        };
+      worksheet.getRow(1).font = {
+        bold: true,
+        color: { argb: "FFFFFF" },
+      };
 
-        imageCell.font = {
-          color: { argb: "0563C1" },
-          underline: true,
-        };
-      }
-    });
+      worksheet.getRow(1).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0D614E" },
+      };
 
-  
-    worksheet.getRow(1).font = {
-      bold: true,
-      color: { argb: "FFFFFF" },
-    };
+      worksheet.getRow(1).alignment = {
+        vertical: "middle",
+        horizontal: "center",
+      };
 
-    worksheet.getRow(1).fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "0D614E" },
-    };
+      // Borders
+      worksheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: {
+              style: "thin",
+              color: { argb: "D1D5DB" },
+            },
+            left: {
+              style: "thin",
+              color: { argb: "D1D5DB" },
+            },
+            bottom: {
+              style: "thin",
+              color: { argb: "D1D5DB" },
+            },
+            right: {
+              style: "thin",
+              color: { argb: "D1D5DB" },
+            },
+          };
 
-    worksheet.getRow(1).alignment = {
-      vertical: "middle",
-      horizontal: "center",
-    };
-
-    // Borders
-    worksheet.eachRow((row) => {
-      row.eachCell((cell) => {
-        cell.border = {
-          top: {
-            style: "thin",
-            color: { argb: "D1D5DB" },
-          },
-          left: {
-            style: "thin",
-            color: { argb: "D1D5DB" },
-          },
-          bottom: {
-            style: "thin",
-            color: { argb: "D1D5DB" },
-          },
-          right: {
-            style: "thin",
-            color: { argb: "D1D5DB" },
-          },
-        };
-
-        cell.alignment = {
-          vertical: "middle",
-        };
+          cell.alignment = {
+            vertical: "middle",
+          };
+        });
       });
-    });
 
-    const buffer = await workbook.xlsx.writeBuffer();
+      const buffer = await workbook.xlsx.writeBuffer();
 
-    const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
 
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
 
-    link.href = url;
-    link.download = `Service_Categories_${new Date()
-      .toISOString()
-      .slice(0, 10)}.xlsx`;
+      link.href = url;
+      link.download = `Service_Categories_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`;
 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-    window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
 
-    toast.success("Excel exported successfully!");
-  } catch (error) {
-    console.error("Excel Export Error:", error);
-    toast.error("Failed to export Excel");
-  }
-};
+      toast.success("Excel exported successfully!");
+    } catch (error) {
+      console.error("Excel Export Error:", error);
+      toast.error("Failed to export Excel");
+    }
+  };
   return (
     <>
       <div className="page-header">
@@ -651,7 +650,7 @@ const exportToExcel = async () => {
         <p className="page-paragraph">Manage categories and their details</p>
       </div>
 
-     
+
       <div className="stats2-grid">
         <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
@@ -671,7 +670,7 @@ const exportToExcel = async () => {
             <div className="stat2-value">{stats.active}</div>
           </div>
         </div>
-    <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
             <FaCalendarAlt size={16} />
           </div>
@@ -682,7 +681,7 @@ const exportToExcel = async () => {
         </div>
       </div>
 
-      
+
       <div className="filter-category">
         <div className="filter-controls">
           <div className="search-wrapper">
@@ -712,238 +711,238 @@ const exportToExcel = async () => {
           </select>
 
           {(searchTerm || statusFilter !== "all") && (
-          <button className="clear-filters-btn" onClick={clearFilters}>
-    <FiTrash2 />
-</button>
+            <button className="clear-filters-btn" onClick={clearFilters}>
+              <FiTrash2 />
+            </button>
           )}
         </div>
         <div className="category-action-buttons">
- <button
-   className="add-customer-btn"
-    onClick={exportToExcel}
-    disabled={!FilteredData?.length}
-  >
-    <FaFileExcel />
-    Export Excel
-  </button>
-        <button
-          className="add-customer-btn"
-          onClick={() => {
-            setShowModal(true);
-            setCategoryName("");
-            setCategoryCode("");
-            setCategoryImage(null);
-            setErrors({});
-            setIsActive(false);
-          }}
-        >
-        <BiPlus/>
-          Add Category
-        </button>
+          <button
+            className="add-customer-btn"
+            onClick={exportToExcel}
+            disabled={!FilteredData?.length}
+          >
+            <FaFileExcel />
+            Export Excel
+          </button>
+          <button
+            className="add-customer-btn"
+            onClick={() => {
+              setShowModal(true);
+              setCategoryName("");
+              setCategoryCode("");
+              setCategoryImage(null);
+              setErrors({});
+              setIsActive(false);
+            }}
+          >
+            <BiPlus />
+            Add Category
+          </button>
         </div>
       </div>
 
-     
+
       <div className="table-wrapper">
-      <table className="data-table">
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Category Name</th>
-      <th>Code</th>
-      <th>Image</th>
-      <th>Status</th>
-      <th>Created At</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Category Name</th>
+              <th>Code</th>
+              <th>Image</th>
+              <th>Status</th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
 
-  <tbody>
-    {Loading ? (
-      Array(3)
-        .fill(0)
-        .map((_, i) => (
-          <tr key={i}>
-            <td colSpan="7">
-              <div className="skeleton-row"></div>
-            </td>
-          </tr>
-        ))
-    ) : Error ? (
-      <tr>
-        <td
-          colSpan="7"
-          style={{
-            color: "#dc2626",
+          <tbody>
+            {Loading ? (
+              Array(3)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan="7">
+                      <div className="skeleton-row"></div>
+                    </td>
+                  </tr>
+                ))
+            ) : Error ? (
+              <tr>
+                <td
+                  colSpan="7"
+                  style={{
+                    color: "#dc2626",
 
-          
-          }}
-        >
-          {Error}
-        </td>
-      </tr>
-    ) : FilteredData?.length > 0 ? (
-      FilteredData.map((item, index) => (
-        <tr key={item.id}>
-          <td>{index + 1}</td>
 
-          <td>
-            <strong>{item.name || "N/A"}</strong>
-                            {item.id && (
-                   <div className="category-id-wrapper">
-                     <span className="category-id-text">
-                       {item.id}
-                     </span>
-                 
-                     <button
-                       type="button"
-                       className="copy-id-btn"
-                       onClick={() => {
-                         navigator.clipboard.writeText(item.id);
-                         toast.success("Category ID copied!");
-                       }}
-                       title="Copy Category ID"
-                     >
-                       <FaCopy size={12} />
-                     </button>
-                   </div>
-                 )}
-          </td>
+                  }}
+                >
+                  {Error}
+                </td>
+              </tr>
+            ) : FilteredData?.length > 0 ? (
+              FilteredData.map((item, index) => (
+                <tr key={item.id}>
+                  <td>{index + 1}</td>
 
-          <td>
-            <span className="category-code-badge">
-              {item.code || "N/A"}
-            </span>
-          </td>
+                  <td>
+                    <strong>{item.name || "N/A"}</strong>
+                    {item.id && (
+                      <div className="category-id-wrapper">
+                        <span className="category-id-text">
+                          {item.id}
+                        </span>
 
-          <td>
-            {item.image_url ? (
-              <img
-                src={item.image_url}
-                alt={item.name}
-                width="34"
-                height="34"
-                style={{
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  border: "1px solid #e5e7eb",
-                }}
-                onClick={() => setPreviewImage(item.image_url)}
-              />
+                        <button
+                          type="button"
+                          className="copy-id-btn"
+                          onClick={() => {
+                            navigator.clipboard.writeText(item.id);
+                            toast.success("Category ID copied!");
+                          }}
+                          title="Copy Category ID"
+                        >
+                          <FaCopy size={12} />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+
+                  <td>
+                    <span className="category-code-badge">
+                      {item.code || "N/A"}
+                    </span>
+                  </td>
+
+                  <td>
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        width="34"
+                        height="34"
+                        style={{
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          border: "1px solid #e5e7eb",
+                        }}
+                        onClick={() => setPreviewImage(item.image_url)}
+                      />
+                    ) : (
+                      <span
+                        style={{
+                          color: "#9ca3af",
+                          fontSize
+
+
+
+
+
+                            : "13px",
+                        }}
+                      >
+                        No Image
+                      </span>
+                    )}
+                  </td>
+
+                  <td>
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={item.is_active}
+                        onChange={() => {
+                          setSelectedCategory(item);
+                          setStatusModal(true);
+                        }}
+                      />
+                      <span className="slider round"></span>
+                    </label>
+                  </td>
+
+                  <td
+                    style={{
+                      color: "#6b7280",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </td>
+
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className="action-btn edit"
+                        title="Edit"
+                        onClick={() => {
+                          setEditCategoryId(item.id);
+                          setEditCategoryName(item.name);
+                          setExistingImage(item.image_url);
+                          setIsActive(item.is_active);
+                          setEditModal(true);
+                          setEditCategoryCode(item.code || "");
+                          setEditErrors({});
+                          setRedirectUrl(item.redirect_url || "");
+                        }}
+                      >
+                        <FaEdit />
+                      </button>
+
+                      <button
+                        className="action-btn delete"
+                        title="Delete"
+                        onClick={() => {
+                          setCategoryId(item.id);
+                          setDeleteModal(true);
+                        }}
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             ) : (
-              <span
-                style={{
-                  color: "#9ca3af",
-                  fontSize
-                  
-                  
-                  
-                  
-                  
-                  : "13px",
-                }}
-              >
-                No Image
-              </span>
-            )}
-          </td>
+              <tr>
+                <td colSpan="7">
+                  {searchTerm || statusFilter !== "all" ? (
+                    <div className="empty-filter-state">
 
-          <td>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={item.is_active}
-                onChange={() => {
-                  setSelectedCategory(item);
-                  setStatusModal(true);
-                }}
-              />
-              <span className="slider round"></span>
-            </label>
-          </td>
+                      <div className="empty-filter-icon">
+                        <FiSearch />
+                      </div>
 
-          <td
-            style={{
-              color: "#6b7280",
-              fontSize: "14px",
-            }}
-          >
-            {new Date(item.created_at).toLocaleDateString()}
-          </td>
+                      <h3>No Categories Found</h3>
 
-          <td>
-            <div className="action-buttons">
-              <button
-                className="action-btn edit"
-                title="Edit"
-                onClick={() => {
-                  setEditCategoryId(item.id);
-                  setEditCategoryName(item.name);
-                  setExistingImage(item.image_url);
-                  setIsActive(item.is_active);
-                  setEditModal(true);
-                  setEditCategoryCode(item.code || "");
-                  setEditErrors({});
-                  setRedirectUrl(item.redirect_url || "");
-                }}
-              >
-                <FaEdit />
-              </button>
+                      <p>
+                        We couldn't find any category matching your search or
+                        selected filters.
+                      </p>
 
-              <button
-                className="action-btn delete"
-                title="Delete"
-                onClick={() => {
-                  setCategoryId(item.id);
-                  setDeleteModal(true);
-                }}
-              >
-                <FiTrash2 />
-              </button>
-            </div>
-          </td>
-        </tr>
-      ))
-    ) : (
-      <tr>
-        <td colSpan="7">
-          {searchTerm || statusFilter !== "all" ? (
-            <div className="empty-filter-state">
+                      <button
+                        onClick={clearFilters}
+                      >
+                        <FiRefreshCw />
+                        Reset Filters
+                      </button>
 
-              <div className="empty-filter-icon">
-                <FiSearch />
-              </div>
+                    </div>
+                  ) : (
+                    <div className="empty-filter-state">
 
-              <h3>No Categories Found</h3>
+                      <div className="empty-filter-icon">
+                        📂
+                      </div>
 
-              <p>
-                We couldn't find any category matching your search or
-                selected filters.
-              </p>
+                      <h3>No Categories Available</h3>
 
-              <button
-                onClick={clearFilters}
-              >
-                <FiRefreshCw />
-                Reset Filters
-              </button>
-
-            </div>
-          ) : (
-            <div className="empty-filter-state">
-
-              <div className="empty-filter-icon">
-                📂
-              </div>
-
-              <h3>No Categories Available</h3>
-
-              <p>
-                 Create your first
-                category to get started.Click  "on Add Category" to Create
-              </p>
-{/* 
+                      <p>
+                        Create your first
+                        category to get started.Click  "on Add Category" to Create
+                      </p>
+                      {/* 
               <button
                 className="add-customer-btn"
                 onClick={() => {
@@ -959,32 +958,32 @@ const exportToExcel = async () => {
                 Add Category
               </button> */}
 
-            </div>
-          )}
-        </td>
-      </tr>
-    )}
-  </tbody>
-</table>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
-  
+
       {showModal && (
         <div
-    className="prakriti-modal-overlay"
-    onClick={() => {
-      setShowModal(false);
-      setCategoryName("");
-      setCategoryCode("");
-      setCategoryImage(null);
-      setErrors({});
-        setRedirectUrl("");
-    }}
-  >
-    <div
-      className="prakriti-modal"
-      onClick={(e) => e.stopPropagation()}
-    >
+          className="prakriti-modal-overlay"
+          onClick={() => {
+            setShowModal(false);
+            setCategoryName("");
+            setCategoryCode("");
+            setCategoryImage(null);
+            setErrors({});
+            setRedirectUrl("");
+          }}
+        >
+          <div
+            className="prakriti-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="prakriti-modal-header">
               <h2>Add Category</h2>
               <button className="modal-close-btn" onClick={() => {
@@ -1018,47 +1017,50 @@ const exportToExcel = async () => {
                 )}
               </div>
 
-          <div className="form-group">
-  <label>Redirect Screen</label>
+              <div className="form-group">
+                <label>Redirect Screen</label>
 
-  <select
-    value={redirectUrl}
-    onChange={(e) => setRedirectUrl(e.target.value)}
-  >
-    <option value="">Select Redirect Screen</option>
-    <option value="PrakritiProfile">Prakriti</option>
-    <option value="MedicineScreen">Medicine</option>
-    <option value="DietScreen">Diet</option>
-    <option value="ProductsScreen">Products</option>
-    <option value="YogaScreen">Yoga</option>
-  </select>
-</div>
+                <select
+                  value={redirectUrl}
+                  onChange={(e) => setRedirectUrl(e.target.value)}
+                >
+                  <option value="">Select Redirect Screen</option>
+                  <option value="PrakritiProfile">Prakriti</option>
+                  <option value="MedicineScreen">Medicine</option>
+                  <option value="DietScreen">Diet</option>
+                  <option value="ProductsScreen">Products</option>
+                  <option value="YogaScreen">Yoga</option>
+                  
+                 
+                  
+                </select>
+              </div>
 
               <div className="form-group">
                 <label>Category Code <span className="required">*</span></label>
-              <input
-  type="text"
-  value={CategoryCode}
-  onChange={(e) => {
-    const value = e.target.value.toUpperCase();
+                <input
+                  type="text"
+                  value={CategoryCode}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase();
 
-   
-    if (/[^A-Z]/.test(value)) {
-      toast.error("Category code should contain only letters (A-Z)");
-      return;
-    }
 
-    setCategoryCode(value.slice(0, 5));
+                    if (/[^A-Z]/.test(value)) {
+                      toast.error("Category code should contain only letters (A-Z)");
+                      return;
+                    }
 
-    setErrors((prev) => ({
-      ...prev,
-      CategoryCode: "",
-    }));
-  }}
-  maxLength={5}
-  placeholder="Enter category code"
-  className={errors.CategoryCode ? "error-input" : ""}
-/>
+                    setCategoryCode(value.slice(0, 5));
+
+                    setErrors((prev) => ({
+                      ...prev,
+                      CategoryCode: "",
+                    }));
+                  }}
+                  maxLength={5}
+                  placeholder="Enter category code"
+                  className={errors.CategoryCode ? "error-input" : ""}
+                />
                 {errors.CategoryCode && (
                   <p className="error-text">{errors.CategoryCode}</p>
                 )}
@@ -1149,7 +1151,7 @@ const exportToExcel = async () => {
                     setCategoryCode("");
                     setCategoryImage(null);
                     setErrors({});
-                      setRedirectUrl("");
+                    setRedirectUrl("");
                   }}
                 >
                   Cancel
@@ -1167,24 +1169,24 @@ const exportToExcel = async () => {
         </div>
       )}
 
-     
+
       {editModal && (
-       <div
-    className="prakriti-modal-overlay"
-    onClick={() => {
-      setEditModal(false);
-      setEditCategoryName("");
-      setEditCategoryCode("");
-      setEditCategoryImage(null);
-      setExistingImage("");
-      setEditCategoryId(null);
-      setEditErrors({});
-    }}
-  >
-    <div
-      className="prakriti-modal"
-      onClick={(e) => e.stopPropagation()}
-    >
+        <div
+          className="prakriti-modal-overlay"
+          onClick={() => {
+            setEditModal(false);
+            setEditCategoryName("");
+            setEditCategoryCode("");
+            setEditCategoryImage(null);
+            setExistingImage("");
+            setEditCategoryId(null);
+            setEditErrors({});
+          }}
+        >
+          <div
+            className="prakriti-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="prakriti-modal-header">
               <h2>Edit Category</h2>
               <button className="modal-close-btn" onClick={() => setEditModal(false)}>
@@ -1195,44 +1197,44 @@ const exportToExcel = async () => {
             <form onSubmit={handleUpdateCategory} className="prakriti-form">
               <div className="form-group">
                 <label>Category Name <span className="required">*</span></label>
-               <input
-  type="text"
-  value={editCategoryName}
-  onChange={(e) => {
-    setEditCategoryName(e.target.value);
+                <input
+                  type="text"
+                  value={editCategoryName}
+                  onChange={(e) => {
+                    setEditCategoryName(e.target.value);
 
-    if (e.target.value.trim()) {
-      setEditErrors((prev) => ({
-        ...prev,
-        categoryName: "",
-      }));
-    }
-  }}
-  className={editErrors.categoryName ? "error-input" : ""}
-  placeholder="Enter category name"
-/>
+                    if (e.target.value.trim()) {
+                      setEditErrors((prev) => ({
+                        ...prev,
+                        categoryName: "",
+                      }));
+                    }
+                  }}
+                  className={editErrors.categoryName ? "error-input" : ""}
+                  placeholder="Enter category name"
+                />
                 {editErrors.categoryName && (
-  <p className="error-text">
-    {editErrors.categoryName}
-  </p>
-)}
+                  <p className="error-text">
+                    {editErrors.categoryName}
+                  </p>
+                )}
               </div>
-<div className="form-group">
-  <label>Redirect Screen</label>
+              <div className="form-group">
+                <label>Redirect Screen</label>
 
-  <select
-    value={redirectUrl}
-    onChange={(e) => setRedirectUrl(e.target.value)}
-  >
-    <option value="">Select Redirect Screen</option>
+                <select
+                  value={redirectUrl}
+                  onChange={(e) => setRedirectUrl(e.target.value)}
+                >
+                  <option value="">Select Redirect Screen</option>
 
-    {redirectScreenOptions.map((option) => (
-      <option key={option.value} value={option.value}>
-        {option.label}
-      </option>
-    ))}
-  </select>
-</div>
+                  {redirectScreenOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div className="form-group">
                 <label>Category Image</label>
@@ -1303,9 +1305,9 @@ const exportToExcel = async () => {
                     </label>
                   )}
                 </div>
-{editErrors.categoryImage && (
-  <p className="error-text">{editErrors.categoryImage}</p>
-)}
+                {editErrors.categoryImage && (
+                  <p className="error-text">{editErrors.categoryImage}</p>
+                )}
 
               </div>
 
@@ -1334,35 +1336,35 @@ const exportToExcel = async () => {
         </div>
       )}
 
-        {deleteModal && (
-  <div className="modal">
-    <div className="modal-content">
-      <h3>
-        Are you sure you want to delete this Category?
-      </h3>
+      {deleteModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>
+              Are you sure you want to delete this Category?
+            </h3>
 
-      <div className="form-buttons">
-        <button
-          className="otp-btn verify-btn"
-          onClick={() => {
-            handleDelete(categoryId);
-            setDeleteModal(false);
-          }}
-        >
-          Yes
-        </button>
+            <div className="form-buttons">
+              <button
+                className="otp-btn verify-btn"
+                onClick={() => {
+                  handleDelete(categoryId);
+                  setDeleteModal(false);
+                }}
+              >
+                Yes
+              </button>
 
-        <button
-          onClick={() => setDeleteModal(false)}
-        >
-          No
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+              <button
+                onClick={() => setDeleteModal(false)}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      
+
       {previewImage && (
         <div className="prakriti-modal-overlay" onClick={() => setPreviewImage("")}>
           <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
@@ -1373,21 +1375,21 @@ const exportToExcel = async () => {
               </button>
             </div>
             <div style={{ textAlign: "center", padding: "20px" }}>
-             <img
-  src={previewImage}
-  alt="Preview"
-  style={{
-    display: "block",
-    maxWidth: "100%",
-    maxHeight: "80vh",
-    width: "auto",
-    height: "auto",
-    margin: "0 auto",
-    objectFit: "contain",
-    borderRadius: "10px",
-  }}
-/>
-       
+              <img
+                src={previewImage}
+                alt="Preview"
+                style={{
+                  display: "block",
+                  maxWidth: "100%",
+                  maxHeight: "80vh",
+                  width: "auto",
+                  height: "auto",
+                  margin: "0 auto",
+                  objectFit: "contain",
+                  borderRadius: "10px",
+                }}
+              />
+
             </div>
             <div className="modal-footer">
               <button className="cancel-btn" onClick={() => setPreviewImage("")}>
@@ -1398,96 +1400,95 @@ const exportToExcel = async () => {
         </div>
       )}
 
-      
-   {statusModal && selectedCategory && (
-   <div
-    className="activeModal-overlay"
-    onClick={() => {
-      setStatusModal(false);
-      setSelectedCategory(null);
-    }}
-  >
-    <div
-      className="activeModal"
-      onClick={(e) => e.stopPropagation()}
-    >
 
-      <button
-        className="activeModal-close"
-        onClick={() => {
-          setStatusModal(false);
-          setSelectedCategory(null);
-        }}
-      >
-        ×
-      </button>
-
-      <div className="activeModal-icon">
-        ⚠️
-      </div>
-
-      <h2 className="activeModal-title">
-        Confirm Status Change
-      </h2>
-
-      <p className="activeModal-text">
-        Are you sure you want to
-        <span
-          className={
-            selectedCategory.is_active
-              ? "inactive-text"
-              : "active-text"
-          }
-        >
-          {selectedCategory.is_active
-            ? " Inactive "
-            : " Active "}
-        </span>
-        this category?
-      </p>
-
-      <div className="activeModal-card">
-        <h4>{selectedCategory.name}</h4>
-     
-      </div>
-
-      <div className="activeModal-footer">
-        <button
-          className="activeModal-cancel"
+      {statusModal && selectedCategory && (
+        <div
+          className="activeModal-overlay"
           onClick={() => {
             setStatusModal(false);
             setSelectedCategory(null);
           }}
         >
-          Cancel
-        </button>
+          <div
+            className="activeModal"
+            onClick={(e) => e.stopPropagation()}
+          >
 
-        <button
-          className={`activeModal-confirm ${
-            selectedCategory.is_active
-              ? "deactivate-btn"
-              : "activate-btn"
-          }`}
-          onClick={() => {
-            updateCategoryStatus(
-              selectedCategory.id,
-              selectedCategory.is_active
-            );
+            <button
+              className="activeModal-close"
+              onClick={() => {
+                setStatusModal(false);
+                setSelectedCategory(null);
+              }}
+            >
+              ×
+            </button>
 
-            setStatusModal(false);
-            setSelectedCategory(null);
-          }}
-        >
-          Yes,{" "}
-          {selectedCategory.is_active
-            ? "Deactivate"
-            : "Activate"}
-        </button>
-      </div>
+            <div className="activeModal-icon">
+              ⚠️
+            </div>
 
-    </div>
-  </div>
-)}
+            <h2 className="activeModal-title">
+              Confirm Status Change
+            </h2>
+
+            <p className="activeModal-text">
+              Are you sure you want to
+              <span
+                className={
+                  selectedCategory.is_active
+                    ? "inactive-text"
+                    : "active-text"
+                }
+              >
+                {selectedCategory.is_active
+                  ? " Inactive "
+                  : " Active "}
+              </span>
+              this category?
+            </p>
+
+            <div className="activeModal-card">
+              <h4>{selectedCategory.name}</h4>
+
+            </div>
+
+            <div className="activeModal-footer">
+              <button
+                className="activeModal-cancel"
+                onClick={() => {
+                  setStatusModal(false);
+                  setSelectedCategory(null);
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className={`activeModal-confirm ${selectedCategory.is_active
+                    ? "deactivate-btn"
+                    : "activate-btn"
+                  }`}
+                onClick={() => {
+                  updateCategoryStatus(
+                    selectedCategory.id,
+                    selectedCategory.is_active
+                  );
+
+                  setStatusModal(false);
+                  setSelectedCategory(null);
+                }}
+              >
+                Yes,{" "}
+                {selectedCategory.is_active
+                  ? "Deactivate"
+                  : "Activate"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
       <ToastContainer position="top-center" autoClose={2000} />
     </>
   );

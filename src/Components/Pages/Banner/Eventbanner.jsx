@@ -910,16 +910,9 @@ const EventBanner = () => {
 
             <div className="banner-toolbar">
                 <div className="banner-filters">
+                    
                     <label className="banner-filter">
-                        Event ID
-                        <input
-                            value={filters.id}
-                            placeholder="Filter by event ID"
-                            onChange={(event) => setFilters((prev) => ({ ...prev, id: event.target.value }))}
-                        />
-                    </label>
-                    <label className="banner-filter">
-                        Mode
+                        
                         <select
                             value={filters.mode}
                             onChange={(event) => setFilters((prev) => ({ ...prev, mode: event.target.value }))}
@@ -930,7 +923,7 @@ const EventBanner = () => {
                         </select>
                     </label>
                     <label className="banner-filter">
-                        Status
+                     
                         <select
                             value={filters.status}
                             onChange={(event) => setFilters((prev) => ({ ...prev, status: event.target.value }))}
@@ -940,18 +933,7 @@ const EventBanner = () => {
                             ))}
                         </select>
                     </label>
-                    <label className="banner-filter">
-                        Scope
-                        <input
-                            list="banner-scope-options"
-                            value={filters.scope}
-                            placeholder="e.g. hero"
-                            onChange={(event) => setFilters((prev) => ({ ...prev, scope: event.target.value }))}
-                        />
-                        <datalist id="banner-scope-options">
-                            <option value="hero" />
-                        </datalist>
-                    </label>
+                   
                     {hasFilters && (
                         <button type="button" className="banner-clear" onClick={clearFilters}>
                             Clear
@@ -963,15 +945,7 @@ const EventBanner = () => {
                         <BsPlus size={18} />
                         Add event
                     </button>
-                    <button
-                        type="button"
-                        className="banner-refresh"
-                        onClick={() => loadEvents({ soft: true })}
-                        disabled={loading || refreshing}
-                    >
-                        <FiRefreshCw />
-                        {refreshing ? "Refreshing" : "Refresh"}
-                    </button>
+                 
                 </div>
             </div>
 

@@ -89,7 +89,6 @@ const BannerEvent = () => {
     return filtered;
   };
 
-  
 
   const getBannerEvents = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -165,10 +164,7 @@ const BannerEvent = () => {
     }
   };
 
-  // --------------------------------------------------
-  // Initial API Call
-  // --------------------------------------------------
-
+ 
   useEffect(() => {
     if (hasFetched.current) return;
 
@@ -318,8 +314,8 @@ const BannerEvent = () => {
           </div>
         </div>
       </div>
+   
 
-      
 
       <div className="filter-category">
 
@@ -384,6 +380,8 @@ const BannerEvent = () => {
    
      
       </div>
+
+
 
    
 
@@ -611,7 +609,7 @@ const BannerEvent = () => {
 
             ) : (
 
-              /* Empty */
+           
 
               <tr>
                 <td colSpan="9">
