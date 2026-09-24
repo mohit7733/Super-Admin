@@ -73,8 +73,8 @@ const SCREEN_MAP = {
     doctor: { base: "ConsultScreen", detail: "DoctorProfile" },
     products: { base: "ProductsScreen", detail: "ProductDetails" },
     product: { base: "ProductsScreen", detail: "ProductDetails" },
-    diets: { base: "DietScreen", detail: "DietScreen" },
-    diet: { base: "DietScreen", detail: "DietScreen" },
+    diets: { base: "DietScreen", detail: "DietPlanDetail" },
+    diet: { base: "DietScreen", detail: "DietPlanDetail" },
     medicine: { base: "MedicineScreen", detail: "ProductDetails" },
     medicines: { base: "MedicineScreen", detail: "ProductDetails" },
     yoga: { base: "YogaScreen", detail: "YogaSession" },
@@ -1080,7 +1080,7 @@ const EventBanner = () => {
                                                         End live
                                                     </button>
                                                 )}
-                                                {status !== "live" && status !== "ended" && (
+                                                {status !== "live" && new Date(item.starts_at) > new Date() && (
                                                     <button
                                                         type="button"
                                                         className="banner-text-btn primary"

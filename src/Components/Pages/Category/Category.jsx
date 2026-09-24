@@ -138,6 +138,7 @@ const Category = () => {
     { label: "Diet", value: "DietScreen" },
     { label: "Products", value: "ProductsScreen" },
     { label: "Yoga", value: "YogaScreen" },
+    { label: "Doctor", value: "ConsultScreen" },
   ];
 
 
@@ -1024,13 +1025,13 @@ const Category = () => {
                   value={redirectUrl}
                   onChange={(e) => setRedirectUrl(e.target.value)}
                 >
-                  <option value="">Select Redirect Screen</option>
-                  <option value="PrakritiProfile">Prakriti</option>
-                  <option value="MedicineScreen">Medicine</option>
-                  <option value="DietScreen">Diet</option>
-                  <option value="ProductsScreen">Products</option>
-                  <option value="YogaScreen">Yoga</option>
-                  
+                 <option value="">Select Redirect Screen</option>
+
+{redirectScreenOptions.map((option) => (
+  <option key={option.value} value={option.value}>
+    {option.label}
+  </option>
+))}
                  
                   
                 </select>
@@ -1466,8 +1467,8 @@ const Category = () => {
 
               <button
                 className={`activeModal-confirm ${selectedCategory.is_active
-                    ? "deactivate-btn"
-                    : "activate-btn"
+                  ? "deactivate-btn"
+                  : "activate-btn"
                   }`}
                 onClick={() => {
                   updateCategoryStatus(
