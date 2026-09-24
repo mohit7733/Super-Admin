@@ -7,12 +7,17 @@ import {
   FaTimes,
   FaCopy,
   FaEye,
+  FaEdit,
+  FaTrash,
+  FaPlay,
+  FaStop,
 } from "react-icons/fa";
 import { FiRefreshCw, FiSearch } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { useNavigate } from "react-router-dom";
+import { BiPlus } from "react-icons/bi";
 
 const BannerEvent = () => {
   const [Loading, setLoading] = useState(true);
@@ -375,9 +380,20 @@ const BannerEvent = () => {
               <FiRefreshCw />
             </button>
           )}
+
         </div>
 
    
+        <button
+          className="add-customer-btn"
+
+        >
+
+          <BiPlus />
+
+          Add  Banner
+
+        </button>
      
       </div>
 
@@ -400,6 +416,7 @@ const BannerEvent = () => {
               <th>End Date</th>
               <th>Status</th>
               <th>Active</th>
+              <th>Action</th>
             </tr>
           </thead>
 

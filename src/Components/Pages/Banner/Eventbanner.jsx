@@ -1371,75 +1371,7 @@ const EventBanner = () => {
                 </div>
             )}
 
-            {viewEvent && (
-                <div className="prakriti-modal-overlay" onClick={() => setViewEvent(null)}>
-                    <div className="prakriti-modal" onClick={(event) => event.stopPropagation()}>
-                        <div className="prakriti-modal-header">
-                            <h2>{viewEvent.title || "Event"}</h2>
-                            <button type="button" className="close-btn" onClick={() => setViewEvent(null)}>✕</button>
-                        </div>
-                        <div className="prakriti-form">
-                            {viewLoading && <p className="banner-muted">Loading latest event...</p>}
-                            <div className="banner-detail-grid">
-                                <div className="banner-detail-row"><span>ID</span><strong>{viewEvent.id}</strong></div>
-                                <div className="banner-detail-row"><span>Status</span><strong>{viewEvent.status || "—"}</strong></div>
-                                <div className="banner-detail-row"><span>Mode</span><strong>{viewEvent.mode || "—"}</strong></div>
-                                <div className="banner-detail-row"><span>Scope</span><strong>{viewEvent.scope || "—"}</strong></div>
-                                <div className="banner-detail-row"><span>Tags</span><strong>{tagsToText(viewEvent.event_tags) || "—"}</strong></div>
-                                <div className="banner-detail-row"><span>Starts</span><strong>{formatWhen(viewEvent.starts_at)}</strong></div>
-                                <div className="banner-detail-row"><span>Ends</span><strong>{formatWhen(viewEvent.ends_at)}</strong></div>
-                                <div className="banner-detail-row"><span>Active</span><strong>{viewEvent.is_active ? "Yes" : "No"}</strong></div>
-                                <div className="banner-detail-row"><span>Notes</span><strong>{viewEvent.notes || "—"}</strong></div>
-                            </div>
-                            <div className="dynamic-section">
-                                <div className="section-header"><h3>Media</h3></div>
-                                {Array.isArray(viewEvent.media) && viewEvent.media.length > 0 ? (
-                                    viewEvent.media.map((item, index) => (
-                                        <div className="banner-media-card" key={`view-media-${index}`}>
-                                            <div className="banner-detail-row"><span>Type</span><strong>{item.media_type || "—"}</strong></div>
-                                            <div className="banner-detail-row">
-                                                <span>URL</span>
-                                                <strong>
-                                                    {item.media_url ? (
-                                                        <button
-                                                            type="button"
-                                                            className="banner-link"
-                                                            style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
-                                                            onClick={() => setPreview({ url: item.media_url, type: item.media_type })}
-                                                        >
-                                                            {item.media_url}
-                                                        </button>
-                                                    ) : "—"}
-                                                </strong>
-                                            </div>
-                                            <div className="banner-detail-row">
-                                                <span>Redirect</span>
-                                                <strong>{item.redirect_link || "—"}</strong>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="banner-muted">No media configured</p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="cancel-btn" onClick={() => setViewEvent(null)}>Close</button>
-                            <button
-                                type="button"
-                                className="save-btn"
-                                onClick={() => {
-                                    const current = viewEvent;
-                                    setViewEvent(null);
-                                    openEdit(current);
-                                }}
-                            >
-                                Edit
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+           
 
             {confirm && (
                 <div className="modal">

@@ -58,6 +58,7 @@ const Healthcategory = () => {
     service_category_id: "",
     image_url: "",
     code: "",
+    symptoms: [""],
   });
 
   const [editForm, setEditForm] = useState({
@@ -67,6 +68,7 @@ const Healthcategory = () => {
     image_url: "",
     service_category_id: "",
     is_active: false,
+    symptoms: [""],
   });
 
   const [editErrors, setEditErrors] = useState({});
@@ -537,6 +539,13 @@ const Healthcategory = () => {
     if (!SubCategoryImage) {
       newErrors.image_url = "Please upload an image";
     }
+const symptoms = (categoryForm.symptoms || [])
+  .map((symptom) => symptom.trim())
+  .filter(Boolean);
+
+if (symptoms.length === 0) {
+  newErrors.symptoms = "Please add at least one symptom";
+}
 
     setAddErrors(newErrors);
 
@@ -564,6 +573,7 @@ const Healthcategory = () => {
         image_url: imageUrl,
         is_active: categoryForm.is_active,
         code: categoryForm.code.toUpperCase().trim(),
+         symptoms: symptoms,
       };
 
       const token = sessionStorage.getItem("superadmin_token");
@@ -616,21 +626,24 @@ const Healthcategory = () => {
     }
   };
 
-  const resetForm = () => {
-    setCategoryForm({
-      name: "",
-      description: "",
-      is_active: false,
-      service_category_id: "",
-      image_url: "",
-      code: "",
-    });
-    setSubCategoryImage(null);
-    setAddErrors({});
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+ const resetForm = () => {
+  setCategoryForm({
+    name: "",
+    description: "",
+    is_active: false,
+    service_category_id: "",
+    image_url: "",
+    code: "",
+    symptoms: [""], 
+  });
+
+  setSubCategoryImage(null);
+  setAddErrors({});
+
+  if (fileInputRef.current) {
+    fileInputRef.current.value = "";
+  }
+};
 
   const handleUpdateHealthCategory = async (e) => {
     e.preventDefault();
@@ -648,8 +661,16 @@ const Healthcategory = () => {
     }
 
     if (!EditImage && !editForm.image_url) {
-    newErrors.image_url = "Please upload an image";
-  }
+      newErrors.image_url = "Please upload an image";
+    }
+
+    const symptoms = (editForm.symptoms || [])
+      .map((symptom) => symptom.trim())
+      .filter(Boolean);
+
+    if (symptoms.length === 0) {
+      newErrors.symptoms = "Please add at least one symptom";
+    }
 
     setEditErrors(newErrors);
 
@@ -678,6 +699,7 @@ const Healthcategory = () => {
         image_url: imageUrl,
         is_active: editForm.is_active,
         service_category_id: editForm.service_category_id,
+        symptoms: symptoms,
       };
 
       const response = await fetch(
@@ -761,80 +783,67 @@ const Healthcategory = () => {
   };
 
 
-  const handleUpdateCategory = async (e) => {
-    e.preventDefault();
-    if (isUpdating) return;
+  
+const addSymptomField = () => {
+  setCategoryForm((prev) => ({
+    ...prev,
+    symptoms: [
+      ...(Array.isArray(prev.symptoms) ? prev.symptoms : []),
+      "",
+    ],
+  }));
 
-    let newErrors = {};
+  setAddErrors((prev) => ({
+    ...prev,
+    symptoms: "",
+  }));
+};
 
-    if (!editForm.name.trim()) {
-      newErrors.name = " Service Category name is required";
-    }
+const removeSymptomField = (index) => {
+  setCategoryForm((prev) => {
+    const symptoms = Array.isArray(prev.symptoms)
+      ? prev.symptoms
+      : [""];
 
-    setEditErrors(newErrors);
+    const updatedSymptoms = symptoms.filter(
+      (_, i) => i !== index
+    );
 
-    if (Object.keys(newErrors).length > 0) {
-      toast.error(Object.values(newErrors)[0]);
-      return;
-    }
+    return {
+      ...prev,
+      symptoms:
+        updatedSymptoms.length > 0 ? updatedSymptoms : [""],
+    };
+  });
+};
+  const addEditSymptomField = () => {
+    setEditForm((prev) => ({
+      ...prev,
+      symptoms: [...(Array.isArray(prev.symptoms) ? prev.symptoms : []), ""],
+    }));
+    setEditErrors((prev) => ({ ...prev, symptoms: "" }));
+  };
 
-    const token = sessionStorage.getItem("superadmin_token");
-    setIsUpdating(false);
+  const removeEditSymptomField = (index) => {
+    setEditForm((prev) => {
+      const symptoms = Array.isArray(prev.symptoms) ? prev.symptoms : [""];
+      const updatedSymptoms = symptoms.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        symptoms: updatedSymptoms.length > 0 ? updatedSymptoms : [""],
+      };
+    });
+  };
 
-    try {
-      let imageUrl = editForm.image_url;
-
-
-      if (EditImage) {
-        imageUrl = await uploadImage(EditImage);
-
-        if (!imageUrl) {
-          toast.error("Image upload failed");
-          return;
-        }
-      }
-
-      const response = await fetch(
-        `${BASE_URL}/vendors/admin/product-category/?id=${editForm.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify({
-            name: editForm.name,
-            description: editForm.description,
-            is_active: editForm.is_active,
-            category_id: editForm.category_id,
-            image_url: imageUrl,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("Product Category Updated Successfully");
-
-        setEditModal(false);
-        setEditImage(null);
-        getHealthCategoryList();
-      } else {
-        toast.error(
-          data?.errors?.name?.[0] ||
-          data?.message ||
-          "Failed to update category"
-        );
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong");
-    }
-    finally {
-      setIsUpdating(false);
-    }
+  const handleEditSymptomChange = (index, value) => {
+    setEditForm((prev) => {
+      const updatedSymptoms = Array.isArray(prev.symptoms)
+        ? [...prev.symptoms]
+        : [""];
+      updatedSymptoms[index] = value;
+      return { ...prev, symptoms: updatedSymptoms };
+    });
+    setEditErrors((prev) => ({ ...prev, symptoms: "" }));
   };
 
   return (
@@ -1035,19 +1044,24 @@ const Healthcategory = () => {
                     <div className="action-buttons">
                       <button
                         className="action-btn edit"
-                        onClick={() => {
-                          setEditForm({
-                            id: item.id,
-                            service_category_id: item.service_category_id || "",
-                            name: item.name || "",
-                            description: item.description || "",
-                            image_url: item.image_url || "",
-                            is_active: item.is_active,
-                          });
-                          setEditErrors({});
-                          setEditImage(null);
-                          setEditModal(true);
-                        }}
+                       onClick={() => {
+  setEditForm({
+    id: item.id,
+    service_category_id: item.service_category_id || "",
+    name: item.name || "",
+    description: item.description || "",
+    image_url: item.image_url || "",
+    is_active: item.is_active ?? false,
+    symptoms:
+      Array.isArray(item.symptoms) && item.symptoms.length > 0
+        ? item.symptoms
+        : [""],
+  });
+
+  setEditErrors({});
+  setEditImage(null);
+  setEditModal(true);
+}}
                         title="Edit"
                       >
                         <FaEdit />
@@ -1167,7 +1181,7 @@ const Healthcategory = () => {
       toast.error("Only uppercase letters (A-Z) are allowed");
     }
 
-    // Remove invalid characters
+   
     value = value.replace(/[^A-Z]/g, "").slice(0, 5);
 
     setCategoryForm((prev) => ({
@@ -1263,8 +1277,86 @@ const Healthcategory = () => {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Status</label>
+
+ <div className="dynamic-section">
+  <div className="section-header">
+    <h3>
+      Symptoms <span className="required">*</span>
+    </h3>
+
+    <button
+      type="button"
+      onClick={addSymptomField}
+      className="add-btn"
+    >
+      + Add
+    </button>
+  </div>
+
+  <div className="dynamic-list">
+    {(Array.isArray(categoryForm.symptoms)
+      ? categoryForm.symptoms
+      : [""]
+    ).map((symptom, index) => (
+      <div className="dynamic-input" key={index}>
+        <span>{index + 1}</span>
+
+        <div className="input-wrapper">
+          <input
+            type="text"
+            value={symptom}
+            onChange={(e) => {
+              const value = e.target.value;
+
+              setCategoryForm((prev) => {
+                const updatedSymptoms = Array.isArray(prev.symptoms)
+                  ? [...prev.symptoms]
+                  : [""];
+
+                updatedSymptoms[index] = value;
+
+                return {
+                  ...prev,
+                  symptoms: updatedSymptoms,
+                };
+              });
+
+              setAddErrors((prev) => ({
+                ...prev,
+                symptoms: "",
+              }));
+            }}
+            placeholder={`Enter symptom ${index + 1}`}
+            className={
+              addErrors.symptoms && !symptom.trim()
+                ? "error-input"
+                : ""
+            }
+          />
+
+          {categoryForm.symptoms.length > 1 && (
+            <button
+              type="button"
+              className="delete-icon-btn"
+              onClick={() => removeSymptomField(index)}
+              title="Remove symptom"
+            >
+              <FiTrash2 />
+            </button>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {addErrors.symptoms && (
+    <p className="error-text">{addErrors.symptoms}</p>
+  )}
+</div>
+
+
+<div className="form-group">
+  <label>Status</label>
                 <div className="checkbox-row">
                   <input
                     type="checkbox"
@@ -1296,7 +1388,7 @@ const Healthcategory = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
+    
       {editModal && (
         <div
           className="prakriti-modal-overlay"
@@ -1451,6 +1543,61 @@ const Healthcategory = () => {
                   rows="3"
                 />
               </div>
+
+        
+<div className="dynamic-section">
+  <div className="section-header">
+    <h3>
+      Symptoms <span className="required">*</span>
+    </h3>
+
+    <button
+      type="button"
+      onClick={addEditSymptomField}
+      className="add-btn"
+    >
+      + Add
+    </button>
+  </div>
+
+  <div className="dynamic-list">
+    {(editForm.symptoms || [""]).map((symptom, index) => (
+      <div className="dynamic-input" key={index}>
+        <span>{index + 1}</span>
+
+        <div className="input-wrapper">
+          <input
+            type="text"
+            value={symptom}
+            onChange={(e) =>
+              handleEditSymptomChange(index, e.target.value)
+            }
+            placeholder={`Enter symptom ${index + 1}`}
+            className={
+              editErrors.symptoms && !symptom.trim()
+                ? "error-input"
+                : ""
+            }
+          />
+
+          <button
+            type="button"
+            className="delete-icon-btn"
+            onClick={() => removeEditSymptomField(index)}
+          >
+            <FiTrash2 />
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {editErrors.symptoms && (
+    <p className="error-text">{editErrors.symptoms}</p>
+  )}
+</div>
+
+
 
               <div className="form-group">
                 <label>Status</label>
