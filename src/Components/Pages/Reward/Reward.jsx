@@ -562,9 +562,7 @@ const handleUpdateReward = async (e) => {
         char.toUpperCase()
       );
   };
-
-
-
+  
   const handleAddReward = () => {
     navigate("/Add-Reward");
   };

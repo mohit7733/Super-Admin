@@ -13,8 +13,12 @@ import {
   FaChevronRight,
   FaSearch, 
   FaPlus,
-  FaEdit
+  FaEdit,
+  FaGift,
+ FaArchive,
+
 } from "react-icons/fa";
+import { FaCircleCheck,} from "react-icons/fa6";
 
 import { FiTrash2 } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
@@ -351,7 +355,12 @@ const handleRollbackPolicy = async (id) => {
     setSelectedPolicy(null);
   };
 
-
+const policyStats = {
+  total: policyData.length,
+  published: policyData.filter((item) => item.status === "published").length,
+  draft: policyData.filter((item) => item.status === "draft").length,
+  archived: policyData.filter((item) => item.status === "archived").length,
+};
 
   return (
     <>
@@ -363,6 +372,117 @@ const handleRollbackPolicy = async (id) => {
           Manage legal policies and their details
         </p>
       </div>
+
+      <div className="stats2-grid">
+
+  {/* TOTAL POLICIES */}
+  <div
+    className="stat2-card"
+    style={{
+      borderTopColor: "#0D614E",
+    }}
+  >
+    <div
+      className="stat2-icon"
+      style={{
+        background: "#0D614E20",
+        color: "#0D614E",
+      }}
+    >
+      <FaGift size={16} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Total Policies</h3>
+
+      <div className="stat2-value">
+        {policyStats.total}
+      </div>
+    </div>
+  </div>
+
+
+  {/* PUBLISHED */}
+  <div
+    className="stat2-card"
+    style={{
+      borderTopColor: "#0D614E",
+    }}
+  >
+    <div
+      className="stat2-icon"
+      style={{
+        background: "#0D614E20",
+        color: "#0D614E",
+      }}
+    >
+      <FaCircleCheck size={16} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Published Policies</h3>
+
+      <div className="stat2-value">
+        {policyStats.published}
+      </div>
+    </div>
+  </div>
+
+
+  {/* DRAFT */}
+  <div
+    className="stat2-card"
+    style={{
+      borderTopColor: "#D97706",
+    }}
+  >
+    <div
+      className="stat2-icon"
+      style={{
+        background: "#D977061A",
+        color: "#D97706",
+      }}
+    >
+      <FaEdit size={16} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Draft Policies</h3>
+
+      <div className="stat2-value">
+        {policyStats.draft}
+      </div>
+    </div>
+  </div>
+
+
+  {/* ARCHIVED */}
+  <div
+    className="stat2-card"
+    style={{
+      borderTopColor: "#6B7280",
+    }}
+  >
+    <div
+      className="stat2-icon"
+      style={{
+        background: "#6B72801A",
+        color: "#6B7280",
+      }}
+    >
+      <FaArchive size={16} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Archived Policies</h3>
+
+      <div className="stat2-value">
+        {policyStats.archived}
+      </div>
+    </div>
+  </div>
+
+</div>
       
             
             <div className="filter-category">
