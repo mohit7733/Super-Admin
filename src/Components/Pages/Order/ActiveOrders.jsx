@@ -4,10 +4,6 @@ import { toast } from "react-toastify";
 import BASE_URL from "../../../Base";
 import OrderModal from "../Customer/OrderModal";
 import { FaTruck } from "react-icons/fa";
-
-
-
-
 import {
   FaShoppingBag,
   FaClock,

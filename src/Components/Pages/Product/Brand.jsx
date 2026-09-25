@@ -32,6 +32,7 @@ const [ BrandForm, setBrandForm] = useState({
   description: "",
   is_active: false,
    logo: null,
+   sequence:"",
 });
 const [searchTerm, setSearchTerm] = useState("");
 const [existingLogo, setExistingLogo] = useState("");
@@ -78,6 +79,7 @@ const [editForm, setEditForm] = useState({
   name: "",
   description: "",
   is_active: true,
+  sequence:"",
 
 });
 const [editErrors, setEditErrors] = useState({});
@@ -267,7 +269,9 @@ if (BrandForm.logo) {
   name: BrandForm.name.trim(),
   description: BrandForm.description,
   is_active: BrandForm.is_active,
+  sequence:BrandForm.sequence,
   logo: logoUrl,
+ 
 })
       }
     );
@@ -355,6 +359,7 @@ setUpdateLoading(true);
           name: editForm.name.trim(),
           description: editForm.description,
           is_active: editForm.is_active,
+          sequence:editForm.sequence,
           logo: logoUrl, // URL send hoga
         }),
       }
@@ -495,9 +500,12 @@ const handleDelete = async (id) => {
                                  <tr>
                                    <th>ID</th>
                                    <th>Name </th>
-                                   <th>Logo</th>              
+                                 
+                                   <th>Logo</th>  
+                                    <th> Sequence</th>            
                                    <th> Status</th>
 <th> Action</th>
+
                                  </tr>
                                </thead>
                <tbody>
@@ -542,6 +550,7 @@ const handleDelete = async (id) => {
                       <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
                     )}
                   </td>
+                  <td>{item.sequence}</td>
                         <td>
           <label className="switch">
             <input
@@ -563,6 +572,7 @@ const handleDelete = async (id) => {
     name: item.name || "",
     description: item.description || "",
     is_active: item.is_active,
+    sequence:item.sequence,
     logo: null,
   });
 
@@ -648,7 +658,16 @@ const handleDelete = async (id) => {
 )}
         </div>
 
-      
+     <div className="form-group">
+          <label>Sequence</label>
+          <input
+            name="sequence"
+            value={BrandForm.sequence}
+            onChange={handleBrandChange}
+            placeholder="Enter Sequence"
+            type="number"
+          />
+        </div>      
 
         <div className="form-group">
           <label>Description</label>
@@ -661,7 +680,7 @@ const handleDelete = async (id) => {
         
           />
         </div>
-
+ 
           <div className="form-group">
   <label>
     Brand Logo <span className="required">*</span>
@@ -744,6 +763,7 @@ const handleDelete = async (id) => {
     <p className="error-text">{addErrors.logo}</p>
   )}
 </div>
+
 
         <div className="form-group">
           <label>Is Active</label>
@@ -831,6 +851,19 @@ const handleDelete = async (id) => {
           )}
         </div>
 
+<div className="form-group">
+          <label>Sequence</label>
+
+          <input
+            type="number"
+            name="sequence"
+            value={editForm.sequence}
+            onChange={handleEditChange}
+            placeholder="Enter sequence"
+          />
+
+        
+        </div>
         <div className="form-group">
           <label>Description</label>
 
@@ -1005,6 +1038,7 @@ const handleDelete = async (id) => {
     </div>
   </div>
 )}
+
  <ToastContainer position="top-center" autoClose={2000} />
 
 </>

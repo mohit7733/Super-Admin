@@ -154,6 +154,7 @@ const Category = () => {
     setFilteredData(filterData(Data, searchTerm, statusFilter));
   }, [Data, searchTerm, statusFilter]);
 
+
   const uploadImage = async (file) => {
     const token = sessionStorage.getItem("superadmin_token");
     if (!token) {
@@ -644,6 +645,7 @@ const Category = () => {
       toast.error("Failed to export Excel");
     }
   };
+  
   return (
     <>
       <div className="page-header">

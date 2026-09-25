@@ -165,6 +165,19 @@ function App() {
             </ProtectedRoute>
           }
         />
+  <Route
+          path="/Patientdetail/:PatientId"
+          element={
+
+
+            <ProtectedRoute>
+              <Layout>
+                <PatientDetails />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+       
         <Route
           path="/reward/edit/:id"
           element={

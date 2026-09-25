@@ -12,12 +12,14 @@ import {
   FaPlay,
   FaStop,
 } from "react-icons/fa";
+import { FaEllipsisV } from "react-icons/fa";
 import { FiRefreshCw, FiSearch } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { useNavigate } from "react-router-dom";
 import { BiPlus } from "react-icons/bi";
+import { BsDownload, BsPlus, BsSearch, BsThreeDotsVertical } from "react-icons/bs";
 
 const BannerEvent = () => {
   const [Loading, setLoading] = useState(true);
@@ -31,6 +33,8 @@ const BannerEvent = () => {
   const [modeFilter, setModeFilter] = useState("all");
 
   const [previewImage, setPreviewImage] = useState("");
+
+ const [openMenuId, setOpenMenuId] = useState(null);
 
   const [stats, setStats] = useState({
     total: 0,
@@ -619,6 +623,99 @@ const BannerEvent = () => {
                       </span>
 
                     </td>
+  <td
+  className={
+    index === FilteredData.length - 1
+      ? "action-td action-td-up"
+      : "action-td"
+  }
+  onClick={(e) => e.stopPropagation()}
+>
+  <button
+    className="action-menu-toggle"
+    onClick={() =>
+      setOpenMenuId(
+        openMenuId === item.id ? null : item.id
+      )
+    }
+  >
+    <span className="icon">
+      <BsThreeDotsVertical />
+    </span>
+  </button>
+
+  {openMenuId === item.id && (
+    <div className="action-buttons-modal">
+
+      
+
+      {/* EDIT */}
+      <button
+        className="action-btn1"
+        title="Edit Banner"
+        onClick={() => {
+          setOpenMenuId(null);
+          // handleEdit(item.id);
+        }}
+      >
+        <span className="icon">
+          <FaEdit />
+        </span>
+
+        <span>Edit</span>
+      </button>
+
+      {/* DELETE */}
+      <button
+        className="action-btn1"
+        title="Delete Banner"
+        onClick={() => {
+          setOpenMenuId(null);
+          // handleDelete(item.id);
+        }}
+      >
+        <span className="icon">
+          <FaTrash />
+        </span>
+
+        <span>Delete</span>
+      </button>
+
+      {/* START */}
+      <button
+        className="action-btn1"
+        title="Start Banner"
+        onClick={() => {
+          setOpenMenuId(null);
+          // handleStart(item.id);
+        }}
+      >
+        <span className="icon">
+          <FaPlay />
+        </span>
+
+        <span>Start</span>
+      </button>
+
+      {/* END */}
+      <button
+        className="action-btn1"
+        title="End Banner"
+        onClick={() => {
+          setOpenMenuId(null);
+          // handleEnd(item.id);
+        }}
+      >
+        <span className="icon">
+          <FaStop />
+        </span>
+
+        <span>End</span>
+      </button>
+
+    </div>
+  )}
+</td>
 
                   </tr>
                 );
