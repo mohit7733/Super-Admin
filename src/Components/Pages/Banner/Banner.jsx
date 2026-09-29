@@ -1,113 +1,113 @@
-import React, {
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-    FaCheckCircle,
-    FaEdit,
-    FaHourglassHalf,
-    FaImages,
-    FaPlay,
-    FaStop,
+  FaImages,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaEdit,
 } from "react-icons/fa";
 
 import {
-    FiMoreVertical,
-    FiRefreshCw,
-    FiTrash2,
-    FiUpload,
+  FiTrash2,
+  FiEye,
+  FiUpload,
 } from "react-icons/fi";
 
 import { BsPlus } from "react-icons/bs";
-import { toast } from "react-toastify";
 
 import BASE_URL from "../../../Base";
-import "./Banner.css";
+import { toast } from "react-toastify";
+
+const Banner = () => {
+  const navigate = useNavigate();
+
+  // =========================================================
+  // BANNER STATES
+  // =========================================================
+
+  const [BannerData, setBannerData] = useState([]);
+  const [BannerLoading, setBannerLoading] = useState(false);
+  const [Error, setError] = useState(null);
+
+  const [showBannerModal, setShowBannerModal] = useState(false);
+
+  const [addbannerLoading, setaddbannerloading] = useState(false);
+
+  const [BannerError, setBannerError] = useState({});
+  const [BannerImage, setBannerImage] = useState(null);
+
+  const [DeleteBannerModal, setDeleteBannerModal] = useState(false);
+
+  const [SelectedBanner, setSelectedBanner] = useState(null);
+
+  const [BannerPreviewImage, setBannerPreviewImage] = useState("");
+
+  // =========================================================
+  // CATEGORY STATES
+  // =========================================================
+
+  const [CategoryData, setCategoryData] = useState([]);
+  const [CategoryLoading, setCategoryLoading] = useState(false);
+
+  const [CategoryError, setCategoryError] = useState(null);
+
+  // =========================================================
+  // SERVICE STATES
+  // =========================================================
+
+  const [ServiceData, setServiceData] = useState([]);
+  const [ServiceLoading, setServiceLoading] = useState(false);
+
+  const [ServiceError, setServiceError] = useState(null);
+
+  // =========================================================
+  // EDIT STATES
+  // =========================================================
+
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const [editBannerId, setEditBannerId] = useState(null);
+
+  const [editBannerImage, setEditBannerImage] = useState(null);
+
+  const [editBannerError, setEditBannerError] = useState({});
+
+
+  const [BrandData, setBrandData] = useState([]);
+  const [BrandLoading, setBrandLoading] = useState(false);
+  const [BrandError, setBrandError] = useState(null);
+
+  const [bannerType, setBannerType] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("");
+
+  const initialBannerForm = {
+    image_url: null,
+    redirect_url: "",
+    service_category_id: "",
+    service_id: "",
+    is_active: false,
+  };
+
+  const [bannerForm, setBannerForm] = useState(initialBannerForm);
 
 
 
-const MODES = [
-    {
-        label: "All modes",
-        value: "",
-    },
-    {
-        label: "Testing",
-        value: "testing",
-    },
-    {
-        label: "Production",
-        value: "production",
-    },
-];
+  const initialEditBannerForm = {
+    image_url: "",
+    redirect_url: "",
+    service_category_id: "",
+    service_id: "",
+    is_active: false,
+  };
 
-const STATUSES = [
-    {
-        label: "All statuses",
-        value: "",
-    },
-    {
-        label: "Queued",
-        value: "queued",
-    },
-    {
-        label: "Live",
-        value: "live",
-    },
-    {
-        label: "Cancelled",
-        value: "cancelled",
-    },
-    {
-        label: "Ended",
-        value: "ended",
-    },
-];
-
-const ACTION_COPY = {
-    delete: {
-        title: "Delete event",
-        body:
-            "This soft-deletes the event. A live event must be ended before it can be deleted.",
-        confirm: "Delete",
-    },
-
-    enqueue: {
-        title: "Enqueue event",
-        body:
-            "If no banner is live, this event goes live immediately. If a banner is already live, this event is queued.",
-        confirm: "Enqueue",
-    },
-
-    cancel: {
-        title: "Cancel queue",
-        body:
-            "This removes the event from the queue and sets its status to cancelled.",
-        confirm: "Cancel queue",
-    },
-
-    end: {
-        title: "End live event",
-        body:
-            "This ends the live event now. The next queued event, if any, becomes live.",
-        confirm: "End now",
-    },
-
-    goLive: {
-        title: "Go live now",
-        body:
-            "This ends the current live event, if any, and makes this event live immediately.",
-        confirm: "Go live",
-    },
-};
+  const [editBannerForm, setEditBannerForm] = useState(
+    initialEditBannerForm
+  );
 
 
 
-const SERVICE_CATEGORY_MAP = {
+  const serviceCategoryMap = {
     doctors: "consultation",
     doctor: "consultation",
 
@@ -122,4751 +122,2818 @@ const SERVICE_CATEGORY_MAP = {
 
     yoga: "yoga",
     yogas: "yoga",
-
-    prakirti: "prakirti",
-    prakritis: "prakirti",
-
-    prakriti: "prakirti",
-};
+  };
 
 
 
-const SCREEN_MAP = {
+  const screenMap = {
     doctors: {
-        base: "ConsultScreen",
-        detail: "DoctorProfile",
+      base: "ConsultScreen",
+      detail: "DoctorProfile",
     },
 
     doctor: {
-        base: "ConsultScreen",
-        detail: "DoctorProfile",
+      base: "ConsultScreen",
+      detail: "DoctorProfile",
     },
 
     products: {
-        base: "ProductsScreen",
-        detail: "ProductDetails",
+      base: "ProductsScreen",
+      detail: "ProductDetails",
     },
 
     product: {
-        base: "ProductsScreen",
-        detail: "ProductDetails",
+      base: "ProductsScreen",
+      detail: "ProductDetails",
     },
 
     diets: {
-        base: "DietScreen",
-        detail: "DietPlanDetail",
+      base: "DietScreen",
+      detail: "DietDetails",
     },
 
     diet: {
-        base: "DietScreen",
-        detail: "DietPlanDetail",
+      base: "DietScreen",
+      detail: "DietDetails",
     },
 
+
     medicine: {
-        base: "MedicineScreen",
-        detail: "ProductDetails",
+      base: "MedicineScreen",
+      detail: "ProductDetails",
     },
 
     medicines: {
-        base: "MedicineScreen",
-        detail: "ProductDetails",
+      base: "MedicineScreen",
+      detail: "ProductDetails",
     },
 
     yoga: {
-        base: "YogaScreen",
-        detail: "YogaSession",
+      base: "YogaScreen",
+      detail: "YogaSession",
     },
 
     yogas: {
-        base: "YogaScreen",
-        detail: "YogaSession",
+      base: "YogaScreen",
+      detail: "YogaSession",
     },
+  };
 
-    prakirti: {
-        base: "PrakritiProfile",
-        detail: "PrakritiProfile",
-    },
 
-    prakriti: {
-        base: "PrakritiProfile",
-        detail: "PrakritiProfile",
-    },
-};
 
-
-
-const emptyMedia = () => ({
-    media_url: "",
-    media_type: "image",
-
-    redirect_link: "",
-
-    service_category_id: "",
-
-    link_type: "",
-
-    brand_id: "",
-
-    service_id: "",
-});
-
-
-
-const emptyForm = () => ({
-    title: "",
-
-    event_tags: "",
-
-    scope: "hero",
-
-    mode: "production",
-
-    starts_at: "",
-
-    ends_at: "",
-
-    media: [emptyMedia()],
-
-    notes: "",
-
-    is_active: true,
-});
-
-
-
-const statusOf = (event) =>
-    String(event?.status || "").toLowerCase();
-
-const tagsToText = (tags) => {
-    if (Array.isArray(tags)) {
-        return tags
-            .map((tag) => String(tag).trim())
-            .filter(Boolean)
-            .join(", ");
-    }
-
-    return typeof tags === "string" ? tags : "";
-};
-
-const textToTags = (text) =>
-    String(text || "")
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean);
-
-const toInputDateTime = (value) => {
-    if (!value) return "";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        const match = String(value).match(
-            /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/
-        );
-
-        return match ? match[1] : "";
-    }
-
-    const parts = new Intl.DateTimeFormat("en-GB", {
-        timeZone: "Asia/Kolkata",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hourCycle: "h23",
-    }).formatToParts(date);
-
-    const pick = (type) =>
-        parts.find(
-            (part) => part.type === type
-        )?.value || "";
-
-    const hour =
-        pick("hour") === "24"
-            ? "00"
-            : pick("hour");
-
-    return `${pick("year")}-${pick(
-        "month"
-    )}-${pick("day")}T${hour}:${pick(
-        "minute"
-    )}`;
-};
-
-const toApiDateTime = (value) => {
-    const trimmed = String(value || "").trim();
-
-    if (!trimmed) return null;
-
-    if (/[zZ]|[+-]\d{2}:\d{2}$/.test(trimmed)) {
-        return trimmed;
-    }
-
-    const withSeconds =
-        trimmed.length === 16
-            ? `${trimmed}:00`
-            : trimmed;
-
-    return `${withSeconds}+05:30`;
-};
-
-const formatWhen = (value) => {
-    if (!value) return "—";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return String(value);
-    }
-
-    return new Intl.DateTimeFormat("en-IN", {
-        timeZone: "Asia/Kolkata",
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-    }).format(date);
-};
-
-const readList = (data) => {
-    const payload =
-        data?.data ??
-        data?.results ??
-        data;
-
-    if (Array.isArray(payload)) {
-        return payload;
-    }
-
-    if (Array.isArray(payload?.results)) {
-        return payload.results;
-    }
-
-    if (Array.isArray(payload?.services)) {
-        return payload.services;
-    }
-
-    return [];
-};
-
-const readEvents = (data) => {
-    if (!data) return [];
-
-    const payload =
-        data.data !== undefined
-            ? data.data
-            : data.results !== undefined
-                ? data.results
-                : data;
-
-    if (Array.isArray(payload)) {
-        return payload;
-    }
-
-    if (Array.isArray(payload?.results)) {
-        return payload.results;
-    }
-
-    if (Array.isArray(payload?.events)) {
-        return payload.events;
-    }
-
-    if (
-        payload &&
-        typeof payload === "object" &&
-        (payload.id !== undefined ||
-            payload.title)
-    ) {
-        return [payload];
-    }
-
-    return [];
-};
-
-const isOk = (data, response) => {
-    if (!response.ok || data?.success === false) {
-        return false;
-    }
-
-    const status =
-        typeof data?.status === "string"
-            ? data.status.toLowerCase()
-            : "";
-
-    return ![
-        "error",
-        "failed",
-        "fail",
-    ].includes(status);
-};
-
-const errorMessage = (data, fallback) => {
-    if (!data) return fallback;
-
-    if (
-        typeof data.message === "string" &&
-        data.message.trim()
-    ) {
-        return data.message;
-    }
-
-    if (
-        typeof data.detail === "string" &&
-        data.detail.trim()
-    ) {
-        return data.detail;
-    }
-
-    if (
-        typeof data.error === "string" &&
-        data.error.trim()
-    ) {
-        return data.error;
-    }
-
-    if (
-        data.detail &&
-        typeof data.detail === "object"
-    ) {
-        return JSON.stringify(data.detail);
-    }
-
-    return fallback;
-};
-
-const eventPath = (id, action) => {
-    const root = action
-        ? `/banners/admin/events/${action}/`
-        : "/banners/admin/events/";
-
-    return `${root}?id=${encodeURIComponent(id)}`;
-};
-
-const pillClass = (value) => {
-    const key = String(value || "").toLowerCase();
-
-    if (
-        [
-            "live",
-            "queued",
-            "cancelled",
-            "ended",
-            "testing",
-            "production",
-        ].includes(key)
-    ) {
-        return key;
-    }
-
-    return "other";
-};
-
-/* =========================================================
-   REDIRECT HELPERS
-========================================================= */
-
-const selectionFromRedirect = (redirectLink) => {
-    const link = String(redirectLink || "");
-
-    const brandMatch =
-        link.match(/^CategoryProduct\/(.+)$/);
-
-    if (brandMatch) {
-        return {
-            service_category_id: "",
-            link_type: "brand",
-            brand_id: brandMatch[1],
-            service_id: "",
-        };
-    }
-
-    const serviceMatch = link.match(
-        /^(DoctorProfile|ProductDetails|DietPlanDetail|DietDetails|YogaSession)\/(.+)$/
+  const getCategoryName = (categoryId) => {
+    const category = CategoryData.find(
+      (cat) => String(cat.id) === String(categoryId)
     );
 
-    if (serviceMatch) {
-        return {
-            service_category_id: "",
-            link_type: "service",
-            brand_id: "",
-            service_id: serviceMatch[2],
-        };
-    }
+    return category?.name?.trim().toLowerCase();
+  };
 
-    return {
-        service_category_id: "",
-        link_type: "",
-        brand_id: "",
-        service_id: "",
-    };
-};
 
-const categoryNameFromRedirect = (
-    redirectLink
-) => {
-    const link = String(redirectLink || "");
 
-    if (
-        link.startsWith("ConsultScreen") ||
-        link.startsWith("DoctorProfile")
-    ) {
-        return "doctors";
-    }
-
-    if (
-        link.startsWith("ProductsScreen") ||
-        link.startsWith("ProductDetails")
-    ) {
-        return "products";
-    }
-
-    if (
-        link.startsWith("DietScreen") ||
-        link.startsWith("DietPlanDetail") ||
-        link.startsWith("DietDetails")
-    ) {
-        return "diets";
-    }
-
-    if (link.startsWith("MedicineScreen")) {
-        return "medicine";
-    }
-
-    if (
-        link.startsWith("YogaScreen") ||
-        link.startsWith("YogaSession")
-    ) {
-        return "yoga";
-    }
-
-    if (
-        link.startsWith("PrakritiProfile")
-    ) {
-        return "prakirti";
-    }
-
-    return "";
-};
-
-const serviceIdFromRedirect = (
-    redirectLink
-) => {
-    const match = String(
-        redirectLink || ""
-    ).match(
-        /^(?:DoctorProfile|ProductDetails|DietPlanDetail|DietDetails|YogaSession)\/(.+)$/
-    );
-
-    return match ? match[1] : "";
-};
-
-const isVariantCategory = (
-    categoryName
-) =>
-    [
-        "product",
-        "products",
-        "medicine",
-        "medicines",
-    ].includes(categoryName);
-
-const serviceOptionId = (
-    service,
-    categoryName
-) => {
-    const id = isVariantCategory(
-        categoryName
-    )
-        ? service?.variant_id
-        : service?.id;
-
-    if (
-        id === null ||
-        id === undefined ||
-        id === ""
-    ) {
-        return "";
-    }
-
-    return String(id);
-};
-
-const serviceOptionLabel = (
-    service,
-    categoryName
-) => {
-    if (
-        isVariantCategory(categoryName)
-    ) {
-        return (
-            service?.variant_name ||
-            service?.name ||
-            "Unnamed Service"
-        );
-    }
-
+  const isVariantCategory = (categoryName) => {
     return (
+      categoryName === "product" ||
+      categoryName === "products" ||
+      categoryName === "medicine" ||
+      categoryName === "medicines"
+    );
+  };
+
+
+
+  const getServiceId = (service) => {
+    const categoryName = getCategoryName(
+      bannerForm.service_category_id
+    );
+
+    if (isVariantCategory(categoryName)) {
+      return service?.variant_id || "";
+    }
+
+    return service?.id || "";
+  };
+
+
+
+  const getEditServiceId = (service) => {
+    const categoryName = getCategoryName(
+      editBannerForm.service_category_id
+    );
+
+    if (isVariantCategory(categoryName)) {
+      return service?.variant_id || "";
+    }
+
+    return service?.id || "";
+  };
+
+
+
+  const getServiceLabel = (service, categoryName) => {
+    if (isVariantCategory(categoryName)) {
+      return (
+        service?.variant_name ||
         service?.name ||
         "Unnamed Service"
-    );
-};
-
-
-
-const mediaToForm = (media) => {
-    if (
-        !Array.isArray(media) ||
-        media.length === 0
-    ) {
-        return [emptyMedia()];
+      );
     }
 
-    return media.map((item) => {
-        const redirectLink =
-            item?.redirect_link || "";
+    return service?.name || "Unnamed Service";
+  };
 
-        const redirectSelection =
-            selectionFromRedirect(
-                redirectLink
-            );
 
-        const redirectCategory =
-            categoryNameFromRedirect(
-                redirectLink
-            );
 
-        return {
-            ...emptyMedia(),
+  const resetBannerForm = () => {
+    setBannerForm(initialBannerForm);
+    setBannerImage(null);
+    setBannerError({});
+    setServiceData([]);
+    setServiceError(null);
+  };
 
-            service_category_id:
-                item?.service_category_id !==
-                    undefined &&
-                item?.service_category_id !==
-                    null
-                    ? String(
-                        item.service_category_id
-                    )
-                    : "",
 
-            link_type:
-                item?.link_type ||
-                redirectSelection.link_type ||
-                (redirectCategory
-                    ? "service"
-                    : ""),
+  const resetEditBannerForm = () => {
+    setEditBannerForm(initialEditBannerForm);
+    setEditBannerImage(null);
+    setEditBannerId(null);
+    setEditBannerError({});
+    setServiceData([]);
+    setServiceError(null);
+  };
 
-            brand_id:
-                item?.brand_id !== undefined &&
-                item?.brand_id !== null
-                    ? String(item.brand_id)
-                    : redirectSelection.brand_id ||
-                    "",
 
-            service_id:
-                item?.service_id !== undefined &&
-                item?.service_id !== null
-                    ? String(item.service_id)
-                    : redirectSelection.service_id ||
-                    "",
+  const getCategoryList = async () => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-            media_url:
-                item?.media_url || "",
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
 
-            media_type:
-                item?.media_type === "video"
-                    ? "video"
-                    : "image",
+    setCategoryLoading(true);
+    setCategoryError(null);
 
-            redirect_link:
-                redirectLink,
-        };
+    try {
+      const response = await fetch(
+        `${BASE_URL}/user/admin/service-category/`,
+        {
+          method: "GET",
+
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem("superadmin_token");
+
+        toast.error("Session expired. Please login again");
+
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      console.log("CATEGORY API RESPONSE:", data);
+
+      if (data.success) {
+        const categories = Array.isArray(data.data)
+          ? data.data
+          : Array.isArray(data.data?.results)
+            ? data.data.results
+            : [];
+
+        setCategoryData(categories);
+      } else {
+        setCategoryData([]);
+
+        setCategoryError(
+          data.message || "Failed to fetch categories"
+        );
+
+        toast.error(
+          data.message || "Failed to fetch categories"
+        );
+      }
+    } catch (error) {
+      console.error("Category Fetch Error:", error);
+
+      setCategoryData([]);
+
+      setCategoryError("Failed to fetch categories");
+
+      toast.error("Failed to fetch categories");
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
+
+
+  const getServiceList = async (categorySlug) => {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    if (!categorySlug) {
+      setServiceData([]);
+      return;
+    }
+
+    setServiceLoading(true);
+    setServiceError(null);
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/user/admin/services/?category=${encodeURIComponent(
+          categorySlug
+        )}`,
+        {
+          method: "GET",
+
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem("superadmin_token");
+
+        toast.error("Session expired. Please login again");
+
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      console.log("SERVICE API RESPONSE:", data);
+
+      if (data.success) {
+        const services = Array.isArray(data.data)
+          ? data.data
+          : Array.isArray(data.data?.results)
+            ? data.data.results
+            : Array.isArray(data.data?.services)
+              ? data.data.services
+              : [];
+
+        console.log(
+          "NORMALIZED SERVICE DATA:",
+          services
+        );
+
+        setServiceData(services);
+      } else {
+        setServiceData([]);
+
+        setServiceError(
+          data.message || "Failed to fetch services"
+        );
+
+        toast.error(
+          data.message || "Failed to fetch services"
+        );
+      }
+    } catch (error) {
+      console.error("Service Fetch Error:", error);
+
+      setServiceData([]);
+
+      setServiceError("Failed to fetch services");
+
+      toast.error("Failed to fetch services");
+    } finally {
+      setServiceLoading(false);
+    }
+  };
+
+
+
+  const handleChange = (e) => {
+    const {
+      name,
+      value,
+      checked,
+      type,
+    } = e.target;
+
+
+
+    if (name === "service_category_id") {
+      const selectedCategory = CategoryData.find(
+        (cat) =>
+          String(cat.id) === String(value)
+      );
+
+      const categoryName =
+        selectedCategory?.name
+          ?.trim()
+          .toLowerCase();
+
+      const serviceCategory =
+        serviceCategoryMap[categoryName];
+
+      const config = screenMap[categoryName];
+
+      console.log(
+        "CATEGORY SELECTED:",
+        selectedCategory
+      );
+
+      console.log(
+        "CATEGORY NAME:",
+        categoryName
+      );
+
+      console.log(
+        "SERVICE API CATEGORY:",
+        serviceCategory
+      );
+
+      setBannerForm((prev) => ({
+        ...prev,
+        service_category_id: value,
+        service_id: "",
+        redirect_url: config?.base || "",
+      }));
+
+      setServiceData([]);
+
+      if (serviceCategory) {
+        getServiceList(serviceCategory);
+      }
+
+      setBannerError((prev) => ({
+        ...prev,
+        service_category_id: "",
+        service_id: "",
+        redirect_url: "",
+      }));
+
+      return;
+    }
+
+    // =======================================================
+    // SERVICE
+    // =======================================================
+
+    if (name === "service_id") {
+      const selectedCategory = CategoryData.find(
+        (cat) =>
+          String(cat.id) ===
+          String(
+            bannerForm.service_category_id
+          )
+      );
+
+      const categoryName =
+        selectedCategory?.name
+          ?.trim()
+          .toLowerCase();
+
+      const config = screenMap[categoryName];
+
+      let redirectUrl = "";
+
+      if (config) {
+        if (value && config.detail) {
+          redirectUrl = `${config.detail}/${value}`;
+        } else {
+          redirectUrl = config.base;
+        }
+      }
+
+      console.log(
+        "SELECTED SERVICE ID:",
+        value
+      );
+
+      console.log(
+        "CATEGORY:",
+        categoryName
+      );
+
+      console.log(
+        "REDIRECT URL:",
+        redirectUrl
+      );
+
+      setBannerForm((prev) => ({
+        ...prev,
+        service_id: value,
+        redirect_url: redirectUrl,
+      }));
+
+      setBannerError((prev) => ({
+        ...prev,
+        service_id: "",
+        redirect_url: "",
+      }));
+
+      return;
+    }
+
+    // =======================================================
+    // OTHER INPUTS
+    // =======================================================
+
+    setBannerForm((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
+    }));
+
+    setBannerError((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  };
+
+  // =========================================================
+  // EDIT FORM CHANGE
+  // =========================================================
+
+  const handleEditChange = (e) => {
+    const {
+      name,
+      value,
+      checked,
+      type,
+    } = e.target;
+
+
+
+    if (name === "service_category_id") {
+      const selectedCategory = CategoryData.find(
+        (cat) =>
+          String(cat.id) === String(value)
+      );
+
+      const categoryName =
+        selectedCategory?.name
+          ?.trim()
+          .toLowerCase();
+
+      const config = screenMap[categoryName];
+
+      const serviceCategory =
+        serviceCategoryMap[categoryName];
+
+      setEditBannerForm((prev) => ({
+        ...prev,
+        service_category_id: value,
+        service_id: "",
+        redirect_url: config?.base || "",
+      }));
+
+      setServiceData([]);
+
+      if (serviceCategory) {
+        getServiceList(serviceCategory);
+      }
+
+      setEditBannerError((prev) => ({
+        ...prev,
+        service_category_id: "",
+        service_id: "",
+        redirect_url: "",
+      }));
+
+      return;
+    }
+
+
+
+    if (name === "service_id") {
+      const selectedCategory = CategoryData.find(
+        (cat) =>
+          String(cat.id) ===
+          String(
+            editBannerForm.service_category_id
+          )
+      );
+
+      const categoryName =
+        selectedCategory?.name
+          ?.trim()
+          .toLowerCase();
+
+      const config = screenMap[categoryName];
+
+      let redirectUrl = "";
+
+      if (config) {
+        if (value && config.detail) {
+          redirectUrl = `${config.detail}/${value}`;
+        } else {
+          redirectUrl = config.base;
+        }
+      }
+
+      console.log(
+        "EDIT SELECTED SERVICE ID:",
+        value
+      );
+
+      console.log(
+        "EDIT CATEGORY:",
+        categoryName
+      );
+
+      console.log(
+        "EDIT REDIRECT URL:",
+        redirectUrl
+      );
+
+      setEditBannerForm((prev) => ({
+        ...prev,
+        service_id: value,
+        redirect_url: redirectUrl,
+      }));
+
+      setEditBannerError((prev) => ({
+        ...prev,
+        service_id: "",
+        redirect_url: "",
+      }));
+
+      return;
+    }
+
+    // =======================================================
+    // OTHER INPUTS
+    // =======================================================
+
+    setEditBannerForm((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
+    }));
+
+    setEditBannerError((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  };
+
+
+
+  const uploadImage = async (file) => {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return null;
+    }
+
+    try {
+      const formData = new FormData();
+
+      formData.append("image", file);
+      formData.append("dir", "health_issues");
+
+      const response = await fetch(
+        `${BASE_URL}/user/upload/`,
+        {
+          method: "POST",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+
+          body: formData,
+        }
+      );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem("superadmin_token");
+
+        toast.error("Session expired. Please login again");
+
+        navigate("/login");
+
+        return null;
+      }
+
+      const data = await response.json();
+
+      console.log("UPLOAD RESPONSE:", data);
+
+      return data?.data?.url || null;
+    } catch (error) {
+      console.error("Image Upload Error:", error);
+
+      toast.error("Image upload failed");
+
+      return null;
+    }
+  };
+  const getBrandList = async () => {
+    try {
+      setBrandLoading(true);
+      setBrandError(null);
+
+      const token = sessionStorage.getItem("superadmin_token");
+
+      const response = await fetch(
+        `${BASE_URL}/vendors/admin/brand-name/`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data?.success) {
+        setBrandData(data?.data || []);
+      } else {
+        setBrandData([]);
+        setBrandError(data?.message || "Failed to fetch brands");
+      }
+    } catch (error) {
+      console.error("Brand API Error:", error);
+      setBrandData([]);
+      setBrandError("Failed to fetch brands");
+    } finally {
+      setBrandLoading(false);
+    }
+  };
+
+
+  const getBannerList = async () => {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+
+      navigate("/login");
+
+      return;
+    }
+
+    setBannerLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/user/admin/banner/`,
+        {
+          method: "GET",
+
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem("superadmin_token");
+
+        toast.error("Session expired. Please login again");
+
+        navigate("/login");
+
+        return;
+      }
+
+      const data = await response.json();
+
+      console.log("BANNER API RESPONSE:", data);
+
+      if (data.success) {
+        setBannerData(data?.data || []);
+      } else {
+        setError(
+          data.message ||
+          "Failed to fetch banners"
+        );
+
+        toast.error(
+          data.message ||
+          "Failed to fetch banners"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Banner Fetch Error:",
+        error
+      );
+
+      setError(
+        "Something went wrong while fetching banners."
+      );
+
+      toast.error(
+        "Failed to fetch banner data"
+      );
+    } finally {
+      setBannerLoading(false);
+    }
+  };
+
+
+
+  useEffect(() => {
+    getCategoryList();
+    getBannerList();
+    getBrandList();
+  }, []);
+
+
+
+  const handleAddBanner = async (e) => {
+    e.preventDefault();
+
+    const token =
+      sessionStorage.getItem(
+        "superadmin_token"
+      );
+
+    if (!token) {
+      toast.error(
+        "Session expired. Please login again"
+      );
+
+      navigate("/login");
+
+      return;
+    }
+
+    const errors = {};
+
+    if (
+      !bannerForm.service_category_id
+    ) {
+      errors.service_category_id =
+        "Please select a category";
+    }
+
+    if (
+      !bannerForm.redirect_url?.trim()
+    ) {
+      errors.redirect_url =
+        "Redirect URL is required";
+    }
+
+    if (!BannerImage) {
+      errors.image_url =
+        "Banner image is required";
+    }
+
+    if (
+      Object.keys(errors).length > 0
+    ) {
+      setBannerError(errors);
+      return;
+    }
+
+    setBannerError({});
+    setaddbannerloading(true);
+
+    try {
+      let uploadedImageUrl = null;
+
+      if (BannerImage) {
+        uploadedImageUrl =
+          await uploadImage(
+            BannerImage
+          );
+      }
+
+      if (!uploadedImageUrl) {
+        toast.error(
+          "Image upload failed"
+        );
+
+        return;
+      }
+
+      const payload = {
+        image_url:
+          uploadedImageUrl,
+
+        redirect_url:
+          bannerForm.redirect_url,
+
+        service_category_id:
+          bannerForm.service_category_id,
+
+        service_id:
+          bannerForm.service_id ||
+          null,
+
+        is_active:
+          bannerForm.is_active,
+      };
+
+      console.log(
+        "FINAL BANNER PAYLOAD:",
+        payload
+      );
+
+      const response =
+        await fetch(
+          `${BASE_URL}/user/admin/banner/`,
+          {
+            method: "POST",
+
+            headers: {
+              Accept:
+                "application/json",
+
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+
+              "ngrok-skip-browser-warning":
+                "true",
+            },
+
+            body: JSON.stringify(
+              payload
+            ),
+          }
+        );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem(
+          "superadmin_token"
+        );
+
+        toast.error(
+          "Session expired. Please login again"
+        );
+
+        navigate("/login");
+
+        return;
+      }
+
+      const data =
+        await response.json();
+
+      console.log(
+        "BANNER RESPONSE:",
+        data
+      );
+
+      if (
+        response.ok &&
+        data.success !== false
+      ) {
+        toast.success(
+          "Banner Added Successfully"
+        );
+
+        resetBannerForm();
+
+        setShowBannerModal(false);
+
+        await getBannerList();
+      } else {
+        toast.error(
+          data?.message ||
+          "Failed to add banner"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Add Banner Error:",
+        error
+      );
+
+      toast.error(
+        "Something went wrong"
+      );
+    } finally {
+      setaddbannerloading(false);
+    }
+  };
+
+
+
+  const handleUpdateBanner = async (
+    e
+  ) => {
+    e.preventDefault();
+
+    const errors = {};
+
+    if (
+      !editBannerForm.service_category_id
+    ) {
+      errors.service_category_id =
+        "Please select a category";
+    }
+
+    if (
+      !editBannerForm.redirect_url?.trim()
+    ) {
+      errors.redirect_url =
+        "Redirect URL is required";
+    }
+
+    if (
+      !editBannerImage &&
+      !editBannerForm.image_url
+    ) {
+      errors.image_url =
+        "Banner image is required";
+    }
+
+    if (
+      Object.keys(errors).length > 0
+    ) {
+      setEditBannerError(errors);
+
+      return;
+    }
+
+    setEditBannerError({});
+
+    const token =
+      sessionStorage.getItem(
+        "superadmin_token"
+      );
+
+    if (!token) {
+      toast.error(
+        "Session expired. Please login again"
+      );
+
+      navigate("/login");
+
+      return;
+    }
+
+    try {
+      let imageUrl =
+        editBannerForm.image_url;
+
+      if (editBannerImage) {
+        imageUrl =
+          await uploadImage(
+            editBannerImage
+          );
+      }
+
+      if (!imageUrl) {
+        toast.error(
+          "Image upload failed"
+        );
+
+        return;
+      }
+
+      const payload = {
+        image_url: imageUrl,
+
+        redirect_url:
+          editBannerForm.redirect_url,
+
+        service_category_id:
+          editBannerForm.service_category_id,
+
+        service_id:
+          editBannerForm.service_id ||
+          null,
+
+        is_active:
+          editBannerForm.is_active,
+      };
+
+      console.log(
+        "UPDATE BANNER PAYLOAD:",
+        payload
+      );
+
+      const response =
+        await fetch(
+          `${BASE_URL}/user/admin/banner/?id=${editBannerId}`,
+          {
+            method: "PUT",
+
+            headers: {
+              Accept:
+                "application/json",
+
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+
+              "ngrok-skip-browser-warning":
+                "true",
+            },
+
+            body: JSON.stringify(
+              payload
+            ),
+          }
+        );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem(
+          "superadmin_token"
+        );
+
+        toast.error(
+          "Session expired. Please login again"
+        );
+
+        navigate("/login");
+
+        return;
+      }
+
+      const data =
+        await response.json();
+
+      console.log(
+        "UPDATE BANNER RESPONSE:",
+        data
+      );
+
+      if (
+        response.ok &&
+        data.success !== false
+      ) {
+        toast.success(
+          "Banner Updated Successfully"
+        );
+
+        setShowEditModal(false);
+
+        resetEditBannerForm();
+
+        await getBannerList();
+      } else {
+        toast.error(
+          data?.message ||
+          "Failed to update banner"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Update Banner Error:",
+        error
+      );
+
+      toast.error(
+        "Something went wrong"
+      );
+    }
+  };
+
+
+  const handleDeleteBanner = async () => {
+    const token =
+      sessionStorage.getItem(
+        "superadmin_token"
+      );
+
+    if (!token) {
+      toast.error(
+        "Session expired. Please login again"
+      );
+
+      navigate("/login");
+
+      return;
+    }
+
+    if (!SelectedBanner) {
+      return;
+    }
+
+    try {
+      const response =
+        await fetch(
+          `${BASE_URL}/user/admin/banner/?id=${SelectedBanner.id}`,
+          {
+            method: "DELETE",
+
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+
+              "ngrok-skip-browser-warning":
+                "true",
+            },
+          }
+        );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem(
+          "superadmin_token"
+        );
+
+        toast.error(
+          "Session expired. Please login again"
+        );
+
+        navigate("/login");
+
+        return;
+      }
+
+      const data =
+        await response.json();
+
+      if (
+        response.ok &&
+        data.success !== false
+      ) {
+        toast.success(
+          "Banner deleted successfully 🗑️"
+        );
+
+        setDeleteBannerModal(
+          false
+        );
+
+        setSelectedBanner(null);
+
+        await getBannerList();
+      } else {
+        toast.error(
+          data?.message ||
+          "Failed to delete banner"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Delete Banner Error:",
+        error
+      );
+
+      toast.error(
+        "Failed to delete banner"
+      );
+    }
+  };
+
+
+
+  const handleToggleBannerStatus = async (
+    bannerId,
+    currentStatus
+  ) => {
+    const token =
+      sessionStorage.getItem(
+        "superadmin_token"
+      );
+
+    if (!token) {
+      toast.error(
+        "Session expired. Please login again"
+      );
+
+      navigate("/login");
+
+      return;
+    }
+
+    try {
+      const response =
+        await fetch(
+          `${BASE_URL}/user/admin/banner/?id=${bannerId}`,
+          {
+            method: "PATCH",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+
+              "ngrok-skip-browser-warning":
+                "true",
+            },
+
+            body: JSON.stringify({
+              is_active:
+                !currentStatus,
+            }),
+          }
+        );
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        sessionStorage.removeItem(
+          "superadmin_token"
+        );
+
+        toast.error(
+          "Session expired. Please login again"
+        );
+
+        navigate("/login");
+
+        return;
+      }
+
+      const data =
+        await response.json();
+
+      if (
+        response.ok &&
+        data.success
+      ) {
+        toast.success(
+          `Banner ${!currentStatus
+            ? "Activated"
+            : "Deactivated"
+          } Successfully`
+        );
+
+        setBannerData((prev) =>
+          prev.map((item) =>
+            item.id === bannerId
+              ? {
+                ...item,
+                is_active:
+                  !currentStatus,
+              }
+              : item
+          )
+        );
+      } else {
+        toast.error(
+          data.message ||
+          "Failed to update status"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Toggle Banner Error:",
+        error
+      );
+
+      toast.error(
+        "Something went wrong"
+      );
+    }
+  };
+
+
+
+  const openEditModal = (item) => {
+    setEditBannerId(item.id);
+
+    setEditBannerForm({
+      image_url:
+        item.image_url || "",
+
+      redirect_url:
+        item.redirect_url || "",
+
+      service_category_id:
+        item.service_category_id || "",
+
+      service_id:
+        item.service_id || "",
+
+      is_active:
+        item.is_active || false,
     });
-};
 
-const eventToForm = (
-    event = {}
-) => ({
-    title: event.title || "",
-
-    event_tags: tagsToText(
-        event.event_tags
-    ),
-
-    scope:
-        event.scope || "hero",
-
-    mode:
-        event.mode || "production",
-
-    starts_at:
-        toInputDateTime(
-            event.starts_at
-        ),
-
-    ends_at:
-        toInputDateTime(
-            event.ends_at
-        ),
-
-    media: mediaToForm(
-        event.media
-    ),
-
-    notes:
-        event.notes || "",
-
-    is_active:
-        event.is_active !== false,
-});
-
-/* =========================================================
-   ENQUEUE VALIDATION
-========================================================= */
-
-const enqueueBlockReason = (
-    event
-) => {
-    const media = Array.isArray(
-        event?.media
-    )
-        ? event.media
-        : [];
-
-    const hasMedia = media.some(
-        (item) =>
-            item?.media_url &&
-            item?.media_type
-    );
-
-    if (!hasMedia) {
-        return "Add media before enqueueing this event.";
-    }
-
-    const starts = event?.starts_at
-        ? new Date(event.starts_at)
-        : null;
-
-    const ends = event?.ends_at
-        ? new Date(event.ends_at)
-        : null;
-
-    const endsAfterStart =
-        starts &&
-        ends &&
-        !Number.isNaN(
-            starts.getTime()
-        ) &&
-        !Number.isNaN(
-            ends.getTime()
-        ) &&
-        ends > starts;
-
-    const endsInFuture =
-        ends &&
-        !Number.isNaN(
-            ends.getTime()
-        ) &&
-        ends > new Date();
-
-    if (
-        !endsAfterStart &&
-        !endsInFuture
-    ) {
-        return "Set a valid schedule. End time must be after the start time, or the end time must be in the future.";
-    }
-
-    return "";
-};
-
-
-
-const Banner = () => {
-    const navigate =
-        useNavigate();
-
-    const requestSerial =
-        useRef(0);
-
-    const servicesRef =
-        useRef({});
-
-    const loadingSlugs =
-        useRef(new Set());
-
-    /* =====================================================
-       EVENT STATE
-    ===================================================== */
-
-    const [events, setEvents] =
-        useState([]);
-
-    const [loading, setLoading] =
-        useState(true);
-
-    const [refreshing, setRefreshing] =
-        useState(false);
-
-    const [error, setError] =
-        useState(null);
-
-    /* =====================================================
-       FILTERS
-    ===================================================== */
-
-    const [filters, setFilters] =
-        useState({
-            id: "",
-            mode: "",
-            status: "",
-            scope: "",
-        });
-
-    const [appliedId, setAppliedId] =
-        useState("");
-
-    const [appliedScope, setAppliedScope] =
-        useState("");
-
-    /* =====================================================
-       FORM
-    ===================================================== */
-
-    const [showEdit, setShowEdit] =
-        useState(false);
-
-    const [editingId, setEditingId] =
-        useState(null);
-
-    const [form, setForm] =
-        useState(emptyForm);
-
-    const [errors, setErrors] =
-        useState({});
-
-    const [saving, setSaving] =
-        useState(false);
-
-    const [uploadingIndex, setUploadingIndex] =
-        useState(null);
-
-    /* =====================================================
-       CONFIRM
-    ===================================================== */
-
-    const [confirm, setConfirm] =
-        useState(null);
-
-    const [pendingAction, setPendingAction] =
-        useState("");
-
-    /* =====================================================
-       MENU / VIEW / PREVIEW
-    ===================================================== */
-
-    const [openMenuId, setOpenMenuId] =
-        useState(null);
-
-    const [viewEvent, setViewEvent] =
-        useState(null);
-
-    const [viewLoading, setViewLoading] =
-        useState(false);
-
-    const [preview, setPreview] =
-        useState(null);
-
-    /* =====================================================
-       CATEGORY / BRAND / SERVICE
-    ===================================================== */
-
-    const [categories, setCategories] =
-        useState([]);
-
-    const [categoryLoading, setCategoryLoading] =
-        useState(false);
-
-    const [brands, setBrands] =
-        useState([]);
-
-    const [brandLoading, setBrandLoading] =
-        useState(false);
-
-    const [servicesBySlug, setServicesBySlug] =
-        useState({});
-
-    const [serviceLoadingSlug, setServiceLoadingSlug] =
-        useState("");
-
-    /* =====================================================
-       CLOSE MENU
-    ===================================================== */
-
-    useEffect(() => {
-        const handleOutsideClick = () => {
-            setOpenMenuId(null);
-        };
-
-        if (openMenuId !== null) {
-            document.addEventListener(
-                "click",
-                handleOutsideClick
-            );
-        }
-
-        return () => {
-            document.removeEventListener(
-                "click",
-                handleOutsideClick
-            );
-        };
-    }, [openMenuId]);
-
-    /* =====================================================
-       REQUEST
-    ===================================================== */
-
-    const request = useCallback(
-        async (
-            path,
-            {
-                method = "GET",
-                body,
-            } = {}
-        ) => {
-            const token =
-                sessionStorage.getItem(
-                    "superadmin_token"
-                );
-
-            if (!token) {
-                toast.error(
-                    "Session expired. Please login again"
-                );
-
-                navigate("/login");
-
-                return null;
-            }
-
-            const response =
-                await fetch(
-                    `${BASE_URL}${path}`,
-                    {
-                        method,
-
-                        headers: {
-                            Accept:
-                                "application/json",
-
-                            Authorization:
-                                `Bearer ${token}`,
-
-                            "ngrok-skip-browser-warning":
-                                "true",
-
-                            ...(body !==
-                                undefined
-                                ? {
-                                    "Content-Type":
-                                        "application/json",
-                                }
-                                : {}),
-                        },
-
-                        body:
-                            body !==
-                                undefined
-                                ? JSON.stringify(
-                                    body
-                                )
-                                : undefined,
-                    }
-                );
-
-            if (
-                response.status === 401 ||
-                response.status === 403
-            ) {
-                sessionStorage.removeItem(
-                    "superadmin_token"
-                );
-
-                toast.error(
-                    "Session expired. Please login again"
-                );
-
-                navigate("/login");
-
-                return null;
-            }
-
-            const text =
-                await response.text();
-
-            let data = null;
-
-            if (text) {
-                try {
-                    data =
-                        JSON.parse(text);
-                } catch {
-                    data = {
-                        message: text,
-                    };
-                }
-            }
-
-            return {
-                response,
-                data,
-            };
-        },
-        [navigate]
-    );
-
-    /* =====================================================
-       LOAD EVENTS
-    ===================================================== */
-
-    const loadEvents =
-        useCallback(
-            async ({
-                soft = false,
-            } = {}) => {
-                const current =
-                    ++requestSerial.current;
-
-                if (soft) {
-                    setRefreshing(
-                        true
-                    );
-                } else {
-                    setLoading(true);
-                }
-
-                if (!soft) {
-                    setError(null);
-                }
-
-                const params =
-                    new URLSearchParams();
-
-                if (appliedId) {
-                    params.set(
-                        "id",
-                        appliedId
-                    );
-                }
-
-                if (filters.mode) {
-                    params.set(
-                        "mode",
-                        filters.mode
-                    );
-                }
-
-                if (filters.status) {
-                    params.set(
-                        "status",
-                        filters.status
-                    );
-                }
-
-                if (appliedScope) {
-                    params.set(
-                        "scope",
-                        appliedScope
-                    );
-                }
-
-                const query =
-                    params.toString();
-
-                const path = query
-                    ? `/banners/admin/events/?${query}`
-                    : "/banners/admin/events/";
-
-                try {
-                    const result =
-                        await request(
-                            path
-                        );
-
-                    if (
-                        !result ||
-                        current !==
-                            requestSerial.current
-                    ) {
-                        return;
-                    }
-
-                    if (
-                        !isOk(
-                            result.data,
-                            result.response
-                        )
-                    ) {
-                        const message =
-                            errorMessage(
-                                result.data,
-                                "Failed to fetch events"
-                            );
-
-                        if (!soft) {
-                            setEvents(
-                                []
-                            );
-
-                            setError(
-                                message
-                            );
-                        }
-
-                        toast.error(
-                            message
-                        );
-
-                        return;
-                    }
-
-                    setError(null);
-
-                    setEvents(
-                        readEvents(
-                            result.data
-                        )
-                    );
-                } catch (loadError) {
-                    console.error(
-                        "Event list error:",
-                        loadError
-                    );
-
-                    if (
-                        current !==
-                        requestSerial.current
-                    ) {
-                        return;
-                    }
-
-                    if (!soft) {
-                        setEvents(
-                            []
-                        );
-
-                        setError(
-                            "Something went wrong while fetching events."
-                        );
-                    }
-
-                    toast.error(
-                        "Failed to fetch events"
-                    );
-                } finally {
-                    if (
-                        current ===
-                        requestSerial.current
-                    ) {
-                        setLoading(false);
-                        setRefreshing(
-                            false
-                        );
-                    }
-                }
-            },
-            [
-                appliedId,
-                appliedScope,
-                filters.mode,
-                filters.status,
-                request,
-            ]
+    setEditBannerImage(null);
+    setEditBannerError({});
+
+    // =======================================================
+    // LOAD SERVICES
+    // =======================================================
+
+    if (item.service_category_id) {
+      const selectedCategory =
+        CategoryData.find(
+          (cat) =>
+            String(cat.id) ===
+            String(
+              item.service_category_id
+            )
         );
 
-    useEffect(() => {
-        const timer =
-            setTimeout(
-                () =>
-                    setAppliedId(
-                        filters.id.trim()
-                    ),
-                400
-            );
-
-        return () =>
-            clearTimeout(timer);
-    }, [filters.id]);
-
-    useEffect(() => {
-        const timer =
-            setTimeout(
-                () =>
-                    setAppliedScope(
-                        filters.scope.trim()
-                    ),
-                400
-            );
-
-        return () =>
-            clearTimeout(timer);
-    }, [filters.scope]);
-
-    useEffect(() => {
-        loadEvents();
-    }, [loadEvents]);
-
-    /* =====================================================
-       LOAD CATEGORIES
-    ===================================================== */
-
-    const loadCategories =
-        useCallback(
-            async () => {
-                setCategoryLoading(
-                    true
-                );
-
-                try {
-                    const result =
-                        await request(
-                            "/user/admin/service-category/"
-                        );
-
-                    if (
-                        !result ||
-                        !isOk(
-                            result.data,
-                            result.response
-                        )
-                    ) {
-                        toast.error(
-                            errorMessage(
-                                result?.data,
-                                "Failed to fetch categories"
-                            )
-                        );
-
-                        return;
-                    }
-
-                    setCategories(
-                        readList(
-                            result.data
-                        )
-                    );
-                } catch (categoryError) {
-                    console.error(
-                        "Category list error:",
-                        categoryError
-                    );
-
-                    toast.error(
-                        "Failed to fetch categories"
-                    );
-                } finally {
-                    setCategoryLoading(
-                        false
-                    );
-                }
-            },
-            [request]
-        );
-
-    /* =====================================================
-       LOAD BRANDS
-    ===================================================== */
-
-    const loadBrands =
-        useCallback(
-            async () => {
-                setBrandLoading(
-                    true
-                );
-
-                try {
-                    const result =
-                        await request(
-                            "/vendors/admin/brand-name/"
-                        );
-
-                    if (
-                        !result ||
-                        !isOk(
-                            result.data,
-                            result.response
-                        )
-                    ) {
-                        toast.error(
-                            errorMessage(
-                                result?.data,
-                                "Failed to fetch brands"
-                            )
-                        );
-
-                        setBrands([]);
-                        return;
-                    }
-
-                    setBrands(
-                        readList(
-                            result.data
-                        )
-                    );
-                } catch (brandError) {
-                    console.error(
-                        "Brand list error:",
-                        brandError
-                    );
-
-                    toast.error(
-                        "Failed to fetch brands"
-                    );
-
-                    setBrands([]);
-                } finally {
-                    setBrandLoading(
-                        false
-                    );
-                }
-            },
-            [request]
-        );
-
-    /* =====================================================
-       LOAD SERVICES
-    ===================================================== */
-
-    const loadServices =
-        useCallback(
-            async (slug) => {
-                if (
-                    !slug ||
-                    servicesRef.current[
-                        slug
-                    ] ||
-                    loadingSlugs.current.has(
-                        slug
-                    )
-                ) {
-                    return;
-                }
-
-                loadingSlugs.current.add(
-                    slug
-                );
-
-                setServiceLoadingSlug(
-                    slug
-                );
-
-                try {
-                    const result =
-                        await request(
-                            `/user/admin/services/?category=${encodeURIComponent(
-                                slug
-                            )}`
-                        );
-
-                    const list =
-                        result &&
-                        isOk(
-                            result.data,
-                            result.response
-                        )
-                            ? readList(
-                                result.data
-                            )
-                            : [];
-
-                    if (
-                        result &&
-                        !isOk(
-                            result.data,
-                            result.response
-                        )
-                    ) {
-                        toast.error(
-                            errorMessage(
-                                result.data,
-                                "Failed to fetch services"
-                            )
-                        );
-                    }
-
-                    servicesRef.current[
-                        slug
-                    ] = list;
-
-                    setServicesBySlug(
-                        (prev) => ({
-                            ...prev,
-                            [slug]: list,
-                        })
-                    );
-                } catch (serviceError) {
-                    console.error(
-                        "Service list error:",
-                        serviceError
-                    );
-
-                    toast.error(
-                        "Failed to fetch services"
-                    );
-
-                    servicesRef.current[
-                        slug
-                    ] = [];
-
-                    setServicesBySlug(
-                        (prev) => ({
-                            ...prev,
-                            [slug]: [],
-                        })
-                    );
-                } finally {
-                    loadingSlugs.current.delete(
-                        slug
-                    );
-
-                    setServiceLoadingSlug(
-                        ""
-                    );
-                }
-            },
-            [request]
-        );
-
-    /* =====================================================
-       LOAD FORM DATA
-    ===================================================== */
-
-    useEffect(() => {
-        if (!showEdit) {
-            return;
-        }
-
-        if (
-            categories.length === 0
-        ) {
-            loadCategories();
-        }
-
-        if (brands.length === 0) {
-            loadBrands();
-        }
-    }, [
-        showEdit,
-        categories.length,
-        brands.length,
-        loadCategories,
-        loadBrands,
-    ]);
-
-    /* =====================================================
-       LOAD SERVICES FOR EXISTING MEDIA
-    ===================================================== */
-
-    useEffect(() => {
-        if (!showEdit) {
-            return;
-        }
-
-        form.media.forEach(
-            (item) => {
-                const category =
-                    categories.find(
-                        (cat) =>
-                            String(
-                                cat.id
-                            ) ===
-                            String(
-                                item.service_category_id
-                            )
-                    );
-
-                const slug =
-                    SERVICE_CATEGORY_MAP[
-                        category?.name
-                            ?.trim()
-                            .toLowerCase()
-                    ];
-
-                if (slug) {
-                    loadServices(
-                        slug
-                    );
-                }
-            }
-        );
-    }, [
-        showEdit,
-        form.media,
-        categories,
-        loadServices,
-    ]);
-
-    /* =====================================================
-       UPLOAD IMAGE
-    ===================================================== */
-
-    const uploadImage =
-        async (file) => {
-            const token =
-                sessionStorage.getItem(
-                    "superadmin_token"
-                );
-
-            if (!token) {
-                toast.error(
-                    "Session expired. Please login again"
-                );
-
-                navigate("/login");
-
-                return null;
-            }
-
-            try {
-                const formData =
-                    new FormData();
-
-                formData.append(
-                    "image",
-                    file
-                );
-
-                formData.append(
-                    "dir",
-                    "banners"
-                );
-
-                const response =
-                    await fetch(
-                        `${BASE_URL}/user/upload/`,
-                        {
-                            method: "POST",
-
-                            headers: {
-                                Authorization:
-                                    `Bearer ${token}`,
-
-                                "ngrok-skip-browser-warning":
-                                    "true",
-                            },
-
-                            body: formData,
-                        }
-                    );
-
-                if (
-                    response.status ===
-                        401 ||
-                    response.status ===
-                        403
-                ) {
-                    sessionStorage.removeItem(
-                        "superadmin_token"
-                    );
-
-                    toast.error(
-                        "Session expired. Please login again"
-                    );
-
-                    navigate("/login");
-
-                    return null;
-                }
-
-                const data =
-                    await response.json();
-
-                const url =
-                    data?.data?.url ||
-                    data?.url ||
-                    data?.data?.image_url ||
-                    null;
-
-                if (
-                    !response.ok ||
-                    !url
-                ) {
-                    toast.error(
-                        errorMessage(
-                            data,
-                            "Image upload failed"
-                        )
-                    );
-
-                    return null;
-                }
-
-                return url;
-            } catch (uploadError) {
-                console.error(
-                    "Media upload error:",
-                    uploadError
-                );
-
-                toast.error(
-                    "Image upload failed"
-                );
-
-                return null;
-            }
-        };
-
-    /* =====================================================
-       OPEN CREATE
-    ===================================================== */
-
-    const openCreate = () => {
-        setEditingId(null);
-
-        setForm(
-            emptyForm()
-        );
-
-        setErrors({});
-
-        setOpenMenuId(null);
-
-        setShowEdit(true);
-    };
-
-    /* =====================================================
-       OPEN EDIT
-    ===================================================== */
-
-    const openEdit = (
-        event
-    ) => {
-        setEditingId(
-            event.id
-        );
-
-        setForm(
-            eventToForm(event)
-        );
-
-        setErrors({});
-
-        setOpenMenuId(null);
-
-        setShowEdit(true);
-    };
-
-    /* =====================================================
-       CLOSE FORM
-    ===================================================== */
-
-    const closeEdit = () => {
-        setShowEdit(false);
-
-        setEditingId(null);
-
-        setForm(
-            emptyForm()
-        );
-
-        setErrors({});
-    };
-
-    /* =====================================================
-       UPDATE MEDIA
-    ===================================================== */
-
-    const updateMedia = (
-        index,
-        patch
-    ) => {
-        setForm(
-            (prev) => ({
-                ...prev,
-
-                media: prev.media.map(
-                    (
-                        item,
-                        itemIndex
-                    ) =>
-                        itemIndex ===
-                            index
-                            ? {
-                                ...item,
-                                ...patch,
-                            }
-                            : item
-                ),
-            })
-        );
-    };
-
-    /* =====================================================
-       CATEGORY NAME
-    ===================================================== */
-
-    const categoryNameOf =
-        (categoryId) => {
-            const category =
-                categories.find(
-                    (cat) =>
-                        String(
-                            cat.id
-                        ) ===
-                        String(
-                            categoryId
-                        )
-                );
-
-            return (
-                category?.name
-                    ?.trim()
-                    .toLowerCase() ||
-                ""
-            );
-        };
-
-    /* =====================================================
-       CATEGORY CHANGE
-    ===================================================== */
-
-    const handleMediaCategory = (
-        index,
-        categoryId
-    ) => {
+      if (
+        selectedCategory?.name
+      ) {
         const categoryName =
-            categoryNameOf(
-                categoryId
-            );
+          selectedCategory.name
+            .trim()
+            .toLowerCase();
 
-        const config =
-            SCREEN_MAP[
-                categoryName
-            ];
+        const serviceCategory =
+          serviceCategoryMap[
+          categoryName
+          ];
 
-        const slug =
-            SERVICE_CATEGORY_MAP[
-                categoryName
-            ];
-
-        updateMedia(
-            index,
-            {
-                service_category_id:
-                    categoryId,
-
-                link_type:
-                    categoryId
-                        ? "service"
-                        : "",
-
-                brand_id: "",
-
-                service_id: "",
-
-                redirect_link:
-                    config?.base ||
-                    "",
-            }
-        );
-
-        if (slug) {
-            loadServices(
-                slug
-            );
+        if (serviceCategory) {
+          getServiceList(
+            serviceCategory
+          );
         }
-    };
+      }
+    }
 
-    /* =====================================================
-       BRAND CHANGE
-    ===================================================== */
+    setShowEditModal(true);
+  };
 
-    const handleMediaBrand = (
-        index,
-        brandId
-    ) => {
-        updateMedia(
-            index,
-            {
-                brand_id:
-                    brandId,
 
-                service_id: "",
+  const totalBanner =
+    BannerData?.length || 0;
 
-                redirect_link:
-                    brandId
-                        ? `CategoryProduct/${brandId}`
-                        : "",
-            }
-        );
-    };
+  const activeBanner =
+    BannerData?.filter(
+      (item) =>
+        item.is_active === true
+    ).length || 0;
 
-    /* =====================================================
-       SERVICE CHANGE
-    ===================================================== */
+  const inactiveBanner =
+    BannerData?.filter(
+      (item) =>
+        item.is_active === false
+    ).length || 0;
 
-    const handleMediaService = (
-        index,
-        serviceId,
-        categoryId
-    ) => {
-        const config =
-            SCREEN_MAP[
-                categoryNameOf(
-                    categoryId
+
+
+  return (
+    <>
+
+
+      <div className="page-header">
+        <h1>Banner Management</h1>
+
+        <p className="page-paragraph">
+          Manage Banner, their details
+        </p>
+      </div>
+
+
+
+      <div className="vendors-stats stats2-grid">
+
+
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{
+              background:
+                "#0D614E20",
+              color:
+                "#0D614E",
+            }}
+          >
+            <FaImages size={16} />
+          </div>
+
+          <div className="stat2-info">
+            <h3>Total Banner</h3>
+
+            <div className="stat2-value">
+              {totalBanner}
+            </div>
+          </div>
+        </div>
+
+
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{
+              background:
+                "#0D614E20",
+              color:
+                "#0D614E",
+            }}
+          >
+            <FaCheckCircle size={16} />
+          </div>
+
+          <div className="stat2-info">
+            <h3>Active Banner</h3>
+
+            <div className="stat2-value">
+              {activeBanner}
+            </div>
+          </div>
+        </div>
+
+
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{
+              background:
+                "#0D614E20",
+              color:
+                "#0D614E",
+            }}
+          >
+            <FaTimesCircle size={16} />
+          </div>
+
+          <div className="stat2-info">
+            <h3>Inactive Banner</h3>
+
+            <div className="stat2-value">
+              {inactiveBanner}
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div className="Question-controls">
+        <div className="filter-controls">
+
+          <button
+            className="add-customer-btn"
+            onClick={() => {
+              resetBannerForm();
+
+              setShowBannerModal(
+                true
+              );
+            }}
+          >
+            <BsPlus size={18} />
+
+            Add Banner
+          </button>
+
+        </div>
+      </div>
+
+
+
+      <div className="table-wrapper">
+        <table className="data-table">
+
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Image</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            {BannerLoading ? (
+              Array(3)
+                .fill(0)
+                .map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan="4">
+                      <div className="skeleton-row"></div>
+                    </td>
+                  </tr>
+                ))
+            ) : Error ? (
+              <tr>
+                <td
+                  colSpan="4"
+                  style={{
+                    color: "red",
+                  }}
+                >
+                  {Error}
+                </td>
+              </tr>
+            ) : BannerData?.length > 0 ? (
+              BannerData.map(
+                (
+                  item,
+                  index
+                ) => (
+                  <tr
+                    key={
+                      item.id
+                    }
+                  >
+
+                    <td>
+                      {index + 1}
+                    </td>
+
+                    <td>
+                      <img
+                        src={
+                          item.image_url
+                        }
+                        alt="banner"
+                        style={{
+                          width:
+                            "30px",
+
+                          height:
+                            "30px",
+
+                          objectFit:
+                            "cover",
+
+                          borderRadius:
+                            "6px",
+
+                          cursor:
+                            "pointer",
+                        }}
+                        onClick={() =>
+                          setBannerPreviewImage(
+                            item.image_url
+                          )
+                        }
+                      />
+                    </td>
+
+                    <td>
+                      <label className="switch">
+
+                        <input
+                          type="checkbox"
+                          checked={
+                            item.is_active
+                          }
+                          onChange={() =>
+                            handleToggleBannerStatus(
+                              item.id,
+                              item.is_active
+                            )
+                          }
+                        />
+
+                        <span className="slider round"></span>
+
+                      </label>
+                    </td>
+
+                    <td>
+                      <div className="action-buttons">
+
+                        <button
+                          className="action-btn edit"
+                          onClick={() =>
+                            openEditModal(
+                              item
+                            )
+                          }
+                        >
+                          <FaEdit />
+                        </button>
+
+                        <button
+                          className="action-btn delete"
+                          onClick={() => {
+                            setSelectedBanner(
+                              item
+                            );
+
+                            setDeleteBannerModal(
+                              true
+                            );
+                          }}
+                        >
+                          <span className="icon-delete">
+                            <FiTrash2 />
+                          </span>
+                        </button>
+
+                      </div>
+                    </td>
+
+                  </tr>
                 )
-            ];
+              )
+            ) : (
+              <tr>
+                <td
+                  colSpan="4"
+                  style={{
+                    textAlign:
+                      "center",
+                  }}
+                >
+                  No data found
+                </td>
+              </tr>
+            )}
 
-        let redirectLink =
-            "";
+          </tbody>
 
-        if (config) {
-            redirectLink =
-                serviceId &&
-                config.detail
-                    ? `${config.detail}/${serviceId}`
-                    : config.base;
-        }
+        </table>
+      </div>
 
-        updateMedia(
-            index,
-            {
-                service_id:
-                    serviceId,
 
-                redirect_link:
-                    redirectLink,
-            }
-        );
-    };
 
-    /* =====================================================
-       MEDIA FILE UPLOAD
-    ===================================================== */
+      {showBannerModal && (
+        <div
+          className="prakriti-modal-overlay"
+          onClick={() => {
+            resetBannerForm();
 
-    const handleMediaFile =
-        async (
-            index,
-            file
-        ) => {
-            if (!file) {
-                return;
-            }
-
-            setUploadingIndex(
-                index
+            setShowBannerModal(
+              false
             );
+          }}
+        >
 
-            const url =
-                await uploadImage(
-                    file
-                );
-
-            setUploadingIndex(
-                null
-            );
-
-            if (!url) {
-                return;
+          <div
+            className="prakriti-modal"
+            onClick={(e) =>
+              e.stopPropagation()
             }
+          >
 
-            updateMedia(
-                index,
-                {
-                    media_url:
-                        url,
+            <div className="prakriti-modal-header">
 
-                    media_type:
-                        "image",
-                }
-            );
+              <h2>
+                Add Banner
+              </h2>
 
-            toast.success(
-                "Media uploaded successfully"
-            );
-        };
+              <button
+                className="close-btn"
+                onClick={() => {
+                  resetBannerForm();
 
-    /* =====================================================
-       ADD MEDIA
-    ===================================================== */
+                  setShowBannerModal(
+                    false
+                  );
+                }}
+              >
+                ✕
+              </button>
 
-    const handleAddMedia = () => {
-        setForm(
-            (prev) => ({
-                ...prev,
+            </div>
 
-                media: [
-                    ...prev.media,
-                    emptyMedia(),
-                ],
-            })
-        );
-    };
+            <form
+              className="prakriti-form"
+              onSubmit={
+                handleAddBanner
+              }
+            >
 
-    /* =====================================================
-       REMOVE MEDIA
-    ===================================================== */
+              {/* CATEGORY */}
 
-    const handleRemoveMedia = (
-        index
-    ) => {
-        setForm(
-            (prev) => {
-                if (
-                    prev.media
-                        .length === 1
-                ) {
-                    return prev;
-                }
+              <div className="form-group">
 
-                return {
-                    ...prev,
+                <label>
+                  Select Category
+                </label>
 
-                    media:
-                        prev.media.filter(
-                            (
-                                _,
-                                itemIndex
-                            ) =>
-                                itemIndex !==
-                                index
-                        ),
-                };
-            }
-        );
-    };
+                <select
+                  name="service_category_id"
+                  value={
+                    bannerForm.service_category_id
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  disabled={
+                    CategoryLoading
+                  }
+                >
 
-    /* =====================================================
-       VALIDATE FORM
-    ===================================================== */
+                  <option value="">
+                    {CategoryLoading
+                      ? "Loading categories..."
+                      : "Select Category"}
+                  </option>
 
-    const validateForm =
-        () => {
-            const nextErrors =
-                {};
-
-            if (
-                !form.title.trim()
-            ) {
-                nextErrors.title =
-                    "Title is required";
-            }
-
-            if (
-                !form.scope.trim()
-            ) {
-                nextErrors.scope =
-                    "Scope is required";
-            }
-
-            if (!form.mode) {
-                nextErrors.mode =
-                    "Mode is required";
-            }
-
-            if (
-                form.starts_at &&
-                form.ends_at
-            ) {
-                const starts =
-                    new Date(
-                        toApiDateTime(
-                            form.starts_at
-                        )
-                    );
-
-                const ends =
-                    new Date(
-                        toApiDateTime(
-                            form.ends_at
-                        )
-                    );
-
-                if (
-                    !Number.isNaN(
-                        starts.getTime()
-                    ) &&
-                    !Number.isNaN(
-                        ends.getTime()
-                    ) &&
-                    ends <= starts
-                ) {
-                    nextErrors.ends_at =
-                        "End time must be after the start time";
-                }
-            }
-
-            const media =
-                form.media.filter(
-                    (item) =>
-                        item.media_url
-                            .trim() ||
-                        item.redirect_link
-                            .trim()
-                );
-
-            if (
-                media.length === 0
-            ) {
-                nextErrors.media =
-                    "Add at least one media item";
-            } else if (
-                media.some(
-                    (item) =>
-                        !item.media_url.trim() ||
-                        !item.media_type
-                )
-            ) {
-                nextErrors.media =
-                    "Each media item needs an uploaded media and type";
-            }
-
-            return nextErrors;
-        };
-
-    /* =====================================================
-       PAYLOAD
-    ===================================================== */
-
-    const buildPayload =
-        () => ({
-            title:
-                form.title.trim(),
-
-            event_tags:
-                textToTags(
-                    form.event_tags
-                ),
-
-            scope:
-                form.scope.trim(),
-
-            mode:
-                form.mode,
-
-            starts_at:
-                toApiDateTime(
-                    form.starts_at
-                ),
-
-            ends_at:
-                toApiDateTime(
-                    form.ends_at
-                ),
-
-            media:
-                form.media
-                    .filter(
-                        (item) =>
-                            item.media_url.trim()
+                  {CategoryData
+                    ?.filter(
+                      (cat) =>
+                        cat.is_active ===
+                        true
                     )
                     .map(
-                        (item) => ({
-                            media_url:
-                                item.media_url.trim(),
-
-                            media_type:
-                                item.media_type,
-
-                            redirect_link:
-                                item.redirect_link.trim() ||
-                                null,
-
-                            service_category_id:
-                                item.service_category_id ||
-                                null,
-
-                            link_type:
-                                item.link_type ||
-                                null,
-
-                            brand_id:
-                                item.brand_id ||
-                                null,
-
-                            service_id:
-                                item.service_id ||
-                                null,
-                        })
-                    ),
-
-            notes:
-                form.notes.trim() ||
-                null,
-
-            is_active:
-                Boolean(
-                    form.is_active
-                ),
-        });
-
-    /* =====================================================
-       CREATE / UPDATE
-    ===================================================== */
-
-    const handleUpdate =
-        async (event) => {
-            event.preventDefault();
-
-            const nextErrors =
-                validateForm();
-
-            setErrors(
-                nextErrors
-            );
-
-            if (
-                Object.keys(
-                    nextErrors
-                ).length > 0
-            ) {
-                return;
-            }
-
-            const creating =
-                !editingId;
-
-            setSaving(true);
-
-            try {
-                const result =
-                    await request(
-                        creating
-                            ? "/banners/admin/events/"
-                            : eventPath(
-                                editingId
-                            ),
-                        {
-                            method:
-                                creating
-                                    ? "POST"
-                                    : "PUT",
-
-                            body:
-                                buildPayload(),
-                        }
-                    );
-
-                if (!result) {
-                    return;
-                }
-
-                if (
-                    !isOk(
-                        result.data,
-                        result.response
-                    )
-                ) {
-                    toast.error(
-                        errorMessage(
-                            result.data,
-                            creating
-                                ? "Failed to create event"
-                                : "Failed to update event"
-                        )
-                    );
-
-                    return;
-                }
-
-                toast.success(
-                    typeof result.data
-                        ?.message ===
-                        "string"
-                        ? result.data.message
-                        : creating
-                            ? "Event created"
-                            : "Event updated"
-                );
-
-                closeEdit();
-
-                await loadEvents({
-                    soft: true,
-                });
-            } catch (updateError) {
-                console.error(
-                    "Save event error:",
-                    updateError
-                );
-
-                toast.error(
-                    creating
-                        ? "Failed to create event"
-                        : "Failed to update event"
-                );
-            } finally {
-                setSaving(false);
-            }
-        };
-
-    /* =====================================================
-       TOGGLE ACTIVE
-    ===================================================== */
-
-    const handleToggleActive =
-        async (event) => {
-            const key = `${event.id}:active`;
-
-            setPendingAction(
-                key
-            );
-
-            try {
-                const result =
-                    await request(
-                        eventPath(
-                            event.id
-                        ),
-                        {
-                            method:
-                                "PATCH",
-
-                            body: {
-                                is_active:
-                                    !event.is_active,
-                            },
-                        }
-                    );
-
-                if (!result) {
-                    return;
-                }
-
-                if (
-                    !isOk(
-                        result.data,
-                        result.response
-                    )
-                ) {
-                    toast.error(
-                        errorMessage(
-                            result.data,
-                            "Failed to update event"
-                        )
-                    );
-
-                    return;
-                }
-
-                toast.success(
-                    event.is_active
-                        ? "Event deactivated"
-                        : "Event activated"
-                );
-
-                await loadEvents({
-                    soft: true,
-                });
-            } catch (toggleError) {
-                console.error(
-                    "Patch event error:",
-                    toggleError
-                );
-
-                toast.error(
-                    "Failed to update event"
-                );
-            } finally {
-                setPendingAction(
-                    ""
-                );
-            }
-        };
-
-    /* =====================================================
-       OPEN CONFIRM
-    ===================================================== */
-
-    const openConfirm = (
-        action,
-        event
-    ) => {
-        if (
-            action === "delete" &&
-            statusOf(event) ===
-                "live"
-        ) {
-            toast.error(
-                "A live event must be ended before it can be deleted."
-            );
-
-            return;
-        }
-
-        if (
-            action === "cancel" &&
-            statusOf(event) !==
-                "queued"
-        ) {
-            toast.error(
-                "Only a queued event can be cancelled."
-            );
-
-            return;
-        }
-
-        if (
-            action === "end" &&
-            statusOf(event) !==
-                "live"
-        ) {
-            toast.error(
-                "Only a live event can be ended."
-            );
-
-            return;
-        }
-
-        if (
-            action === "enqueue"
-        ) {
-            const reason =
-                enqueueBlockReason(
-                    event
-                );
-
-            if (reason) {
-                toast.error(
-                    reason
-                );
-
-                return;
-            }
-        }
-
-        setConfirm({
-            action,
-            event,
-        });
-    };
-
-    /* =====================================================
-       CONFIRM ACTION
-    ===================================================== */
-
-    const runConfirm =
-        async () => {
-            if (
-                !confirm?.event?.id
-            ) {
-                return;
-            }
-
-            const {
-                action,
-                event,
-            } = confirm;
-
-            const pathByAction =
-                {
-                    delete: {
-                        method:
-                            "DELETE",
-                        path:
-                            eventPath(
-                                event.id
-                            ),
-                    },
-
-                    enqueue: {
-                        method:
-                            "POST",
-                        path:
-                            eventPath(
-                                event.id,
-                                "enqueue"
-                            ),
-                    },
-
-                    cancel: {
-                        method:
-                            "POST",
-                        path:
-                            eventPath(
-                                event.id,
-                                "cancel-queue"
-                            ),
-                    },
-
-                    end: {
-                        method:
-                            "POST",
-                        path:
-                            eventPath(
-                                event.id,
-                                "end-now"
-                            ),
-                    },
-
-                    goLive: {
-                        method:
-                            "POST",
-                        path:
-                            eventPath(
-                                event.id,
-                                "go-live"
-                            ),
-                    },
-                };
-
-            const fallback =
-                {
-                    delete:
-                        "Event deleted",
-
-                    enqueue:
-                        "Event enqueued",
-
-                    cancel:
-                        "Event removed from the queue",
-
-                    end:
-                        "Live event ended",
-
-                    goLive:
-                        "Event is now live",
-                };
-
-            const failure =
-                {
-                    delete:
-                        "Failed to delete event",
-
-                    enqueue:
-                        "Failed to enqueue event",
-
-                    cancel:
-                        "Failed to cancel the queued event",
-
-                    end:
-                        "Failed to end the live event",
-
-                    goLive:
-                        "Failed to make the event live",
-                };
-
-            setPendingAction(
-                `${event.id}:${action}`
-            );
-
-            try {
-                const result =
-                    await request(
-                        pathByAction[
-                            action
-                        ].path,
-                        {
-                            method:
-                                pathByAction[
-                                    action
-                                ].method,
-                        }
-                    );
-
-                if (!result) {
-                    return;
-                }
-
-                if (
-                    !isOk(
-                        result.data,
-                        result.response
-                    )
-                ) {
-                    toast.error(
-                        errorMessage(
-                            result.data,
-                            failure[
-                                action
-                            ]
-                        )
-                    );
-
-                    return;
-                }
-
-                toast.success(
-                    typeof result.data
-                        ?.message ===
-                        "string"
-                        ? result.data
-                            .message
-                        : fallback[
-                            action
-                        ]
-                );
-
-                setConfirm(
-                    null
-                );
-
-                await loadEvents({
-                    soft: true,
-                });
-            } catch (actionError) {
-                console.error(
-                    "Event action error:",
-                    actionError
-                );
-
-                toast.error(
-                    failure[action]
-                );
-            } finally {
-                setPendingAction(
-                    ""
-                );
-            }
-        };
-
-    /* =====================================================
-       VIEW EVENT
-    ===================================================== */
-
-    const openView = async (
-        event
-    ) => {
-        setViewEvent(
-            event
-        );
-
-        setViewLoading(
-            true
-        );
-
-        try {
-            const result =
-                await request(
-                    eventPath(
-                        event.id
-                    )
-                );
-
-            if (
-                result &&
-                isOk(
-                    result.data,
-                    result.response
-                )
-            ) {
-                const [fresh] =
-                    readEvents(
-                        result.data
-                    );
-
-                if (fresh) {
-                    setViewEvent(
-                        fresh
-                    );
-                }
-            }
-        } catch (viewError) {
-            console.error(
-                "Event detail error:",
-                viewError
-            );
-        } finally {
-            setViewLoading(
-                false
-            );
-        }
-    };
-
-    /* =====================================================
-       FILTERS
-    ===================================================== */
-
-    const clearFilters =
-        () => {
-            setFilters({
-                id: "",
-                mode: "",
-                status: "",
-                scope: "",
-            });
-
-            setAppliedId(
-                ""
-            );
-
-            setAppliedScope(
-                ""
-            );
-        };
-
-    const hasFilters =
-        Boolean(
-            filters.id ||
-            filters.mode ||
-            filters.status ||
-            filters.scope
-        );
-
-    /* =====================================================
-       COUNTS
-    ===================================================== */
-
-    const liveCount =
-        events.filter(
-            (item) =>
-                statusOf(item) ===
-                "live"
-        ).length;
-
-    const queuedCount =
-        events.filter(
-            (item) =>
-                statusOf(item) ===
-                "queued"
-        ).length;
-
-    const modeOptions =
-        MODES.some(
-            (item) =>
-                item.value ===
-                form.mode
-        )
-            ? MODES.filter(
-                (item) =>
-                    item.value
-            )
-            : [
-                ...MODES.filter(
-                    (item) =>
-                        item.value
-                ),
-
-                {
-                    label:
-                        form.mode,
-
-                    value:
-                        form.mode,
-                },
-            ];
-
-    const firstMedia =
-        (event) =>
-            Array.isArray(
-                event.media
-            )
-                ? event.media[0]
-                : null;
-
-    /* =====================================================
-       JSX
-    ===================================================== */
-
-    return (
-        <>
-            {/* =================================================
-                HEADER
-            ================================================= */}
-
-            <div className="page-header">
-                <h1>
-                    Banner Management
-                </h1>
-
-                <p className="page-paragraph">
-                    Manage banner events,
-                    media, schedules,
-                    and publishing.
-                </p>
-            </div>
-
-            {/* =================================================
-                STATS
-            ================================================= */}
-
-            <div className="vendors-stats stats2-grid">
-
-                <div className="stat2-card">
-                    <div
-                        className="stat2-icon"
-                        style={{
-                            background:
-                                "#0D614E20",
-                            color:
-                                "#0D614E",
-                        }}
-                    >
-                        <FaImages
-                            size={16}
-                        />
-                    </div>
-
-                    <div className="stat2-info">
-                        <h3>
-                            Total Events
-                        </h3>
-
-                        <div className="stat2-value">
-                            {
-                                events.length
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <div className="stat2-card">
-                    <div
-                        className="stat2-icon"
-                        style={{
-                            background:
-                                "#0D614E20",
-                            color:
-                                "#0D614E",
-                        }}
-                    >
-                        <FaCheckCircle
-                            size={16}
-                        />
-                    </div>
-
-                    <div className="stat2-info">
-                        <h3>
-                            Live
-                        </h3>
-
-                        <div className="stat2-value">
-                            {
-                                liveCount
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <div className="stat2-card">
-                    <div
-                        className="stat2-icon"
-                        style={{
-                            background:
-                                "#0D614E20",
-                            color:
-                                "#0D614E",
-                        }}
-                    >
-                        <FaHourglassHalf
-                            size={16}
-                        />
-                    </div>
-
-                    <div className="stat2-info">
-                        <h3>
-                            Queued
-                        </h3>
-
-                        <div className="stat2-value">
-                            {
-                                queuedCount
-                            }
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            {/* =================================================
-                TOOLBAR
-            ================================================= */}
-
-            <div className="banner-toolbar">
-
-                <div className="banner-filters">
-
-                    <label className="banner-filter">
-                        <input
-                            placeholder="Search by ID"
-                            value={
-                                filters.id
-                            }
-                            onChange={(
-                                event
-                            ) =>
-                                setFilters(
-                                    (
-                                        prev
-                                    ) => ({
-                                        ...prev,
-
-                                        id: event
-                                            .target
-                                            .value,
-                                    })
-                                )
-                            }
-                        />
-                    </label>
-
-                    <label className="banner-filter">
-                        <select
-                            value={
-                                filters.mode
-                            }
-                            onChange={(
-                                event
-                            ) =>
-                                setFilters(
-                                    (
-                                        prev
-                                    ) => ({
-                                        ...prev,
-
-                                        mode: event
-                                            .target
-                                            .value,
-                                    })
-                                )
-                            }
+                      (cat) => (
+                        <option
+                          key={
+                            cat.id
+                          }
+                          value={
+                            cat.id
+                          }
                         >
-                            {MODES.map(
-                                (
-                                    item
-                                ) => (
-                                    <option
-                                        key={
-                                            item.label
-                                        }
-                                        value={
-                                            item.value
-                                        }
-                                    >
-                                        {
-                                            item.label
-                                        }
-                                    </option>
-                                )
-                            )}
-                        </select>
-                    </label>
-
-                    <label className="banner-filter">
-                        <select
-                            value={
-                                filters.status
-                            }
-                            onChange={(
-                                event
-                            ) =>
-                                setFilters(
-                                    (
-                                        prev
-                                    ) => ({
-                                        ...prev,
-
-                                        status:
-                                            event
-                                                .target
-                                                .value,
-                                    })
-                                )
-                            }
-                        >
-                            {STATUSES.map(
-                                (
-                                    item
-                                ) => (
-                                    <option
-                                        key={
-                                            item.label
-                                        }
-                                        value={
-                                            item.value
-                                        }
-                                    >
-                                        {
-                                            item.label
-                                        }
-                                    </option>
-                                )
-                            )}
-                        </select>
-                    </label>
-
-                    <label className="banner-filter">
-                        <input
-                            placeholder="Search scope"
-                            value={
-                                filters.scope
-                            }
-                            onChange={(
-                                event
-                            ) =>
-                                setFilters(
-                                    (
-                                        prev
-                                    ) => ({
-                                        ...prev,
-
-                                        scope:
-                                            event
-                                                .target
-                                                .value,
-                                    })
-                                )
-                            }
-                        />
-                    </label>
-
-                    {hasFilters && (
-                        <button
-                            type="button"
-                            className="banner-clear"
-                            onClick={
-                                clearFilters
-                            }
-                        >
-                            Clear
-                        </button>
+                          {
+                            cat.name
+                          }
+                        </option>
+                      )
                     )}
+
+                </select>
+
+                {BannerError.service_category_id && (
+                  <p className="error-text">
+                    {
+                      BannerError.service_category_id
+                    }
+                  </p>
+                )}
+
+              </div>
+              <div className="form-group">
+                <label>Type *</label>
+
+                <div className="type-options">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={bannerType === "brand"}
+                      onChange={() => {
+                        setBannerType("brand");
+                        setSelectedBrand("");
+                        setBannerForm((prev) => ({
+                          ...prev,
+                          service_id: "",
+                        }));
+                      }}
+                    />
+                    Brand
+                  </label>
+
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={bannerType === "service"}
+                      onChange={() => {
+                        setBannerType("service");
+                        setSelectedBrand("");
+                      }}
+                    />
+                    Service
+                  </label>
                 </div>
+              </div>
+              {bannerType === "brand" && (
+                <div className="form-group">
+                  <label>Brand *</label>
 
-                <div className="banner-toolbar-actions">
+                  <select
+                    value={selectedBrand}
+                    onChange={(e) => {
+                      const brandId = e.target.value;
 
-                    <button
-                        type="button"
-                        className="banner-text-btn"
-                        onClick={() =>
-                            loadEvents({
-                                soft: true,
-                            })
-                        }
-                        disabled={
-                            refreshing
-                        }
-                    >
-                        <FiRefreshCw />
+                      setSelectedBrand(brandId);
 
-                        {refreshing
-                            ? "Refreshing..."
-                            : "Refresh"}
-                    </button>
+                      const redirectUrl = brandId
+                        ? `CategoryProduct/${brandId}`
+                        : "";
 
-                    <button
-                        type="button"
-                        className="add-customer-btn"
-                        onClick={
-                            openCreate
-                        }
-                    >
-                        <BsPlus
-                            size={18}
+                      setBannerForm((prev) => ({
+                        ...prev,
+                        service_id: "",
+                        redirect_url: redirectUrl,
+                      }));
+
+                      setBannerError((prev) => ({
+                        ...prev,
+                        redirect_url: "",
+                      }));
+                    }}
+                    className="form-control"
+                  >
+                    <option value="">
+                      {BrandLoading ? "Loading brands..." : "Select Brand"}
+                    </option>
+
+                    {BrandData
+                      .filter((brand) => brand.is_active)
+                      .map((brand) => (
+                        <option key={brand.id} value={brand.id}>
+                          {brand.name}
+                        </option>
+                      ))}
+                  </select>
+
+                  {BrandError && (
+                    <span className="error-text">{BrandError}</span>
+                  )}
+                </div>
+              )}
+
+              {bannerType === "service" && (
+                <div className="form-group">
+                  <label>Service </label>
+
+                  <select
+                    value={bannerForm.service_id}
+                    onChange={handleChange}
+                    className="form-control"
+                  >
+                    <option value="">Select Service</option>
+
+                    {ServiceData.map((service) => (
+                      <option
+                        key={getServiceId(service)}
+                        value={getServiceId(service)}
+                      >
+                        {getServiceLabel(
+                          service,
+                          getCategoryName(bannerForm.service_category_id)
+                        )}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+
+
+              <div className="form-group">
+
+                <label>
+                  Redirect URL
+                </label>
+
+                <input
+                  type="text"
+                  name="redirect_url"
+                  value={
+                    bannerForm.redirect_url
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="ProductDetails/variant-id"
+                  className="form-control"
+                />
+
+                {BannerError.redirect_url && (
+                  <p className="error-text">
+                    {
+                      BannerError.redirect_url
+                    }
+                  </p>
+                )}
+
+              </div>
+
+              {/* IMAGE */}
+
+              <div className="form-group">
+
+                <label>
+                  Banner Image
+                </label>
+
+                <div className="upload-box1">
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="categoryUpload"
+                    style={{
+                      display:
+                        "none",
+                    }}
+                    onChange={(e) => {
+
+                      const file =
+                        e.target
+                          .files?.[0];
+
+                      if (!file) {
+                        return;
+                      }
+
+                      setBannerImage(
+                        file
+                      );
+
+                      setBannerForm(
+                        (prev) => ({
+                          ...prev,
+
+                          image_url:
+                            file,
+                        })
+                      );
+
+                      setBannerError(
+                        (prev) => ({
+                          ...prev,
+
+                          image_url:
+                            "",
+                        })
+                      );
+
+                    }}
+                  />
+
+                  {BannerImage ? (
+                    <div className="banner-preview-wrapper">
+
+                      <div className="banner-preview-left">
+
+                        <img
+                          src={URL.createObjectURL(
+                            BannerImage
+                          )}
+                          alt="preview"
+                          className="banner-preview-image"
                         />
 
-                        Add event
-                    </button>
+                      </div>
 
-                </div>
-            </div>
+                      <div className="banner-preview-actions">
 
-            {/* =================================================
-                TABLE
-            ================================================= */}
-
-            <div className="table-wrapper">
-
-                <table className="data-table">
-
-                    <thead>
-                        <tr>
-                            <th>
-                                Event
-                            </th>
-
-                            <th>
-                                Scope
-                            </th>
-
-                            <th>
-                                Mode
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th>
-                                Schedule
-                            </th>
-
-                            <th>
-                                Media
-                            </th>
-
-                            <th>
-                                Active
-                            </th>
-
-                            <th>
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        {loading ? (
-                            Array(3)
-                                .fill(0)
-                                .map(
-                                    (
-                                        _,
-                                        index
-                                    ) => (
-                                        <tr
-                                            key={
-                                                index
-                                            }
-                                        >
-                                            <td
-                                                colSpan="8"
-                                            >
-                                                <div className="skeleton-row"></div>
-                                            </td>
-                                        </tr>
-                                    )
-                                )
-                        ) : error ? (
-                            <tr>
-                                <td
-                                    colSpan="8"
-                                    style={{
-                                        color:
-                                            "red",
-                                    }}
-                                >
-                                    {
-                                        error
-                                    }
-                                </td>
-                            </tr>
-                        ) : events.length >
-                          0 ? (
-                            events.map(
-                                (
-                                    item,
-                                    index
-                                ) => {
-
-                                    const status =
-                                        statusOf(
-                                            item
-                                        );
-
-                                    const media =
-                                        firstMedia(
-                                            item
-                                        );
-
-                                    const rowBusy =
-                                        pendingAction.startsWith(
-                                            `${item.id}:`
-                                        );
-
-                                    const tags =
-                                        Array.isArray(
-                                            item.event_tags
-                                        )
-                                            ? item.event_tags
-                                            : [];
-
-                                    return (
-                                        <tr
-                                            key={
-                                                item.id
-                                            }
-                                        >
-
-                                            <td>
-                                                <div className="banner-title">
-                                                    {
-                                                        item.title ||
-                                                        "Untitled event"
-                                                    }
-                                                </div>
-
-                                                <div className="banner-id">
-                                                    ID:{" "}
-                                                    {
-                                                        item.id
-                                                    }
-                                                </div>
-
-                                                {tags.length >
-                                                    0 && (
-                                                    <div className="banner-tags">
-                                                        {tags.map(
-                                                            (
-                                                                tag
-                                                            ) => (
-                                                                <span
-                                                                    className="banner-tag"
-                                                                    key={`${item.id}-${tag}`}
-                                                                >
-                                                                    {
-                                                                        tag
-                                                                    }
-                                                                </span>
-                                                            )
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </td>
-
-                                            <td>
-                                                {
-                                                    item.scope ||
-                                                    "—"
-                                                }
-                                            </td>
-
-                                            <td>
-                                                <span
-                                                    className={`banner-pill ${pillClass(
-                                                        item.mode
-                                                    )}`}
-                                                >
-                                                    {
-                                                        item.mode ||
-                                                        "—"
-                                                    }
-                                                </span>
-                                            </td>
-
-                                            <td>
-                                                <span
-                                                    className={`banner-pill ${pillClass(
-                                                        item.status
-                                                    )}`}
-                                                >
-                                                    {
-                                                        item.status ||
-                                                        "—"
-                                                    }
-                                                </span>
-                                            </td>
-
-                                            <td>
-                                                <div>
-                                                    {
-                                                        formatWhen(
-                                                            item.starts_at
-                                                        )
-                                                    }
-                                                </div>
-
-                                                <div className="banner-muted">
-                                                    to{" "}
-                                                    {
-                                                        formatWhen(
-                                                            item.ends_at
-                                                        )
-                                                    }
-                                                </div>
-                                            </td>
-
-                                            <td>
-
-                                                {media?.media_type ===
-                                                    "image" &&
-                                                media.media_url ? (
-                                                    <img
-                                                        className="banner-thumb"
-                                                        src={
-                                                            media.media_url
-                                                        }
-                                                        alt=""
-                                                        onClick={() =>
-                                                            setPreview(
-                                                                {
-                                                                    url:
-                                                                        media.media_url,
-
-                                                                    type:
-                                                                        "image",
-                                                                }
-                                                            )
-                                                        }
-                                                    />
-                                                ) : media?.media_url ? (
-                                                    <button
-                                                        type="button"
-                                                        className="banner-text-btn"
-                                                        onClick={() =>
-                                                            setPreview(
-                                                                {
-                                                                    url:
-                                                                        media.media_url,
-
-                                                                    type:
-                                                                        media.media_type ||
-                                                                        "video",
-                                                                }
-                                                            )
-                                                        }
-                                                    >
-                                                        {
-                                                            media.media_type ||
-                                                            "Media"
-                                                        }
-                                                    </button>
-                                                ) : (
-                                                    "—"
-                                                )}
-
-                                            </td>
-
-                                            <td>
-
-                                                <label className="switch">
-
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={Boolean(
-                                                            item.is_active
-                                                        )}
-                                                        disabled={
-                                                            rowBusy
-                                                        }
-                                                        onChange={() =>
-                                                            handleToggleActive(
-                                                                item
-                                                            )
-                                                        }
-                                                    />
-
-                                                    <span className="slider round"></span>
-
-                                                </label>
-
-                                            </td>
-
-                                            <td
-                                                className="action-td"
-                                                onClick={(
-                                                    event
-                                                ) =>
-                                                    event.stopPropagation()
-                                                }
-                                            >
-
-                                                <button
-                                                    type="button"
-                                                    className="action-menu-toggle"
-                                                    onClick={(
-                                                        event
-                                                    ) => {
-                                                        event.stopPropagation();
-
-                                                        setOpenMenuId(
-                                                            openMenuId ===
-                                                                item.id
-                                                                ? null
-                                                                : item.id
-                                                        );
-                                                    }}
-                                                >
-                                                    <FiMoreVertical />
-                                                </button>
-
-                                                {openMenuId ===
-                                                    item.id && (
-                                                    <div
-                                                        className="action-buttons-modal"
-                                                        onClick={(
-                                                            event
-                                                        ) =>
-                                                            event.stopPropagation()
-                                                        }
-                                                    >
-
-                                                        <button
-                                                            type="button"
-                                                            className="action-btn1"
-                                                            onClick={() => {
-                                                                setOpenMenuId(
-                                                                    null
-                                                                );
-
-                                                                openView(
-                                                                    item
-                                                                );
-                                                            }}
-                                                        >
-                                                            View
-                                                        </button>
-
-                                                        <button
-                                                            type="button"
-                                                            className="action-btn1"
-                                                            onClick={() => {
-                                                                openEdit(
-                                                                    item
-                                                                );
-                                                            }}
-                                                        >
-                                                            <FaEdit />
-                                                            Edit
-                                                        </button>
-
-                                                        {status ===
-                                                            "queued" && (
-                                                            <button
-                                                                type="button"
-                                                                className="action-btn1"
-                                                                onClick={() =>
-                                                                    openConfirm(
-                                                                        "cancel",
-                                                                        item
-                                                                    )
-                                                                }
-                                                            >
-                                                                Cancel
-                                                            </button>
-                                                        )}
-
-                                                        {status ===
-                                                            "live" && (
-                                                            <button
-                                                                type="button"
-                                                                className="action-btn1"
-                                                                onClick={() =>
-                                                                    openConfirm(
-                                                                        "end",
-                                                                        item
-                                                                    )
-                                                                }
-                                                            >
-                                                                <FaStop />
-                                                                End
-                                                            </button>
-                                                        )}
-
-                                                        {status !==
-                                                            "live" &&
-                                                            status !==
-                                                                "ended" &&
-                                                            status !==
-                                                                "cancelled" && (
-                                                                <button
-                                                                    type="button"
-                                                                    className="action-btn1"
-                                                                    onClick={() =>
-                                                                        openConfirm(
-                                                                            "enqueue",
-                                                                            item
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <FaPlay />
-                                                                    Enqueue
-                                                                </button>
-                                                            )}
-
-                                                        {status !==
-                                                            "live" && (
-                                                            <button
-                                                                type="button"
-                                                                className="action-btn1 delete"
-                                                                onClick={() =>
-                                                                    openConfirm(
-                                                                        "delete",
-                                                                        item
-                                                                    )
-                                                                }
-                                                            >
-                                                                <FiTrash2 />
-                                                                Delete
-                                                            </button>
-                                                        )}
-
-                                                    </div>
-                                                )}
-
-                                            </td>
-
-                                        </tr>
-                                    );
-                                }
+                        <button
+                          type="button"
+                          className="preview-btn"
+                          onClick={() =>
+                            window.open(
+                              URL.createObjectURL(
+                                BannerImage
+                              ),
+                              "_blank"
                             )
-                        ) : (
-                            <tr>
-                                <td
-                                    colSpan="8"
-                                    style={{
-                                        textAlign:
-                                            "center",
-                                    }}
-                                >
-                                    No events found
-                                </td>
-                            </tr>
-                        )}
+                          }
+                        >
+                          <FiEye />
+                        </button>
 
-                    </tbody>
+                        <button
+                          type="button"
+                          className="delete-btn-preview"
+                          onClick={() => {
 
-                </table>
+                            setBannerImage(
+                              null
+                            );
+
+                            setBannerForm(
+                              (prev) => ({
+                                ...prev,
+
+                                image_url:
+                                  null,
+                              })
+                            );
+
+                          }}
+                        >
+                          <FiTrash2 />
+                        </button>
+
+                      </div>
+
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="categoryUpload"
+                      className="upload-label"
+                    >
+                      <div className="upload-content">
+
+                        <span className="upload-icon">
+                          ⬆
+                        </span>
+
+                        <p>
+                          Click to upload banner image
+                        </p>
+
+                        <small>
+                          PNG, JPG up to 2MB
+                        </small>
+
+                      </div>
+                    </label>
+                  )}
+
+                </div>
+
+                {BannerError.image_url && (
+                  <p className="error-text">
+                    {
+                      BannerError.image_url
+                    }
+                  </p>
+                )}
+
+              </div>
+
+              {/* ACTIVE */}
+
+              <div className="form-group">
+
+                <label>
+                  Is Active
+                </label>
+
+                <div className="checkbox-row">
+
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={
+                      bannerForm.is_active
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                  <span>
+                    {bannerForm.is_active
+                      ? "Active"
+                      : "Inactive"}
+                  </span>
+
+                </div>
+
+              </div>
+
+              {/* FOOTER */}
+
+              <div className="modal-footer">
+
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => {
+                    resetBannerForm();
+
+                    setShowBannerModal(
+                      false
+                    );
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="save-btn"
+                  disabled={
+                    addbannerLoading
+                  }
+                >
+                  {addbannerLoading
+                    ? "Adding..."
+                    : "Add Banner"}
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+      )}
+
+
+
+      {showEditModal && (
+        <div
+          className="prakriti-modal-overlay"
+          onClick={() => {
+            resetEditBannerForm();
+
+            setShowEditModal(
+              false
+            );
+          }}
+        >
+
+          <div
+            className="prakriti-modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
+
+            <div className="prakriti-modal-header">
+
+              <h2>
+                Edit Banner
+              </h2>
+
+              <button
+                className="close-btn"
+                onClick={() => {
+                  resetEditBannerForm();
+
+                  setShowEditModal(
+                    false
+                  );
+                }}
+              >
+                ✕
+              </button>
 
             </div>
 
-            {/* =================================================
-                CREATE / EDIT MODAL
-            ================================================= */}
+            <form
+              className="prakriti-form"
+              onSubmit={
+                handleUpdateBanner
+              }
+            >
 
-            {showEdit && (
-                <div
-                    className="prakriti-modal-overlay"
-                    onClick={
-                        closeEdit
-                    }
+              {/* CATEGORY */}
+
+              <div className="form-group">
+
+                <label>
+                  Select Category
+                </label>
+
+                <select
+                  name="service_category_id"
+                  value={
+                    editBannerForm.service_category_id
+                  }
+                  onChange={
+                    handleEditChange
+                  }
+                  disabled={
+                    CategoryLoading
+                  }
                 >
 
-                    <div
-                        className="prakriti-modal banner-event-modal"
-                        onClick={(
-                            event
-                        ) =>
-                            event.stopPropagation()
-                        }
-                    >
+                  <option value="">
+                    {CategoryLoading
+                      ? "Loading categories..."
+                      : "Select Category"}
+                  </option>
 
-                        <div className="prakriti-modal-header">
-
-                            <h2>
-                                {editingId
-                                    ? "Edit Event"
-                                    : "Add Event"}
-                            </h2>
-
-                            <button
-                                type="button"
-                                className="close-btn"
-                                onClick={
-                                    closeEdit
-                                }
-                            >
-                                ✕
-                            </button>
-
-                        </div>
-
-                        <form
-                            className="prakriti-form"
-                            onSubmit={
-                                handleUpdate
-                            }
+                  {CategoryData
+                    ?.filter(
+                      (cat) =>
+                        cat.is_active ===
+                        true
+                    )
+                    .map(
+                      (cat) => (
+                        <option
+                          key={
+                            cat.id
+                          }
+                          value={
+                            cat.id
+                          }
                         >
-
-                            {/* =================================================
-                                TITLE
-                            ================================================= */}
-
-                            <div className="form-group">
-
-                                <label>
-                                    Title
-                                </label>
-
-                                <input
-                                    value={
-                                        form.title
-                                    }
-                                    placeholder="Enter event title"
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setForm(
-                                            (
-                                                prev
-                                            ) => ({
-                                                ...prev,
-
-                                                title:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            })
-                                        )
-                                    }
-                                />
-
-                                {errors.title && (
-                                    <p className="error-text">
-                                        {
-                                            errors.title
-                                        }
-                                    </p>
-                                )}
-
-                            </div>
-
-                            {/* =================================================
-                                TAGS
-                            ================================================= */}
-
-                            <div className="form-group">
-
-                                <label>
-                                    Tags
-                                </label>
-
-                                <input
-                                    value={
-                                        form.event_tags
-                                    }
-                                    placeholder="diwali, sale"
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setForm(
-                                            (
-                                                prev
-                                            ) => ({
-                                                ...prev,
-
-                                                event_tags:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            })
-                                        )
-                                    }
-                                />
-
-                            </div>
-
-                            {/* =================================================
-                                SCOPE + MODE
-                            ================================================= */}
-
-                            <div className="banner-form-grid">
-
-                                <div className="form-group">
-
-                                    <label>
-                                        Scope
-                                    </label>
-
-                                    <input
-                                        list="banner-scope-options"
-                                        value={
-                                            form.scope
-                                        }
-                                        placeholder="hero"
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setForm(
-                                                (
-                                                    prev
-                                                ) => ({
-                                                    ...prev,
-
-                                                    scope:
-                                                        event
-                                                            .target
-                                                            .value,
-                                                })
-                                            )
-                                        }
-                                    />
-
-                                    <datalist id="banner-scope-options">
-                                        <option value="hero" />
-                                        <option value="home" />
-                                        <option value="category" />
-                                        <option value="product" />
-                                    </datalist>
-
-                                    {errors.scope && (
-                                        <p className="error-text">
-                                            {
-                                                errors.scope
-                                            }
-                                        </p>
-                                    )}
-
-                                </div>
-
-                                <div className="form-group">
-
-                                    <label>
-                                        Mode
-                                    </label>
-
-                                    <select
-                                        value={
-                                            form.mode
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setForm(
-                                                (
-                                                    prev
-                                                ) => ({
-                                                    ...prev,
-
-                                                    mode:
-                                                        event
-                                                            .target
-                                                            .value,
-                                                })
-                                            )
-                                        }
-                                    >
-                                        {modeOptions.map(
-                                            (
-                                                item
-                                            ) => (
-                                                <option
-                                                    key={
-                                                        item.value
-                                                    }
-                                                    value={
-                                                        item.value
-                                                    }
-                                                >
-                                                    {
-                                                        item.label
-                                                    }
-                                                </option>
-                                            )
-                                        )}
-                                    </select>
-
-                                    {errors.mode && (
-                                        <p className="error-text">
-                                            {
-                                                errors.mode
-                                            }
-                                        </p>
-                                    )}
-
-                                </div>
-
-                            </div>
-
-                            {/* =================================================
-                                DATE
-                            ================================================= */}
-
-                            <div className="banner-form-grid">
-
-                                <div className="form-group">
-
-                                    <label>
-                                        Starts at
-                                        (IST)
-                                    </label>
-
-                                    <input
-                                        type="datetime-local"
-                                        value={
-                                            form.starts_at
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setForm(
-                                                (
-                                                    prev
-                                                ) => ({
-                                                    ...prev,
-
-                                                    starts_at:
-                                                        event
-                                                            .target
-                                                            .value,
-                                                })
-                                            )
-                                        }
-                                    />
-
-                                </div>
-
-                                <div className="form-group">
-
-                                    <label>
-                                        Ends at
-                                        (IST)
-                                    </label>
-
-                                    <input
-                                        type="datetime-local"
-                                        value={
-                                            form.ends_at
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setForm(
-                                                (
-                                                    prev
-                                                ) => ({
-                                                    ...prev,
-
-                                                    ends_at:
-                                                        event
-                                                            .target
-                                                            .value,
-                                                })
-                                            )
-                                        }
-                                    />
-
-                                    {errors.ends_at && (
-                                        <p className="error-text">
-                                            {
-                                                errors.ends_at
-                                            }
-                                        </p>
-                                    )}
-
-                                </div>
-
-                            </div>
-
-                            {/* =================================================
-                                MEDIA
-                            ================================================= */}
-
-                            <div className="dynamic-section">
-
-                                <div className="section-header">
-
-                                    <h3>
-                                        Media
-                                    </h3>
-
-                                    <button
-                                        type="button"
-                                        className="banner-text-btn"
-                                        onClick={
-                                            handleAddMedia
-                                        }
-                                    >
-                                        <BsPlus
-                                            size={16}
-                                        />
-
-                                        Add media
-                                    </button>
-
-                                </div>
-
-                                {errors.media && (
-                                    <p className="error-text">
-                                        {
-                                            errors.media
-                                        }
-                                    </p>
-                                )}
-
-                                {form.media.map(
-                                    (
-                                        item,
-                                        index
-                                    ) => (
-                                        <div
-                                            className="banner-media-card compact-media-card"
-                                            key={`media-${index}`}
-                                        >
-
-                                            {/* MEDIA HEADER */}
-
-                                            <div className="banner-media-head">
-
-                                                <span>
-                                                    Media{" "}
-                                                    {
-                                                        index +
-                                                        1
-                                                    }
-                                                </span>
-
-                                                {form.media
-                                                    .length >
-                                                    1 && (
-                                                    <button
-                                                        type="button"
-                                                        className="banner-text-btn danger"
-                                                        onClick={() =>
-                                                            handleRemoveMedia(
-                                                                index
-                                                            )
-                                                        }
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                )}
-
-                                            </div>
-
-                                            {/* =================================================
-                                                MEDIA UPLOAD
-                                            ================================================= */}
-
-                                            <div className="form-group">
-
-                                                <label>
-                                                    Media
-                                                </label>
-
-                                                <div className="media-upload-container">
-
-                                                    {item.media_url ? (
-                                                        <div className="uploaded-media-box">
-
-                                                            {item.media_type ===
-                                                                "image" ? (
-                                                                <img
-                                                                    src={
-                                                                        item.media_url
-                                                                    }
-                                                                    alt={`Media ${index + 1}`}
-                                                                    className="uploaded-media-preview"
-                                                                />
-                                                            ) : (
-                                                                <video
-                                                                    src={
-                                                                        item.media_url
-                                                                    }
-                                                                    className="uploaded-media-preview"
-                                                                    controls
-                                                                />
-                                                            )}
-
-                                                            <div className="uploaded-media-actions">
-
-                                                                <label className="choose-media-btn">
-
-                                                                    <FiUpload
-                                                                        size={15}
-                                                                    />
-
-                                                                    Change media
-
-                                                                    <input
-                                                                        type="file"
-                                                                        accept="image/*,video/*"
-                                                                        hidden
-                                                                        disabled={
-                                                                            uploadingIndex ===
-                                                                            index
-                                                                        }
-                                                                        onChange={(
-                                                                            event
-                                                                        ) => {
-                                                                            const file =
-                                                                                event
-                                                                                    .target
-                                                                                    .files?.[0];
-
-                                                                            event.target.value =
-                                                                                "";
-
-                                                                            handleMediaFile(
-                                                                                index,
-                                                                                file
-                                                                            );
-                                                                        }}
-                                                                    />
-
-                                                                </label>
-
-                                                                <button
-                                                                    type="button"
-                                                                    className="remove-upload-btn"
-                                                                    onClick={() =>
-                                                                        updateMedia(
-                                                                            index,
-                                                                            {
-                                                                                media_url:
-                                                                                    "",
-                                                                            }
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Remove
-                                                                </button>
-
-                                                            </div>
-
-                                                        </div>
-                                                    ) : (
-                                                        <label className="media-upload-placeholder">
-
-                                                            <FiUpload
-                                                                size={20}
-                                                            />
-
-                                                            <span>
-                                                                {uploadingIndex ===
-                                                                index
-                                                                    ? "Uploading..."
-                                                                    : "Choose media"}
-                                                            </span>
-
-                                                            <small>
-                                                                Image or video
-                                                            </small>
-
-                                                            <input
-                                                                type="file"
-                                                                accept="image/*,video/*"
-                                                                hidden
-                                                                disabled={
-                                                                    uploadingIndex ===
-                                                                    index
-                                                                }
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    const file =
-                                                                        event
-                                                                            .target
-                                                                            .files?.[0];
-
-                                                                    event.target.value =
-                                                                        "";
-
-                                                                    handleMediaFile(
-                                                                        index,
-                                                                        file
-                                                                    );
-                                                                }}
-                                                            />
-
-                                                        </label>
-                                                    )}
-
-                                                </div>
-
-                                            </div>
-
-                                            {/* =================================================
-                                                MEDIA TYPE
-                                            ================================================= */}
-
-                                            <div className="form-group">
-
-                                                <label>
-                                                    Media type
-                                                </label>
-
-                                                <select
-                                                    value={
-                                                        item.media_type
-                                                    }
-                                                    onChange={(
-                                                        event
-                                                    ) =>
-                                                        updateMedia(
-                                                            index,
-                                                            {
-                                                                media_type:
-                                                                    event
-                                                                        .target
-                                                                        .value,
-                                                            }
-                                                        )
-                                                    }
-                                                >
-
-                                                    <option value="image">
-                                                        Image
-                                                    </option>
-
-                                                    <option value="video">
-                                                        Video
-                                                    </option>
-
-                                                </select>
-
-                                            </div>
-
-                                            {/* =================================================
-                                                CATEGORY
-                                            ================================================= */}
-
-                                            <div className="form-group">
-
-                                                <label>
-                                                    Select category
-                                                </label>
-
-                                                <select
-                                                    value={
-                                                        item.service_category_id
-                                                    }
-                                                    disabled={
-                                                        categoryLoading
-                                                    }
-                                                    onChange={(
-                                                        event
-                                                    ) =>
-                                                        handleMediaCategory(
-                                                            index,
-                                                            event
-                                                                .target
-                                                                .value
-                                                        )
-                                                    }
-                                                >
-
-                                                    <option value="">
-                                                        {categoryLoading
-                                                            ? "Loading categories..."
-                                                            : "Select category"}
-                                                    </option>
-
-                                                    {categories
-                                                        .filter(
-                                                            (
-                                                                cat
-                                                            ) =>
-                                                                cat.is_active ===
-                                                                true
-                                                        )
-                                                        .map(
-                                                            (
-                                                                cat
-                                                            ) => (
-                                                                <option
-                                                                    key={
-                                                                        cat.id
-                                                                    }
-                                                                    value={String(
-                                                                        cat.id
-                                                                    )}
-                                                                >
-                                                                    {
-                                                                        cat.name
-                                                                    }
-                                                                </option>
-                                                            )
-                                                        )}
-
-                                                </select>
-
-                                            </div>
-
-                                            {/* =================================================
-                                                TYPE
-                                            ================================================= */}
-
-                                            <div className="form-group">
-
-                                                <label>
-                                                    Type
-                                                </label>
-
-                                                <div className="type-options">
-
-                                                    <label>
-
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={
-                                                                item.link_type ===
-                                                                "brand"
-                                                            }
-                                                            onChange={() =>
-                                                                updateMedia(
-                                                                    index,
-                                                                    {
-                                                                        link_type:
-                                                                            "brand",
-
-                                                                        service_id:
-                                                                            "",
-                                                                    }
-                                                                )
-                                                            }
-                                                        />
-
-                                                        Brand
-
-                                                    </label>
-
-                                                    <label>
-
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={
-                                                                item.link_type ===
-                                                                "service"
-                                                            }
-                                                            onChange={() =>
-                                                                updateMedia(
-                                                                    index,
-                                                                    {
-                                                                        link_type:
-                                                                            "service",
-
-                                                                        brand_id:
-                                                                            "",
-                                                                    }
-                                                                )
-                                                            }
-                                                        />
-
-                                                        Service
-
-                                                    </label>
-
-                                                </div>
-
-                                            </div>
-
-                                            {/* =================================================
-                                                BRAND
-                                            ================================================= */}
-
-                                            {item.link_type ===
-                                                "brand" && (
-                                                <div className="form-group">
-
-                                                    <label>
-                                                        Brand
-                                                    </label>
-
-                                                    <select
-                                                        value={
-                                                            item.brand_id
-                                                        }
-                                                        onChange={(
-                                                            event
-                                                        ) =>
-                                                            handleMediaBrand(
-                                                                index,
-                                                                event
-                                                                    .target
-                                                                    .value
-                                                            )
-                                                        }
-                                                    >
-
-                                                        <option value="">
-                                                            {brandLoading
-                                                                ? "Loading brands..."
-                                                                : "Select brand"}
-                                                        </option>
-
-                                                        {brands
-                                                            .filter(
-                                                                (
-                                                                    brand
-                                                                ) =>
-                                                                    brand.is_active
-                                                            )
-                                                            .map(
-                                                                (
-                                                                    brand
-                                                                ) => (
-                                                                    <option
-                                                                        key={
-                                                                            brand.id
-                                                                        }
-                                                                        value={String(
-                                                                            brand.id
-                                                                        )}
-                                                                    >
-                                                                        {
-                                                                            brand.name
-                                                                        }
-                                                                    </option>
-                                                                )
-                                                            )}
-
-                                                    </select>
-
-                                                </div>
-                                            )}
-
-                                            {/* =================================================
-                                                SERVICE
-                                            ================================================= */}
-
-                                            {item.link_type ===
-                                                "service" && (
-                                                <div className="form-group">
-
-                                                    <label>
-                                                        Service
-                                                    </label>
-
-                                                    <select
-                                                        value={
-                                                            item.service_id
-                                                        }
-                                                        onChange={(
-                                                            event
-                                                        ) =>
-                                                            handleMediaService(
-                                                                index,
-                                                                event
-                                                                    .target
-                                                                    .value,
-                                                                item.service_category_id
-                                                            )
-                                                        }
-                                                    >
-
-                                                        <option value="">
-                                                            {serviceLoadingSlug ===
-                                                                SERVICE_CATEGORY_MAP[
-                                                                    categoryNameOf(
-                                                                        item.service_category_id
-                                                                    )
-                                                                ]
-                                                                ? "Loading services..."
-                                                                : "Select service"}
-                                                        </option>
-
-                                                        {(
-                                                            servicesBySlug[
-                                                                SERVICE_CATEGORY_MAP[
-                                                                    categoryNameOf(
-                                                                        item.service_category_id
-                                                                    )
-                                                                ]
-                                                            ] ||
-                                                            []
-                                                        ).map(
-                                                            (
-                                                                service,
-                                                                serviceIndex
-                                                            ) => {
-
-                                                                const categoryName =
-                                                                    categoryNameOf(
-                                                                        item.service_category_id
-                                                                    );
-
-                                                                const optionId =
-                                                                    serviceOptionId(
-                                                                        service,
-                                                                        categoryName
-                                                                    );
-
-                                                                return (
-                                                                    <option
-                                                                        key={`${optionId}-${serviceIndex}`}
-                                                                        value={
-                                                                            optionId
-                                                                        }
-                                                                    >
-                                                                        {serviceOptionLabel(
-                                                                            service,
-                                                                            categoryName
-                                                                        )}
-                                                                    </option>
-                                                                );
-                                                            }
-                                                        )}
-
-                                                    </select>
-
-                                                </div>
-                                            )}
-
-                                            {/* =================================================
-                                                REDIRECT LINK
-                                            ================================================= */}
-
-                                            <div className="form-group">
-
-                                                <label>
-                                                    Redirect link
-                                                </label>
-
-                                                <input
-                                                    value={
-                                                        item.redirect_link
-                                                    }
-                                                    readOnly
-                                                    placeholder="Auto generated from category / brand / service"
-                                                />
-
-                                                <small className="banner-muted">
-                                                    Redirect link automatically generate hoga based on your selection.
-                                                </small>
-
-                                            </div>
-
-                                        </div>
-                                    )
-                                )}
-
-                            </div>
-
-                            {/* =================================================
-                                NOTES
-                            ================================================= */}
-
-                            <div className="form-group">
-
-                                <label>
-                                    Notes
-                                </label>
-
-                                <textarea
-                                    value={
-                                        form.notes
-                                    }
-                                    placeholder="Enter notes"
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        setForm(
-                                            (
-                                                prev
-                                            ) => ({
-                                                ...prev,
-
-                                                notes:
-                                                    event
-                                                        .target
-                                                        .value,
-                                            })
-                                        )
-                                    }
-                                />
-
-                            </div>
-
-                            {/* =================================================
-                                ACTIVE
-                            ================================================= */}
-
-                            <div className="form-group">
-
-                                <label className="banner-checkbox">
-
-                                    <input
-                                        type="checkbox"
-                                        checked={
-                                            form.is_active
-                                        }
-                                        onChange={(
-                                            event
-                                        ) =>
-                                            setForm(
-                                                (
-                                                    prev
-                                                ) => ({
-                                                    ...prev,
-
-                                                    is_active:
-                                                        event
-                                                            .target
-                                                            .checked,
-                                                })
-                                            )
-                                        }
-                                    />
-
-                                    Active
-
-                                </label>
-
-                            </div>
-
-                            {/* =================================================
-                                FOOTER
-                            ================================================= */}
-
-                            <div className="modal-footer">
-
-                                <button
-                                    type="button"
-                                    className="cancel-btn"
-                                    onClick={
-                                        closeEdit
-                                    }
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    className="save-btn"
-                                    disabled={
-                                        saving ||
-                                        uploadingIndex !==
-                                            null
-                                    }
-                                >
-                                    {saving
-                                        ? "Saving..."
-                                        : editingId
-                                            ? "Update event"
-                                            : "Create event"}
-                                </button>
-
-                            </div>
-
-                        </form>
-
-                    </div>
-
-                </div>
-            )}
-
-            {/* =================================================
-                VIEW EVENT MODAL
-            ================================================= */}
-
-            {viewEvent && (
-                <div
-                    className="prakriti-modal-overlay"
-                    onClick={() =>
-                        setViewEvent(
-                            null
-                        )
+                          {
+                            cat.name
+                          }
+                        </option>
+                      )
+                    )}
+
+                </select>
+
+                {editBannerError.service_category_id && (
+                  <p className="error-text">
+                    {
+                      editBannerError.service_category_id
                     }
+                  </p>
+                )}
+
+              </div>
+
+              {/* SERVICE */}
+
+              <div className="form-group">
+
+                <label>
+                  Service
+                </label>
+
+                <select
+                  name="service_id"
+                  value={
+                    editBannerForm.service_id
+                  }
+                  onChange={
+                    handleEditChange
+                  }
+                  disabled={
+                    !editBannerForm.service_category_id ||
+                    ServiceLoading
+                  }
                 >
 
-                    <div
-                        className="prakriti-modal"
-                        onClick={(
-                            event
-                        ) =>
-                            event.stopPropagation()
-                        }
-                    >
+                  <option value="">
+                    {ServiceLoading
+                      ? "Loading services..."
+                      : "Select Service"}
+                  </option>
 
-                        <div className="prakriti-modal-header">
+                  {ServiceData?.map(
+                    (
+                      service
+                    ) => {
 
-                            <h2>
-                                Event Details
-                            </h2>
+                      const categoryName =
+                        getCategoryName(
+                          editBannerForm.service_category_id
+                        );
 
-                            <button
-                                type="button"
-                                className="close-btn"
-                                onClick={() =>
-                                    setViewEvent(
-                                        null
-                                    )
-                                }
-                            >
-                                ✕
-                            </button>
+                      const serviceId =
+                        getEditServiceId(
+                          service
+                        );
 
-                        </div>
+                      const serviceLabel =
+                        getServiceLabel(
+                          service,
+                          categoryName
+                        );
 
-                        <div className="prakriti-form">
+                      return (
+                        <option
+                          key={
+                            serviceId
+                          }
+                          value={
+                            serviceId
+                          }
+                        >
+                          {
+                            serviceLabel
+                          }
+                        </option>
+                      );
+                    }
+                  )}
 
-                            {viewLoading ? (
-                                <p>
-                                    Loading...
-                                </p>
-                            ) : (
-                                <>
-                                    <div className="form-group">
-                                        <label>
-                                            Title
-                                        </label>
+                </select>
 
-                                        <input
-                                            readOnly
-                                            value={
-                                                viewEvent.title ||
-                                                ""
-                                            }
-                                        />
-                                    </div>
+                {ServiceError && (
+                  <p className="error-text">
+                    {
+                      ServiceError
+                    }
+                  </p>
+                )}
 
-                                    <div className="banner-form-grid">
+                {editBannerError.service_id && (
+                  <p className="error-text">
+                    {
+                      editBannerError.service_id
+                    }
+                  </p>
+                )}
 
-                                        <div className="form-group">
-                                            <label>
-                                                Scope
-                                            </label>
+              </div>
 
-                                            <input
-                                                readOnly
-                                                value={
-                                                    viewEvent.scope ||
-                                                    ""
-                                                }
-                                            />
-                                        </div>
 
-                                        <div className="form-group">
-                                            <label>
-                                                Mode
-                                            </label>
+              {isVariantCategory(
+                getCategoryName(
+                  editBannerForm.service_category_id
+                )
+              ) &&
+                editBannerForm.service_id && (
+                  <div
+                    style={{
+                      padding:
+                        "10px 12px",
+                      background:
+                        "#f5faf8",
+                      border:
+                        "1px solid #dceee9",
+                      borderRadius:
+                        "8px",
+                      marginBottom:
+                        "15px",
+                      fontSize:
+                        "13px",
+                    }}
+                  >
+                    {(() => {
 
-                                            <input
-                                                readOnly
-                                                value={
-                                                    viewEvent.mode ||
-                                                    ""
-                                                }
-                                            />
-                                        </div>
+                      const selectedService =
+                        ServiceData.find(
+                          (service) =>
+                            String(
+                              service.variant_id
+                            ) ===
+                            String(
+                              editBannerForm.service_id
+                            )
+                        );
 
-                                    </div>
+                      if (
+                        !selectedService
+                      ) {
+                        return null;
+                      }
 
-                                    <div className="banner-form-grid">
+                      const currentCategory =
+                        getCategoryName(
+                          editBannerForm.service_category_id
+                        );
 
-                                        <div className="form-group">
-                                            <label>
-                                                Starts at
-                                            </label>
+                      const isMedicine =
+                        currentCategory ===
+                        "medicine" ||
+                        currentCategory ===
+                        "medicines";
 
-                                            <input
-                                                readOnly
-                                                value={formatWhen(
-                                                    viewEvent.starts_at
-                                                )}
-                                            />
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label>
-                                                Ends at
-                                            </label>
-
-                                            <input
-                                                readOnly
-                                                value={formatWhen(
-                                                    viewEvent.ends_at
-                                                )}
-                                            />
-                                        </div>
-
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label>
-                                            Status
-                                        </label>
-
-                                        <input
-                                            readOnly
-                                            value={
-                                                viewEvent.status ||
-                                                ""
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label>
-                                            Notes
-                                        </label>
-
-                                        <textarea
-                                            readOnly
-                                            value={
-                                                viewEvent.notes ||
-                                                ""
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="dynamic-section">
-
-                                        <div className="section-header">
-                                            <h3>
-                                                Media
-                                            </h3>
-                                        </div>
-
-                                        {(
-                                            viewEvent.media ||
-                                            []
-                                        ).map(
-                                            (
-                                                media,
-                                                index
-                                            ) => (
-                                                <div
-                                                    className="banner-media-card"
-                                                    key={
-                                                        index
-                                                    }
-                                                >
-
-                                                    <div className="banner-media-head">
-                                                        <span>
-                                                            Media{" "}
-                                                            {
-                                                                index +
-                                                                1
-                                                            }
-                                                        </span>
-                                                    </div>
-
-                                                    {media.media_type ===
-                                                        "image" &&
-                                                    media.media_url ? (
-                                                        <img
-                                                            src={
-                                                                media.media_url
-                                                            }
-                                                            alt=""
-                                                            className="view-media-image"
-                                                        />
-                                                    ) : media.media_url ? (
-                                                        <video
-                                                            src={
-                                                                media.media_url
-                                                            }
-                                                            controls
-                                                            className="view-media-image"
-                                                        />
-                                                    ) : (
-                                                        <p>
-                                                            No media
-                                                        </p>
-                                                    )}
-
-                                                    {media.redirect_link && (
-                                                        <div className="form-group">
-                                                            <label>
-                                                                Redirect link
-                                                            </label>
-
-                                                            <input
-                                                                readOnly
-                                                                value={
-                                                                    media.redirect_link
-                                                                }
-                                                            />
-                                                        </div>
-                                                    )}
-
-                                                </div>
-                                            )
-                                        )}
-
-                                    </div>
-                                </>
-                            )}
-
-                        </div>
-
-                        <div className="modal-footer">
-
-                            <button
-                                type="button"
-                                className="cancel-btn"
-                                onClick={() =>
-                                    setViewEvent(
-                                        null
-                                    )
-                                }
-                            >
-                                Close
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-            )}
-
-            {/* =================================================
-                CONFIRM MODAL
-            ================================================= */}
-
-            {confirm && (
-                <div className="modal">
-
-                    <div className="modal-content banner-confirm">
-
-                        <h3>
-                            {
-                                ACTION_COPY[
-                                    confirm.action
-                                ].title
-                            }
-                        </h3>
-
-                        <p>
+                      return (
+                        <>
+                          <div>
                             <strong>
-                                {confirm.event
-                                    .title ||
-                                    confirm.event
-                                        .id}
-                            </strong>
-                        </p>
-
-                        <p>
+                              {isMedicine
+                                ? "Medicine:"
+                                : "Product:"}
+                            </strong>{" "}
                             {
-                                ACTION_COPY[
-                                    confirm.action
-                                ].body
+                              selectedService.name
                             }
-                        </p>
+                          </div>
 
-                        <div className="form-buttons">
+                          <div>
+                            <strong>
+                              Variant:
+                            </strong>{" "}
+                            {
+                              selectedService.variant_name
+                            }
+                          </div>
 
-                            <button
-                                type="button"
-                                className="otp-btn verify-btn"
-                                onClick={
-                                    runConfirm
-                                }
-                                disabled={
-                                    Boolean(
-                                        pendingAction
-                                    )
-                                }
-                            >
-                                {pendingAction
-                                    ? "Please wait..."
-                                    : ACTION_COPY[
-                                        confirm.action
-                                    ].confirm}
-                            </button>
+                          {selectedService.size && (
+                            <div>
+                              <strong>
+                                Size:
+                              </strong>{" "}
+                              {
+                                selectedService.size
+                              }
+                            </div>
+                          )}
 
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setConfirm(
-                                        null
-                                    )
-                                }
-                                disabled={
-                                    Boolean(
-                                        pendingAction
-                                    )
-                                }
-                            >
-                                No
-                            </button>
+                          {selectedService.weightage && (
+                            <div>
+                              <strong>
+                                Unit:
+                              </strong>{" "}
+                              {
+                                selectedService.weightage
+                              }
+                            </div>
+                          )}
 
-                        </div>
+                          {selectedService.brand_name && (
+                            <div>
+                              <strong>
+                                Brand:
+                              </strong>{" "}
+                              {
+                                selectedService.brand_name
+                              }
+                            </div>
+                          )}
+                        </>
+                      );
+
+                    })()}
+                  </div>
+                )}
+
+              {/* REDIRECT URL */}
+
+              <div className="form-group">
+
+                <label>
+                  Redirect URL
+                </label>
+
+                <input
+                  type="text"
+                  name="redirect_url"
+                  value={
+                    editBannerForm.redirect_url
+                  }
+                  onChange={
+                    handleEditChange
+                  }
+                  className="form-control"
+                />
+
+                {editBannerError.redirect_url && (
+                  <p className="error-text">
+                    {
+                      editBannerError.redirect_url
+                    }
+                  </p>
+                )}
+
+              </div>
+
+              {/* IMAGE */}
+
+              <div className="form-group">
+
+                <label>
+                  Banner Image
+                </label>
+
+                <div className="upload-box1">
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="editBannerUpload"
+                    style={{
+                      display:
+                        "none",
+                    }}
+                    onChange={(e) => {
+
+                      const file =
+                        e.target
+                          .files?.[0];
+
+                      if (!file) {
+                        return;
+                      }
+
+                      setEditBannerImage(
+                        file
+                      );
+
+                      setEditBannerError(
+                        (prev) => ({
+                          ...prev,
+
+                          image_url:
+                            "",
+                        })
+                      );
+
+                    }}
+                  />
+
+                  {editBannerImage ||
+                    editBannerForm.image_url ? (
+                    <div className="banner-preview-wrapper">
+
+                      <div className="banner-preview-left">
+
+                        <img
+                          src={
+                            editBannerImage
+                              ? URL.createObjectURL(
+                                editBannerImage
+                              )
+                              : editBannerForm.image_url
+                          }
+                          alt="preview"
+                          className="banner-preview-image"
+                        />
+
+                      </div>
+
+                      <div className="banner-preview-actions">
+
+                        <button
+                          type="button"
+                          className="preview-btn"
+                          onClick={() =>
+                            window.open(
+                              editBannerImage
+                                ? URL.createObjectURL(
+                                  editBannerImage
+                                )
+                                : editBannerForm.image_url,
+                              "_blank"
+                            )
+                          }
+                        >
+                          <FiEye />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="preview-btn"
+                          onClick={() =>
+                            document
+                              .getElementById(
+                                "editBannerUpload"
+                              )
+                              ?.click()
+                          }
+                        >
+                          <FiUpload />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="delete-btn-preview"
+                          onClick={() => {
+
+                            setEditBannerImage(
+                              null
+                            );
+
+                            setEditBannerForm(
+                              (prev) => ({
+                                ...prev,
+
+                                image_url:
+                                  "",
+                              })
+                            );
+
+                          }}
+                        >
+                          <FiTrash2 />
+                        </button>
+
+                      </div>
 
                     </div>
-
-                </div>
-            )}
-
-            {/* =================================================
-                MEDIA PREVIEW
-            ================================================= */}
-
-            {preview && (
-                <div
-                    className="prakriti-modal-overlay"
-                    onClick={() =>
-                        setPreview(
-                            null
-                        )
-                    }
-                >
-
-                    <div
-                        className="prakriti-modal"
-                        onClick={(
-                            event
-                        ) =>
-                            event.stopPropagation()
-                        }
+                  ) : (
+                    <label
+                      htmlFor="editBannerUpload"
+                      className="upload-label"
                     >
 
-                        <div className="prakriti-modal-header">
+                      <div className="upload-content">
 
-                            <h2>
-                                Media preview
-                            </h2>
+                        <span className="upload-icon">
+                          ⬆
+                        </span>
 
-                            <button
-                                type="button"
-                                className="close-btn"
-                                onClick={() =>
-                                    setPreview(
-                                        null
-                                    )
-                                }
-                            >
-                                ✕
-                            </button>
+                        <p>
+                          Click to upload banner image
+                        </p>
 
-                        </div>
+                        <small>
+                          PNG, JPG up to 2MB
+                        </small>
 
-                        <div
-                            className="prakriti-form"
-                            style={{
-                                textAlign:
-                                    "center",
-                            }}
-                        >
+                      </div>
 
-                            {preview.type ===
-                                "video" ? (
-                                <video
-                                    src={
-                                        preview.url
-                                    }
-                                    controls
-                                    style={{
-                                        width:
-                                            "100%",
-
-                                        maxHeight:
-                                            "480px",
-                                    }}
-                                />
-                            ) : (
-                                <img
-                                    src={
-                                        preview.url
-                                    }
-                                    alt=""
-                                    style={{
-                                        width:
-                                            "100%",
-
-                                        maxHeight:
-                                            "480px",
-
-                                        objectFit:
-                                            "contain",
-
-                                        borderRadius:
-                                            "10px",
-                                    }}
-                                />
-                            )}
-
-                        </div>
-
-                        <div className="modal-footer">
-
-                            <button
-                                type="button"
-                                className="cancel-btn"
-                                onClick={() =>
-                                    setPreview(
-                                        null
-                                    )
-                                }
-                            >
-                                Close
-                            </button>
-
-                        </div>
-
-                    </div>
+                    </label>
+                  )}
 
                 </div>
-            )}
-        </>
-    );
+
+                {editBannerError.image_url && (
+                  <p className="error-text">
+                    {
+                      editBannerError.image_url
+                    }
+                  </p>
+                )}
+
+              </div>
+
+              {/* ACTIVE */}
+
+              <div className="form-group">
+
+                <label>
+                  Is Active
+                </label>
+
+                <div className="checkbox-row">
+
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={
+                      editBannerForm.is_active
+                    }
+                    onChange={
+                      handleEditChange
+                    }
+                  />
+
+                  <span>
+                    {editBannerForm.is_active
+                      ? "Active"
+                      : "Inactive"}
+                  </span>
+
+                </div>
+
+              </div>
+
+              {/* FOOTER */}
+
+              <div className="modal-footer">
+
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => {
+                    resetEditBannerForm();
+
+                    setShowEditModal(
+                      false
+                    );
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="save-btn"
+                >
+                  Update Banner
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+      )}
+
+      {DeleteBannerModal && (
+        <div className="modal">
+
+          <div className="modal-content">
+
+            <h3>
+              Are you sure you want to delete this Banner?
+            </h3>
+
+            <div className="form-buttons">
+
+              <button
+                className="otp-btn verify-btn"
+                onClick={
+                  handleDeleteBanner
+                }
+              >
+                Yes
+              </button>
+
+              <button
+                onClick={() => {
+                  setDeleteBannerModal(
+                    false
+                  );
+
+                  setSelectedBanner(
+                    null
+                  );
+                }}
+              >
+                No
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+
+
+      {BannerPreviewImage && (
+        <div
+          className="prakriti-modal-overlay"
+          onClick={() =>
+            setBannerPreviewImage("")
+          }
+        >
+
+          <div
+            className="prakriti-modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
+
+            <div className="prakriti-modal-header">
+
+              <h2>
+                Image Preview
+              </h2>
+
+              <button
+                className="close-btn"
+                onClick={() =>
+                  setBannerPreviewImage("")
+                }
+              >
+                ✕
+              </button>
+
+            </div>
+
+            <div
+              style={{
+                textAlign:
+                  "center",
+              }}
+            >
+
+              <img
+                src={
+                  BannerPreviewImage
+                }
+                alt="preview"
+                style={{
+                  width: "100%",
+                  maxHeight:
+                    "500px",
+                  objectFit:
+                    "contain",
+                  borderRadius:
+                    "10px",
+                }}
+              />
+
+            </div>
+
+            <div className="modal-footer">
+
+              <button
+                className="cancel-btn"
+                onClick={() =>
+                  setBannerPreviewImage("")
+                }
+              >
+                Close
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
+    </>
+  );
 };
 
 export default Banner;

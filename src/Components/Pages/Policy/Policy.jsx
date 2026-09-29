@@ -530,7 +530,7 @@ const policyStats = {
               <th>Category</th>
               <th>Version</th>
               <th>Status</th>
-              <th>Active</th>
+             
               <th>Effective From</th>
               <th>Actions</th>
             </tr>
@@ -614,20 +614,7 @@ const policyStats = {
                     </span>
                   </td>
 
-               
-                  <td>
-                    {item.is_active ? (
-                      <span className="policy-active active">
-                        <FaCheckCircle />
-                        Active
-                      </span>
-                    ) : (
-                      <span className="policy-active inactive">
-                        <FaTimesCircle />
-                        Inactive
-                      </span>
-                    )}
-                  </td>
+              
 
                   
                   <td>
