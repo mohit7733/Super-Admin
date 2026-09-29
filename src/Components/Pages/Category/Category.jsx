@@ -564,7 +564,7 @@ const Category = () => {
             : "N/A",
         });
 
-        // Image URL ko clickable hyperlink banana
+       
         if (item.image_url) {
           const imageCell = row.getCell("image");
 

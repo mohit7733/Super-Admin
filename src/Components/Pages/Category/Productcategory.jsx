@@ -1014,9 +1014,7 @@ const exportToExcel = async () => {
                   </td>
                  
                   <td>
-                    {/* <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
-                      {item.is_active ? "Active" : "Inactive"}
-                    </span> */}
+                   
                     <br />
                     <label className="switch">
                       <input

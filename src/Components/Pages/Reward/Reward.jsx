@@ -614,7 +614,7 @@ const handleEditReward = (reward) => {
       </div>
    <div className="stats2-grid">
 
-  {/* TOTAL */}
+
   <div
     className="stat2-card"
     style={{

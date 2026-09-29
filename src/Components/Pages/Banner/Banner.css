@@ -2199,3 +2199,271 @@
     width: 100%;
   }
 }
+.event-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.status-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: 20px;
+  background: #e8f7f0;
+  color: #087a5b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.live-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #27ae7b;
+  flex-shrink: 0;
+}
+
+.live-dot::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #27ae7b;
+  transform: translate(-50%, -50%);
+  animation: livePulse 1.8s ease-out infinite;
+}
+
+@keyframes livePulse {
+  0% {
+    width: 8px;
+    height: 8px;
+    opacity: 0.7;
+  }
+
+  70% {
+    width: 19px;
+    height: 19px;
+    opacity: 0;
+  }
+
+  100% {
+    width: 19px;
+    height: 19px;
+    opacity: 0;
+  }
+}
+
+.status-ended {
+  background: #c7d6e4;
+  color: #666;
+}
+
+.status-cancelled {
+  background: #fff0f0;
+  color: #c62828;
+}
+
+.status-queued {
+  background: #fff7e6;
+  color: #b56b00;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: #16a34a;
+  border-radius: 50%;
+  animation: liveBlink 1.2s infinite;
+}
+
+@keyframes liveBlink {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6);
+  }
+
+  50% {
+    opacity: 0.35;
+    box-shadow: 0 0 0 5px rgba(22, 163, 74, 0);
+  }
+
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+  }
+}
+.event-media-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-main-image {
+  width: 58px;
+  height: 42px;
+  border-radius: 7px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid #e2e8e5;
+  background: #f5f7f6;
+}
+
+.event-main-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.event-main-image:hover img {
+  transform: scale(1.08);
+}
+
+.event-more-images {
+  min-width: 38px;
+  height: 38px;
+  border: 1px solid #cce5dc;
+  border-radius: 7px;
+  background: #edf8f3;
+  color: #0d614e;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.event-more-images:hover {
+  background: #0d614e;
+  color: white;
+}
+
+/* Gallery */
+
+.media-gallery-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 25px;
+}
+
+.media-gallery-modal {
+  width: min(900px, 95vw);
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.media-gallery-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid #e5e9e7;
+}
+
+.media-gallery-header h2 {
+  margin: 0;
+  font-size: 19px;
+  color: #173c32;
+}
+
+.media-gallery-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7a8782;
+}
+
+.media-gallery-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f4f3;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-gallery-close:hover {
+  background: #e8eeee;
+  color: #0d614e;
+}
+
+.media-gallery-grid {
+  padding: 22px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-height: calc(90vh - 90px);
+  overflow-y: auto;
+}
+
+.media-gallery-item {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f5f7f6;
+  border: 1px solid #e1e8e5;
+}
+
+.media-gallery-item img {
+  width: 100%;
+  height: 180px;
+  display: block;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.media-gallery-number {
+  padding: 8px 10px;
+  background: #fff;
+  color: #50605a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.no-event-image {
+  width: 58px;
+  height: 42px;
+  border-radius: 7px;
+  background: #f3f5f4;
+  color: #89938f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+}
+
+@media (max-width: 700px) {
+  .media-gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .media-gallery-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState ,useEffect,useRef } from 'react'
+import ExcelJS from "exceljs";
 import { FiEye ,FiUpload} from 'react-icons/fi';
 import {
   FaChartLine,
@@ -7,6 +8,8 @@ import {
   FaCheckCircle,
   FaEdit,
   FaTag,
+  FaCopy,
+  FaTimes,
 } from "react-icons/fa";
 
 import { BsSearch,BsPlus } from "react-icons/bs";
@@ -37,7 +40,7 @@ const [ BrandForm, setBrandForm] = useState({
 const [searchTerm, setSearchTerm] = useState("");
 const [existingLogo, setExistingLogo] = useState("");
 const editLogoRef = useRef(null);
-
+const [previewImage, setPreviewImage] = useState("");
 
   const [deleteModal, setDeleteModal] = useState(false);
 const [BrandId, setBrandId] = useState(null);
@@ -116,6 +119,151 @@ const uploadImage = async (file) => {
     console.log(error);
     toast.error("Image upload failed");
     return null;
+  }
+};
+const handleExportExcel = async () => {
+  if (!allBrandData || allBrandData.length === 0) {
+    toast.info("No brand data available to export");
+    return;
+  }
+
+  try {
+    const workbook = new ExcelJS.Workbook();
+
+    const worksheet = workbook.addWorksheet("Brands");
+
+    worksheet.columns = [
+      {
+        header: "#",
+        key: "sr_no",
+        width: 8,
+      },
+      {
+        header: "Brand Name",
+        key: "name",
+        width: 30,
+      },
+      {
+        header: "Brand ID",
+        key: "id",
+        width: 38,
+      },
+      {
+        header: "Description",
+        key: "description",
+        width: 40,
+      },
+      {
+        header: "Logo Link",
+        key: "logo",
+        width: 40,
+      },
+      {
+        header: "Sequence",
+        key: "sequence",
+        width: 12,
+      },
+      {
+        header: "Status",
+        key: "status",
+        width: 15,
+      },
+    ];
+
+    allBrandData.forEach((item, index) => {
+      const row = worksheet.addRow({
+        sr_no: index + 1,
+        name: item.name || "",
+        id: item.id || "",
+        description: item.description || "",
+        sequence: item.sequence ?? "",
+        status: item.is_active ? "Active" : "Inactive",
+      });
+
+      // Logo link
+      if (item.logo) {
+        const logoCell = row.getCell("logo");
+
+        logoCell.value = {
+          text: "View Image",
+          hyperlink: item.logo,
+        };
+
+        logoCell.font = {
+          color: { argb: "0563C1" },
+          underline: true,
+        };
+      } else {
+        row.getCell("logo").value = "No Image";
+      }
+    });
+
+    // Header styling
+    worksheet.getRow(1).font = {
+      bold: true,
+    };
+
+    worksheet.getRow(1).alignment = {
+      vertical: "middle",
+      horizontal: "center",
+    };
+
+    worksheet.getRow(1).height = 25;
+
+    // Borders + alignment
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.border = {
+          top: {
+            style: "thin",
+            color: { argb: "D9D9D9" },
+          },
+          left: {
+            style: "thin",
+            color: { argb: "D9D9D9" },
+          },
+          bottom: {
+            style: "thin",
+            color: { argb: "D9D9D9" },
+          },
+          right: {
+            style: "thin",
+            color: { argb: "D9D9D9" },
+          },
+        };
+
+        cell.alignment = {
+          vertical: "middle",
+          wrapText: true,
+        };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+
+    const today = new Date().toISOString().split("T")[0];
+
+    link.download = `Brands_${today}.xlsx`;
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    toast.success("Brand Excel exported successfully");
+  } catch (error) {
+    console.error("Excel export error:", error);
+    toast.error("Failed to export Excel");
   }
 };
 
@@ -480,25 +628,33 @@ const handleDelete = async (id) => {
 />
             </div>
     
-            <div className="action-buttons">
-            
-    
-              <button className="btn-primary"
-             onClick={() => {
-    resetBrandForm();
-    setBrandModal(true);
-  }}
-              > 
-                <BsPlus size={18} />
-                Add Brand
-              </button>
+     <div className="action-buttons">
+
+  <button
+    className="btn-primary"
+    onClick={handleExportExcel}
+  >
+    Export Excel
+  </button>
+
+  <button
+    className="btn-primary"
+    onClick={() => {
+      resetBrandForm();
+      setBrandModal(true);
+    }}
+  >
+    <BsPlus size={18} />
+    Add Brand
+  </button>
+
 </div>
 </div>
  <div className="table-wrapper">
                              <table className="data-table" >
                                <thead>
                                  <tr>
-                                   <th>ID</th>
+                                   <th>#</th>
                                    <th>Name </th>
                                  
                                    <th>Logo</th>  
@@ -529,7 +685,29 @@ const handleDelete = async (id) => {
                        <td>{index + 1}</td>
                
                       
-                       <td>{item.name}</td>  
+                        <td>
+                                           <strong>{item.name || "N/A"}</strong>
+                                           {item.id && (
+                                             <div className="category-id-wrapper">
+                                               <span className="category-id-text">
+                                                 {item.id}
+                                               </span>
+                       
+                                               <button
+                                                 type="button"
+                                                 className="copy-id-btn"
+                                                 onClick={() => {
+                                                   navigator.clipboard.writeText(item.id);
+                                                   toast.success("Category ID copied!");
+                                                 }}
+                                                 title="Copy Category ID"
+                                               >
+                                                 <FaCopy size={12} />
+                                               </button>
+                                             </div>
+                                           )}
+                                         </td>
+                       
                      
                        
                     <td>
@@ -545,22 +723,28 @@ const handleDelete = async (id) => {
                           cursor: "pointer",
                           border: "1px solid #e0e0e0",
                         }}
+                         onClick={() => setPreviewImage(item.logo)}
                       />
                     ) : (
                       <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
                     )}
                   </td>
                   <td>{item.sequence}</td>
-                        <td>
-          <label className="switch">
-            <input
-              type="checkbox"
-              checked={item.is_active}
-              onChange={() => handleToggle(item.id, item.is_active)}
-            />
-            <span className="slider round"></span>
-          </label>
-        </td>
+             
+         <td>
+                    <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
+                      {item.is_active ? "Active" : "Inactive"}
+                    </span>
+                    <br />
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={item.is_active}
+                          onChange={() => handleToggle(item.id, item.is_active)}
+                      />
+                      <span className="slider round"></span>
+                    </label>
+                  </td>
 
                        <td>
                                  <div className="action-buttons">
@@ -1033,6 +1217,54 @@ const handleDelete = async (id) => {
           }}
         >
           No
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+{previewImage && (
+  <div
+    className="prakriti-modal-overlay"
+    onClick={() => setPreviewImage("")}
+  >
+    <div
+      className="prakriti-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="prakriti-modal-header">
+        <h2>Image Preview</h2>
+
+        <button
+          className="modal-close-btn"
+          onClick={() => setPreviewImage("")}
+        >
+          <FaTimes />
+        </button>
+      </div>
+
+      <div style={{ textAlign: "center", padding: "20px" }}>
+        <img
+          src={previewImage}
+          alt="Brand Preview"
+          style={{
+            display: "block",
+            maxWidth: "100%",
+            maxHeight: "80vh",
+            width: "auto",
+            height: "auto",
+            margin: "0 auto",
+            objectFit: "contain",
+            borderRadius: "10px",
+          }}
+        />
+      </div>
+
+      <div className="modal-footer">
+        <button
+          className="cancel-btn"
+          onClick={() => setPreviewImage("")}
+        >
+          Close
         </button>
       </div>
     </div>

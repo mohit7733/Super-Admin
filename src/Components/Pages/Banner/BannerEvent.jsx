@@ -20,6 +20,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 
 import { BiPlus } from "react-icons/bi";
 
+
 import {
   ToastContainer,
   toast,
@@ -165,6 +166,9 @@ const BannerEvent = () => {
 const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 const [deleteItem, setDeleteItem] = useState(null);
 const [deleting, setDeleting] = useState(false);
+const [cancelQueueModalOpen, setCancelQueueModalOpen] = useState(false);
+const [cancelQueueItem, setCancelQueueItem] = useState(null);
+const [cancelQueueLoading, setCancelQueueLoading] = useState(false);
 
   const [stats, setStats] = useState({
     total: 0,
@@ -176,7 +180,8 @@ const [deleting, setDeleting] = useState(false);
 const [enqueueModalOpen, setEnqueueModalOpen] = useState(false);
 const [enqueueItem, setEnqueueItem] = useState(null);
 const [enqueueLoading, setEnqueueLoading] = useState(false);
-  
+  const [mediaGalleryOpen, setMediaGalleryOpen] = useState(false);
+const [selectedMedia, setSelectedMedia] = useState([]);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -190,11 +195,6 @@ const [endLiveItem, setEndLiveItem] = useState(null);
 const [endLiveLoading, setEndLiveLoading] = useState(false);
 
   const fileInputRefs = useRef([]);
-
-  // ===================================================
-  // CATEGORY / BRAND / SERVICE STATES
-  // ===================================================
-
   const [categories, setCategories] = useState([]);
   const [categoryLoading, setCategoryLoading] =
     useState(false);
@@ -217,7 +217,20 @@ const [goLiveLoading, setGoLiveLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
 
-  
+ const openCancelQueueModal = (item) => {
+  console.log("Cancel Queue clicked:", item);
+
+  setOpenMenuId(null);
+  setCancelQueueItem(item);
+  setCancelQueueModalOpen(true);
+};
+
+const closeCancelQueueModal = () => {
+  if (cancelQueueLoading) return;
+
+  setCancelQueueModalOpen(false);
+  setCancelQueueItem(null);
+}; 
 
 const openDeleteModal = (item) => {
   setOpenMenuId(null);
@@ -2101,27 +2114,27 @@ const deleteBanner = async () => {
       return;
     }
 
-    for (
-      let i = 0;
-      i < validMedia.length;
-      i++
-    ) {
-      const item =
-        validMedia[i];
+    // for (
+    //   let i = 0;
+    //   i < validMedia.length;
+    //   i++
+    // ) {
+    //   const item =
+    //     validMedia[i];
 
-      if (
-        !item.service_category_id &&
-        !item.redirect_link
-      ) {
-        toast.error(
-          `Please select category for Media ${
-            i + 1
-          }`
-        );
+    //   if (
+    //     !item.service_category_id &&
+    //     !item.redirect_link
+    //   ) {
+    //     toast.error(
+    //       `Please select category for Media ${
+    //         i + 1
+    //       }`
+    //     );
 
-        return;
-      }
-    }
+    //     return;
+    //   }
+    // }
 
     const payload = {
       title:
@@ -2251,7 +2264,59 @@ const deleteBanner = async () => {
       setSaving(false);
     }
   };
+const handleCancelQueue = async () => {
+  if (!cancelQueueItem?.id) {
+    toast.error("Invalid banner event ID");
+    return;
+  }
 
+  if (cancelQueueItem.status !== "queued") {
+    toast.error("Only queued events can be cancelled.");
+    return;
+  }
+
+  setCancelQueueLoading(true);
+
+  try {
+    const result = await request(
+      `/banners/admin/events/cancel-queue/?id=${encodeURIComponent(
+        cancelQueueItem.id
+      )}`,
+      {
+        method: "POST",
+      }
+    );
+
+    if (!result) return;
+
+    if (
+      !result.response.ok ||
+      result.data?.success === false
+    ) {
+      toast.error(
+        result.data?.message ||
+          "Failed to cancel queued event."
+      );
+      return;
+    }
+
+    toast.success(
+      result.data?.message ||
+        "Event removed from queue successfully."
+    );
+
+    setCancelQueueModalOpen(false);
+    setCancelQueueItem(null);
+
+    await getBannerEvents();
+  } catch (error) {
+    console.error("Cancel Queue Error:", error);
+
+    toast.error("Failed to cancel queued event.");
+  } finally {
+    setCancelQueueLoading(false);
+  }
+};
   // ===================================================
   // CLEAR FILTERS
   // ===================================================
@@ -2540,6 +2605,8 @@ const deleteBanner = async () => {
             <tr>
               <th>#</th>
               <th>Event</th>
+
+
               <th>Scope</th>
               <th>Mode</th>
               <th>Media</th>
@@ -2653,49 +2720,38 @@ const deleteBanner = async () => {
                       </td>
 
                       <td>
-                        {media?.media_url ? (
-                          <img
-                            src={
-                              media.media_url
-                            }
-                            alt={
-                              item.title ||
-                              "Banner"
-                            }
-                            width="55"
-                            height="35"
-                            style={{
-                              objectFit:
-                                "cover",
+                      <div className="event-media-preview">
+  {item.media?.length > 0 ? (
+    <>
+      <div
+        className="event-main-image"
+        onClick={() => setPreviewImage(item.media[0]?.media_url)}
+      >
+        <img
+          src={item.media[0]?.media_url}
+          alt={item.title}
+        />
+      </div>
 
-                              borderRadius:
-                                "7px",
-
-                              cursor:
-                                "pointer",
-
-                              border:
-                                "1px solid #e5e7eb",
-                            }}
-                            onClick={() =>
-                              setPreviewImage(
-                                media.media_url
-                              )
-                            }
-                          />
-                        ) : (
-                          <span
-                            style={{
-                              color:
-                                "#9ca3af",
-
-                              fontSize:
-                                "13px",
-                            }}
-                          >
-                            No Media
-                          </span>
-                        )}
+      {item.media.length > 1 && (
+        <button
+          type="button"
+          className="event-more-images"
+          onClick={() => {
+            setSelectedMedia(item.media);
+            setMediaGalleryOpen(true);
+          }}
+        >
+          +{item.media.length - 1}
+        </button>
+      )}
+    </>
+  ) : (
+    <div className="no-event-image">
+      No Image
+    </div>
+  )}
+</div>
                       </td>
 
                       <td
@@ -2725,14 +2781,17 @@ const deleteBanner = async () => {
                       </td>
 
                       <td>
-                        <span
-                          className={getStatusClass(
-                            item.status
-                          )}
-                        >
-                          {item.status ||
-                            "N/A"}
-                        </span>
+     <div className={`event-status-badge status-${item.status}`}>
+  {item.status === "live" && (
+    <span className="live-dot"></span>
+  )}
+
+  <span>
+    {item.status === "live"
+      ? "LIVE"
+      : item.status?.toUpperCase()}
+  </span>
+</div>
                       </td>
 
                       <td>
@@ -2823,6 +2882,21 @@ const deleteBanner = async () => {
     {item.status === "live" ? "Live Now" : "Go Live"}
   </span>
 </button>
+{item.status === "queued" && (
+  <button
+    type="button"
+    className="action-btn1"
+    onClick={() => {
+      console.log("CANCEL QUEUE CLICKED", item);
+
+      setCancelQueueItem(item);
+      setCancelQueueModalOpen(true);
+    }}
+  >
+    <FaStop />
+    <span>Cancel Queue</span>
+  </button>
+)}
 
                         {item.status === "live" && (
   <button
@@ -2845,6 +2919,7 @@ const deleteBanner = async () => {
       <span>Enqueue</span>
     </button>
   )}
+  
                           </div>
                         )}
                       </td>
@@ -4284,6 +4359,177 @@ const deleteBanner = async () => {
 
       </div>
 
+    </div>
+  </div>
+)}
+{cancelQueueModalOpen && cancelQueueItem && (
+      <div className="banner-cancel-queue-overlay">
+        <div className="banner-cancel-queue-modal">
+
+          <div className="banner-cancel-queue-header">
+            <div className="banner-cancel-queue-title-wrapper">
+              <div className="banner-cancel-queue-icon">
+                <FaStop />
+              </div>
+
+              <div>
+                <h2>Cancel from Queue?</h2>
+                <p>Remove this event from the publishing queue</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="banner-cancel-queue-close"
+              onClick={closeCancelQueueModal}
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          <div className="banner-cancel-queue-body">
+
+            <div className="banner-cancel-queue-intro">
+              <div className="banner-cancel-queue-intro-icon">
+                <FaStop />
+              </div>
+
+              <div>
+                <strong>Remove this event from the queue</strong>
+
+                <p>
+                  This event is currently waiting in the
+                  <strong> publishing queue</strong>.
+                  Cancelling it will remove it from the queue.
+                </p>
+              </div>
+            </div>
+
+            <div className="banner-cancel-queue-status">
+              <span>Current Status</span>
+
+              <div className="cancel-queue-status-value">
+                <span className="cancel-queue-status-dot"></span>
+                QUEUED
+              </div>
+            </div>
+
+            <div className="banner-cancel-queue-info">
+              <div className="banner-cancel-queue-info-title">
+                <FaChartLine />
+                <span>What will happen?</span>
+              </div>
+
+              <div className="cancel-queue-points">
+
+                <div className="cancel-queue-point">
+                  <span>1</span>
+                  <p>
+                    This event will be removed from the
+                    <strong> queue</strong>.
+                  </p>
+                </div>
+
+                <div className="cancel-queue-point">
+                  <span>2</span>
+                  <p>
+                    Its status will change from
+                    <strong> QUEUED → CANCELLED</strong>.
+                  </p>
+                </div>
+
+                <div className="cancel-queue-point">
+                  <span>3</span>
+                  <p>
+                    It will not become LIVE automatically.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <div className="banner-cancel-queue-footer">
+
+            <button
+              type="button"
+              className="banner-cancel-queue-cancel"
+              onClick={closeCancelQueueModal}
+              disabled={cancelQueueLoading}
+            >
+              Keep in Queue
+            </button>
+
+            <button
+              type="button"
+              className="banner-cancel-queue-confirm"
+              onClick={handleCancelQueue}
+              disabled={cancelQueueLoading}
+            >
+              {cancelQueueLoading ? (
+                <>
+                  <FiRefreshCw className="cancel-queue-spinner" />
+                  Cancelling...
+                </>
+              ) : (
+                <>
+                  <FaStop />
+                  Cancel from Queue
+                </>
+              )}
+            </button>
+
+          </div>
+
+        </div>
+      </div>
+    )}
+    {mediaGalleryOpen && (
+  <div
+    className="media-gallery-overlay"
+    onClick={() => setMediaGalleryOpen(false)}
+  >
+    <div
+      className="media-gallery-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="media-gallery-header">
+        <div>
+          <h2>Event Images</h2>
+          <p>
+            {selectedMedia.length} image
+            {selectedMedia.length > 1 ? "s" : ""}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="media-gallery-close"
+          onClick={() => setMediaGalleryOpen(false)}
+        >
+          <FaTimes />
+        </button>
+      </div>
+
+      <div className="media-gallery-grid">
+        {selectedMedia.map((media, index) => (
+          <div
+            className="media-gallery-item"
+            key={`${media.media_url}-${index}`}
+          >
+            <img
+              src={media.media_url}
+              alt={`Banner ${index + 1}`}
+              onClick={() => setPreviewImage(media.media_url)}
+            />
+
+            <div className="media-gallery-number">
+              Image {index + 1}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 )}

@@ -1014,7 +1014,7 @@ const removeSymptomField = (index) => {
                   </td>
 
                       <td>
-                
+               
                     <br />
                     <label className="switch">
                       <input

@@ -14,6 +14,9 @@ import { FaFileContract } from 'react-icons/fa';
 import { FaGift } from 'react-icons/fa6';
 import {FaSyncAlt} from 'react-icons/fa';
 import {FaMoneyBillWave} from 'react-icons/fa';
+import { MdInventory2 } from "react-icons/md";
+import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
+
 
 
 import { FiClock } from "react-icons/fi";
@@ -104,6 +107,22 @@ export const SidebarData = () => [
       }
     ]
   },
+  {
+  title: "Brand Management",
+  icon: <BrandingWatermarkIcon sx={{ fontSize: 20 }} />,
+  path: "#",
+  permission: "manage_brands",
+  children: [
+    {
+      
+        title: "Brand Management",
+        path: "/product/brandname",
+        permission: "manage_brand_name",
+        icon: <MdBrandingWatermark size={18} />
+     
+    },
+  ],
+},
  {
   title: "Coupons & Reward",
   path: "#",
@@ -230,7 +249,20 @@ export const SidebarData = () => [
 },
 
 
- 
+ {
+  title: "Packages",
+  icon: <ShoppingCartIcon sx={{ fontSize: 20 }} />,
+  path: "#",
+  permission: "manage_packages",
+  children: [
+    {
+      title: "Package Management",
+      icon: <MdInventory2 style={{ fontSize: 20 }} />,
+      path: "/packages",
+      permission: "manage_packages",
+    },
+  ],
+},
 
   {
     title: "Content Management",
@@ -371,12 +403,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
         permission: "view_products",
         icon: <FaBoxOpen size={18} />
       },
-      {
-        title: "Brand Management",
-        path: "/product/brandname",
-        permission: "manage_brand_name",
-        icon: <MdBrandingWatermark size={18} />
-      },
+      // {
+      //   title: "Brand Management",
+      //   path: "/product/brandname",
+      //   permission: "manage_brand_name",
+      //   icon: <MdBrandingWatermark size={18} />
+      // },
        {
       title: "Bulk Upload",
       path: "/admin/bulk-upload-products",
