@@ -166,7 +166,7 @@ const formatWhen = (value) => {
 
 const selectionFromRedirect = (redirectLink) => {
     const link = String(redirectLink || "");
-    const brandMatch = link.match(/^CategoryProduct\/(.+)$/);
+    const brandMatch = link.match(/^CategoryProducts\/(.+)$/);
     if (brandMatch) {
         return {
             service_category_id: "",
@@ -635,7 +635,7 @@ const EventBanner = () => {
         updateMedia(index, {
             brand_id: brandId,
             service_id: "",
-            redirect_link: brandId ? `CategoryProduct/${brandId}` : "",
+            redirect_link: brandId ? `CategoryProducts/${brandId}` : "",
         });
     };
 
