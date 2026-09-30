@@ -186,7 +186,7 @@ const [couponLoading, setCouponLoading] = useState(false);
 
     console.log("COUPON GET RESPONSE:", data);
 
-    if (data.status === "success") {
+    if (data.success =true) {
       setCoupons(data.data?.results || data.data || []);
     } else {
       toast.error(data.message || "Failed to fetch coupons");

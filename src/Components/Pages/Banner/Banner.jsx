@@ -14,7 +14,6 @@ import {
   FiUpload,
 } from "react-icons/fi";
 
-
 import { BsPlus } from "react-icons/bs";
 
 import BASE_URL from "../../../Base";
@@ -150,12 +149,12 @@ const Banner = () => {
 
     diets: {
       base: "DietScreen",
-      detail: "DietPlanDetail",
+      detail: "DietDetails",
     },
 
     diet: {
       base: "DietScreen",
-      detail: "DietPlanDetail",
+      detail: "DietDetails",
     },
 
 
@@ -1613,6 +1612,7 @@ const Banner = () => {
             className="add-customer-btn"
             onClick={() => {
               resetBannerForm();
+
               setShowBannerModal(
                 true
               );

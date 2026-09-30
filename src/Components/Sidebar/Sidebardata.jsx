@@ -14,6 +14,9 @@ import { FaFileContract } from 'react-icons/fa';
 import { FaGift } from 'react-icons/fa6';
 import {FaSyncAlt} from 'react-icons/fa';
 import {FaMoneyBillWave} from 'react-icons/fa';
+import { MdInventory2 } from "react-icons/md";
+import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
+
 
 
 import { FiClock } from "react-icons/fi";
@@ -104,6 +107,22 @@ export const SidebarData = () => [
       }
     ]
   },
+  {
+  title: "Brand Management",
+  icon: <BrandingWatermarkIcon sx={{ fontSize: 20 }} />,
+  path: "#",
+  permission: "manage_brands",
+  children: [
+    {
+      
+        title: "Brand Management",
+        path: "/product/brandname",
+        permission: "manage_brand_name",
+        icon: <MdBrandingWatermark size={18} />
+     
+    },
+  ],
+},
  {
   title: "Coupons & Reward",
   path: "#",
@@ -230,7 +249,20 @@ export const SidebarData = () => [
 },
 
 
- 
+ {
+  title: "Packages",
+  icon: <ShoppingCartIcon sx={{ fontSize: 20 }} />,
+  path: "#",
+  permission: "manage_packages",
+  children: [
+    {
+      title: "Package Management",
+      icon: <MdInventory2 style={{ fontSize: 20 }} />,
+      path: "/packages",
+      permission: "manage_packages",
+    },
+  ],
+},
 
   {
     title: "Content Management",
@@ -265,12 +297,7 @@ export const SidebarData = () => [
         ],
       },
     
-      // {
-      //   title: "Wellness Centers",
-      //   icon: <MdSpa style={{ fontSize: 20 }} />,
-      //   path: "/Wellnesscenter",
-      //   permission: "view_wellness_center",
-      // },
+    
       {
         title: "Banner Management",
         icon: <MdPhotoSizeSelectActual style={{ fontSize: 18 }} />,
@@ -283,12 +310,12 @@ export const SidebarData = () => [
         path: "/content/bannerEvent",
         permission: "manage_banner",
       },
-      {
-        title: "Event Banner Management",
-        icon: <MdEvent style={{ fontSize: 18 }} />,
-        path: "/content/eventbanner",
-        permission: "manage_event_banner",
-      }
+      // {
+      //   title: "Event Banner Management",
+      //   icon: <MdEvent style={{ fontSize: 18 }} />,
+      //   path: "/content/eventbanner",
+      //   permission: "manage_event_banner",
+      // }
 
     ],
   },
@@ -376,12 +403,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
         permission: "view_products",
         icon: <FaBoxOpen size={18} />
       },
-      {
-        title: "Brand Management",
-        path: "/product/brandname",
-        permission: "manage_brand_name",
-        icon: <MdBrandingWatermark size={18} />
-      },
+      // {
+      //   title: "Brand Management",
+      //   path: "/product/brandname",
+      //   permission: "manage_brand_name",
+      //   icon: <MdBrandingWatermark size={18} />
+      // },
        {
       title: "Bulk Upload",
       path: "/admin/bulk-upload-products",
@@ -470,71 +497,71 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
 },
 
   // ========== REPORTS & ANALYTICS ==========
-  {
-    title: "Reports & Analytics",
-    icon: <TbReportAnalytics size={20} />,
-    path: "#",
-    permission: "view_reports",
-    children: [
-      {
-        title: "Sales Report",
-        path: "/Reports/Sales",
-        permission: "view_sales_report",
-        icon: <FaChartLine size={18} />
-      },
-      {
-        title: "User Analytics",
-        path: "/Reports/Users",
-        permission: "view_user_analytics",
-        icon: <FaUsers size={18} />
-      },
-      {
-        title: "Product Performance",
-        path: "/Reports/Products",
-        permission: "view_product_performance",
-        icon: <FaBoxOpen size={18} />
-      },
-    ],
-  },
+  // {
+  //   title: "Reports & Analytics",
+  //   icon: <TbReportAnalytics size={20} />,
+  //   path: "#",
+  //   permission: "view_reports",
+  //   children: [
+  //     {
+  //       title: "Sales Report",
+  //       path: "/Reports/Sales",
+  //       permission: "view_sales_report",
+  //       icon: <FaChartLine size={18} />
+  //     },
+  //     {
+  //       title: "User Analytics",
+  //       path: "/Reports/Users",
+  //       permission: "view_user_analytics",
+  //       icon: <FaUsers size={18} />
+  //     },
+  //     {
+  //       title: "Product Performance",
+  //       path: "/Reports/Products",
+  //       permission: "view_product_performance",
+  //       icon: <FaBoxOpen size={18} />
+  //     },
+  //   ],
+  // },
 
   
-  {
-    title: "Support Center",
-    icon: <FaHeadset size={20} />,
-    path: "/Support",
-    permission: "access_support",
-  },
+  // {
+  //   title: "Support Center",
+  //   icon: <FaHeadset size={20} />,
+  //   path: "/Support",
+  //   permission: "access_support",
+  // },
 
-  {
-    title: "System Administration",
-    icon: <IoSettingsOutline size={20} />,
-    path: "#",
-    permission: "system_admin",
-    children: [
-      {
-        title: "Audit Logs",
-        path: "/Auditlogs",
-        permission: "view_audit_logs",
-        icon: <FaClipboardList size={18} />
-      },
-      {
-        title: "System Settings",
-        path: "/Settings",
-        permission: "manage_settings",
-        icon: <FaCogs size={18} />
-      },
-      // {
-      //   title: "Role Management",
-      //   path: "/Roles",
-      //   permission: "manage_roles",
-      //   icon: <FaUserShield size={18} />
-      // },
-      {
-        title: "Backup & Restore",
-        path: "/Backup",
-        permission: "manage_backup",
-        icon: <FaDatabase size={18} />
-      }
-    ]
-  },
+  // {
+  //   title: "System Administration",
+  //   icon: <IoSettingsOutline size={20} />,
+  //   path: "#",
+  //   permission: "system_admin",
+  //   children: [
+  //     {
+  //       title: "Audit Logs",
+  //       path: "/Auditlogs",
+  //       permission: "view_audit_logs",
+  //       icon: <FaClipboardList size={18} />
+  //     },
+  //     {
+  //       title: "System Settings",
+  //       path: "/Settings",
+  //       permission: "manage_settings",
+  //       icon: <FaCogs size={18} />
+  //     },
+  //     // {
+  //     //   title: "Role Management",
+  //     //   path: "/Roles",
+  //     //   permission: "manage_roles",
+  //     //   icon: <FaUserShield size={18} />
+  //     // },
+  //     {
+  //       title: "Backup & Restore",
+  //       path: "/Backup",
+  //       permission: "manage_backup",
+  //       icon: <FaDatabase size={18} />
+  //     }
+  //   ]
+  // },
 ];

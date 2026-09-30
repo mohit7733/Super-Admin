@@ -71,6 +71,7 @@ const Disease = () => {
     symptoms: [""],
     is_active: false,
     image_url: null,
+    sequence:"",
   });
 
   const [formData, setFormData] = useState({
@@ -83,6 +84,7 @@ const Disease = () => {
     is_active: false,
     image_url: null,
     code: "",
+    sequence:"",
   });
 
   
@@ -603,6 +605,8 @@ const validateDiseaseForm = () => {
         description: Description,
         image_url: uploadedImageUrl,
         code: CategoryCode.toUpperCase().trim(),
+
+    
       };
 
       const response = await fetch(
@@ -677,6 +681,7 @@ if (response.ok) {
         symptoms: cleanSymptoms,
         is_active: formData.is_active,
         image_url: uploadedImageUrl,
+        sequence:formData.sequence,
       };
 
       const response = await fetch(
@@ -706,6 +711,7 @@ if (response.ok) {
           code: "",
           is_active: false,
           image_url: null,
+          sequence:"",
         });
         setImageFile(null);
         setAddDiseaseformModal(false);
@@ -762,6 +768,7 @@ if (response.ok) {
         symptoms: editForm.symptoms.filter((i) => i.trim() !== ""),
         is_active: editForm.is_active,
         image_url: imageUrl,
+        sequence:editForm.sequence,
       };
 
       const response = await fetch(
@@ -1212,6 +1219,7 @@ const exportToExcel = async () => {
               <th>Prakriti</th>
               <th>Image</th>
               <th>Status</th>
+              {/* <th>Sequence</th> */}
               <th>Actions</th>
             </tr>
           </thead>
@@ -1303,6 +1311,7 @@ const exportToExcel = async () => {
                       <span className="slider round"></span>
                     </label>
                   </td>
+                  {/* <td>{item.sequence||"_"}</td> */}
                   <td>
                     <div className="action-buttons">
                       <button
@@ -1489,6 +1498,17 @@ const exportToExcel = async () => {
                   <p className="error-text">{diseaseErrors.code}</p>
                 )}
               </div>
+
+              {/* <div className="form-group">
+                <label> Sequence</label> 
+                <input
+                  type="number"
+                  name="sequence"
+                  value={formData.sequence}
+                  placeholder="Enter Sequence for the disease"
+                  onChange={handleChange}
+                />
+              </div> */}
 
               <div className="form-group">
                 <label>Disease Image <span className="required">*</span></label>

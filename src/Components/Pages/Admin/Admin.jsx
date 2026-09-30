@@ -128,11 +128,6 @@ const generateCode = (value) => {
   return phone.includes(search);
 });
 
-  
- 
-
-
-
   const handleinputchange = (e) => {
     const { name, value } = e.target;
     setAddAdminForm(prev => ({

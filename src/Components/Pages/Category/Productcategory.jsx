@@ -54,6 +54,7 @@ const ProductCategory = () => {
     service_category_id: "",
     image_url: "",
     code: "",
+    sequence:"",
   });
 
   const [editModal, setEditModal] = useState(false);
@@ -64,6 +65,7 @@ const ProductCategory = () => {
     image_url: "",
     service_category_id: "",
     is_active: false,
+    sequence:"",
   });
 
   const [editErrors, setEditErrors] = useState({});
@@ -253,6 +255,7 @@ if (!code) {
         ...categoryForm,
         image_url: imageUrl,
         code: categoryForm.code.toUpperCase().trim(),
+        sequence:categoryForm.sequence,
       };
 
       const token = sessionStorage.getItem("superadmin_token");
@@ -316,6 +319,7 @@ if (!code) {
       service_category_id: "",
       image_url: "",
       code: "",
+       sequence:"",
     });
     setSubCategoryImage(null);
     setAddErrors({});
@@ -545,6 +549,7 @@ if (Object.keys(newErrors).length > 0) {
             is_active: editForm.is_active,
             service_category_id: editForm.service_category_id,
             image_url: imageUrl,
+            sequence:editForm.sequence,
           }),
         }
       );
@@ -933,6 +938,8 @@ const exportToExcel = async () => {
               <th>Code</th>
               <th>Image</th>
               <th>Status</th>
+              <th>Sequence</th>
+              <th>Created At</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -1005,10 +1012,9 @@ const exportToExcel = async () => {
                       <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
                     )}
                   </td>
+                 
                   <td>
-                    {/* <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
-                      {item.is_active ? "Active" : "Inactive"}
-                    </span> */}
+                   
                     <br />
                     <label className="switch">
                       <input
@@ -1022,6 +1028,15 @@ const exportToExcel = async () => {
                       <span className="slider round"></span>
                     </label>
                   </td>
+                <td> {item.sequence||"-"}</td>  
+      <td
+                    style={{
+                      color: "#6b7280",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </td>
                   <td>
                     <div className="action-buttons">
                       <button
@@ -1034,6 +1049,7 @@ const exportToExcel = async () => {
                             description: item.description || "",
                             image_url: item.image_url || "",
                             is_active: item.is_active,
+                            sequence:item.sequence||"-",
                           });
                           setEditErrors({});
                           setEditModal(true);
@@ -1131,6 +1147,7 @@ const exportToExcel = async () => {
                 />
                 {addErrors.name && <p className="error-text">{addErrors.name}</p>}
               </div>
+
 <div className="form-group">
   <label>
     Product Category Code <span className="required">*</span>
@@ -1161,6 +1178,24 @@ const exportToExcel = async () => {
     placeholder="Enter category code (A-Z, max 5 characters)"
     maxLength={5}
     className={addErrors.code ? "error-input" : ""}
+  />
+
+  {addErrors.code && (
+    <p className="error-text">{addErrors.code}</p>
+  )}
+</div>
+<div className="form-group">
+  <label>
+     Sequence
+  </label>
+
+  <input
+    type="number"
+    name="sequence"
+    value={categoryForm.sequence}
+    onChange={handleCategoryChange}
+    placeholder="Enter Sequence for the Product Category"
+ 
   />
 
   {addErrors.code && (
@@ -1330,6 +1365,18 @@ const exportToExcel = async () => {
                   onChange={handleEditChange}
                   rows="3"
                   placeholder="Enter description"
+                />
+              </div>
+                      <div className="form-group">
+                <label>Sequence</label>
+                <input
+  type="number"
+                value={editForm.sequence}
+                  name="sequence"
+                
+                  onChange={handleEditChange}
+                 
+                  placeholder="Enter Sequence for the Product Category"
                 />
               </div>
 

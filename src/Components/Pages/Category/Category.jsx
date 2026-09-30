@@ -22,6 +22,9 @@ const Category = () => {
   const [CategoryCode, setCategoryCode] = useState("");
   const [categoryImage, setCategoryImage] = useState(null);
   const [isActive, setIsActive] = useState(false);
+  const [Sequence,setSequence]=useState("");
+  const[EditSequence,setEditSequence]=useState("");
+
   const [deleteModal, setDeleteModal] = useState(false);
   const [categoryId, setCategoryId] = useState(null);
   const [existingImage, setExistingImage] = useState("");
@@ -154,6 +157,7 @@ const Category = () => {
     setFilteredData(filterData(Data, searchTerm, statusFilter));
   }, [Data, searchTerm, statusFilter]);
 
+
   const uploadImage = async (file) => {
     const token = sessionStorage.getItem("superadmin_token");
     if (!token) {
@@ -245,6 +249,7 @@ const Category = () => {
         is_active: isActive,
         code: CategoryCode.toUpperCase().trim(),
         redirect_url: redirectUrl,
+        sequence:Sequence,
       };
 
 
@@ -276,6 +281,7 @@ const Category = () => {
         setCategoryName("");
         setCategoryCode("");
         setCategoryImage(null);
+        setSequence("");
         setIsActive(false);
         setErrors({});
         getCategoryList();
@@ -358,6 +364,7 @@ const Category = () => {
         image_url: imageUrl,
         is_active: isActive,
         redirect_url: redirectUrl,
+        sequence:EditSequence,
       };
 
       const response = await fetch(
@@ -557,7 +564,7 @@ const Category = () => {
             : "N/A",
         });
 
-        // Image URL ko clickable hyperlink banana
+       
         if (item.image_url) {
           const imageCell = row.getCell("image");
 
@@ -644,6 +651,7 @@ const Category = () => {
       toast.error("Failed to export Excel");
     }
   };
+  
   return (
     <>
       <div className="page-header">
@@ -735,6 +743,7 @@ const Category = () => {
               setCategoryImage(null);
               setErrors({});
               setIsActive(false);
+              setSequence("");
             }}
           >
             <BiPlus />
@@ -752,6 +761,7 @@ const Category = () => {
               <th>Category Name</th>
               <th>Code</th>
               <th>Image</th>
+             <th> Sequence</th>
               <th>Status</th>
               <th>Created At</th>
               <th>Actions</th>
@@ -848,6 +858,8 @@ const Category = () => {
                       </span>
                     )}
                   </td>
+                  
+                  <td> {item.sequence ||"-"}</td>
 
                   <td>
                     <label className="switch">
@@ -885,7 +897,8 @@ const Category = () => {
                           setEditModal(true);
                           setEditCategoryCode(item.code || "");
                           setEditErrors({});
-                          setRedirectUrl(item.redirect_url || "");
+                          setRedirectUrl(item.redirect_url ||"");
+                          setEditSequence(item.sequence||"-");
                         }}
                       >
                         <FaEdit />
@@ -979,6 +992,7 @@ const Category = () => {
             setCategoryImage(null);
             setErrors({});
             setRedirectUrl("");
+            setSequence("");
           }}
         >
           <div
@@ -993,6 +1007,7 @@ const Category = () => {
                 setCategoryCode("");
                 setCategoryImage(null);
                 setErrors({});
+                setSequence("");
               }}>
                 <FaTimes />
               </button>
@@ -1066,6 +1081,19 @@ const Category = () => {
                   <p className="error-text">{errors.CategoryCode}</p>
                 )}
               </div>
+                <div className="form-group">
+                <label>Sequence</label>
+                <div className="checkbox-row">
+                  <input
+                    type="number"      
+                    onChange={(e) => setSequence(e.target.value)}
+                    placeholder='Enter Sequence for the Service Category'
+
+                  />
+                  
+                </div>
+              </div>
+              
 
               <div className="form-group">
                 <label>Category Image <span className="required">*</span></label>
@@ -1129,7 +1157,7 @@ const Category = () => {
                 )}
               </div>
 
-
+  
               <div className="form-group">
                 <label>Status</label>
                 <div className="checkbox-row">
@@ -1153,6 +1181,7 @@ const Category = () => {
                     setCategoryImage(null);
                     setErrors({});
                     setRedirectUrl("");
+                    setSequence("");
                   }}
                 >
                   Cancel
@@ -1182,6 +1211,7 @@ const Category = () => {
             setExistingImage("");
             setEditCategoryId(null);
             setEditErrors({});
+            setEditSequence("");
           }}
         >
           <div
@@ -1236,6 +1266,19 @@ const Category = () => {
                   ))}
                 </select>
               </div>
+                            <div className="form-group">
+                <label>Sequence</label>
+                <div className="checkbox-row">
+                  <input
+                    type="number"  
+                    value={EditSequence}    
+                    onChange={(e) => setEditSequence(e.target.value)}
+                    placeholder='Enter Sequence for the Service Category'
+
+                  />
+                  
+                </div>
+                </div>
 
               <div className="form-group">
                 <label>Category Image</label>
@@ -1312,6 +1355,8 @@ const Category = () => {
 
               </div>
 
+
+
               <div className="form-group">
                 <label>Status</label>
                 <div className="checkbox-row">
@@ -1323,6 +1368,8 @@ const Category = () => {
                   <span>Active</span>
                 </div>
               </div>
+
+              
 
               <div className="modal-footer">
                 <button type="button" className="cancel-btn" onClick={() => setEditModal(false)}>

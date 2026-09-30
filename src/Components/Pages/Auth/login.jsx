@@ -123,11 +123,11 @@ const Login = () => {
 
      const result = await response.json();
      console.log("")
-
-if (!response.ok) {
+if (!response.ok || result.success === false) {
   throw new Error(
-    `[${result?.error?.code}] ${result?.error?.message}` ||
-    "Something went wrong."
+    result?.message || 
+    result?.error?.message || 
+    "Invalid credentials."
   );
 }
 

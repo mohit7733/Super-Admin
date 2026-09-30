@@ -59,6 +59,7 @@ const Healthcategory = () => {
     image_url: "",
     code: "",
     symptoms: [""],
+    sequence:"",
   });
 
   const [editForm, setEditForm] = useState({
@@ -69,6 +70,7 @@ const Healthcategory = () => {
     service_category_id: "",
     is_active: false,
     symptoms: [""],
+    sequence:"",
   });
 
   const [editErrors, setEditErrors] = useState({});
@@ -574,6 +576,7 @@ if (symptoms.length === 0) {
         is_active: categoryForm.is_active,
         code: categoryForm.code.toUpperCase().trim(),
          symptoms: symptoms,
+         sequence:categoryForm.sequence,
       };
 
       const token = sessionStorage.getItem("superadmin_token");
@@ -635,6 +638,7 @@ if (symptoms.length === 0) {
     image_url: "",
     code: "",
     symptoms: [""], 
+    sequence:"",
   });
 
   setSubCategoryImage(null);
@@ -700,6 +704,7 @@ if (symptoms.length === 0) {
         is_active: editForm.is_active,
         service_category_id: editForm.service_category_id,
         symptoms: symptoms,
+        sequence:editForm.sequence,
       };
 
       const response = await fetch(
@@ -954,7 +959,7 @@ const removeSymptomField = (index) => {
               <th>Code</th>
                  <th>Status</th>
               <th>Image</th>
-            
+            <th> Sequence</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -1009,7 +1014,7 @@ const removeSymptomField = (index) => {
                   </td>
 
                       <td>
-                
+               
                     <br />
                     <label className="switch">
                       <input
@@ -1039,7 +1044,7 @@ const removeSymptomField = (index) => {
                       <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
                     )}
                   </td>
-              
+              <td>{item.sequence||"-"}</td>
                   <td>
                     <div className="action-buttons">
                       <button
@@ -1056,6 +1061,7 @@ const removeSymptomField = (index) => {
       Array.isArray(item.symptoms) && item.symptoms.length > 0
         ? item.symptoms
         : [""],
+        sequence:item.sequence||"",
   });
 
   setEditErrors({});
@@ -1176,7 +1182,7 @@ const removeSymptomField = (index) => {
   onChange={(e) => {
     let value = e.target.value.toUpperCase();
 
-    // Check number or special character
+   
     if (/[^A-Z]/.test(value)) {
       toast.error("Only uppercase letters (A-Z) are allowed");
     }
@@ -1353,7 +1359,16 @@ const removeSymptomField = (index) => {
     <p className="error-text">{addErrors.symptoms}</p>
   )}
 </div>
-
+  <div className="form-group">
+                <label> Sequence </label>
+                <input
+                  type="number"
+                  name="sequence"
+                  value={categoryForm.sequence}
+                 onChange={handleCategoryChange}
+                />
+              
+              </div>
 
 <div className="form-group">
   <label>Status</label>
@@ -1543,7 +1558,7 @@ const removeSymptomField = (index) => {
                   rows="3"
                 />
               </div>
-
+  
         
 <div className="dynamic-section">
   <div className="section-header">
@@ -1596,7 +1611,18 @@ const removeSymptomField = (index) => {
     <p className="error-text">{editErrors.symptoms}</p>
   )}
 </div>
-
+<div className="form-group">
+                <label>Sequence  </label>
+                <input
+                  type="number"
+                  name="sequence"
+                  value={editForm.sequence}
+                  onChange={handleEditChange}
+                  placeholder="Enter Sequence for the health Category"
+                 
+                />
+                
+              </div>
 
 
               <div className="form-group">

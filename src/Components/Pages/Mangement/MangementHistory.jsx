@@ -550,7 +550,7 @@ const totalPages = Math.ceil(totalCount / pageSize);
               <th>Appointment Date</th>
               <th>Slot</th>
               <th>Reason</th>
-              <th>Last Updated</th>
+              {/* <th>Last Updated</th> */}
               <th>Status</th>
             </tr>
           </thead>
@@ -626,12 +626,27 @@ const totalPages = Math.ceil(totalCount / pageSize);
                         "-"}
                     </td>
 
-                
+{/*                 
                     <td>
                       {item.updated_at
                         ? formatDate(item.updated_at)
                         : "-"}
-                    </td>
+                    </td> */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                   
                     <td>
@@ -752,14 +767,14 @@ const totalPages = Math.ceil(totalCount / pageSize);
         </button>
       ))}
 
-    {/* RIGHT DOTS */}
+    
     {currentPage < totalPages - 2 && (
       <span className="order-pagination-dots">
         ...
       </span>
     )}
 
-    {/* LAST PAGE */}
+  
     {totalPages > 1 && (
       <button
         className={`order-pagination-btn ${
@@ -777,7 +792,7 @@ const totalPages = Math.ceil(totalCount / pageSize);
       </button>
     )}
 
-    {/* NEXT */}
+  
     <button
       className="order-pagination-btn order-pagination-arrow"
       disabled={

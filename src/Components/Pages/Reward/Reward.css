@@ -1,15 +1,11 @@
-/* =========================================
-   REWARD PAGE
-========================================= */
+
 
 .reward-page {
   width: 100%;
   padding-bottom: 30px;
 }
 
-/* =========================================
-   HEADER
-========================================= */
+
 
 .reward-header {
   display: flex;
@@ -57,11 +53,6 @@
   transform: translateY(-1px);
 }
 
-
-
-/* =========================================
-   FILTER
-========================================= */
 
 .reward-filter-card {
   background: #ffffff;
@@ -162,9 +153,6 @@
   font-weight: 700;
 }
 
-/* =========================================
-   TABLE CARD
-========================================= */
 
 .reward-table-card {
   background: #ffffff;
@@ -948,4 +936,68 @@
   .reward-table-header {
     padding: 15px;
   }
+}
+.reward-pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.reward-pagination-info {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.reward-pagination-info strong {
+  color: #111827;
+}
+
+.reward-pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reward-pagination-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid #dfe3e8;
+  border-radius: 7px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-pagination-btn:hover:not(:disabled) {
+  border-color: #0d614e;
+  color: #0d614e;
+  background: #f0f8f5;
+}
+
+.reward-pagination-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.reward-pagination-active {
+  background: #0d614e !important;
+  border-color: #0d614e !important;
+  color: #fff !important;
+}
+
+.reward-pagination-arrow {
+  font-size: 20px;
+}
+
+.reward-pagination-dots {
+  min-width: 30px;
+  text-align: center;
+  color: #6b7280;
 }

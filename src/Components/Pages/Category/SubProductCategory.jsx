@@ -34,6 +34,7 @@ const SubProductCategory = () => {
     hsn_code: "",
     code: "",
     tax_class_id: "",
+    sequence:"",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -234,6 +235,7 @@ const SubProductCategory = () => {
       product_id: item.product_category_id || "",
       image_url: item.image_url || "",
       tax_class_id: item.tax_class_id || "",
+      sequence:item.sequence||"",
     });
     setEditImage(null);
     setEditErrors({});
@@ -285,6 +287,7 @@ const SubProductCategory = () => {
         image_url: imageUrl,
         is_active: EditForm.is_active,
         tax_class_id: EditForm.tax_class_id,
+        sequence:EditForm.sequence,
       };
 
       const response = await fetch(
@@ -449,6 +452,7 @@ if (!code) {
         is_active: SubCategoryForm.is_active,
         hsn_code: SubCategoryForm.hsn_code,
         code: SubCategoryForm.code.toUpperCase().trim(),
+        sequence:SubCategoryForm.sequence,
       };
 
       const response = await fetch(
@@ -719,7 +723,7 @@ tax_class_id:item.tax_class_id||"N/A",
           : "N/A",
       });
 
-      // Clickable Image Link
+      
       if (item.image_url) {
         const imageCell = row.getCell("image");
 
@@ -794,7 +798,7 @@ tax_class_id:item.tax_class_id||"N/A",
       },
     ];
 
-    // Download
+   
     const buffer = await workbook.xlsx.writeBuffer();
 
     const blob = new Blob([buffer], {
@@ -933,6 +937,8 @@ tax_class_id:item.tax_class_id||"N/A",
               <th>Code</th>
               <th>HSN Code</th>
               <th>Image</th>
+              <th> Created At </th>
+              <th> Sequence</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -948,7 +954,7 @@ tax_class_id:item.tax_class_id||"N/A",
               ))
             ) : Error ? (
               <tr>
-                <td colSpan="8" style={{ color: "red", textAlign: "center" }}>
+                <td colSpan="15" style={{ color: "red", textAlign: "center" }}>
                   {Error}
                 </td>
               </tr>
@@ -982,7 +988,8 @@ tax_class_id:item.tax_class_id||"N/A",
                     {item?.service_category_name||"-"}
                   </td>
                   <td>
-                    <span className="service-category-badge">
+                    <span className="service-category
+                    -badge">
                       {item.product_category_name || "N/A"}
                     </span>
                   </td>
@@ -1011,6 +1018,15 @@ tax_class_id:item.tax_class_id||"N/A",
                       <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
                     )}
                   </td>
+                   <td
+                    style={{
+                      color: "#6b7280",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </td>
+                  <td>{item.sequence} </td>
                   <td>
                     <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
                       {item.is_active ? "Active" : "Inactive"}
@@ -1028,6 +1044,7 @@ tax_class_id:item.tax_class_id||"N/A",
                       <span className="slider round"></span>
                     </label>
                   </td>
+                  
                   <td>
                     <div className="action-buttons">
                       <button
@@ -1174,6 +1191,20 @@ tax_class_id:item.tax_class_id||"N/A",
                   className={AddError.name ? "error-input" : ""}
                 />
                 {AddError.name && <p className="error-text">{AddError.name}</p>}
+              </div>
+              <div>
+                  <div className="form-group">
+                <label>Sequence </label>
+                <input
+                  type="number"
+                  name="sequence"
+                  value={SubCategoryForm.sequence}
+                onChange={handleCategoryChange}
+                  placeholder="Enter Sequence for the Sub  Product Category "
+               
+                />
+            
+              </div>
               </div>
 
               <div className="form-group">
@@ -1436,6 +1467,18 @@ tax_class_id:item.tax_class_id||"N/A",
                   onChange={handleEditChange}
                   placeholder="Enter category name"
                   className={editErrors.name ? "error-input" : ""}
+                />
+                {editErrors.name && <p className="error-text">{editErrors.name}</p>}
+              </div>
+                <div className="form-group">
+                <label> Sequence </label>
+                <input
+                  type="number"
+                  name="sequence"
+                  value={EditForm.sequence}
+                  onChange={handleEditChange}
+                  placeholder="Enter category name"
+              
                 />
                 {editErrors.name && <p className="error-text">{editErrors.name}</p>}
               </div>

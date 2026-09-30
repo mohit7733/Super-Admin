@@ -60,115 +60,135 @@ const [editLoading, setEditLoading] = useState(false);
 
 const [coupons, setCoupons] = useState([]);
 const [couponLoading, setCouponLoading] = useState(false);
+const [currentPage, setCurrentPage] = useState(1);
+const [pageSize] = useState(5);
+const [totalPages, setTotalPages] = useState(1);
+const [totalCount, setTotalCount] = useState(0);
+const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const getRewards = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
+  const getRewards = async (page = 1, search = "") => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-    if (!token) {
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setLoading(true);
+  setError(null);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/promotions/admin/reward-rules/?page=${page}&page_size=${pageSize}&search=${encodeURIComponent(search)}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    console.log("Reward HTTP Status:", response.status);
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
 
-    try {
-      const response = await fetch(
-        `${BASE_URL}/promotions/admin/reward-rules/`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
+    const data = await response.json();
+
+    console.log("FULL REWARD RESPONSE:", data);
+
+    if (data.status === "success") {
+     const responseData = data?.data;
+
+const rewardData = Array.isArray(responseData)
+  ? responseData
+  : responseData?.results || [];
+
+
+const count = Number(data?.count || 0);
+
+      const sortedData = [...rewardData].sort(
+        (a, b) =>
+          new Date(b.created_at) -
+          new Date(a.created_at)
       );
 
-      console.log("Reward HTTP Status:", response.status);
+      setRewards(sortedData);
+      setFilteredRewards(sortedData);
 
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
+      setTotalCount(count);
+      setTotalPages(
+        Math.max(1, Math.ceil(count / pageSize))
+      );
 
-        toast.error("Session expired. Please login again");
+      const activeCount = sortedData.filter(
+        (item) => item.is_active === true
+      ).length;
 
-        navigate("/login");
-        return;
-      }
+      const inactiveCount = sortedData.filter(
+        (item) => item.is_active === false
+      ).length;
 
-      const data = await response.json();
-
-      console.log("FULL REWARD RESPONSE:", data);
-      console.log("REWARD DATA:", data.data);
-
-      if (data.status === "success") {
-        const rewardData = Array.isArray(data.data)
-          ? data.data
-          : [];
-
-        const sortedData = [...rewardData].sort(
-          (a, b) =>
-            new Date(b.created_at) -
-            new Date(a.created_at)
-        );
-
-        setRewards(sortedData);
-        setFilteredRewards(sortedData);
-
-       
-
-        const activeCount = sortedData.filter(
-          (item) => item.is_active === true
-        ).length;
-
-        const inactiveCount = sortedData.filter(
-          (item) => item.is_active === false
-        ).length;
-
-        setStats({
-          total: sortedData.length,
-          active: activeCount,
-          inactive: inactiveCount,
-        });
-      } else {
-        const message =
-          data.message || "Failed to get rewards";
-
-        toast.error(message);
-        setError(message);
-
-        setRewards([]);
-        setFilteredRewards([]);
-
-        setStats({
-          total: 0,
-          active: 0,
-          inactive: 0,
-        });
-      }
-    } catch (error) {
-      console.error("Reward Fetch Error:", error);
-
+      setStats({
+        total: count,
+        active: activeCount,
+        inactive: inactiveCount,
+      });
+    } else {
       const message =
-        "Something went wrong while fetching reward data.";
+        data.message || "Failed to get rewards";
 
+      toast.error(message);
       setError(message);
-
-      toast.error("Failed to fetch reward data");
 
       setRewards([]);
       setFilteredRewards([]);
+
+      setTotalCount(0);
+      setTotalPages(1);
 
       setStats({
         total: 0,
         active: 0,
         inactive: 0,
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Reward Fetch Error:", error);
+
+    const message =
+      "Something went wrong while fetching reward data.";
+
+    setError(message);
+
+    toast.error("Failed to fetch reward data");
+
+    setRewards([]);
+    setFilteredRewards([]);
+
+    setTotalCount(0);
+    setTotalPages(1);
+
+    setStats({
+      total: 0,
+      active: 0,
+      inactive: 0,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
   const getCoupons = async () => {
   const token = sessionStorage.getItem("superadmin_token");
 
@@ -202,7 +222,7 @@ const [couponLoading, setCouponLoading] = useState(false);
 
     const data = await response.json();
 
-    if (data.status === "success") {
+    if (data.success === true) {
       setCoupons(data.data?.results || data.data || []);
     } else {
       toast.error(data.message || "Failed to fetch coupons");
@@ -217,9 +237,20 @@ const [couponLoading, setCouponLoading] = useState(false);
 
 
 useEffect(() => {
-  getRewards();
+  getRewards(currentPage, debouncedSearch);
+}, [currentPage, debouncedSearch]);
+
+useEffect(() => {
   getCoupons();
 }, []);
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(searchTerm.trim());
+    setCurrentPage(1);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [searchTerm]);
 const handleEditChange = (e) => {
   const { name, value, type, checked } = e.target;
 
@@ -531,9 +562,7 @@ const handleUpdateReward = async (e) => {
         char.toUpperCase()
       );
   };
-
-
-
+  
   const handleAddReward = () => {
     navigate("/Add-Reward");
   };
@@ -586,135 +615,86 @@ const handleEditReward = (reward) => {
    <div className="stats2-grid">
 
 
+  <div
+    className="stat2-card"
+    style={{
+      borderTopColor: "#0D614E",
+    }}
+  >
+    <div
+      className="stat2-icon"
+      style={{
+        background: "#0D614E20",
+        color: "#0D614E",
+      }}
+    >
+      <FaGift size={16} />
+    </div>
 
-        <div
-          className="stat2-card"
-          style={{
-            borderTopColor:
-              "#0D614E",
-          }}
-        >
+    <div className="stat2-info">
+      <h3>Total Reward</h3>
 
-          <div
-            className="stat2-icon"
-            style={{
-              background:
-                "#0D614E20",
-
-              color:
-                "#0D614E",
-            }}
-          >
-
-            <FaGift
-              size={16}
-            />
-
-          </div>
-
-
-          <div className="stat2-info">
-
-            <h3>
-              Total Reward
-            </h3>
-
-            <div className="stat2-value">
-            0
-            </div>
-
-          </div>
-
-        </div>
-
-
-       
-
-        <div
-          className="stat2-card"
-          style={{
-            borderTopColor:
-              "#0D614E",
-          }}
-        >
-
-          <div
-            className="stat2-icon"
-            style={{
-              background:
-                "#0D614E20",
-
-              color:
-                "#0D614E",
-            }}
-          >
-
-            <FaCircleCheck
-              size={16}
-            />
-
-          </div>
-
-
-          <div className="stat2-info">
-
-            <h3>
-              Active Coupons
-            </h3>
-
-            <div className="stat2-value">
-            0
-            </div>
-
-          </div>
-
-        </div>
-
-
-       
-
-        <div
-          className="stat2-card"
-          style={{
-            borderTopColor:
-              "#0D614E",
-          }}
-        >
-
-          <div
-            className="stat2-icon"
-            style={{
-              background:
-                "#0D614E20",
-
-              color:
-                "#0D614E",
-            }}
-          >
-
-            <FaCircleXmark
-              size={16}
-            />
-
-          </div>
-
-
-          <div className="stat2-info">
-
-            <h3>
-              Inactive Coupons
-            </h3>
-
-            <div className="stat2-value">
-            0
-            </div>
-
-          </div>
-
-        </div>
-
-
+      <div className="stat2-value">
+        {stats.total}
       </div>
+    </div>
+  </div>
+
+
+  {/* ACTIVE */}
+  <div
+    className="stat2-card"
+    style={{
+      borderTopColor: "#0D614E",
+    }}
+  >
+    <div
+      className="stat2-icon"
+      style={{
+        background: "#0D614E20",
+        color: "#0D614E",
+      }}
+    >
+      <FaCircleCheck size={16} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Active Rewards</h3>
+
+      <div className="stat2-value">
+        {stats.active}
+      </div>
+    </div>
+  </div>
+
+
+  {/* INACTIVE */}
+  <div
+    className="stat2-card"
+    style={{
+      borderTopColor: "#0D614E",
+    }}
+  >
+    <div
+      className="stat2-icon"
+      style={{
+        background: "#0D614E20",
+        color: "#0D614E",
+      }}
+    >
+      <FaCircleXmark size={16} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Inactive Rewards</h3>
+
+      <div className="stat2-value">
+        {stats.inactive}
+      </div>
+    </div>
+  </div>
+
+</div>
 
   <div className="filter-category">
 
@@ -884,7 +864,7 @@ const handleEditReward = (reward) => {
                         </span>
                       </td>
 
-                      {/* REWARD */}
+                     
 
                       <td>
                         <div className="reward-name-cell">
@@ -917,7 +897,7 @@ const handleEditReward = (reward) => {
                         </span>
                       </td>
 
-                      {/* COUPON */}
+                      
 
                       <td>
                         <div className="coupon-cell">
@@ -928,12 +908,8 @@ const handleEditReward = (reward) => {
                           </span>
 
                           <span className="coupon-id">
-                            {reward.coupon_id
-                              ? `${reward.coupon_id.slice(
-                                  0,
-                                  8
-                                )}...`
-                              : "-"}
+                            {reward.coupon_id}
+                             
                           </span>
 
                         </div>
@@ -1058,6 +1034,117 @@ const handleEditReward = (reward) => {
             </tbody>
 
           </table>
+          <div className="reward-pagination-container">
+
+  <div className="reward-pagination-info">
+    Showing{" "}
+    <strong>
+      {totalCount === 0
+        ? 0
+        : (currentPage - 1) * pageSize + 1}
+    </strong>{" "}
+    to{" "}
+    <strong>
+      {Math.min(currentPage * pageSize, totalCount)}
+    </strong>{" "}
+    of <strong>{totalCount}</strong> rewards
+  </div>
+
+  <div className="reward-pagination-buttons">
+
+    <button
+      type="button"
+      className="reward-pagination-btn reward-pagination-arrow"
+      disabled={currentPage === 1 || loading}
+      onClick={() =>
+        setCurrentPage((prev) => prev - 1)
+      }
+    >
+      ‹
+    </button>
+
+    <button
+      type="button"
+      className={`reward-pagination-btn ${
+        currentPage === 1
+          ? "reward-pagination-active"
+          : ""
+      }`}
+      disabled={loading}
+      onClick={() => setCurrentPage(1)}
+    >
+      1
+    </button>
+
+    {currentPage > 3 && (
+      <span className="reward-pagination-dots">
+        ...
+      </span>
+    )}
+
+    {Array.from(
+      { length: totalPages },
+      (_, index) => index + 1
+    )
+      .filter(
+        (page) =>
+          page !== 1 &&
+          page !== totalPages &&
+          page >= currentPage - 1 &&
+          page <= currentPage + 1
+      )
+      .map((page) => (
+        <button
+          type="button"
+          key={page}
+          className={`reward-pagination-btn ${
+            currentPage === page
+              ? "reward-pagination-active"
+              : ""
+          }`}
+          disabled={loading}
+          onClick={() => setCurrentPage(page)}
+        >
+          {page}
+        </button>
+      ))}
+
+    {currentPage < totalPages - 2 && (
+      <span className="reward-pagination-dots">
+        ...
+      </span>
+    )}
+
+    {totalPages > 1 && (
+      <button
+        type="button"
+        className={`reward-pagination-btn ${
+          currentPage === totalPages
+            ? "reward-pagination-active"
+            : ""
+        }`}
+        disabled={loading}
+        onClick={() => setCurrentPage(totalPages)}
+      >
+        {totalPages}
+      </button>
+    )}
+
+    <button
+      type="button"
+      className="reward-pagination-btn reward-pagination-arrow"
+      disabled={
+        currentPage === totalPages || loading
+      }
+      onClick={() =>
+        setCurrentPage((prev) => prev + 1)
+      }
+    >
+      ›
+    </button>
+
+  </div>
+</div>
 
         </div>
 
@@ -1317,7 +1404,7 @@ const handleEditReward = (reward) => {
                 )}
               </div>
 
-              {/* Amount + Count */}
+            
               <div className="reward-modal-row">
 
                 <div className="reward-modal-group">
