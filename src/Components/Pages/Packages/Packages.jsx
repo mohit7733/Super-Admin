@@ -20,7 +20,7 @@ import {
 } from "react-icons/fa";
 import { FiRefreshCw } from "react-icons/fi";
 import BASE_URL from "../../../Base";
-import "./Packages.css";
+import "./packages.css";
 
 const Package = () => {
   const [packages, setPackages] = useState([]);
