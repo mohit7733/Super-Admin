@@ -1,222 +1,236 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   FaBoxOpen,
-  FaEye,
+  FaSearch,
+  FaFilter,
   FaChevronDown,
   FaChevronUp,
+  FaEye,
   FaEdit,
   FaTrash,
+  FaCalendarAlt,
+  FaUsers,
+  FaLock,
+  FaClock,
   FaCheckCircle,
   FaTimesCircle,
   FaTag,
-  FaClock,
-  FaShoppingBag,
-  FaSearch,
-  FaFilter,
+  FaGift,
+  FaSyncAlt,
   FaTimes,
-  FaCalendarAlt,
-  FaUsers,
-  FaRupeeSign,
+  FaCheck,
+  FaExclamationTriangle,
 } from "react-icons/fa";
-import { FiRefreshCw } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+
 import BASE_URL from "../../../Base";
 import "./Packages.css";
 
 const Package = () => {
   const [packages, setPackages] = useState([]);
-
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  /* Search */
   const [searchTerm, setSearchTerm] = useState("");
-
-  /* Filters */
-  const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  /* Pagination */
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(9);
-  const [totalCount, setTotalCount] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
 
-  /* Details */
+  const [perPage, setPerPage] = useState(9);
+  const [currentPage, setCurrentPage] = useState(1);
+
   const [expandedId, setExpandedId] = useState(null);
 
-  /* Delete */
-  const [deleteId, setDeleteId] = useState(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+ const navigate = useNavigate();
+  // =========================================================
+  // FETCH PACKAGES
+  // =========================================================
 
-  const token = sessionStorage.getItem("superadmin_token");
-
-  /* =========================================================
-     FETCH PACKAGES
-  ========================================================= */
-
-  const fetchPackages = async (showLoader = true) => {
+  const fetchPackages = async () => {
     try {
-      if (showLoader) {
-        setLoading(true);
-      } else {
-        setRefreshing(true);
-      }
-
+      setLoading(true);
       setError("");
 
-      const params = new URLSearchParams();
+      const token = sessionStorage.getItem("superadmin_token");
 
-      params.append("page", currentPage);
-      params.append("page_size", pageSize);
+      const response = await fetch(`${BASE_URL}/packages/admin/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : {}),
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
 
-      if (searchTerm.trim()) {
-        params.append("search", searchTerm.trim());
-      }
-
-      const response = await fetch(
-        `${BASE_URL}/packages/admin/?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            ...(token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {}),
-          },
-        }
-      );
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        throw new Error("Session expired. Please login again.");
-      }
-
-      const data = await response.json();
+      const result = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data?.message || "Unable to fetch packages."
+          result?.message || "Failed to fetch packages."
         );
       }
 
-      if (data?.success) {
-        const packageData = data?.data || {};
+      const packageData =
+        result?.data?.results ||
+        result?.data ||
+        [];
 
-        setPackages(packageData?.results || []);
-        setTotalCount(Number(packageData?.count || 0));
-      } else {
-        throw new Error(
-          data?.message || "Unable to fetch packages."
-        );
-      }
+      setPackages(Array.isArray(packageData) ? packageData : []);
+
+      setTotalCount(
+        Number(result?.data?.count || packageData.length || 0)
+      );
     } catch (err) {
-      console.error("Package Fetch Error:", err);
-
+      console.error("Package API Error:", err);
       setError(
         err?.message || "Something went wrong while fetching packages."
       );
-
-      setPackages([]);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
-  /* =========================================================
-     FETCH ON PAGE / PAGE SIZE
-  ========================================================= */
-
   useEffect(() => {
-    fetchPackages(true);
-  }, [currentPage, pageSize]);
+    fetchPackages();
+  }, []);
 
-  /* =========================================================
-     SEARCH DEBOUNCE
-  ========================================================= */
+  // =========================================================
+  // CATEGORY OPTIONS
+  // =========================================================
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setCurrentPage(1);
+  const categoryOptions = useMemo(() => {
+    const categories = packages
+      .map(
+        (item) =>
+          item?.category_name ||
+          item?.category_details?.name
+      )
+      .filter(Boolean);
 
-      fetchPackages(true);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  /* =========================================================
-     CATEGORY OPTIONS
-  ========================================================= */
-
-  const categories = useMemo(() => {
-    const map = new Map();
-
-    packages.forEach((item) => {
-      const id = item?.category;
-
-      const name =
-        item?.category_name ||
-        item?.category_details?.name ||
-        "Uncategorized";
-
-      if (id && !map.has(id)) {
-        map.set(id, name);
-      }
-    });
-
-    return Array.from(map.entries()).map(([id, name]) => ({
-      id,
-      name,
-    }));
+    return [...new Set(categories)];
   }, [packages]);
 
-  /* =========================================================
-     FILTERED PACKAGES
-  ========================================================= */
+  // =========================================================
+  // STATS
+  // =========================================================
+
+  const activeCount = useMemo(() => {
+    return packages.filter((item) => item?.is_active === true).length;
+  }, [packages]);
+
+  const inactiveCount = useMemo(() => {
+    return packages.filter((item) => item?.is_active === false).length;
+  }, [packages]);
+
+  // =========================================================
+  // FILTER
+  // =========================================================
 
   const filteredPackages = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+
     return packages.filter((item) => {
-      const statusMatch =
+      const packageName = item?.name?.toLowerCase() || "";
+
+      const category =
+        (
+          item?.category_name ||
+          item?.category_details?.name ||
+          ""
+        ).toLowerCase();
+
+      const tags = Array.isArray(item?.tags)
+        ? item.tags.join(" ").toLowerCase()
+        : "";
+
+      const description =
+        item?.description?.toLowerCase() || "";
+
+      const matchesSearch =
+        !search ||
+        packageName.includes(search) ||
+        category.includes(search) ||
+        tags.includes(search) ||
+        description.includes(search);
+
+      const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "active" && item?.is_active === true) ||
         (statusFilter === "inactive" && item?.is_active === false);
 
-      const categoryMatch =
+      const itemCategory =
+        item?.category_name ||
+        item?.category_details?.name ||
+        "";
+
+      const matchesCategory =
         categoryFilter === "all" ||
-        item?.category === categoryFilter;
+        itemCategory === categoryFilter;
 
-      return statusMatch && categoryMatch;
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesCategory
+      );
     });
-  }, [packages, statusFilter, categoryFilter]);
+  }, [
+    packages,
+    searchTerm,
+    statusFilter,
+    categoryFilter,
+  ]);
 
-  /* =========================================================
-     STATS
-  ========================================================= */
+  // =========================================================
+  // PAGINATION
+  // =========================================================
 
-  const activeCount = packages.filter(
-    (item) => item?.is_active === true
-  ).length;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredPackages.length / perPage)
+  );
 
-  const inactiveCount = packages.filter(
-    (item) => item?.is_active === false
-  ).length;
+  const visiblePackages = useMemo(() => {
+    const start = (currentPage - 1) * perPage;
 
-  /* =========================================================
-     HELPERS
-  ========================================================= */
+    return filteredPackages.slice(
+      start,
+      start + perPage
+    );
+  }, [
+    filteredPackages,
+    currentPage,
+    perPage,
+  ]);
 
-  const formatText = (value) => {
-    if (!value) return "-";
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    statusFilter,
+    categoryFilter,
+    perPage,
+  ]);
 
-    return String(value)
-      .replaceAll("_", " ")
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+  // =========================================================
+  // CLEAR FILTERS
+  // =========================================================
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setCategoryFilter("all");
+    setCurrentPage(1);
   };
+
+  // =========================================================
+  // FORMATTERS
+  // =========================================================
 
   const formatPrice = (price) => {
     if (
@@ -227,21 +241,73 @@ const Package = () => {
       return "₹0.00";
     }
 
-    return `₹${Number(price).toLocaleString("en-IN", {
+    const number = Number(price);
+
+    if (Number.isNaN(number)) {
+      return `₹${price}`;
+    }
+
+    return `₹${number.toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   };
 
-  const getValidity = (days) => {
-    if (!days) return "No expiry";
+  const formatPurchaseType = (value) => {
+    if (!value) return "-";
+
+    if (value === "open_plan") {
+      return "Open Plan";
+    }
+
+    if (value === "prepaid_package") {
+      return "Prepaid Package";
+    }
+
+    return value
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (char) =>
+        char.toUpperCase()
+      );
+  };
+
+  const formatBillingMode = (value) => {
+    if (!value) return "-";
+
+    if (value === "one_time") {
+      return "One Time";
+    }
+
+    return value
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (char) =>
+        char.toUpperCase()
+      );
+  };
+
+  const formatValidity = (days) => {
+    if (
+      days === null ||
+      days === undefined ||
+      days === ""
+    ) {
+      return "No Expiry";
+    }
 
     return `${days} Days`;
   };
 
-  /* =========================================================
-     VIEW DETAILS
-  ========================================================= */
+  const formatAvailability = (item) => {
+    if (item?.available_to_all_users) {
+      return "All Users";
+    }
+
+    return "Selected Users";
+  };
+
+  // =========================================================
+  // TOGGLE DETAILS
+  // =========================================================
 
   const toggleDetails = (id) => {
     setExpandedId((prev) =>
@@ -249,147 +315,580 @@ const Package = () => {
     );
   };
 
-  /* =========================================================
-     CLEAR FILTERS
-  ========================================================= */
+  // =========================================================
+  // PAGINATION BUTTONS
+  // =========================================================
 
-  const clearFilters = () => {
-    setStatusFilter("all");
-    setCategoryFilter("all");
-    setSearchTerm("");
-    setCurrentPage(1);
-    setExpandedId(null);
-  };
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
 
-  /* =========================================================
-     DELETE
-  ========================================================= */
+    const pages = [];
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
-
-    try {
-      setDeleteLoading(true);
-
-      /*
-        NOTE:
-        This assumes DELETE endpoint:
-
-        DELETE /packages/admin/{id}/
-
-        If your backend uses:
-        /packages/admin/?id={id}
-
-        then only change the URL below.
-      */
-
-      const response = await fetch(
-        `${BASE_URL}/packages/admin/${deleteId}/`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-            ...(token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {}),
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data?.message || "Unable to delete package."
-        );
-      }
-
-      setDeleteId(null);
-      setExpandedId(null);
-
-      await fetchPackages(false);
-    } catch (err) {
-      console.error("Delete Package Error:", err);
-
-      alert(
-        err?.message || "Unable to delete package."
-      );
-    } finally {
-      setDeleteLoading(false);
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
     }
+
+    return (
+      <div className="package-pagination">
+        <button
+          type="button"
+          disabled={currentPage === 1}
+          onClick={() =>
+            setCurrentPage((prev) => prev - 1)
+          }
+        >
+          ‹
+        </button>
+
+        {pages.map((page) => (
+          <button
+            type="button"
+            key={page}
+            className={
+              currentPage === page
+                ? "pagination-active"
+                : ""
+            }
+            onClick={() => setCurrentPage(page)}
+          >
+            {page}
+          </button>
+        ))}
+
+        <button
+          type="button"
+          disabled={currentPage === totalPages}
+          onClick={() =>
+            setCurrentPage((prev) => prev + 1)
+          }
+        >
+          ›
+        </button>
+      </div>
+    );
   };
 
-  /* =========================================================
-     PAGINATION
-  ========================================================= */
+  // =========================================================
+  // CARD
+  // =========================================================
 
-  const totalPages = Math.ceil(
-    totalCount / pageSize
-  );
+  const PackageCard = ({ item }) => {
+    const isExpanded = expandedId === item.id;
 
-  const pageNumbers = [];
+    const category =
+      item?.category_name ||
+      item?.category_details?.name ||
+      "Package";
 
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
+    const benefits =
+      item?.benefits?.includes || [];
 
-  /* =========================================================
-     LOADING
-  ========================================================= */
+    const configuration =
+      item?.configuration || [];
 
-  if (loading) {
+    return (
+      <article
+        className={`package-card ${
+          isExpanded
+            ? "package-card-expanded"
+            : ""
+        }`}
+      >
+        {/* GREEN TOP LINE */}
+        <div className="package-card-accent" />
+
+        {/* HEADER */}
+        <div className="package-card-header">
+          <div className="package-icon">
+            <FaBoxOpen />
+          </div>
+
+          <div className="package-name-area">
+            <h3 title={item?.name}>
+              {item?.name || "Unnamed Package"}
+            </h3>
+
+            <span
+              className="package-category"
+              title={category}
+            >
+              {category}
+            </span>
+
+            <span
+              className={`package-status ${
+                item?.is_active
+                  ? "status-active"
+                  : "status-inactive"
+              }`}
+            >
+              <span className="status-dot" />
+
+              {item?.is_active
+                ? "Active"
+                : "Inactive"}
+            </span>
+          </div>
+
+          {/* ACTIONS */}
+          <div className="package-card-actions">
+            <button
+              type="button"
+              className="card-action view-action"
+              title="View Details"
+              onClick={() =>
+                toggleDetails(item.id)
+              }
+            >
+              <FaEye />
+            </button>
+
+            <button
+              type="button"
+              className="card-action edit-action"
+              title="Edit Package"
+              onClick={() =>
+                console.log(
+                  "Edit Package:",
+                  item.id
+                )
+              }
+            >
+              <FaEdit />
+            </button>
+
+            <button
+              type="button"
+              className="card-action delete-action"
+              title="Delete Package"
+              onClick={() =>
+                console.log(
+                  "Delete Package:",
+                  item.id
+                )
+              }
+            >
+              <FaTrash />
+            </button>
+          </div>
+        </div>
+
+        {/* PRICE */}
+        <div className="package-price-section">
+          <div>
+            <span className="price-label">
+              Selling Price
+            </span>
+
+            <strong className="package-price">
+              {formatPrice(item?.selling_price)}
+            </strong>
+          </div>
+
+          <span className="purchase-type-badge">
+            {formatPurchaseType(
+              item?.purchase_type
+            )}
+          </span>
+        </div>
+
+        {/* BASIC INFORMATION */}
+        <div className="package-info-grid">
+          <div className="package-info-box">
+            <div className="package-info-icon">
+              <FaLock />
+            </div>
+
+            <div>
+              <span>Purchase Type</span>
+
+              <strong>
+                {formatPurchaseType(
+                  item?.purchase_type
+                )}
+              </strong>
+            </div>
+          </div>
+
+          <div className="package-info-box">
+            <div className="package-info-icon">
+              <FaClock />
+            </div>
+
+            <div>
+              <span>Billing Mode</span>
+
+              <strong>
+                {formatBillingMode(
+                  item?.billing_mode
+                )}
+              </strong>
+            </div>
+          </div>
+
+          <div className="package-info-box">
+            <div className="package-info-icon">
+              <FaCalendarAlt />
+            </div>
+
+            <div>
+              <span>Validity</span>
+
+              <strong>
+                {formatValidity(
+                  item?.validity_days
+                )}
+              </strong>
+            </div>
+          </div>
+
+          <div className="package-info-box">
+            <div className="package-info-icon">
+              <FaUsers />
+            </div>
+
+            <div>
+              <span>Availability</span>
+
+              <strong>
+                {formatAvailability(item)}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        {/* TAGS */}
+        <div className="package-tags-section">
+          <div className="tags-title">
+            <FaTag />
+            <span>Tags</span>
+          </div>
+
+          <div className="package-tags">
+            {Array.isArray(item?.tags) &&
+            item.tags.length > 0 ? (
+              item.tags.map((tag, index) => (
+                <span
+                  className="package-tag"
+                  key={`${tag}-${index}`}
+                >
+                  {tag}
+                </span>
+              ))
+            ) : (
+              <span className="no-tags">
+                No tags
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* VIEW DETAILS BUTTON */}
+        <button
+          type="button"
+          className={`view-details-button ${
+            isExpanded
+              ? "view-details-open"
+              : ""
+          }`}
+          onClick={() =>
+            toggleDetails(item.id)
+          }
+        >
+          <FaEye />
+
+          <span>
+            {isExpanded
+              ? "Hide Details"
+              : "View Details"}
+          </span>
+
+          {isExpanded ? (
+            <FaChevronUp />
+          ) : (
+            <FaChevronDown />
+          )}
+        </button>
+
+        {/* ===================================================
+            EXPANDED DETAILS
+        =================================================== */}
+
+        {isExpanded && (
+          <div className="package-expanded-details">
+            {/* DESCRIPTION */}
+            <div className="expanded-block">
+              <div className="expanded-heading">
+                <div className="expanded-heading-icon">
+                  <FaBoxOpen />
+                </div>
+
+                <div>
+                  <h4>Description</h4>
+
+                  <span>
+                    Package information
+                  </span>
+                </div>
+              </div>
+
+              <p className="package-description">
+                {item?.description ||
+                  "No description available."}
+              </p>
+            </div>
+
+            {/* PACKAGE DETAILS */}
+            <div className="expanded-block">
+              <div className="expanded-heading">
+                <div className="expanded-heading-icon">
+                  <FaGift />
+                </div>
+
+                <div>
+                  <h4>Package Details</h4>
+
+                  <span>
+                    Configuration information
+                  </span>
+                </div>
+              </div>
+
+              <div className="detail-grid">
+                <div>
+                  <span>Original Price</span>
+
+                  <strong>
+                    {formatPrice(
+                      item?.original_price
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Selling Price</span>
+
+                  <strong>
+                    {formatPrice(
+                      item?.selling_price
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Button Action</span>
+
+                  <strong>
+                    {item?.button_action
+                      ? item.button_action
+                          .replaceAll("_", " ")
+                          .replace(
+                            /\b\w/g,
+                            (char) =>
+                              char.toUpperCase()
+                          )
+                      : "-"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Available To</span>
+
+                  <strong>
+                    {formatAvailability(item)}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Sequence</span>
+
+                  <strong>
+                    {item?.sequence ?? "-"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Can Be Purchased</span>
+
+                  <strong>
+                    {item?.can_be_purchased
+                      ? "Yes"
+                      : "No"}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {/* BENEFITS */}
+            <div className="expanded-block">
+              <div className="expanded-heading">
+                <div className="expanded-heading-icon benefit-icon">
+                  <FaCheckCircle />
+                </div>
+
+                <div>
+                  <h4>Benefits</h4>
+
+                  <span>
+                    What's included
+                  </span>
+                </div>
+              </div>
+
+              {benefits.length > 0 ? (
+                <div className="benefits-list">
+                  {benefits.map(
+                    (benefit, index) => (
+                      <div
+                        className="benefit-row"
+                        key={index}
+                      >
+                        <FaCheck />
+
+                        <span>
+                          {benefit}
+                        </span>
+                      </div>
+                    )
+                  )}
+                </div>
+              ) : (
+                <div className="detail-empty">
+                  No benefits available.
+                </div>
+              )}
+            </div>
+
+            {/* CONFIGURATION */}
+            <div className="expanded-block">
+              <div className="expanded-heading">
+                <div className="expanded-heading-icon">
+                  <FaBoxOpen />
+                </div>
+
+                <div>
+                  <h4>Configuration</h4>
+
+                  <span>
+                    Package capabilities
+                  </span>
+                </div>
+              </div>
+
+              {configuration.length > 0 ? (
+                <div className="configuration-list">
+                  {configuration.map(
+                    (config, index) => (
+                      <div
+                        className="configuration-row"
+                        key={
+                          config?.capability_id ||
+                          index
+                        }
+                      >
+                        <div className="configuration-left">
+                          <strong>
+                            {config?.label ||
+                              config?.name ||
+                              "Capability"}
+                          </strong>
+
+                          <span>
+                            Type:{" "}
+                            {config?.type ||
+                              "-"}
+                          </span>
+                        </div>
+
+                        <div>
+                          {config?.type ===
+                          "consumable" ? (
+                            <span className="config-count">
+                              ×{" "}
+                              {config?.count ??
+                                0}
+                            </span>
+                          ) : config?.included ? (
+                            <span className="config-included">
+                              <FaCheck />
+                              Included
+                            </span>
+                          ) : (
+                            <span className="config-not-included">
+                              <FaTimesCircle />
+                              Not Included
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              ) : (
+                <div className="detail-empty">
+                  No configuration available.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </article>
+    );
+  };
+
+  // =========================================================
+  // LOADING
+  // =========================================================
+
+  if (loading && packages.length === 0) {
     return (
       <div className="package-page">
         <div className="package-loading-wrapper">
           <div className="package-loader">
-            <FiRefreshCw />
+            <FaSyncAlt />
           </div>
 
-          <h3>Loading Packages</h3>
+          <h3>Loading Packages...</h3>
 
           <p>
-            Please wait while we load your packages.
+            Please wait while we fetch package
+            information.
           </p>
         </div>
       </div>
     );
   }
 
+  
+
   return (
     <div className="package-page">
-
-      {/* =====================================================
-          PAGE HEADER
-      ===================================================== */}
-
+     
       <div className="package-page-header">
-
         <div className="package-heading">
-
-          <div className="package-heading-icon">
-            <FaBoxOpen />
-          </div>
+          
 
           <div>
             <h1>Package Management</h1>
 
             <p>
-              Create, manage and configure packages,
-              plans and offers.
+              Create, manage and configure
+              packages, plans and offers.
             </p>
           </div>
-
         </div>
 
         <div className="package-header-tools">
-
-          {/* Search */}
-
+          
+          <button
+    type="button"
+    className="package-add-button"
+    onClick={() => navigate("/packages/add")}
+  >
+    <span>+</span>
+    Add Package
+  </button>
           <div className="package-search-box">
-
             <FaSearch />
 
             <input
@@ -404,16 +903,16 @@ const Package = () => {
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => setSearchTerm("")}
+                onClick={() =>
+                  setSearchTerm("")
+                }
               >
                 <FaTimes />
               </button>
             )}
-
           </div>
 
-          {/* Filter */}
-
+          {/* FILTER */}
           <button
             type="button"
             className={`package-filter-button ${
@@ -435,28 +934,22 @@ const Package = () => {
               <FaChevronDown />
             )}
           </button>
-
         </div>
-
       </div>
 
-      {/* =====================================================
-          FILTER PANEL
-      ===================================================== */}
-
+     
       {showFilters && (
         <div className="package-filter-wrapper">
-
           <div className="package-filter-item">
-
             <label>Status</label>
 
             <select
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setExpandedId(null);
-              }}
+              onChange={(e) =>
+                setStatusFilter(
+                  e.target.value
+                )
+              }
             >
               <option value="all">
                 All Status
@@ -470,34 +963,34 @@ const Package = () => {
                 Inactive
               </option>
             </select>
-
           </div>
 
           <div className="package-filter-item">
-
             <label>Category</label>
 
             <select
               value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
-                setExpandedId(null);
-              }}
+              onChange={(e) =>
+                setCategoryFilter(
+                  e.target.value
+                )
+              }
             >
               <option value="all">
                 All Categories
               </option>
 
-              {categories.map((category) => (
-                <option
-                  key={category.id}
-                  value={category.id}
-                >
-                  {category.name}
-                </option>
-              ))}
+              {categoryOptions.map(
+                (category) => (
+                  <option
+                    value={category}
+                    key={category}
+                  >
+                    {category}
+                  </option>
+                )
+              )}
             </select>
-
           </div>
 
           <button
@@ -506,102 +999,87 @@ const Package = () => {
             onClick={clearFilters}
           >
             <FaTimes />
+
             Clear Filters
           </button>
-
         </div>
       )}
 
-      {/* =====================================================
-          SUMMARY BAR
-      ===================================================== */}
-
+      
       <div className="package-summary">
-
         <div className="package-summary-left">
-
-          <div className="package-summary-icon">
+          {/* <div className="package-summary-icon">
             <FaBoxOpen />
-          </div>
+          </div> */}
 
           <div>
             <span>Packages</span>
 
             <strong>
-              {totalCount}
+              {filteredPackages.length}
             </strong>
           </div>
-
         </div>
 
         <div className="package-summary-right">
-
           <div className="summary-status active-status">
             <FaCheckCircle />
-            <span>Active</span>
-            <strong>{activeCount}</strong>
+
+            <strong>
+              Active {activeCount}
+            </strong>
           </div>
 
           <div className="summary-status inactive-status">
             <FaTimesCircle />
-            <span>Inactive</span>
-            <strong>{inactiveCount}</strong>
+
+            <strong>
+              Inactive {inactiveCount}
+            </strong>
           </div>
 
-          <div className="summary-divider"></div>
+          <div className="summary-divider" />
 
           <div className="package-per-page">
-
             <span>Per page</span>
 
             <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(
+              value={perPage}
+              onChange={(e) =>
+                setPerPage(
                   Number(e.target.value)
-                );
-
-                setCurrentPage(1);
-              }}
+                )
+              }
             >
               <option value={3}>3</option>
               <option value={6}>6</option>
               <option value={9}>9</option>
               <option value={12}>12</option>
             </select>
-
           </div>
 
           <button
             type="button"
             className="package-refresh-button"
-            onClick={() =>
-              fetchPackages(false)
-            }
-            disabled={refreshing}
+            onClick={fetchPackages}
+            disabled={loading}
             title="Refresh"
           >
-            <FiRefreshCw
+            <FaSyncAlt
               className={
-                refreshing
+                loading
                   ? "package-refresh-spin"
                   : ""
               }
             />
           </button>
-
         </div>
-
       </div>
 
-      {/* =====================================================
-          ERROR
-      ===================================================== */}
-
+     
       {error && (
         <div className="package-error">
-
-          <FaTimesCircle />
+          <FaExclamationTriangle />
 
           <div>
             <strong>
@@ -613,754 +1091,48 @@ const Package = () => {
 
           <button
             type="button"
-            onClick={() =>
-              fetchPackages(true)
-            }
+            onClick={fetchPackages}
           >
-            Try Again
+            Retry
           </button>
-
         </div>
       )}
 
-      {/* =====================================================
-          PACKAGE GRID
-      ===================================================== */}
-
-      {!error &&
-      filteredPackages.length > 0 ? (
-        <div className="package-grid">
-
-          {filteredPackages.map((item) => {
-
-            const isExpanded =
-              expandedId === item.id;
-
-            return (
-              <div
-                className={`package-card ${
-                  isExpanded
-                    ? "package-card-expanded"
-                    : ""
-                }`}
+     
+      {visiblePackages.length > 0 ? (
+        <>
+          <div className="package-grid">
+            {visiblePackages.map((item) => (
+              <PackageCard
                 key={item.id}
-              >
-
-                {/* Top accent */}
-
-                <div className="package-card-accent"></div>
-
-                {/* =================================================
-                    CARD HEADER
-                ================================================= */}
-
-                <div className="package-card-header">
-
-                  <div className="package-icon">
-
-                    <FaBoxOpen />
-
-                  </div>
-
-                  <div className="package-name-area">
-
-                    <h3 title={item.name}>
-                      {item.name}
-                    </h3>
-
-                    <span className="package-category">
-                      {item.category_name ||
-                        item.category_details?.name ||
-                        "Uncategorized"}
-                    </span>
-
-                    <span
-                      className={`package-status ${
-                        item.is_active
-                          ? "status-active"
-                          : "status-inactive"
-                      }`}
-                    >
-                      <span className="status-dot"></span>
-
-                      {item.is_active
-                        ? "Active"
-                        : "Inactive"}
-                    </span>
-
-                  </div>
-
-                </div>
-
-                {/* =================================================
-                    ACTION BUTTONS
-                ================================================= */}
-
-                <div className="package-card-actions">
-
-                  <button
-                    type="button"
-                    className="card-action view-action"
-                    title="View Details"
-                    onClick={() =>
-                      toggleDetails(item.id)
-                    }
-                  >
-                    <FaEye />
-                  </button>
-
-                  <button
-                    type="button"
-                    className="card-action edit-action"
-                    title="Edit Package"
-                    onClick={() =>
-                      console.log(
-                        "Edit Package:",
-                        item
-                      )
-                    }
-                  >
-                    <FaEdit />
-                  </button>
-
-                  <button
-                    type="button"
-                    className="card-action delete-action"
-                    title="Delete Package"
-                    onClick={() =>
-                      setDeleteId(item.id)
-                    }
-                  >
-                    <FaTrash />
-                  </button>
-
-                </div>
-
-                {/* =================================================
-                    PRICE
-                ================================================= */}
-
-                <div className="package-price-section">
-
-                  <div>
-
-                    <span className="price-label">
-                      Selling Price
-                    </span>
-
-                    <div className="package-price">
-                      {formatPrice(
-                        item.selling_price
-                      )}
-                    </div>
-
-                  </div>
-
-                  <span className="purchase-type-badge">
-                    {formatText(
-                      item.purchase_type
-                    )}
-                  </span>
-
-                </div>
-
-                {/* =================================================
-                    INFO
-                ================================================= */}
-
-                <div className="package-info-grid">
-
-                  <div className="package-info-box">
-
-                    <div className="package-info-icon">
-                      <FaShoppingBag />
-                    </div>
-
-                    <div>
-                      <span>
-                        Purchase Type
-                      </span>
-
-                      <strong>
-                        {formatText(
-                          item.purchase_type
-                        )}
-                      </strong>
-                    </div>
-
-                  </div>
-
-                  <div className="package-info-box">
-
-                    <div className="package-info-icon">
-                      <FaClock />
-                    </div>
-
-                    <div>
-                      <span>
-                        Billing Mode
-                      </span>
-
-                      <strong>
-                        {formatText(
-                          item.billing_mode
-                        )}
-                      </strong>
-                    </div>
-
-                  </div>
-
-                  <div className="package-info-box">
-
-                    <div className="package-info-icon">
-                      <FaCalendarAlt />
-                    </div>
-
-                    <div>
-                      <span>
-                        Validity
-                      </span>
-
-                      <strong>
-                        {getValidity(
-                          item.validity_days
-                        )}
-                      </strong>
-                    </div>
-
-                  </div>
-
-                  <div className="package-info-box">
-
-                    <div className="package-info-icon">
-                      <FaUsers />
-                    </div>
-
-                    <div>
-                      <span>
-                        Availability
-                      </span>
-
-                      <strong>
-                        {item.available_to_all_users
-                          ? "All Users"
-                          : "Selected Users"}
-                      </strong>
-                    </div>
-
-                  </div>
-
-                </div>
-
-                {/* =================================================
-                    TAGS
-                ================================================= */}
-
-                <div className="package-tags-section">
-
-                  <div className="tags-title">
-                    <FaTag />
-                    <span>Tags</span>
-                  </div>
-
-                  <div className="package-tags">
-
-                    {item.tags?.length > 0 ? (
-                      item.tags.map(
-                        (tag, index) => (
-                          <span
-                            className="package-tag"
-                            key={`${tag}-${index}`}
-                          >
-                            {tag}
-                          </span>
-                        )
-                      )
-                    ) : (
-                      <span className="no-tags">
-                        No tags
-                      </span>
-                    )}
-
-                  </div>
-
-                </div>
-
-                {/* =================================================
-                    VIEW DETAILS
-                ================================================= */}
-
-                <button
-                  type="button"
-                  className={`view-details-button ${
-                    isExpanded
-                      ? "view-details-open"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    toggleDetails(item.id)
-                  }
-                >
-                  <FaEye />
-
-                  <span>
-                    {isExpanded
-                      ? "View Less"
-                      : "View Details"}
-                  </span>
-
-                  {isExpanded ? (
-                    <FaChevronUp />
-                  ) : (
-                    <FaChevronDown />
-                  )}
-
-                </button>
-
-                {/* =================================================
-                    EXPANDED DETAILS
-                ================================================= */}
-
-                {isExpanded && (
-                  <div className="package-expanded-details">
-
-                    {/* Description */}
-
-                    <div className="expanded-block">
-
-                      <div className="expanded-heading">
-                        <span className="expanded-heading-icon">
-                          <FaBoxOpen />
-                        </span>
-
-                        <div>
-                          <h4>
-                            Package Overview
-                          </h4>
-
-                          <span>
-                            Complete package information
-                          </span>
-                        </div>
-                      </div>
-
-                      <p className="package-description">
-                        {item.description ||
-                          "No description available for this package."}
-                      </p>
-
-                    </div>
-
-                    {/* Package Details */}
-
-                    <div className="expanded-block">
-
-                      <div className="expanded-heading">
-
-                        <span className="expanded-heading-icon">
-                          <FaRupeeSign />
-                        </span>
-
-                        <div>
-                          <h4>
-                            Package Details
-                          </h4>
-
-                          <span>
-                            Pricing and purchase configuration
-                          </span>
-                        </div>
-
-                      </div>
-
-                      <div className="detail-grid">
-
-                        <div>
-                          <span>
-                            Category
-                          </span>
-
-                          <strong>
-                            {item.category_name ||
-                              item.category_details?.name ||
-                              "-"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            Category Code
-                          </span>
-
-                          <strong>
-                            {item.category_code ||
-                              "-"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            Original Price
-                          </span>
-
-                          <strong>
-                            {formatPrice(
-                              item.original_price
-                            )}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            Selling Price
-                          </span>
-
-                          <strong>
-                            {formatPrice(
-                              item.selling_price
-                            )}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            Button Action
-                          </span>
-
-                          <strong>
-                            {formatText(
-                              item.button_action
-                            )}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            Can Be Purchased
-                          </span>
-
-                          <strong>
-                            {item.can_be_purchased
-                              ? "Yes"
-                              : "No"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            Billing Mode
-                          </span>
-
-                          <strong>
-                            {formatText(
-                              item.billing_mode
-                            )}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>
-                            Sequence
-                          </span>
-
-                          <strong>
-                            {item.sequence ?? "-"}
-                          </strong>
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                    {/* Benefits */}
-
-                    <div className="expanded-block">
-
-                      <div className="expanded-heading">
-
-                        <span className="expanded-heading-icon benefit-icon">
-                          <FaCheckCircle />
-                        </span>
-
-                        <div>
-                          <h4>
-                            Benefits
-                          </h4>
-
-                          <span>
-                            What's included in this package
-                          </span>
-                        </div>
-
-                      </div>
-
-                      {item.benefits?.includes?.length >
-                      0 ? (
-                        <div className="benefits-list">
-
-                          {item.benefits.includes.map(
-                            (benefit, index) => (
-                              <div
-                                className="benefit-row"
-                                key={index}
-                              >
-                                <FaCheckCircle />
-
-                                <span>
-                                  {benefit}
-                                </span>
-                              </div>
-                            )
-                          )}
-
-                        </div>
-                      ) : (
-                        <div className="detail-empty">
-                          No benefits configured.
-                        </div>
-                      )}
-
-                    </div>
-
-                    {/* Configuration */}
-
-                    <div className="expanded-block">
-
-                      <div className="expanded-heading">
-
-                        <span className="expanded-heading-icon">
-                          <FaBoxOpen />
-                        </span>
-
-                        <div>
-                          <h4>
-                            Configuration
-                          </h4>
-
-                          <span>
-                            Package capabilities
-                          </span>
-                        </div>
-
-                      </div>
-
-                      {item.configuration?.length >
-                      0 ? (
-                        <div className="configuration-list">
-
-                          {item.configuration.map(
-                            (config, index) => (
-                              <div
-                                className="configuration-row"
-                                key={
-                                  config.capability_id ||
-                                  index
-                                }
-                              >
-
-                                <div className="configuration-left">
-
-                                  <strong>
-                                    {config.label ||
-                                      config.name}
-                                  </strong>
-
-                                  <span>
-                                    {formatText(
-                                      config.type
-                                    )}
-                                  </span>
-
-                                </div>
-
-                                <div>
-
-                                  {config.type ===
-                                    "consumable" &&
-                                  config.count !==
-                                    undefined ? (
-                                    <span className="config-count">
-                                      × {config.count}
-                                    </span>
-                                  ) : config.included ? (
-                                    <span className="config-included">
-                                      <FaCheckCircle />
-                                      Included
-                                    </span>
-                                  ) : (
-                                    <span className="config-not-included">
-                                      <FaTimesCircle />
-                                      Not Included
-                                    </span>
-                                  )}
-
-                                </div>
-
-                              </div>
-                            )
-                          )}
-
-                        </div>
-                      ) : (
-                        <div className="detail-empty">
-                          No configuration available.
-                        </div>
-                      )}
-
-                    </div>
-
-                  </div>
-                )}
-
-              </div>
-            );
-          })}
-
-        </div>
+                item={item}
+              />
+            ))}
+          </div>
+
+          {renderPagination()}
+        </>
       ) : (
-        /* =====================================================
-           EMPTY STATE
-        ===================================================== */
-
         <div className="package-empty-state">
-
           <div className="empty-icon">
             <FaBoxOpen />
           </div>
 
-          <h3>
-            No Packages Found
-          </h3>
+          <h3>No Packages Found</h3>
 
           <p>
-            {searchTerm ||
-            statusFilter !== "all" ||
-            categoryFilter !== "all"
-              ? "Try changing your search or filters."
-              : "There are no packages available yet."}
+            No packages match your current
+            search or filter.
           </p>
 
-          {(searchTerm ||
-            statusFilter !== "all" ||
-            categoryFilter !== "all") && (
-            <button
-              type="button"
-              onClick={clearFilters}
-            >
-              Clear Filters
-            </button>
-          )}
-
-        </div>
-      )}
-
-      {/* =====================================================
-          PAGINATION
-      ===================================================== */}
-
-      {totalPages > 1 && (
-        <div className="package-pagination">
-
           <button
             type="button"
-            disabled={currentPage === 1}
-            onClick={() =>
-              setCurrentPage(
-                (prev) => prev - 1
-              )
-            }
+            onClick={clearFilters}
           >
-            ←
+            Clear Filters
           </button>
-
-          {pageNumbers.map((page) => (
-            <button
-              type="button"
-              key={page}
-              className={
-                currentPage === page
-                  ? "pagination-active"
-                  : ""
-              }
-              onClick={() =>
-                setCurrentPage(page)
-              }
-            >
-              {page}
-            </button>
-          ))}
-
-          <button
-            type="button"
-            disabled={
-              currentPage === totalPages
-            }
-            onClick={() =>
-              setCurrentPage(
-                (prev) => prev + 1
-              )
-            }
-          >
-            →
-          </button>
-
         </div>
       )}
-
-      {/* =====================================================
-          DELETE MODAL
-      ===================================================== */}
-
-      {deleteId && (
-        <div className="package-modal-overlay">
-
-          <div className="package-delete-modal">
-
-            <div className="delete-icon-wrapper">
-              <FaTrash />
-            </div>
-
-            <h3>
-              Delete Package?
-            </h3>
-
-            <p>
-              Are you sure you want to delete
-              this package? This action cannot
-              be undone.
-            </p>
-
-            <div className="delete-modal-buttons">
-
-              <button
-                type="button"
-                className="cancel-delete"
-                disabled={deleteLoading}
-                onClick={() =>
-                  setDeleteId(null)
-                }
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="confirm-delete"
-                disabled={deleteLoading}
-                onClick={handleDelete}
-              >
-                {deleteLoading
-                  ? "Deleting..."
-                  : "Delete Package"}
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-      )}
-
     </div>
   );
 };
