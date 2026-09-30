@@ -98,7 +98,8 @@ import BannerEvent from './Components/Pages/Banner/BannerEvent';
 import Subscription from './Components/Pages/Subscription/Subscription';
 import EventBanner from './Components/Pages/Banner/Eventbanner';
 
-
+import Packages from './Components/Pages/Packages/Packages';
+import Packagescategory from './Components/Pages/Packages/Packagescategory';
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -324,6 +325,38 @@ function App() {
             </ProtectedRoute>
           }
         />
+    <Route
+          path="/package-category"
+          element={
+            <ProtectedRoute permission="view_packages_category">
+              <Layout>
+                <Packagescategory/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+           <Route
+          path="/packages"
+          element={
+            <ProtectedRoute permission="view_packages">
+              <Layout>
+                <Packages/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+                <Route
+          path="/AddPolicy"
+          element={
+            <ProtectedRoute permission="Add_Policy">
+              <Layout>
+                <AddPolicy />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+  
         <Route
           path="/reward"
           element={

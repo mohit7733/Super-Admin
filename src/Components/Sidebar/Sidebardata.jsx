@@ -1,5 +1,4 @@
 
-// new one 
 
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
@@ -249,7 +248,7 @@ export const SidebarData = () => [
 },
 
 
- {
+{
   title: "Packages",
   icon: <ShoppingCartIcon sx={{ fontSize: 20 }} />,
   path: "#",
@@ -259,6 +258,12 @@ export const SidebarData = () => [
       title: "Package Management",
       icon: <MdInventory2 style={{ fontSize: 20 }} />,
       path: "/packages",
+      permission: "manage_packages",
+    },
+    {
+      title: "Package Category",
+      icon: <MdCategory style={{ fontSize: 20 }} />,
+      path: "/package-category",
       permission: "manage_packages",
     },
   ],

@@ -142,6 +142,8 @@ const Category = () => {
     { label: "Products", value: "ProductsScreen" },
     { label: "Yoga", value: "YogaScreen" },
     { label: "Doctor", value: "ConsultScreen" },
+    {label:"Packages",value:"PackagesScreen"},
+   
   ];
 
 
