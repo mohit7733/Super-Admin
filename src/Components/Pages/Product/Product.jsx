@@ -11,6 +11,8 @@ import {
   BsBoxSeam,
   BsEye,
   BsCopy,
+  BsChevronLeft,
+  BsChevronRight,
 } from "react-icons/bs";
 
 import BASE_URL from "../../../Base";
@@ -40,11 +42,78 @@ const Product = () => {
     { length: totalPages },
     (_, index) => index + 1
   );
+const handleVariantStatusToggle = async (variant) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-  // =========================================================
-  // FETCH PRODUCTS
-  // =========================================================
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
 
+  const variantId = variant?.id;
+
+  if (!variantId) {
+    toast.error("Variant ID not found");
+    return;
+  }
+
+  const currentStatus =
+    String(variant?.status || "").toLowerCase();
+
+  const newStatus =
+    currentStatus === "active"
+      ? "inactive"
+      : "active";
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/variant/${variantId}/status/`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          status: newStatus,
+        }),
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data?.message || "Failed to update variant status"
+      );
+    }
+
+    toast.success(
+      newStatus === "active"
+        ? "Variant activated successfully"
+        : "Variant deactivated successfully"
+    );
+
+    await fetchProducts(currentPage, searchTerm);
+
+  } catch (error) {
+    console.error("Variant Status Error:", error);
+
+    toast.error(
+      error?.message || "Failed to update variant status"
+    );
+  }
+};
   const fetchProducts = async (page = 1, search = "") => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -107,8 +176,15 @@ const Product = () => {
   };
 
   useEffect(() => {
-    fetchProducts(1);
-  }, []);
+  const timer = setTimeout(() => {
+    setExpandedProductId(null);
+    setCurrentPage(1);
+
+    fetchProducts(1, searchTerm);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [searchTerm]);
 
   // =========================================================
   // SEARCH
@@ -131,10 +207,7 @@ const Product = () => {
     navigate(`/Productdetail/${id}`);
   };
 
-  // =========================================================
-  // VARIANT TOGGLE
-  // SAME FLOW AS BEFORE
-  // =========================================================
+  
 
   const handleVariantToggle = (productId) => {
     setExpandedProductId((previousId) =>
@@ -142,9 +215,7 @@ const Product = () => {
     );
   };
 
-  // =========================================================
-  // PRODUCT IMAGE
-  // =========================================================
+  
 
   const getProductImage = (product) => {
     return (
@@ -272,21 +343,11 @@ const getSystemSku = (variant) => {
       .replace(/[\s-]/g, "_");
   };
 
-  const isVariantActive = (variant) => {
-    if (variant?.is_active === false) {
-      return false;
-    }
+ const isVariantActive = (variant) => {
+  return String(variant?.status || "").toLowerCase() === "active";
+};
 
-    if (variant?.active === false) {
-      return false;
-    }
-
-    return true;
-  };
-
-  // =========================================================
-  // PRODUCT STATUS COUNTS
-  // =========================================================
+  
 
   const getVariantStatusCounts = (product) => {
     const variants = getVariants(product);
@@ -386,27 +447,29 @@ const getSystemSku = (variant) => {
       <form
         className="mainproduct-search-section"
         onSubmit={handleSearch}
-      >
-        <div className="mainproduct-search-wrapper">
-          <BsSearch className="mainproduct-search-icon" />
+      ><div className="mainproduct-search-section">
+  <div className="mainproduct-search-wrapper">
+    <BsSearch className="mainproduct-search-icon" />
 
-          <input
-            type="text"
-            className="mainproduct-search-input"
-            placeholder="Search product name, brand, ID..."
-            value={searchTerm}
-            onChange={(e) =>
-              setSearchTerm(e.target.value)
-            }
-          />
-        </div>
+    <input
+      type="text"
+      className="mainproduct-search-input"
+      placeholder="Search product name or brand name..."
+      value={searchTerm}
+      onChange={(e) => {
+        setSearchTerm(e.target.value);
+        setExpandedProductId(null);
+      }}
+    />
+  </div>
+</div>
 
-        <button
+        {/* <button
           type="submit"
           className="mainproduct-search-button"
         >
           Search
-        </button>
+        </button> */}
       </form>
 
       {/* =====================================================
@@ -893,33 +956,35 @@ const getSystemSku = (variant) => {
                                 </span>
                               </div>
 
-                              {/* LIFECYCLE */}
+                          
 
-                              <div className="mainproduct-lifecycle-actions">
+                            <div className="mainproduct-lifecycle-actions">
 
-                                <span
-                                  className={`mainproduct-active-badge ${
-                                    active
-                                      ? "mainproduct-active"
-                                      : "mainproduct-inactive"
-                                  }`}
-                                >
-                                  ✓{" "}
-                                  {active
-                                    ? "Active"
-                                    : "Inactive"}
-                                </span>
+  {/* CURRENT STATUS */}
+  <span
+    className={`mainproduct-active-badge ${
+      active
+        ? "mainproduct-active"
+        : "mainproduct-inactive"
+    }`}
+  >
+    {active ? "✓ Active" : "✕ Inactive"}
+  </span>
 
-                                {active && (
-                                  <button
-                                    type="button"
-                                    className="mainproduct-inactive-btn"
-                                  >
-                                    Inactive
-                                  </button>
-                                )}
+  {/* STATUS ACTION */}
+  <button
+    type="button"
+    className={
+      active
+        ? "mainproduct-inactive-btn"
+        : "mainproduct-active-btn"
+    }
+    onClick={() => handleVariantStatusToggle(variant)}
+  >
+    {active ? "Inactive" : "Active"}
+  </button>
 
-                              </div>
+</div>
 
                             </div>
                           );
@@ -943,59 +1008,56 @@ const getSystemSku = (variant) => {
           </div>
         )}
 
-        {/* PAGINATION */}
+  {/* PAGINATION */}
+{!loadingProduct && totalPages > 1 && (
+  <div className="mainproduct-pagination">
 
-        {!loadingProduct && totalPages > 1 && (
-          <div className="mainproduct-pagination">
+    {/* BACK / PREVIOUS */}
+    <button
+      type="button"
+      className="mainproduct-pagination-arrow"
+      onClick={() =>
+        fetchProducts(currentPage - 1, searchTerm)
+      }
+      disabled={currentPage === 1 || !previousPage}
+      title="Previous Page"
+    >
+      <BsChevronLeft />
+    </button>
 
-            <button
-              type="button"
-              onClick={() =>
-                fetchProducts(
-                  currentPage - 1,
-                  searchTerm
-                )
-              }
-              disabled={!previousPage}
-            >
-              Prev
-            </button>
+    {/* PAGE NUMBERS */}
+    {pages.map((page) => (
+      <button
+        type="button"
+        key={page}
+        onClick={() =>
+          fetchProducts(page, searchTerm)
+        }
+        className={
+          currentPage === page
+            ? "mainproduct-pagination-active"
+            : ""
+        }
+      >
+        {page}
+      </button>
+    ))}
 
-            {pages.map((page) => (
-              <button
-                type="button"
-                key={page}
-                onClick={() =>
-                  fetchProducts(
-                    page,
-                    searchTerm
-                  )
-                }
-                className={
-                  currentPage === page
-                    ? "mainproduct-pagination-active"
-                    : ""
-                }
-              >
-                {page}
-              </button>
-            ))}
+    {/* NEXT */}
+    <button
+      type="button"
+      className="mainproduct-pagination-arrow"
+      onClick={() =>
+        fetchProducts(currentPage + 1, searchTerm)
+      }
+      disabled={currentPage === totalPages || !nextPage}
+      title="Next Page"
+    >
+      <BsChevronRight />
+    </button>
 
-            <button
-              type="button"
-              onClick={() =>
-                fetchProducts(
-                  currentPage + 1,
-                  searchTerm
-                )
-              }
-              disabled={!nextPage}
-            >
-              Next
-            </button>
-
-          </div>
-        )}
+  </div>
+)}
 
       </div>
     </div>

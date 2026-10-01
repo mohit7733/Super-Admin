@@ -116,9 +116,7 @@ const Package = () => {
     return [...new Set(categories)];
   }, [packages]);
 
-  // =========================================================
-  // STATS
-  // =========================================================
+  
 
   const activeCount = useMemo(() => {
     return packages.filter((item) => item?.is_active === true).length;
@@ -128,9 +126,7 @@ const Package = () => {
     return packages.filter((item) => item?.is_active === false).length;
   }, [packages]);
 
-  // =========================================================
-  // FILTER
-  // =========================================================
+ 
 
   const filteredPackages = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
@@ -186,10 +182,7 @@ const Package = () => {
     categoryFilter,
   ]);
 
-  // =========================================================
-  // PAGINATION
-  // =========================================================
-
+  
   const totalPages = Math.max(
     1,
     Math.ceil(filteredPackages.length / perPage)
@@ -217,9 +210,7 @@ const Package = () => {
     perPage,
   ]);
 
-  // =========================================================
-  // CLEAR FILTERS
-  // =========================================================
+ 
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -227,10 +218,6 @@ const Package = () => {
     setCategoryFilter("all");
     setCurrentPage(1);
   };
-
-  // =========================================================
-  // FORMATTERS
-  // =========================================================
 
   const formatPrice = (price) => {
     if (
@@ -297,17 +284,8 @@ const Package = () => {
     return `${days} Days`;
   };
 
-  const formatAvailability = (item) => {
-    if (item?.available_to_all_users) {
-      return "All Users";
-    }
 
-    return "Selected Users";
-  };
-
-  // =========================================================
-  // TOGGLE DETAILS
-  // =========================================================
+  
 
   const toggleDetails = (id) => {
     setExpandedId((prev) =>
@@ -315,9 +293,7 @@ const Package = () => {
     );
   };
 
-  // =========================================================
-  // PAGINATION BUTTONS
-  // =========================================================
+ 
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
@@ -367,10 +343,6 @@ const Package = () => {
       </div>
     );
   };
-
-  // =========================================================
-  // CARD
-  // =========================================================
 
   const PackageCard = ({ item }) => {
     const isExpanded = expandedId === item.id;
@@ -548,11 +520,11 @@ const Package = () => {
             </div>
 
             <div>
-              <span>Availability</span>
+              <span>Original Price</span>
 
-              <strong>
+              {/* <strong>
                 {formatAvailability(item)}
-              </strong>
+              </strong> */}
             </div>
           </div>
         </div>
@@ -694,9 +666,9 @@ const Package = () => {
                 <div>
                   <span>Available To</span>
 
-                  <strong>
+                  {/* <strong>
                     {formatAvailability(item)}
-                  </strong>
+                  </strong> */}
                 </div>
 
                 <div>

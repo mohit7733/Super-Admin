@@ -39,7 +39,11 @@ import { FiUploadCloud } from "react-icons/fi";
 import {FaCapsules}  from  "react-icons/fa";
 import {FaFileAlt}  from  "react-icons/fa";
 
-
+import {
+  MdCollections,
+  MdImage,
+  MdViewModule,
+} from "react-icons/md";
 
 export const SidebarData = () => [
 
@@ -122,6 +126,7 @@ export const SidebarData = () => [
     },
   ],
 },
+
  {
   title: "Coupons & Reward",
   path: "#",
@@ -142,6 +147,26 @@ export const SidebarData = () => [
     }
   
   ]
+},
+{
+  title: "Banner Management",
+  icon: <MdCollections size={20} />,
+  path: "#",
+  permission: "manage_banners",
+  children: [
+    {
+      title: "Hero Section Banner",
+             path: "/content/bannerEvent",
+        permission: "manage_banner",
+      icon: <MdImage size={18} />,
+    },
+    {
+      title: "Inner Section Banner",
+         path: "/content/banner",
+        permission: "manage_banner",
+      icon: <MdCollections size={18} />,
+    },
+  ],
 },
 // {
 //   title: "Manage Subscriptions",
@@ -177,6 +202,61 @@ export const SidebarData = () => [
     },
   ],
 },
+  {
+    title: "Content Management",
+    icon: <MedicalServicesIcon sx={{ fontSize: 20 }} />,
+    path: "#",
+    permission: "manage_content",
+    children: [
+      {
+        title: "Questions",
+        icon: <MdQuiz style={{ fontSize: 20 }} />,
+        path: "#",
+        permission: "view_questions",
+        children: [
+          {
+            title: "Prakriti Questions",
+            icon: <GiLotus style={{ fontSize: 18 }} />,
+            path: "/question/prakriti",
+            permission: "view_prakriti_questions",
+          },
+          {
+            title: "Medical Questions",
+            icon: <MedicalServicesIcon style={{ fontSize: 18 }} />,
+            path: "/question/medical",
+            permission: "view_medical_questions",
+          },
+          {
+            title: "Prakriti Analysis",
+            icon: <BiPulse style={{ fontSize: 18 }} />,
+            path: "/prakirti",
+            permission: "view_prakriti_analysis",
+          },
+        ],
+      },
+    
+    
+      // {
+      //   title: "Banner Management",
+      //   icon: <MdPhotoSizeSelectActual style={{ fontSize: 18 }} />,
+      //   path: "/content/banner",
+      //   permission: "manage_banner",
+      // },
+      //  {
+      //   title: "Banner Events",
+      //   icon: <MdPhotoSizeSelectActual style={{ fontSize: 18 }} />,
+      //   path: "/content/bannerEvent",
+      //   permission: "manage_banner",
+      // },
+      // {
+      //   title: "Event Banner Management",
+      //   icon: <MdEvent style={{ fontSize: 18 }} />,
+      //   path: "/content/eventbanner",
+      //   permission: "manage_event_banner",
+      // }
+
+    ],
+  },
  
   {
     title: "User Management",
@@ -269,61 +349,7 @@ export const SidebarData = () => [
   ],
 },
 
-  {
-    title: "Content Management",
-    icon: <MedicalServicesIcon sx={{ fontSize: 20 }} />,
-    path: "#",
-    permission: "manage_content",
-    children: [
-      {
-        title: "Questions",
-        icon: <MdQuiz style={{ fontSize: 20 }} />,
-        path: "#",
-        permission: "view_questions",
-        children: [
-          {
-            title: "Prakriti Questions",
-            icon: <GiLotus style={{ fontSize: 18 }} />,
-            path: "/question/prakriti",
-            permission: "view_prakriti_questions",
-          },
-          {
-            title: "Medical Questions",
-            icon: <MedicalServicesIcon style={{ fontSize: 18 }} />,
-            path: "/question/medical",
-            permission: "view_medical_questions",
-          },
-          {
-            title: "Prakriti Analysis",
-            icon: <BiPulse style={{ fontSize: 18 }} />,
-            path: "/prakirti",
-            permission: "view_prakriti_analysis",
-          },
-        ],
-      },
-    
-    
-      {
-        title: "Banner Management",
-        icon: <MdPhotoSizeSelectActual style={{ fontSize: 18 }} />,
-        path: "/content/banner",
-        permission: "manage_banner",
-      },
-       {
-        title: "Banner Events",
-        icon: <MdPhotoSizeSelectActual style={{ fontSize: 18 }} />,
-        path: "/content/bannerEvent",
-        permission: "manage_banner",
-      },
-      // {
-      //   title: "Event Banner Management",
-      //   icon: <MdEvent style={{ fontSize: 18 }} />,
-      //   path: "/content/eventbanner",
-      //   permission: "manage_event_banner",
-      // }
-
-    ],
-  },
+ 
 {
    title: "Unicommerce ",
 icon: <ShoppingCartIcon sx={{ fontSize: 20 }} />,
@@ -371,6 +397,7 @@ icon: <ShoppingCartIcon sx={{ fontSize: 20 }} />,
 
     ]
   },
+  
 
   {
     title: "Admin Management",
