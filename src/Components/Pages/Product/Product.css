@@ -1420,4 +1420,68 @@
   .mainproduct-search-button {
     height: 40px;
   }
+}Current Status Badge */
+.mainproduct-active-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 86px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+
+.mainproduct-active {
+  background: #dff7ec;
+  color: #008f68;
+}
+
+
+.mainproduct-inactive {
+  background: #ffe3e3;
+  color: #ef4444;
+}
+
+
+.mainproduct-inactive-btn {
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid #d9e0e3;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #52616b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mainproduct-inactive-btn:hover {
+  background: #fff5f5;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* Activate button */
+.mainproduct-active-btn {
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid #d9e0e3;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #52616b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mainproduct-active-btn:hover {
+  background: #effaf6;
+  border-color: #008f68;
+  color: #008f68;
 }

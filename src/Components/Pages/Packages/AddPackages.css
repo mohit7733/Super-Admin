@@ -788,3 +788,609 @@
     height: 42px;
   }
 }
+/* =========================================================
+   BILLING MODE CUSTOM DROPDOWN
+========================================================= */
+
+.billing-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Trigger */
+.billing-select-trigger {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid #d9e2df;
+  border-radius: 10px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  color: #263330;
+  font-size: 15px;
+  font-family: inherit;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.billing-select-trigger:hover {
+  border-color: #0d614e;
+}
+
+.billing-select-trigger:focus {
+  outline: none;
+  border-color: #0d614e;
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.08);
+}
+
+.billing-select-trigger svg {
+  color: #56635f;
+  font-size: 13px;
+  transition: transform 0.2s ease;
+}
+
+.billing-select-trigger .billing-arrow-up {
+  transform: rotate(180deg);
+}
+
+/* Dropdown */
+.billing-select-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e1e8e5;
+  border-radius: 12px;
+  padding: 12px;
+  z-index: 1000;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.10);
+  animation: billingDropdownOpen 0.18s ease;
+}
+
+@keyframes billingDropdownOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Info box */
+.billing-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 15px;
+  margin-bottom: 10px;
+  background: #eef7f4;
+  border-radius: 10px;
+  color: #0d614e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.billing-info-box svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 17px;
+}
+
+/* Option */
+.billing-option {
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 14px 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-family: inherit;
+}
+
+.billing-option:hover {
+  background: #f5f8f7;
+}
+
+.billing-option-selected {
+  background: #f0f8f5;
+}
+
+/* Icon */
+.billing-option-icon {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef7f4;
+  color: #0d614e;
+  font-size: 19px;
+}
+
+.autopay-icon {
+  background: #fff4e5;
+  color: #c27a00;
+}
+
+/* Content */
+.billing-option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.billing-option-content strong {
+  color: #263330;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.billing-option-content span {
+  color: #7b8783;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* Selected option */
+.billing-option-selected .billing-option-content strong {
+  color: #0d614e;
+}
+
+.billing-option-selected .billing-option-icon {
+  background: #dff1eb;
+}
+
+/* Label */
+.add-form-group > label span {
+  color: #d93025;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .billing-select-dropdown {
+    padding: 10px;
+  }
+
+  .billing-info-box {
+    font-size: 12px;
+    padding: 12px;
+  }
+
+  .billing-option {
+    padding: 12px 8px;
+  }
+
+  .billing-option-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+  }
+
+  .billing-option-content strong {
+    font-size: 14px;
+  }
+
+  .billing-option-content span {
+    font-size: 12px;
+  }
+}/* =========================================================
+   BILLING SECTION
+========================================================= */
+
+.billing-section {
+  overflow: visible;
+}
+
+.billing-section .add-form-grid {
+  align-items: flex-start;
+}
+
+
+/* =========================================================
+   BILLING SELECT
+========================================================= */
+
+.billing-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.billing-select-trigger {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border: 1px solid #d9e1de;
+  border-radius: 10px;
+
+  background: #ffffff;
+  color: #26332f;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.billing-select-trigger:hover {
+  border-color: #0d614e;
+}
+
+.billing-select-trigger:focus {
+  outline: none;
+  border-color: #0d614e;
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.08);
+}
+
+.billing-select-trigger svg {
+  color: #0d614e;
+  transition: transform 0.2s ease;
+}
+
+.billing-arrow-up {
+  transform: rotate(180deg);
+}
+
+
+/* =========================================================
+   BILLING DROPDOWN
+========================================================= */
+
+.billing-select-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+
+  z-index: 1000;
+
+  background: #ffffff;
+  border: 1px solid #e1e8e5;
+  border-radius: 14px;
+
+  padding: 10px;
+
+  box-shadow:
+    0 14px 40px rgba(22, 48, 40, 0.14);
+
+  animation: billingDropdownIn 0.18s ease;
+}
+
+@keyframes billingDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* =========================================================
+   BILLING INFO
+========================================================= */
+
+.billing-info-box {
+  display: flex;
+  gap: 10px;
+
+  padding: 13px 14px;
+  margin-bottom: 8px;
+
+  background: #f3f8f6;
+  border: 1px solid #dcece6;
+  border-radius: 10px;
+
+  color: #426159;
+}
+
+.billing-info-box > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #0d614e;
+}
+
+.billing-info-box div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.billing-info-box strong {
+  font-size: 13px;
+  color: #21483e;
+}
+
+.billing-info-box span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #60746e;
+}
+
+
+/* =========================================================
+   BILLING OPTION
+========================================================= */
+
+.billing-option {
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  padding: 14px;
+
+  border: 1px solid transparent;
+  border-radius: 10px;
+
+  background: transparent;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.billing-option:hover {
+  background: #f6faf8;
+  border-color: #dceae5;
+}
+
+.billing-option-selected {
+  background: #edf7f3;
+  border-color: #0d614e;
+}
+
+.billing-option-icon {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: #eaf5f1;
+  color: #0d614e;
+}
+
+.autopay-icon {
+  background: #eef7f3;
+}
+
+.billing-option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.billing-option-content strong {
+  color: #20332e;
+  font-size: 14px;
+}
+
+.billing-option-content span {
+  color: #65756f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.billing-option-content small {
+  margin-top: 3px;
+
+  color: #0d614e;
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   BILLING FIELD HELP
+========================================================= */
+
+.billing-field-help {
+  margin-top: 9px;
+
+  padding: 11px 13px;
+
+  background: #f7faf9;
+
+  border-left: 3px solid #0d614e;
+
+  border-radius: 0 8px 8px 0;
+}
+
+.billing-field-help strong {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #21483e;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.billing-field-help p {
+  margin: 0;
+
+  color: #64756f;
+
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.billing-field-help p + p {
+  margin-top: 8px;
+}
+
+.billing-field-help b {
+  color: #0d614e;
+}
+
+
+/* =========================================================
+   BILLING LABEL
+========================================================= */
+
+.billing-section .add-form-group > label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #253832;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.billing-section .add-form-group > label span {
+  color: #d64545;
+}
+
+
+/* =========================================================
+   BILLING INPUT / SELECT
+========================================================= */
+
+.billing-section input,
+.billing-section select {
+  width: 100%;
+  min-height: 46px;
+
+  padding: 0 13px;
+
+  border: 1px solid #d9e1de;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #293a35;
+
+  font-size: 13px;
+
+  transition: all 0.2s ease;
+}
+
+.billing-section input:focus,
+.billing-section select:focus {
+  outline: none;
+
+  border-color: #0d614e;
+
+  box-shadow:
+    0 0 0 3px rgba(13, 97, 78, 0.08);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .billing-select-dropdown {
+    position: relative;
+    top: 0;
+
+    margin-top: 8px;
+
+    box-shadow: none;
+  }
+
+  .billing-field-help {
+    font-size: 11px;
+  }
+
+}
+.field-help-text {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #777;
+}
+
+.benefit-type-help {
+  grid-column: 1 / -1;
+  padding: 13px 15px;
+  border: 1px solid #dcebe6;
+  border-radius: 8px;
+  background: #f6faf8;
+}
+
+.benefit-type-help strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #0d614e;
+  font-size: 13px;
+}
+
+.benefit-type-help p {
+  margin: 0 0 5px;
+  color: #555;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.benefit-type-help small {
+  color: #777;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.match-rules-box {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid #e4e9e7;
+  border-radius: 10px;
+  background: #fafcfb;
+}
+
+.match-rules-header {
+  margin-bottom: 15px;
+}
+
+.match-rules-header h4 {
+  margin: 0 0 5px;
+  color: #0d614e;
+  font-size: 15px;
+}
+
+.match-rules-header p {
+  margin: 0;
+  color: #777;
+  font-size: 12px;
+}
