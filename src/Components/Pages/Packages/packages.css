@@ -1,23 +1,12 @@
 
 
-/* .package-page {
-  width: 100%;
-  min-height: 100%;
-  padding: 26px 28px 35px;
-  background: #f7f8fc;
-  box-sizing: border-box;
-  color: #17213a;
-} */
-
-
-
 .package-page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 25px;
   margin-bottom: 25px;
-} 
+}
 
 .package-heading {
   display: flex;
@@ -26,30 +15,21 @@
 }
 
 .package-heading-icon {
-  width: 58px;
-  height: 58px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
+  border-radius: 15px;
 
-  border-radius: 16px;
+  background: #e7f3ef;
+  border: 1px solid #d1e8e0;
 
-  background: linear-gradient(
-    145deg,
-    #eef0ff,
-    #e8eaff
-  );
-
-  border: 1px solid #dde0ff;
-
-  color: #575ce8;
+  color: #0d614e;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 25px;
-
-  box-shadow: 0 5px 15px
-    rgba(78, 83, 220, 0.07);
+  font-size: 24px;
 }
 
 .package-heading h1 {
@@ -60,7 +40,7 @@
 
   font-weight: 800;
 
-  color: #17213a;
+  color: #142238;
   letter-spacing: -0.5px;
 }
 
@@ -70,7 +50,6 @@
   color: #7d879c;
 
   font-size: 13px;
-  line-height: 1.4;
 }
 
 /* =========================================================
@@ -89,7 +68,7 @@
 
   background: #ffffff;
 
-  border: 1px solid #dde2ed;
+  border: 1px solid #dce5e1;
   border-radius: 11px;
 
   display: flex;
@@ -104,14 +83,14 @@
 }
 
 .package-search-box:focus-within {
-  border-color: #686de9;
+  border-color: #0d614e;
 
   box-shadow: 0 0 0 3px
-    rgba(91, 96, 229, 0.08);
+    rgba(13, 97, 78, 0.09);
 }
 
 .package-search-box > svg {
-  color: #8994aa;
+  color: #8b99a9;
   font-size: 16px;
 }
 
@@ -147,6 +126,10 @@
   justify-content: center;
 }
 
+/* =========================================================
+   FILTER BUTTON
+========================================================= */
+
 .package-filter-button {
   height: 48px;
 
@@ -154,7 +137,7 @@
 
   border-radius: 11px;
 
-  border: 1px solid #dfe3ee;
+  border: 1px solid #dce5e1;
 
   background: #ffffff;
 
@@ -162,6 +145,7 @@
 
   display: flex;
   align-items: center;
+
   gap: 9px;
 
   font-size: 12px;
@@ -172,17 +156,17 @@
   transition: 0.2s;
 }
 
-.package-filter-button svg {
-  color: #565ce7;
+.package-filter-button svg:first-child {
+  color: #0d614e;
 }
 
 .package-filter-button:hover,
 .package-filter-button-active {
-  border-color: #5b61e9;
+  border-color: #0d614e;
 
-  color: #5259df;
+  color: #0d614e;
 
-  background: #fafaff;
+  background: #f3f9f7;
 }
 
 /* =========================================================
@@ -192,7 +176,7 @@
 .package-filter-wrapper {
   background: #ffffff;
 
-  border: 1px solid #e1e5ee;
+  border: 1px solid #dfe8e4;
 
   border-radius: 14px;
 
@@ -206,12 +190,13 @@
   margin-bottom: 22px;
 
   box-shadow: 0 4px 15px
-    rgba(38, 48, 80, 0.035);
+    rgba(25, 65, 55, 0.035);
 }
 
 .package-filter-item {
   display: flex;
   flex-direction: column;
+
   gap: 7px;
 }
 
@@ -227,7 +212,7 @@
   width: 235px;
   height: 43px;
 
-  border: 1px solid #dce1eb;
+  border: 1px solid #dce4e1;
 
   border-radius: 9px;
 
@@ -245,7 +230,7 @@
 }
 
 .package-filter-item select:focus {
-  border-color: #6066e5;
+  border-color: #0d614e;
 }
 
 .package-clear-filter {
@@ -257,9 +242,9 @@
 
   border-radius: 9px;
 
-  background: #f1f3f8;
+  background: #eef4f1;
 
-  color: #68748a;
+  color: #60746c;
 
   font-size: 12px;
 
@@ -267,9 +252,15 @@
 
   display: flex;
   align-items: center;
+
   gap: 7px;
 
   cursor: pointer;
+}
+
+.package-clear-filter:hover {
+  background: #e2eee9;
+  color: #0d614e;
 }
 
 /* =========================================================
@@ -289,6 +280,7 @@
 .package-summary-left {
   display: flex;
   align-items: center;
+
   gap: 10px;
 }
 
@@ -298,9 +290,9 @@
 
   border-radius: 9px;
 
-  background: #eef0ff;
+  background: #e7f3ef;
 
-  color: #5b61e5;
+  color: #0d614e;
 
   display: flex;
   align-items: center;
@@ -312,30 +304,35 @@
 .package-summary-left > div:last-child {
   display: flex;
   align-items: center;
+
   gap: 6px;
 }
 
 .package-summary-left span {
   color: #78849a;
-
   font-size: 13px;
 }
 
 .package-summary-left strong {
   color: #202c44;
-
   font-size: 14px;
 }
+
+/* =========================================================
+   SUMMARY RIGHT
+========================================================= */
 
 .package-summary-right {
   display: flex;
   align-items: center;
+
   gap: 20px;
 }
 
 .summary-status {
   display: flex;
   align-items: center;
+
   gap: 6px;
 
   font-size: 12px;
@@ -346,7 +343,7 @@
 }
 
 .active-status {
-  color: #16a16e;
+  color: #0d8a67;
 }
 
 .inactive-status {
@@ -357,12 +354,13 @@
   width: 1px;
   height: 22px;
 
-  background: #dfe3eb;
+  background: #dfe5e2;
 }
 
 .package-per-page {
   display: flex;
   align-items: center;
+
   gap: 8px;
 
   color: #7c879b;
@@ -372,11 +370,12 @@
 
 .package-per-page select {
   height: 37px;
+
   min-width: 67px;
 
   padding: 0 8px;
 
-  border: 1px solid #dfe3ec;
+  border: 1px solid #dfe6e3;
 
   border-radius: 8px;
 
@@ -389,17 +388,21 @@
   cursor: pointer;
 }
 
+/* =========================================================
+   REFRESH
+========================================================= */
+
 .package-refresh-button {
   width: 36px;
   height: 36px;
 
   border-radius: 8px;
 
-  border: 1px solid #dfe3ed;
+  border: 1px solid #dfe6e3;
 
   background: #ffffff;
 
-  color: #656f84;
+  color: #66766f;
 
   display: flex;
   align-items: center;
@@ -411,13 +414,16 @@
 }
 
 .package-refresh-button:hover {
-  color: #565ce4;
+  color: #0d614e;
 
-  border-color: #cdd1fa;
+  border-color: #b9d5cc;
+
+  background: #f3f9f7;
 }
 
 .package-refresh-button:disabled {
   opacity: 0.6;
+
   cursor: not-allowed;
 }
 
@@ -444,6 +450,7 @@
 
   display: flex;
   align-items: center;
+
   gap: 10px;
 
   color: #d65f62;
@@ -456,6 +463,7 @@
 .package-error > div {
   display: flex;
   flex-direction: column;
+
   gap: 2px;
 
   flex: 1;
@@ -490,7 +498,7 @@
 
 /* =========================================================
    PACKAGE GRID
-   DESKTOP = EXACTLY 3 CARDS
+   DESKTOP = EXACTLY 3
 ========================================================= */
 
 .package-grid {
@@ -507,7 +515,7 @@
 }
 
 /* =========================================================
-   CARD
+   PACKAGE CARD
 ========================================================= */
 
 .package-card {
@@ -517,14 +525,14 @@
 
   background: #ffffff;
 
-  border: 1px solid #e1e5ef;
+  border: 1px solid #dfe7e3;
 
   border-radius: 16px;
 
   overflow: hidden;
 
   box-shadow: 0 4px 17px
-    rgba(44, 54, 92, 0.055);
+    rgba(24, 65, 55, 0.055);
 
   transition:
     transform 0.22s ease,
@@ -535,29 +543,29 @@
 .package-card:hover {
   transform: translateY(-2px);
 
-  border-color: #ced2ff;
+  border-color: #b9d5cc;
 
   box-shadow: 0 12px 30px
-    rgba(72, 78, 165, 0.11);
+    rgba(24, 76, 62, 0.11);
 }
 
 .package-card-expanded {
-  border-color: #c6caff;
+  border-color: #9fc9bc;
 
   box-shadow: 0 10px 30px
-    rgba(72, 78, 165, 0.12);
+    rgba(24, 76, 62, 0.12);
 }
+
+/* =========================================================
+   GREEN ACCENT
+========================================================= */
 
 .package-card-accent {
   width: 100%;
+
   height: 4px;
 
-  background: linear-gradient(
-    90deg,
-    #565ce6 0%,
-    #6669e8 50%,
-    #8078e8 100%
-  );
+  background: #0d614e;
 }
 
 /* =========================================================
@@ -583,15 +591,11 @@
 
   border-radius: 13px;
 
-  background: linear-gradient(
-    145deg,
-    #f0f1ff,
-    #e9ebff
-  );
+  background: #e7f3ef;
 
-  border: 1px solid #dfe2ff;
+  border: 1px solid #d2e8e1;
 
-  color: #575de7;
+  color: #0d614e;
 
   display: flex;
   align-items: center;
@@ -618,7 +622,9 @@
   line-height: 1.3;
 
   display: -webkit-box;
+
   -webkit-line-clamp: 2;
+
   -webkit-box-orient: vertical;
 
   overflow: hidden;
@@ -670,9 +676,9 @@
 }
 
 .status-active {
-  background: #e4f8ef;
+  background: #e4f6ef;
 
-  color: #15966a;
+  color: #0b8c67;
 }
 
 .status-inactive {
@@ -682,7 +688,7 @@
 }
 
 /* =========================================================
-   CARD ACTIONS
+   ACTION BUTTONS
 ========================================================= */
 
 .package-card-actions {
@@ -706,7 +712,7 @@
 
   border-radius: 8px;
 
-  border: 1px solid #e1e5ed;
+  border: 1px solid #dfe7e3;
 
   background: #ffffff;
 
@@ -725,11 +731,11 @@
   transform: translateY(-1px);
 
   box-shadow: 0 4px 10px
-    rgba(40, 50, 90, 0.1);
+    rgba(40, 60, 50, 0.1);
 }
 
 .view-action {
-  color: #575de4;
+  color: #0d614e;
 }
 
 .edit-action {
@@ -787,9 +793,9 @@
 .purchase-type-badge {
   flex-shrink: 0;
 
-  background: #f0f1ff;
+  background: #e8f3f0;
 
-  color: #5259df;
+  color: #0d614e;
 
   padding: 6px 10px;
 
@@ -836,9 +842,9 @@
 
   border-radius: 9px;
 
-  background: #edf7ff;
+  background: #edf7f4;
 
-  color: #7894af;
+  color: #6d9187;
 
   display: flex;
   align-items: center;
@@ -904,7 +910,7 @@
 }
 
 .tags-title svg {
-  color: #777de6;
+  color: #0d614e;
 }
 
 .package-tags {
@@ -922,9 +928,9 @@
 
   border-radius: 20px;
 
-  background: #f0f1ff;
+  background: #e8f3f0;
 
-  color: #5259df;
+  color: #0d614e;
 
   font-size: 9px;
 
@@ -952,11 +958,7 @@
 
   border-radius: 9px;
 
-  background: linear-gradient(
-    135deg,
-    #565ce6,
-    #686be8
-  );
+  background: #0d614e;
 
   color: #ffffff;
 
@@ -978,32 +980,29 @@
 }
 
 .view-details-button:hover {
-  background: linear-gradient(
-    135deg,
-    #4e55dc,
-    #5d62df
-  );
+  background: #084f40;
 
   box-shadow: 0 6px 15px
-    rgba(82, 88, 225, 0.25);
+    rgba(13, 97, 78, 0.25);
 }
 
 .view-details-open {
-  background: #eef0ff;
+  background: #e7f3ef;
 
-  color: #5259df;
+  color: #0d614e;
 
   box-shadow: none;
 }
 
 /* =========================================================
    EXPANDED DETAILS
+   SAME CARD KE ANDAR
 ========================================================= */
 
 .package-expanded-details {
-  border-top: 1px solid #e5e8f1;
+  border-top: 1px solid #dfe8e4;
 
-  background: #fafbfe;
+  background: #f8fbfa;
 
   padding: 17px 19px 20px;
 }
@@ -1013,12 +1012,14 @@
 
   margin-bottom: 17px;
 
-  border-bottom: 1px solid #e7eaf1;
+  border-bottom: 1px solid #e1ebe7;
 }
 
 .expanded-block:last-child {
   margin-bottom: 0;
+
   padding-bottom: 0;
+
   border-bottom: none;
 }
 
@@ -1038,21 +1039,23 @@
 
   border-radius: 8px;
 
-  background: #eef0ff;
+  background: #e7f3ef;
 
-  color: #565de5;
+  color: #0d614e;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   font-size: 11px;
 }
 
 .benefit-icon {
-  background: #e8f8f0;
+  background: #e5f7ef;
 
-  color: #18a26e;
+  color: #15966a;
 }
 
 .expanded-heading h4 {
@@ -1098,7 +1101,7 @@
 
   background: #ffffff;
 
-  border: 1px solid #e8ebf2;
+  border: 1px solid #e2ebe7;
 
   border-radius: 8px;
 }
@@ -1128,9 +1131,9 @@
 ========================================================= */
 
 .benefits-list {
-  background: #f1fbf7;
+  background: #f0faf6;
 
-  border: 1px solid #d9f1e5;
+  border: 1px solid #d6eee4;
 
   border-radius: 9px;
 
@@ -1154,7 +1157,7 @@
 }
 
 .benefit-row svg {
-  color: #16a46e;
+  color: #0d8d68;
 
   flex-shrink: 0;
 
@@ -1170,7 +1173,7 @@
 
   background: #ffffff;
 
-  border: 1px solid #e5e8f0;
+  border: 1px solid #e1e9e5;
 
   border-radius: 9px;
 }
@@ -1254,9 +1257,9 @@
 
   border-radius: 6px;
 
-  background: #eef0ff;
+  background: #e7f3ef;
 
-  color: #565de0;
+  color: #0d614e;
 }
 
 .detail-empty {
@@ -1276,7 +1279,7 @@
 }
 
 /* =========================================================
-   EMPTY STATE
+   EMPTY
 ========================================================= */
 
 .package-empty-state {
@@ -1284,7 +1287,7 @@
 
   background: #ffffff;
 
-  border: 1px solid #e2e6ef;
+  border: 1px solid #e2e9e6;
 
   border-radius: 16px;
 
@@ -1299,7 +1302,7 @@
   text-align: center;
 
   box-shadow: 0 4px 16px
-    rgba(40, 50, 90, 0.035);
+    rgba(40, 60, 50, 0.035);
 }
 
 .empty-icon {
@@ -1308,12 +1311,14 @@
 
   border-radius: 17px;
 
-  background: #f0f1ff;
+  background: #e7f3ef;
 
-  color: #858be8;
+  color: #0d614e;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   font-size: 27px;
@@ -1340,7 +1345,7 @@
 .package-empty-state button {
   border: none;
 
-  background: #565ce6;
+  background: #0d614e;
 
   color: #ffffff;
 
@@ -1375,7 +1380,7 @@
   width: 35px;
   height: 35px;
 
-  border: 1px solid #dfe3ec;
+  border: 1px solid #dfe6e3;
 
   border-radius: 8px;
 
@@ -1391,9 +1396,9 @@
 }
 
 .package-pagination button:hover:not(:disabled) {
-  border-color: #656be6;
+  border-color: #0d614e;
 
-  color: #565de2;
+  color: #0d614e;
 }
 
 .package-pagination button:disabled {
@@ -1403,14 +1408,14 @@
 }
 
 .package-pagination .pagination-active {
-  background: #565ce6;
+  background: #0d614e;
 
-  border-color: #565ce6;
+  border-color: #0d614e;
 
   color: #ffffff;
 
   box-shadow: 0 4px 10px
-    rgba(83, 89, 226, 0.2);
+    rgba(13, 97, 78, 0.2);
 }
 
 /* =========================================================
@@ -1437,13 +1442,14 @@
 
   border-radius: 14px;
 
-  background: #eef0ff;
+  background: #e7f3ef;
 
-  color: #5b61e7;
+  color: #0d614e;
 
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   font-size: 21px;
@@ -1470,131 +1476,6 @@
 }
 
 /* =========================================================
-   DELETE MODAL
-========================================================= */
-
-.package-modal-overlay {
-  position: fixed;
-
-  inset: 0;
-
-  z-index: 9999;
-
-  background: rgba(20, 27, 45, 0.48);
-
-  backdrop-filter: blur(2px);
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  padding: 20px;
-}
-
-.package-delete-modal {
-  width: 410px;
-
-  max-width: 100%;
-
-  padding: 28px;
-
-  border-radius: 16px;
-
-  background: #ffffff;
-
-  text-align: center;
-
-  box-shadow: 0 25px 70px
-    rgba(18, 26, 48, 0.2);
-}
-
-.delete-icon-wrapper {
-  width: 52px;
-  height: 52px;
-
-  margin: 0 auto 14px;
-
-  border-radius: 50%;
-
-  background: #fff0f0;
-
-  color: #e05f64;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  font-size: 17px;
-}
-
-.package-delete-modal h3 {
-  margin: 0 0 8px;
-
-  color: #27334c;
-
-  font-size: 18px;
-}
-
-.package-delete-modal p {
-  margin: 0;
-
-  color: #858fa2;
-
-  font-size: 11px;
-
-  line-height: 1.6;
-}
-
-.delete-modal-buttons {
-  display: flex;
-
-  justify-content: center;
-
-  gap: 9px;
-
-  margin-top: 23px;
-}
-
-.cancel-delete,
-.confirm-delete {
-  min-width: 115px;
-
-  height: 39px;
-
-  border-radius: 8px;
-
-  border: none;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-.cancel-delete {
-  background: #f0f2f6;
-
-  color: #68748a;
-}
-
-.confirm-delete {
-  background: #df6267;
-
-  color: #ffffff;
-}
-
-.cancel-delete:disabled,
-.confirm-delete:disabled {
-  opacity: 0.6;
-
-  cursor: not-allowed;
-}
-
-/* =========================================================
    ANIMATION
 ========================================================= */
 
@@ -1609,19 +1490,18 @@
 }
 
 /* =========================================================
-   RESPONSIVE
+   TABLET
+   STILL 3 CARDS UNTIL 1000px
 ========================================================= */
 
-/* Tablet */
-
-@media (max-width: 1100px) {
-
+@media (max-width: 1050px) {
   .package-page {
     padding: 22px;
   }
 
   .package-page-header {
     align-items: flex-start;
+
     flex-direction: column;
   }
 
@@ -1631,19 +1511,20 @@
 
   .package-search-box {
     flex: 1;
+
     width: auto;
   }
+}
 
+/* =========================================================
+   SMALL TABLET = 2
+========================================================= */
+
+@media (max-width: 850px) {
   .package-grid {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
   }
-
-}
-
-/* Small Tablet */
-
-@media (max-width: 800px) {
 
   .package-summary {
     align-items: flex-start;
@@ -1662,13 +1543,13 @@
   .package-filter-wrapper {
     flex-wrap: wrap;
   }
-
 }
 
-/* Mobile */
+/* =========================================================
+   MOBILE = 1
+========================================================= */
 
 @media (max-width: 650px) {
-
   .package-page {
     padding: 15px;
   }
@@ -1741,13 +1622,13 @@
   .package-info-grid {
     grid-template-columns: 1fr 1fr;
   }
-
 }
 
-/* Very Small Mobile */
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
 
 @media (max-width: 400px) {
-
   .package-info-grid {
     grid-template-columns: 1fr;
   }
@@ -1762,4 +1643,11 @@
     align-self: flex-start;
   }
 
+  .package-card-actions {
+    right: 10px;
+  }
+
+  .package-name-area {
+    padding-right: 70px;
+  }
 }

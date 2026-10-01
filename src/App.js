@@ -100,6 +100,7 @@ import EventBanner from './Components/Pages/Banner/Eventbanner';
 
 import Packages from './Components/Pages/Packages/Packages';
 import Packagescategory from './Components/Pages/Packages/Packagescategory';
+import AddPackages from './Components/Pages/Packages/AddPackages';
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -278,6 +279,17 @@ function App() {
             <ProtectedRoute permission="view_category">
               <Layout>
                 <Category />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/packages/add"
+          element={
+            <ProtectedRoute permission="add_pakages">
+              <Layout>
+                <AddPackages/>
               </Layout>
             </ProtectedRoute>
           }

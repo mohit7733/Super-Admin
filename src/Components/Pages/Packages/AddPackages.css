@@ -1,0 +1,790 @@
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.package-page-header {
+  margin-bottom: 24px;
+}
+
+.package-heading {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.package-heading h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: #173b32;
+}
+
+.package-heading p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #71807b;
+}
+
+.package-back-button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #dce7e2;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0d614e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.package-back-button:hover {
+  background: #0d614e;
+  color: #ffffff;
+  border-color: #0d614e;
+  transform: translateX(-2px);
+}
+
+
+/* =========================================================
+   ALERTS
+========================================================= */
+
+.package-error,
+.package-success {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 10px;
+  padding: 13px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.package-error {
+  background: #fff4f4;
+  border: 1px solid #f3caca;
+  color: #b42318;
+}
+
+.package-error strong {
+  font-weight: 700;
+}
+
+.package-error span {
+  flex: 1;
+}
+
+.package-error button {
+  border: none;
+  background: transparent;
+  color: #b42318;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.package-error button:hover {
+  background: #fce3e3;
+}
+
+.package-success {
+  background: #effaf5;
+  border: 1px solid #bce6d1;
+  color: #16704f;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.add-package-form {
+  width: 100%;
+}
+
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.add-package-section {
+  background: #ffffff;
+  border: 1px solid #e3ebe7;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(13, 97, 78, 0.035);
+}
+
+.add-section-header {
+  margin-bottom: 22px;
+}
+
+.add-section-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #173b32;
+}
+
+.add-section-header p {
+  margin: 6px 0 0;
+  color: #7b8984;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   FORM GRID
+========================================================= */
+
+.add-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.add-form-group {
+  min-width: 0;
+}
+
+.add-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+.add-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #344840;
+}
+
+
+/* =========================================================
+   INPUTS / SELECT / TEXTAREA
+========================================================= */
+
+.add-form-group input,
+.add-form-group select,
+.add-form-group textarea,
+.tag-input-wrapper > input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d9e4df;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #263b34;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.add-form-group input,
+.add-form-group select,
+.tag-input-wrapper > input {
+  height: 44px;
+  padding: 0 13px;
+}
+
+.add-form-group textarea {
+  min-height: 105px;
+  padding: 12px 13px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.add-form-group input::placeholder,
+.add-form-group textarea::placeholder,
+.tag-input-wrapper > input::placeholder {
+  color: #a1ada8;
+}
+
+.add-form-group input:hover,
+.add-form-group select:hover,
+.add-form-group textarea:hover,
+.tag-input-wrapper > input:hover {
+  border-color: #b9cec6;
+}
+
+.add-form-group input:focus,
+.add-form-group select:focus,
+.add-form-group textarea:focus,
+.tag-input-wrapper > input:focus {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.09);
+}
+
+.add-form-group input:read-only {
+  background: #f6f8f7;
+  color: #66756f;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   SELECT
+========================================================= */
+
+.add-form-group select {
+  cursor: pointer;
+  appearance: auto;
+}
+
+
+/* =========================================================
+   TAGS
+========================================================= */
+
+.tag-input-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d9e4df;
+  border-radius: 9px;
+  background: #ffffff;
+  padding: 8px 10px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.tag-input-wrapper:focus-within {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.09);
+}
+
+.tag-input-wrapper > input {
+  height: 36px;
+  border: none;
+  padding: 0 4px;
+  box-shadow: none !important;
+}
+
+.tag-input-wrapper > input:focus {
+  border: none;
+  box-shadow: none !important;
+}
+
+.package-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 5px;
+}
+
+.package-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 29px;
+  padding: 4px 9px 4px 11px;
+  background: #eaf5f1;
+  color: #0d614e;
+  border: 1px solid #cce5dc;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.package-tag button {
+  width: 19px;
+  height: 19px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #0d614e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 9px;
+}
+
+.package-tag button:hover {
+  background: #d1e8df;
+}
+
+
+/* =========================================================
+   CONFIGURATION HEADER
+========================================================= */
+
+.configuration-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.configuration-header > div {
+  flex: 1;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.add-benefit-button {
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid #0d614e;
+  border-radius: 8px;
+  background: #0d614e;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.add-benefit-button:hover {
+  background: #084d3e;
+  border-color: #084d3e;
+  transform: translateY(-1px);
+}
+
+.add-benefit-button:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   EMPTY CONFIGURATION
+========================================================= */
+
+.configuration-empty {
+  min-height: 210px;
+  border: 1px dashed #cbdad4;
+  border-radius: 12px;
+  background: #fbfcfc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 25px;
+  box-sizing: border-box;
+}
+
+.configuration-empty h3 {
+  margin: 0 0 7px;
+  font-size: 16px;
+  color: #30483f;
+}
+
+.configuration-empty p {
+  max-width: 450px;
+  margin: 0 0 18px;
+  color: #7a8983;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   CONFIGURATION LIST
+========================================================= */
+
+.configuration-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.configuration-card {
+  border: 1px solid #dfe9e5;
+  border-radius: 12px;
+  background: #fbfcfc;
+  padding: 20px;
+}
+
+.configuration-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e6eeeb;
+}
+
+.configuration-card-header > div {
+  min-width: 0;
+}
+
+.configuration-card-header span {
+  display: block;
+  margin-bottom: 4px;
+  color: #7c8b85;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.configuration-card-header h3 {
+  margin: 0;
+  color: #193e34;
+  font-size: 16px;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.remove-benefit-button {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid #f0cccc;
+  border-radius: 8px;
+  background: #fff6f6;
+  color: #c43d3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-benefit-button:hover {
+  background: #c43d3d;
+  border-color: #c43d3d;
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   MATCH RULES
+========================================================= */
+
+.match-rules-box {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 10px;
+  background: #f3f8f6;
+  border: 1px solid #d9e9e3;
+}
+
+.match-rules-box h4 {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #205246;
+  font-weight: 700;
+}
+
+.match-rules-box .add-form-grid {
+  gap: 16px;
+}
+
+
+/* =========================================================
+   STATUS CHECKBOXES
+========================================================= */
+
+.status-checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 30px;
+}
+
+.status-checkbox-row label {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid #dce7e3;
+  border-radius: 9px;
+  background: #fafcfb;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #41544d;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-checkbox-row label:hover {
+  border-color: #b9d5cb;
+  background: #f4f9f7;
+}
+
+.status-checkbox-row input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: #0d614e;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.add-package-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+
+  padding: 16px 0;
+  margin-top: 5px;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(247, 249, 248, 0),
+    #f7f9f8 20%
+  );
+}
+
+.package-cancel-button,
+.package-save-button {
+  min-height: 43px;
+  padding: 0 19px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.package-cancel-button {
+  border: 1px solid #d5dfdb;
+  background: #ffffff;
+  color: #56655f;
+}
+
+.package-cancel-button:hover {
+  background: #f3f6f5;
+  border-color: #c4d1cc;
+}
+
+.package-save-button {
+  border: 1px solid #0d614e;
+  background: #0d614e;
+  color: #ffffff;
+  min-width: 145px;
+}
+
+.package-save-button:hover {
+  background: #084d3e;
+  border-color: #084d3e;
+  transform: translateY(-1px);
+}
+
+.package-cancel-button:disabled,
+.package-save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* =========================================================
+   NUMBER INPUT
+========================================================= */
+
+.add-form-group input[type="number"] {
+  appearance: textfield;
+}
+
+.add-form-group input[type="number"]::-webkit-inner-spin-button,
+.add-form-group input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.add-package-page::-webkit-scrollbar {
+  width: 7px;
+}
+
+.add-package-page::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.add-package-page::-webkit-scrollbar-thumb {
+  background: #c9d8d2;
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+  .package-page {
+    padding: 22px 20px 35px;
+  }
+
+  .add-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .add-form-group.full-width {
+    grid-column: auto;
+  }
+
+  .add-package-section {
+    padding: 20px;
+  }
+
+  .configuration-header {
+    align-items: center;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+  .package-page {
+    padding: 16px 12px 25px;
+  }
+
+  .package-heading {
+    gap: 10px;
+  }
+
+  .package-heading h1 {
+    font-size: 22px;
+  }
+
+  .package-heading p {
+    font-size: 12px;
+  }
+
+  .package-back-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .add-package-section {
+    padding: 16px;
+    border-radius: 11px;
+    margin-bottom: 15px;
+  }
+
+  .add-section-header h2 {
+    font-size: 16px;
+  }
+
+  .add-section-header p {
+    font-size: 12px;
+  }
+
+  .configuration-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .configuration-header .add-benefit-button {
+    width: 100%;
+  }
+
+  .configuration-card {
+    padding: 15px;
+  }
+
+  .configuration-card-header {
+    margin-bottom: 16px;
+  }
+
+  .match-rules-box {
+    padding: 14px;
+  }
+
+  .status-checkbox-row {
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .status-checkbox-row label {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .add-package-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .package-cancel-button,
+  .package-save-button {
+    width: 100%;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 400px) {
+  .package-page {
+    padding: 12px 9px 20px;
+  }
+
+  .add-package-section {
+    padding: 13px;
+  }
+
+  .configuration-card {
+    padding: 12px;
+  }
+
+  .package-heading h1 {
+    font-size: 20px;
+  }
+
+  .add-form-group input,
+  .add-form-group select,
+  .tag-input-wrapper > input {
+    height: 42px;
+  }
+}
