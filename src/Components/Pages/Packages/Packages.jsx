@@ -582,9 +582,7 @@ const Package = () => {
           )}
         </button>
 
-        {/* ===================================================
-            EXPANDED DETAILS
-        =================================================== */}
+      
 
         {isExpanded && (
           <div className="package-expanded-details">
@@ -731,77 +729,6 @@ const Package = () => {
               )}
             </div>
 
-            {/* CONFIGURATION */}
-            <div className="expanded-block">
-              <div className="expanded-heading">
-                <div className="expanded-heading-icon">
-                  <FaBoxOpen />
-                </div>
-
-                <div>
-                  <h4>Configuration</h4>
-
-                  <span>
-                    Package capabilities
-                  </span>
-                </div>
-              </div>
-
-              {configuration.length > 0 ? (
-                <div className="configuration-list">
-                  {configuration.map(
-                    (config, index) => (
-                      <div
-                        className="configuration-row"
-                        key={
-                          config?.capability_id ||
-                          index
-                        }
-                      >
-                        <div className="configuration-left">
-                          <strong>
-                            {config?.label ||
-                              config?.name ||
-                              "Capability"}
-                          </strong>
-
-                          <span>
-                            Type:{" "}
-                            {config?.type ||
-                              "-"}
-                          </span>
-                        </div>
-
-                        <div>
-                          {config?.type ===
-                          "consumable" ? (
-                            <span className="config-count">
-                              ×{" "}
-                              {config?.count ??
-                                0}
-                            </span>
-                          ) : config?.included ? (
-                            <span className="config-included">
-                              <FaCheck />
-                              Included
-                            </span>
-                          ) : (
-                            <span className="config-not-included">
-                              <FaTimesCircle />
-                              Not Included
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              ) : (
-                <div className="detail-empty">
-                  No configuration available.
-                </div>
-              )}
-            </div>
           </div>
         )}
       </article>
@@ -884,7 +811,7 @@ const Package = () => {
             )}
           </div>
 
-          {/* FILTER */}
+      
           <button
             type="button"
             className={`package-filter-button ${
