@@ -1,8 +1,5 @@
 
 
-/* =========================================================
-   HEADER
-========================================================= */
 
 .package-page-header {
   margin-bottom: 24px;
@@ -106,9 +103,6 @@
 }
 
 
-/* =========================================================
-   FORM
-========================================================= */
 
 .add-package-form {
   width: 100%;
@@ -1394,3 +1388,495 @@
   color: #777;
   font-size: 12px;
 }
+
+
+.configuration-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.configuration-header > div {
+  flex: 1;
+}
+
+.configuration-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
+/* =========================================================
+   CONFIGURATION CARD
+========================================================= */
+
+.configuration-card {
+  background: #ffffff;
+  border: 1px solid #e3ebe8;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 3px 12px rgba(13, 97, 78, 0.04);
+}
+
+.configuration-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 22px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #edf2f0;
+}
+
+.configuration-card-header > div {
+  min-width: 0;
+}
+
+.configuration-card-header span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0d614e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.configuration-card-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #263832;
+}
+
+
+/* =========================================================
+   REMOVE BENEFIT BUTTON
+========================================================= */
+
+.remove-benefit-button {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #f0dcdc;
+  border-radius: 8px;
+
+  background: #fff7f7;
+  color: #d9534f;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-benefit-button:hover {
+  background: #d9534f;
+  color: #ffffff;
+  border-color: #d9534f;
+}
+
+
+/* =========================================================
+   ADD BENEFIT BUTTON
+========================================================= */
+
+.add-benefit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 40px;
+  padding: 9px 16px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #0d614e;
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-benefit-button:hover {
+  background: #094d3e;
+  transform: translateY(-1px);
+}
+
+.add-benefit-button svg {
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   EMPTY CONFIGURATION
+========================================================= */
+
+.configuration-empty {
+  padding: 45px 25px;
+
+  text-align: center;
+
+  border: 1px dashed #cfdcd7;
+  border-radius: 12px;
+
+  background: #fafcfb;
+}
+
+.configuration-empty h3 {
+  margin: 0 0 7px;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  color: #33443e;
+}
+
+.configuration-empty p {
+  max-width: 500px;
+  margin: 0 auto 18px;
+
+  font-size: 13px;
+  line-height: 1.6;
+
+  color: #78857f;
+}
+
+
+/* =========================================================
+   BENEFIT TYPE EXPLANATION
+========================================================= */
+
+.benefit-type-help {
+  margin-top: 10px;
+  padding: 13px 15px;
+
+  border: 1px solid #dce8e4;
+  border-radius: 10px;
+
+  background: #f7faf9;
+}
+
+.benefit-help-title {
+  margin-bottom: 5px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  color: #0d614e;
+}
+
+.benefit-type-help p {
+  margin: 0;
+
+  font-size: 12px;
+  line-height: 1.55;
+
+  color: #687770;
+}
+
+.benefit-help-example {
+  margin-top: 9px;
+  padding: 9px 11px;
+
+  border-left: 3px solid #0d614e;
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: #56655f;
+}
+
+.benefit-help-example strong {
+  color: #0d614e;
+}
+
+
+/* =========================================================
+   BENEFIT FIELD HELP
+========================================================= */
+
+.benefit-field-help {
+  margin-top: 7px;
+}
+
+.benefit-field-help strong {
+  display: block;
+  margin-bottom: 3px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  color: #0d614e;
+}
+
+.benefit-field-help p {
+  margin: 0 0 4px;
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  color: #727f7a;
+}
+
+.benefit-field-help small {
+  display: block;
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  color: #7d8984;
+}
+
+
+/* =========================================================
+   MATCH RULES
+========================================================= */
+
+.match-rules-box {
+  margin-top: 22px;
+  padding: 19px;
+
+  border: 1px solid #dce8e4;
+  border-radius: 12px;
+
+  background: #fafcfb;
+}
+
+.match-rules-header {
+  margin-bottom: 17px;
+}
+
+.match-rules-header h4 {
+  margin: 0 0 5px;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #263832;
+}
+
+.match-rules-header p {
+  margin: 0;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: #7a8581;
+}
+
+
+/* =========================================================
+   MATCH RULE SELECTS
+========================================================= */
+
+.match-rules-box .add-form-grid {
+  margin-top: 0;
+}
+
+.match-rules-box .add-form-group {
+  margin-bottom: 0;
+}
+
+
+/* =========================================================
+   TAG AREA
+========================================================= */
+
+.configuration-card .tag-input-wrapper {
+  min-height: 48px;
+}
+
+.configuration-card .package-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+
+  margin-bottom: 8px;
+}
+
+.configuration-card .package-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 5px 9px;
+
+  border-radius: 6px;
+
+  background: #eaf4f1;
+  color: #0d614e;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.configuration-card .package-tag button {
+  width: 18px;
+  height: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: #0d614e;
+
+  cursor: pointer;
+}
+
+.configuration-card .package-tag button:hover {
+  background: #d6e8e2;
+}
+
+
+/* =========================================================
+   FORM INPUTS INSIDE CONFIGURATION
+========================================================= */
+
+.configuration-card .add-form-group label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  color: #34453f;
+}
+
+.configuration-card .add-form-group input,
+.configuration-card .add-form-group select {
+  width: 100%;
+  min-height: 42px;
+
+  padding: 10px 12px;
+
+  border: 1px solid #d9e2df;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #273731;
+
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.configuration-card .add-form-group input:focus,
+.configuration-card .add-form-group select:focus {
+  border-color: #0d614e;
+
+  box-shadow:
+    0 0 0 3px rgba(13, 97, 78, 0.08);
+}
+
+
+/* =========================================================
+   BENEFIT TYPE SELECT
+========================================================= */
+
+.configuration-card
+  .add-form-group
+  select {
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   MATCH RULE SELECT
+========================================================= */
+
+.match-rules-box
+  .add-form-group
+  select {
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .configuration-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .configuration-header .add-benefit-button {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  .configuration-card {
+    padding: 16px;
+  }
+
+  .configuration-card-header {
+    margin-bottom: 17px;
+  }
+
+  .configuration-card-header h3 {
+    font-size: 15px;
+  }
+
+  .benefit-type-help {
+    padding: 11px 12px;
+  }
+
+  .match-rules-box {
+    padding: 15px;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .configuration-card {
+    padding: 13px;
+  }
+
+  .configuration-card-header {
+    gap: 10px;
+  }
+
+  .remove-benefit-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  .benefit-help-example {
+    font-size: 11px;
+  }
+
+}
+
