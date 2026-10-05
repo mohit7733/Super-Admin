@@ -83,9 +83,6 @@ const PrescriptionHistory = () => {
     });
   };
 
-  // =========================================================
-  // TIME FORMAT
-  // =========================================================
 
   const formatTime = (time) => {
     if (!time) return "N/A";
@@ -103,9 +100,7 @@ const PrescriptionHistory = () => {
     });
   };
 
-  // =========================================================
-  // GET PRESCRIPTION DATA
-  // =========================================================
+  
 
   const getPatientPrescription = async (patientId) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -176,38 +171,22 @@ const PrescriptionHistory = () => {
     }
   }, [PatientHistoryId]);
 
-  // =========================================================
-  // PATIENT DATA
-  // =========================================================
 
   const patient = prescriptionData?.patient;
 
-  // =========================================================
-  // PRESCRIPTION RESULTS
-  // =========================================================
 
   const prescriptions =
     prescriptionData?.prescriptions?.results || [];
 
-  // =========================================================
-  // FIRST / LATEST PRESCRIPTION
-  // =========================================================
 
   const latestPrescription = prescriptions[0];
 
-  // =========================================================
-  // TOGGLE HISTORY
-  // =========================================================
 
   const toggleHistory = (id) => {
     setOpenHistory((previous) =>
       previous === id ? null : id
     );
   };
-
-  // =========================================================
-  // LOADING
-  // =========================================================
 
   if (prescriptionLoading) {
     return (
@@ -228,9 +207,7 @@ const PrescriptionHistory = () => {
 
       <ToastContainer />
 
-      {/* =====================================================
-          BACK BUTTON
-      ===================================================== */}
+   
 
       <button
         type="button"
@@ -241,15 +218,12 @@ const PrescriptionHistory = () => {
         Back
       </button>
 
-      {/* =====================================================
-          PATIENT HEADER
-      ===================================================== */}
+ 
 
       <div className="patient-history-header">
 
         <div className="patient-profile-left">
 
-          {/* AVATAR */}
 
           <div className="patient-history-avatar">
             <span>
@@ -264,7 +238,7 @@ const PrescriptionHistory = () => {
             </span>
           </div>
 
-          {/* PATIENT INFO */}
+    
 
           <div className="patient-header-content">
 
@@ -326,9 +300,7 @@ const PrescriptionHistory = () => {
 
         </div>
 
-        {/* =====================================================
-            CURRENT CONSULTATION
-        ===================================================== */}
+    
 
         <div className="current-consultation-box">
 
@@ -364,13 +336,11 @@ const PrescriptionHistory = () => {
 
       </div>
 
-      {/* =====================================================
-          SUMMARY CARDS
-      ===================================================== */}
+  
 
       <div className="patient-summary-grid">
 
-        {/* TOTAL CONSULTATIONS */}
+      
 
         <div className="patient-summary-card">
 
@@ -391,7 +361,7 @@ const PrescriptionHistory = () => {
 
         </div>
 
-        {/* COMPLETED */}
+  
 
         <div className="patient-summary-card">
 
@@ -417,7 +387,6 @@ const PrescriptionHistory = () => {
 
         </div>
 
-        {/* LAST CONSULTATION */}
 
         <div className="patient-summary-card">
 
@@ -441,7 +410,7 @@ const PrescriptionHistory = () => {
 
         </div>
 
-        {/* PATIENT SINCE */}
+    
 
         <div className="patient-summary-card">
 
@@ -463,15 +432,10 @@ const PrescriptionHistory = () => {
 
       </div>
 
-      {/* =====================================================
-          PATIENT INFORMATION + MEASUREMENTS
-      ===================================================== */}
-
+    
       <div className="patient-history-content">
 
-        {/* ===================================================
-            PERSONAL INFORMATION
-        =================================================== */}
+     
 
         <div className="patient-history-left">
 
@@ -501,7 +465,7 @@ const PrescriptionHistory = () => {
 
             <div className="personal-info-grid">
 
-              {/* FULL NAME */}
+      
 
               <div className="personal-info-item">
 
@@ -515,7 +479,6 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* GENDER */}
 
               <div className="personal-info-item">
 
@@ -534,8 +497,6 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* DOB */}
-
               <div className="personal-info-item">
 
                 <span>
@@ -550,7 +511,7 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* RELATION */}
+           
 
               <div className="personal-info-item">
 
@@ -569,7 +530,7 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* PHONE */}
+           
 
               <div className="personal-info-item">
 
@@ -584,7 +545,7 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* EMAIL */}
+           
 
               <div className="personal-info-item">
 
@@ -599,7 +560,6 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* CUSTOMER ID */}
 
               <div className="personal-info-item">
 
@@ -613,7 +573,7 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* ADDRESS */}
+         
 
               <div className="personal-info-item full-width">
 
@@ -634,9 +594,7 @@ const PrescriptionHistory = () => {
 
         </div>
 
-        {/* ===================================================
-            MEASUREMENTS
-        =================================================== */}
+      
 
         <div className="patient-history-right">
 
@@ -666,7 +624,7 @@ const PrescriptionHistory = () => {
 
             <div className="measurement-grid">
 
-              {/* HEIGHT */}
+           
 
               <div className="measurement-item">
 
@@ -685,7 +643,7 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* WEIGHT */}
+              
 
               <div className="measurement-item">
 
@@ -704,8 +662,7 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* BLOOD GROUP */}
-
+           
               <div className="measurement-item">
 
                 <FiDroplet />
@@ -720,7 +677,7 @@ const PrescriptionHistory = () => {
 
               </div>
 
-              {/* BMI */}
+              
 
               <div className="measurement-item">
 
@@ -744,15 +701,13 @@ const PrescriptionHistory = () => {
 
       </div>
 
-      {/* =====================================================
-          MEDICAL HISTORY
-      ===================================================== */}
+   
 
       <div className="medical-history-wrapper">
 
         <div className="medical-history-section">
 
-          {/* HEADER */}
+       
 
           <div className="medical-history-header">
 
@@ -774,7 +729,7 @@ const PrescriptionHistory = () => {
 
             </div>
 
-            {/* LAST VISIT */}
+          
 
             <div className="last-visit-box">
 
@@ -802,10 +757,7 @@ const PrescriptionHistory = () => {
 
           </div>
 
-          {/* =================================================
-              TIMELINE
-          ================================================= */}
-
+       
           <div className="medical-history-timeline">
 
             {prescriptions.length > 0 ? (

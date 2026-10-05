@@ -24,7 +24,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import BASE_URL from "../../../Base";
-import "./Packages.css";
+import "./packages.css";
 
 const Package = () => {
   const [packages, setPackages] = useState([]);
@@ -44,9 +44,7 @@ const Package = () => {
 
   const [totalCount, setTotalCount] = useState(0);
  const navigate = useNavigate();
-  // =========================================================
-  // FETCH PACKAGES
-  // =========================================================
+  
 
   const fetchPackages = async () => {
     try {
@@ -415,19 +413,14 @@ const Package = () => {
               <FaEye />
             </button>
 
-            <button
-              type="button"
-              className="card-action edit-action"
-              title="Edit Package"
-              onClick={() =>
-                console.log(
-                  "Edit Package:",
-                  item.id
-                )
-              }
-            >
-              <FaEdit />
-            </button>
+          <button 
+  type="button" 
+  className="card-action edit-action" 
+  title="Edit Package" 
+  onClick={() => navigate(`/packages/edit/${item.id}`)}
+>
+  <FaEdit />
+</button>
 
             <button
               type="button"

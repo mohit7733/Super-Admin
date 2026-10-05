@@ -101,6 +101,7 @@ import EventBanner from './Components/Pages/Banner/Eventbanner';
 import Packages from './Components/Pages/Packages/Packages';
 import Packagescategory from './Components/Pages/Packages/Packagescategory';
 import AddPackages from './Components/Pages/Packages/AddPackages';
+import EditPackage from './Components/Pages/Packages/EditPackage';
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -157,6 +158,16 @@ function App() {
           }
         />
 
+        <Route
+          path="/packages/edit/:id"
+          element={
+            <ProtectedRoute permission="edit_packages">
+              <Layout>
+                <EditPackage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/Add-Reward"
           element={
