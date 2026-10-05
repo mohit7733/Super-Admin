@@ -437,7 +437,7 @@
   }
 }
 
-/* Responsive */
+
 @media (max-width: 991px) {
   .patient-header-card {
     flex-direction: column;
