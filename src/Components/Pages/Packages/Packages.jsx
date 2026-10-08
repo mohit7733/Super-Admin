@@ -44,6 +44,13 @@ const Package = () => {
 
   const [totalCount, setTotalCount] = useState(0);
  const navigate = useNavigate();
+ const [deleteModal, setDeleteModal] = useState({
+  open: false,
+  packageId: null,
+  packageName: "",
+});
+
+const [deleteLoading, setDeleteLoading] = useState(false);
   
 
   const fetchPackages = async () => {
@@ -208,7 +215,107 @@ const Package = () => {
     perPage,
   ]);
 
- 
+ // =========================================================
+// DELETE PACKAGE
+// =========================================================
+
+const openDeleteModal = (item) => {
+  setDeleteModal({
+    open: true,
+    packageId: item.id,
+    packageName: item?.name || "this package",
+  });
+};
+
+const closeDeleteModal = () => {
+  if (deleteLoading) return;
+
+  setDeleteModal({
+    open: false,
+    packageId: null,
+    packageName: "",
+  });
+};
+
+const handleDeletePackage = async () => {
+  if (!deleteModal.packageId) return;
+
+  try {
+    setDeleteLoading(true);
+    setError("");
+
+    const token =
+      sessionStorage.getItem("superadmin_token");
+
+    const response = await fetch(
+      `${BASE_URL}/packages/admin/?id=${deleteModal.packageId}`,
+      {
+        method: "DELETE",
+
+        headers: {
+          "Content-Type": "application/json",
+
+          ...(token
+            ? {
+
+
+
+
+
+
+                Authorization: `Bearer ${token}`,
+              }
+            : {}),
+
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result?.message ||
+          "Failed to delete package."
+      );
+    }
+
+   
+    setPackages((prev) =>
+      prev.filter(
+        (item) =>
+          item.id !== deleteModal.packageId
+      )
+    );
+
+    
+    setDeleteModal({
+      open: false,
+      packageId: null,
+      packageName: "",
+    });
+
+    setExpandedId((prev) =>
+      prev === deleteModal.packageId
+        ? null
+        : prev
+    );
+
+  } catch (err) {
+    console.error(
+      "Delete Package Error:",
+      err
+    );
+
+    setError(
+      err?.message ||
+        "Something went wrong while deleting package."
+    );
+  } finally {
+    setDeleteLoading(false);
+  }
+};
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -422,19 +529,14 @@ const Package = () => {
   <FaEdit />
 </button>
 
-            <button
-              type="button"
-              className="card-action delete-action"
-              title="Delete Package"
-              onClick={() =>
-                console.log(
-                  "Delete Package:",
-                  item.id
-                )
-              }
-            >
-              <FaTrash />
-            </button>
+   <button
+  type="button"
+  className="card-action delete-action"
+  title="Delete Package"
+  onClick={() => openDeleteModal(item)}
+>
+  <FaTrash />
+</button>
           </div>
         </div>
 
@@ -728,9 +830,7 @@ const Package = () => {
     );
   };
 
-  // =========================================================
-  // LOADING
-  // =========================================================
+  
 
   if (loading && packages.length === 0) {
     return (
@@ -896,6 +996,78 @@ const Package = () => {
           </button>
         </div>
       )}
+    
+
+{deleteModal.open && (
+  <div
+    className="package-modal-overlay"
+    onClick={closeDeleteModal}
+  >
+    <div
+      className="package-delete-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      {/* ICON */}
+
+      <div className="delete-modal-icon">
+        <FaTrash />
+      </div>
+
+      {/* CONTENT */}
+
+      <div className="delete-modal-content">
+
+        <h3>
+          Delete Package?
+        </h3>
+
+        <p>
+          Are you sure you want to delete{" "}
+          <strong>
+            "{deleteModal.packageName}"
+          </strong>
+          ?
+        </p>
+
+        <span>
+          This action cannot be undone.
+        </span>
+
+      </div>
+
+      {/* ACTIONS */}
+
+      <div className="delete-modal-actions">
+
+        <button
+          type="button"
+          className="delete-modal-no"
+          onClick={closeDeleteModal}
+          disabled={deleteLoading}
+        >
+          <FaTimes />
+          No
+        </button>
+
+        <button
+          type="button"
+          className="delete-modal-yes"
+          onClick={handleDeletePackage}
+          disabled={deleteLoading}
+        >
+          <FaTrash />
+
+          {deleteLoading
+            ? "Deleting..."
+            : "Yes, Delete"}
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
 
       
       <div className="package-summary">
@@ -967,6 +1139,10 @@ const Package = () => {
           </button>
         </div>
       </div>
+{/* =========================================================
+    DELETE CONFIRMATION MODAL
+========================================================= */}
+
 
      
       {error && (
@@ -1026,6 +1202,8 @@ const Package = () => {
         </div>
       )}
     </div>
+
+    
   );
 };
 

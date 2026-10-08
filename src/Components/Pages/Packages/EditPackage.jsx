@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -16,12 +17,12 @@ import {
 import BASE_URL from "../../../Base";
 import "./AddPackages.css";
 
-
 // ============================================================
 // EMPTY CONFIGURATION
 // ============================================================
 
 const createEmptyConfiguration = () => ({
+  benefit_id: "",
   name: "",
   label: "",
   type: "flag",
@@ -31,28 +32,36 @@ const createEmptyConfiguration = () => ({
   tags: [],
   tagInput: "",
 
+  // Comes from Benefit API.
+  // Admin cannot edit these.
   match_rules: {
     is_followup: false,
     is_dietitian: false,
   },
 
+  // Admin can edit these.
   eligible_after_days: "",
   requires_completed_capability: "",
 });
 
-
 // ============================================================
-// EDIT PACKAGE
+// COMPONENT
 // ============================================================
 
 const EditPackage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
+  // ============================================================
+  // STATES
+  // ============================================================
+
   const [categories, setCategories] = useState([]);
+  const [benefits, setBenefits] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [categoryLoading, setCategoryLoading] = useState(false);
+  const [benefitLoading, setBenefitLoading] = useState(false);
   const [fetchingPackage, setFetchingPackage] = useState(true);
 
   const [error, setError] = useState("");
@@ -62,7 +71,6 @@ const EditPackage = () => {
     showBillingModeDropdown,
     setShowBillingModeDropdown,
   ] = useState(false);
-
 
   // ============================================================
   // FORM
@@ -94,20 +102,21 @@ const EditPackage = () => {
     sequence: 0,
 
     is_active: false,
+
     available_to_all_users: true,
     can_be_purchased: true,
 
     configuration: [],
   });
 
-
   // ============================================================
-  // AUTH HEADERS
+  // HEADERS
   // ============================================================
 
   const getHeaders = () => {
-    const token =
-      sessionStorage.getItem("superadmin_token");
+    const token = sessionStorage.getItem(
+      "superadmin_token"
+    );
 
     return {
       "Content-Type": "application/json",
@@ -121,7 +130,6 @@ const EditPackage = () => {
       "ngrok-skip-browser-warning": "true",
     };
   };
-
 
   // ============================================================
   // FETCH CATEGORIES
@@ -179,7 +187,6 @@ const EditPackage = () => {
       setCategories(
         normalizedCategories
       );
-
     } catch (err) {
       console.error(
         "Category Error:",
@@ -187,79 +194,264 @@ const EditPackage = () => {
       );
 
       setCategories([]);
-
     } finally {
       setCategoryLoading(false);
     }
   };
 
+  // ============================================================
+  // FETCH BENEFITS
+  // ============================================================
+
+  const fetchBenefits = async () => {
+    try {
+      setBenefitLoading(true);
+
+      const response = await fetch(
+        `${BASE_URL}/packages/admin/benefit/`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message ||
+            "Failed to load benefits."
+        );
+      }
+
+      const benefitData =
+        result?.data?.results ||
+        result?.data ||
+        result?.results ||
+        [];
+
+      const normalizedBenefits =
+        Array.isArray(benefitData)
+          ? benefitData
+              .map((item) => ({
+                id:
+                  item?.id ||
+                  item?.benefit_id ||
+                  item?.value,
+
+                name:
+                  item?.name ||
+                  item?.benefit_name ||
+                  item?.title ||
+                  item?.label ||
+                  "",
+
+                label:
+                  item?.label ||
+                  item?.benefit_label ||
+                  item?.name ||
+                  item?.benefit_name ||
+                  "",
+
+                type:
+                  item?.fulfillment_mode ||
+                  item?.type ||
+                  item?.benefit_type ||
+                  "flag",
+
+                fulfillment_mode:
+                  item?.fulfillment_mode ||
+                  item?.type ||
+                  "flag",
+
+                unit:
+                  item?.unit ||
+                  "none",
+
+                description:
+                  item?.description ||
+                  "",
+
+                tags:
+                  Array.isArray(item?.tags)
+                    ? item.tags
+                    : [],
+
+                // IMPORTANT:
+                // These rules come from Benefit API.
+                match_rules:
+                  item?.match_rules ||
+                  {},
+
+                default_extra_details:
+                  item?.default_extra_details ||
+                  {},
+              }))
+              .filter(
+                (item) =>
+                  item.id &&
+                  item.name
+              )
+          : [];
+
+      setBenefits(
+        normalizedBenefits
+      );
+
+      return normalizedBenefits;
+    } catch (err) {
+      console.error(
+        "Benefit Error:",
+        err
+      );
+
+      setBenefits([]);
+
+      throw err;
+    } finally {
+      setBenefitLoading(false);
+    }
+  };
 
   // ============================================================
-  // NORMALIZE CONFIGURATION
+  // NORMALIZE EXISTING CONFIGURATION
   // ============================================================
 
   const normalizeConfiguration = (
-    configuration
+    configuration,
+    benefitList
   ) => {
     if (!Array.isArray(configuration)) {
       return [];
     }
 
     return configuration.map(
-      (config) => ({
-        name:
-          config?.name || "",
+      (config) => {
+        /*
+         * Existing package configuration generally
+         * contains Benefit UUID inside `name`.
+         *
+         * We first find the corresponding Benefit
+         * from Benefit API.
+         */
 
-        label:
-          config?.label || "",
+        const existingBenefitId =
+          config?.benefit_id ||
+          config?.name ||
+          "";
 
-        type:
-          config?.type || "flag",
+        const benefit =
+          benefitList.find(
+            (item) =>
+              item.id ===
+              existingBenefitId
+          );
 
-        count:
-          config?.count ??
-          "",
+        /*
+         * Benefit API is source of truth
+         * for benefit identity/type/rules.
+         */
 
-        tags:
-          Array.isArray(config?.tags)
-            ? config.tags
-            : [],
+        const benefitId =
+          benefit?.id ||
+          existingBenefitId ||
+          "";
 
-        tagInput: "",
+        const benefitType =
+          benefit?.fulfillment_mode ||
+          benefit?.type ||
+          config?.type ||
+          "flag";
 
-        match_rules: {
-          is_followup:
-            Boolean(
-              config?.match_rules
-                ?.is_followup
-            ),
+        /*
+         * Existing package values are preferred
+         * for editable package-level fields.
+         */
 
-          is_dietitian:
-            Boolean(
-              config?.match_rules
-                ?.is_dietitian
-            ),
-        },
-
-        eligible_after_days:
+        const eligibleAfterDays =
           config?.eligible_after_days ??
-          "",
+          benefit?.default_extra_details
+            ?.eligible_after_days ??
+          "";
 
-        requires_completed_capability:
-          config?.requires_completed_capability ||
-          "",
-      })
+        const requiresCompletedCapability =
+          config?.requires_completed_capability ??
+          benefit?.default_extra_details
+            ?.requires_completed_capability ??
+          "";
+
+        return {
+          benefit_id: benefitId,
+
+          /*
+           * Backend expects Benefit UUID
+           * in configuration.name.
+           */
+          name: benefitId,
+
+          /*
+           * Label from Benefit API first.
+           * Existing package label is fallback.
+           */
+          label:
+            benefit?.label ||
+            config?.label ||
+            benefit?.name ||
+            "",
+
+          /*
+           * Type from Benefit API.
+           */
+          type: benefitType,
+
+          /*
+           * Existing count remains editable.
+           */
+          count:
+            config?.count ??
+            "",
+
+          tags:
+            Array.isArray(config?.tags)
+              ? config.tags
+              : [],
+
+          tagInput: "",
+
+          /*
+           * IMPORTANT:
+           * match_rules ALWAYS come from Benefit API.
+           *
+           * Admin cannot edit them.
+           */
+          match_rules:
+            benefit?.match_rules ||
+            {
+              is_followup: false,
+              is_dietitian: false,
+            },
+
+          /*
+           * These two fields are editable.
+           */
+          eligible_after_days:
+            eligibleAfterDays,
+
+          requires_completed_capability:
+            requiresCompletedCapability,
+        };
+      }
     );
   };
-
 
   // ============================================================
   // FETCH PACKAGE
   // ============================================================
 
-  const fetchPackage = async () => {
+  const fetchPackage = async (
+    benefitList = []
+  ) => {
     try {
-      setFetchingPackage(true);
       setError("");
 
       const response = await fetch(
@@ -280,7 +472,7 @@ const EditPackage = () => {
       }
 
       // --------------------------------------------------------
-      // HANDLE DIFFERENT POSSIBLE API RESPONSE STRUCTURES
+      // HANDLE DIFFERENT API RESPONSE STRUCTURES
       // --------------------------------------------------------
 
       const packageData =
@@ -299,7 +491,6 @@ const EditPackage = () => {
         );
       }
 
-
       // --------------------------------------------------------
       // CATEGORY ID
       // --------------------------------------------------------
@@ -308,7 +499,8 @@ const EditPackage = () => {
         packageData?.category;
 
       if (
-        typeof categoryId === "object" &&
+        typeof categoryId ===
+          "object" &&
         categoryId !== null
       ) {
         categoryId =
@@ -317,6 +509,15 @@ const EditPackage = () => {
           "";
       }
 
+      // --------------------------------------------------------
+      // NORMALIZE CONFIGURATION USING BENEFIT API
+      // --------------------------------------------------------
+
+      const normalizedConfiguration =
+        normalizeConfiguration(
+          packageData?.configuration,
+          benefitList
+        );
 
       // --------------------------------------------------------
       // PREFILL FORM
@@ -324,13 +525,16 @@ const EditPackage = () => {
 
       setForm({
         name:
-          packageData?.name || "",
+          packageData?.name ||
+          "",
 
         description:
-          packageData?.description || "",
+          packageData?.description ||
+          "",
 
         category:
-          categoryId || "",
+          categoryId ||
+          "",
 
         original_price:
           packageData?.original_price ??
@@ -369,7 +573,9 @@ const EditPackage = () => {
           "",
 
         tags:
-          Array.isArray(packageData?.tags)
+          Array.isArray(
+            packageData?.tags
+          )
             ? packageData.tags
             : [],
 
@@ -380,7 +586,9 @@ const EditPackage = () => {
           0,
 
         is_active:
-          Boolean(packageData?.is_active),
+          Boolean(
+            packageData?.is_active
+          ),
 
         available_to_all_users:
           packageData?.available_to_all_users ??
@@ -391,11 +599,8 @@ const EditPackage = () => {
           true,
 
         configuration:
-          normalizeConfiguration(
-            packageData?.configuration
-          ),
+          normalizedConfiguration,
       });
-
     } catch (err) {
       console.error(
         "Fetch Package Error:",
@@ -407,32 +612,66 @@ const EditPackage = () => {
           "Something went wrong while fetching package."
       );
 
-    } finally {
-      setFetchingPackage(false);
+      throw err;
     }
   };
 
-
   // ============================================================
-  // INITIAL LOAD
+  // LOAD EVERYTHING
   // ============================================================
 
   useEffect(() => {
-    if (!id) {
-      setError("Invalid package ID.");
-      setFetchingPackage(false);
-      return;
-    }
+    const loadEditData = async () => {
+      if (!id) {
+        setError(
+          "Invalid package ID."
+        );
 
-    fetchCategories();
-    fetchPackage();
+        setFetchingPackage(false);
+
+        return;
+      }
+
+      try {
+        setFetchingPackage(true);
+        setError("");
+
+        /*
+         * Benefit API must be loaded first because
+         * existing configuration needs to be matched
+         * against Benefit API.
+         */
+
+        const benefitList =
+          await fetchBenefits();
+
+        await fetchCategories();
+
+        await fetchPackage(
+          benefitList
+        );
+      } catch (err) {
+        console.error(
+          "Edit Package Load Error:",
+          err
+        );
+
+        setError(
+          err?.message ||
+            "Failed to load package data."
+        );
+      } finally {
+        setFetchingPackage(false);
+      }
+    };
+
+    loadEditData();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-
   // ============================================================
-  // BASIC FORM CHANGE
+  // BASIC CHANGE
   // ============================================================
 
   const handleChange = (e) => {
@@ -446,7 +685,6 @@ const EditPackage = () => {
       [name]: value,
     }));
   };
-
 
   // ============================================================
   // PURCHASE TYPE
@@ -474,7 +712,6 @@ const EditPackage = () => {
     }));
   };
 
-
   // ============================================================
   // BILLING MODE
   // ============================================================
@@ -492,12 +729,12 @@ const EditPackage = () => {
         ? {
             billing_period: "",
             billing_interval: "",
-            billing_cycle_count: "",
+            billing_cycle_count:
+              "",
           }
         : {}),
     }));
   };
-
 
   // ============================================================
   // PACKAGE TAGS
@@ -532,7 +769,6 @@ const EditPackage = () => {
     }));
   };
 
-
   const removePackageTag = (
     index
   ) => {
@@ -547,16 +783,15 @@ const EditPackage = () => {
     }));
   };
 
-
   const handlePackageTagKeyDown = (
     e
   ) => {
     if (e.key === "Enter") {
       e.preventDefault();
+
       addPackageTag();
     }
   };
-
 
   // ============================================================
   // ADD CONFIGURATION
@@ -572,7 +807,6 @@ const EditPackage = () => {
       ],
     }));
   };
-
 
   // ============================================================
   // REMOVE CONFIGURATION
@@ -591,7 +825,6 @@ const EditPackage = () => {
         ),
     }));
   };
-
 
   // ============================================================
   // UPDATE CONFIGURATION
@@ -618,7 +851,6 @@ const EditPackage = () => {
     }));
   };
 
-
   // ============================================================
   // CHANGE CONFIGURATION TYPE
   // ============================================================
@@ -643,11 +875,15 @@ const EditPackage = () => {
               type,
 
               count:
-                type === "consumable" ||
+                type ===
+                  "consumable" ||
                 type === "chat_pool"
                   ? item.count || 1
                   : "",
 
+              /*
+               * Keep Benefit API match rules.
+               */
               match_rules:
                 item.match_rules || {
                   is_followup: false,
@@ -667,41 +903,8 @@ const EditPackage = () => {
     }));
   };
 
-
   // ============================================================
-  // MATCH RULES
-  // ============================================================
-
-  const updateMatchRule = (
-    index,
-    field,
-    value
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-
-      configuration:
-        prev.configuration.map(
-          (item, i) =>
-            i === index
-              ? {
-                  ...item,
-
-                  match_rules: {
-                    ...(item.match_rules ||
-                      {}),
-
-                    [field]: value,
-                  },
-                }
-              : item
-        ),
-    }));
-  };
-
-
-  // ============================================================
-  // CONFIGURATION TAGS
+  // PACKAGE CONFIGURATION TAGS
   // ============================================================
 
   const addConfigurationTag = (
@@ -748,7 +951,6 @@ const EditPackage = () => {
     }));
   };
 
-
   const removeConfigurationTag = (
     configIndex,
     tagIndex
@@ -775,7 +977,6 @@ const EditPackage = () => {
     }));
   };
 
-
   const handleConfigurationTagKeyDown = (
     e,
     index
@@ -783,10 +984,11 @@ const EditPackage = () => {
     if (e.key === "Enter") {
       e.preventDefault();
 
-      addConfigurationTag(index);
+      addConfigurationTag(
+        index
+      );
     }
   };
-
 
   // ============================================================
   // VALIDATION
@@ -816,12 +1018,13 @@ const EditPackage = () => {
     }
 
     if (
-      Number(form.original_price) < 0 ||
-      Number(form.selling_price) < 0
+      Number(form.original_price) <
+        0 ||
+      Number(form.selling_price) <
+        0
     ) {
       return "Price cannot be negative.";
     }
-
 
     // ----------------------------------------------------------
     // AUTOPAY
@@ -840,22 +1043,27 @@ const EditPackage = () => {
       }
 
       if (
-        Number(form.billing_interval) < 1
+        Number(
+          form.billing_interval
+        ) < 1
       ) {
         return "Billing interval must be at least 1.";
       }
 
-      if (!form.billing_cycle_count) {
+      if (
+        !form.billing_cycle_count
+      ) {
         return "Billing cycle count is required for autopay.";
       }
 
       if (
-        Number(form.billing_cycle_count) < 1
+        Number(
+          form.billing_cycle_count
+        ) < 1
       ) {
         return "Billing cycle count must be at least 1.";
       }
     }
-
 
     // ----------------------------------------------------------
     // CONFIGURATION
@@ -863,7 +1071,8 @@ const EditPackage = () => {
 
     for (
       let i = 0;
-      i < form.configuration.length;
+      i <
+      form.configuration.length;
       i++
     ) {
       const config =
@@ -873,25 +1082,51 @@ const EditPackage = () => {
         !config.name ||
         !config.name.trim()
       ) {
-        return `Benefit ${i + 1}: name is required.`;
+        return `Benefit ${
+          i + 1
+        }: benefit is invalid.`;
       }
 
       if (
         !config.label ||
         !config.label.trim()
       ) {
-        return `Benefit ${i + 1}: customer label is required.`;
+        return `Benefit ${
+          i + 1
+        }: customer label is required.`;
       }
 
       if (
-        config.type === "consumable" ||
+        config.type ===
+          "consumable" ||
         config.type === "chat_pool"
       ) {
         if (
           !config.count ||
           Number(config.count) < 1
         ) {
-          return `Benefit ${i + 1}: count must be at least 1.`;
+          return `Benefit ${
+            i + 1
+          }: count must be at least 1.`;
+        }
+      }
+
+      if (
+        config.eligible_after_days !==
+          "" &&
+        config.eligible_after_days !==
+          null &&
+        config.eligible_after_days !==
+          undefined
+      ) {
+        if (
+          Number(
+            config.eligible_after_days
+          ) < 0
+        ) {
+          return `Benefit ${
+            i + 1
+          }: eligible after days cannot be negative.`;
         }
       }
     }
@@ -899,14 +1134,21 @@ const EditPackage = () => {
     return "";
   };
 
-
   // ============================================================
-  // CLEAN CONFIGURATION
+  // BUILD CONFIGURATION PAYLOAD
   // ============================================================
 
   const buildConfiguration = () => {
     return form.configuration.map(
       (config) => {
+        /*
+         * IMPORTANT:
+         *
+         * name = Benefit UUID
+         * label = editable customer label
+         * type = Benefit API type
+         */
+
         const cleanConfig = {
           name:
             config.name.trim(),
@@ -918,57 +1160,57 @@ const EditPackage = () => {
             config.type,
         };
 
-
+        // ------------------------------------------------------
         // COUNT
+        // ------------------------------------------------------
 
         if (
           config.type ===
             "consumable" ||
-          config.type ===
-            "chat_pool"
+          config.type === "chat_pool"
         ) {
           cleanConfig.count =
             Number(config.count);
         }
 
-
+        // ------------------------------------------------------
         // TAGS
+        // ------------------------------------------------------
 
         if (
-          config.tags &&
+          Array.isArray(
+            config.tags
+          ) &&
           config.tags.length > 0
         ) {
           cleanConfig.tags =
             config.tags;
         }
 
-
+        // ------------------------------------------------------
         // MATCH RULES
+        //
+        // These came from Benefit API.
+        // Do not modify them here.
+        // ------------------------------------------------------
 
-        const hasMatchRules =
-          config.match_rules
-            ?.is_followup === true ||
-          config.match_rules
-            ?.is_dietitian === true;
-
-        if (hasMatchRules) {
+        if (
+          config.match_rules &&
+          typeof config.match_rules ===
+            "object" &&
+          !Array.isArray(
+            config.match_rules
+          )
+        ) {
           cleanConfig.match_rules = {
-            is_followup:
-              Boolean(
-                config.match_rules
-                  ?.is_followup
-              ),
-
-            is_dietitian:
-              Boolean(
-                config.match_rules
-                  ?.is_dietitian
-              ),
+            ...config.match_rules,
           };
         }
 
-
+        // ------------------------------------------------------
         // ELIGIBLE AFTER DAYS
+        // Editable by admin.
+        // ------------------------------------------------------
 
         if (
           config.eligible_after_days !==
@@ -984,19 +1226,21 @@ const EditPackage = () => {
             );
         }
 
-
+        // ------------------------------------------------------
         // REQUIRED COMPLETED CAPABILITY
+        // Editable by admin.
+        // ------------------------------------------------------
 
         if (
           config.requires_completed_capability &&
-          config
-            .requires_completed_capability
-            .trim()
+          String(
+            config.requires_completed_capability
+          ).trim()
         ) {
           cleanConfig.requires_completed_capability =
-            config
-              .requires_completed_capability
-              .trim();
+            String(
+              config.requires_completed_capability
+            ).trim();
         }
 
         return cleanConfig;
@@ -1004,9 +1248,8 @@ const EditPackage = () => {
     );
   };
 
-
   // ============================================================
-  // UPDATE PACKAGE
+  // SUBMIT
   // ============================================================
 
   const handleSubmit = async (
@@ -1021,7 +1264,9 @@ const EditPackage = () => {
       validateForm();
 
     if (validationError) {
-      setError(validationError);
+      setError(
+        validationError
+      );
 
       window.scrollTo({
         top: 0,
@@ -1031,17 +1276,11 @@ const EditPackage = () => {
       return;
     }
 
-
     try {
       setLoading(true);
 
       const configuration =
         buildConfiguration();
-
-
-      // ========================================================
-      // PAYLOAD
-      // ========================================================
 
       const payload = {
         name:
@@ -1095,7 +1334,8 @@ const EditPackage = () => {
             : null,
 
         validity_days:
-          form.validity_days === ""
+          form.validity_days ===
+          ""
             ? null
             : Number(
                 form.validity_days
@@ -1119,22 +1359,20 @@ const EditPackage = () => {
         configuration,
       };
 
-
       console.log(
         "UPDATE PACKAGE PAYLOAD:",
-        payload
+        JSON.stringify(
+          payload,
+          null,
+          2
+        )
       );
-
-
-      // ========================================================
-      // PATCH API
-      // ========================================================
 
       const response =
         await fetch(
           `${BASE_URL}/packages/admin/?id=${id}`,
           {
-            method: "PATCH",
+            method: "PUT",
 
             headers:
               getHeaders(),
@@ -1146,10 +1384,8 @@ const EditPackage = () => {
           }
         );
 
-
       const result =
         await response.json();
-
 
       if (!response.ok) {
         throw new Error(
@@ -1158,20 +1394,15 @@ const EditPackage = () => {
         );
       }
 
-
-      // ========================================================
-      // SUCCESS
-      // ========================================================
-
       setSuccess(
         "Package updated successfully."
       );
 
-
       setTimeout(() => {
-        navigate("/packages");
+        navigate(
+          "/packages"
+        );
       }, 800);
-
     } catch (err) {
       console.error(
         "Update Package Error:",
@@ -1182,12 +1413,10 @@ const EditPackage = () => {
         err?.message ||
           "Something went wrong while updating package."
       );
-
     } finally {
       setLoading(false);
     }
   };
-
 
   // ============================================================
   // LOADING SCREEN
@@ -1196,9 +1425,7 @@ const EditPackage = () => {
   if (fetchingPackage) {
     return (
       <div className="package-page add-package-page">
-
         <div className="package-loading-wrapper">
-
           <div className="package-loader">
             <FaSyncAlt />
           </div>
@@ -1208,60 +1435,51 @@ const EditPackage = () => {
           </h3>
 
           <p>
-            Please wait while we fetch
-            package information.
+            Please wait while we
+            fetch package
+            information.
           </p>
-
         </div>
-
       </div>
     );
   }
 
-
   // ============================================================
-  // RENDER
+  // UI
   // ============================================================
 
   return (
     <div className="package-page add-package-page">
-
-
       {/* ======================================================
           HEADER
       ====================================================== */}
 
       <div className="package-page-header">
-
         <div className="package-heading">
-
           <button
             type="button"
             className="package-back-button"
             onClick={() =>
-              navigate("/packages")
+              navigate(
+                "/packages"
+              )
             }
           >
             <FaArrowLeft />
           </button>
 
           <div>
-
             <h1>
               Edit Package
             </h1>
 
             <p>
-              Update and configure your
-              package details.
+              Update and configure
+              your package details.
             </p>
-
           </div>
-
         </div>
-
       </div>
-
 
       {/* ======================================================
           ERROR
@@ -1269,7 +1487,6 @@ const EditPackage = () => {
 
       {error && (
         <div className="package-error">
-
           <strong>
             Error
           </strong>
@@ -1286,10 +1503,8 @@ const EditPackage = () => {
           >
             <FaTimes />
           </button>
-
         </div>
       )}
-
 
       {/* ======================================================
           SUCCESS
@@ -1297,14 +1512,11 @@ const EditPackage = () => {
 
       {success && (
         <div className="package-success">
-
           <strong>
             {success}
           </strong>
-
         </div>
       )}
-
 
       {/* ======================================================
           FORM
@@ -1312,37 +1524,30 @@ const EditPackage = () => {
 
       <form
         className="add-package-form"
-        onSubmit={handleSubmit}
+        onSubmit={
+          handleSubmit
+        }
       >
-
-
         {/* ====================================================
             BASIC DETAILS
         ==================================================== */}
 
         <section className="add-package-section">
-
           <div className="add-section-header">
-
             <h2>
               Basic Details
             </h2>
 
             <p>
-              Update the basic package
-              information.
+              Update the basic
+              package information.
             </p>
-
           </div>
 
-
-          <div className="add-form-grid">
-
-
+          <div className="add-form-grid basic-details-grid">
             {/* PACKAGE NAME */}
 
-            <div className="add-form-group full-width">
-
+            <div className="add-form-group full-width-field">
               <label>
                 Package Name *
               </label>
@@ -1350,18 +1555,19 @@ const EditPackage = () => {
               <input
                 type="text"
                 name="name"
-                value={form.name}
-                onChange={handleChange}
+                value={
+                  form.name
+                }
+                onChange={
+                  handleChange
+                }
                 placeholder="Enter package name"
               />
-
             </div>
-
 
             {/* DESCRIPTION */}
 
-            <div className="add-form-group full-width">
-
+            <div className="add-form-group full-width-field">
               <label>
                 Description
               </label>
@@ -1371,29 +1577,33 @@ const EditPackage = () => {
                 value={
                   form.description
                 }
-                onChange={handleChange}
+                onChange={
+                  handleChange
+                }
                 placeholder="Enter package description"
                 rows={4}
               />
-
             </div>
-
 
             {/* CATEGORY */}
 
             <div className="add-form-group">
-
               <label>
                 Category *
               </label>
 
               <select
                 name="category"
-                value={form.category}
-                onChange={handleChange}
-                disabled={categoryLoading}
+                value={
+                  form.category
+                }
+                onChange={
+                  handleChange
+                }
+                disabled={
+                  categoryLoading
+                }
               >
-
                 <option value="">
                   {categoryLoading
                     ? "Loading..."
@@ -1403,23 +1613,25 @@ const EditPackage = () => {
                 {categories.map(
                   (category) => (
                     <option
-                      key={category.id}
-                      value={category.id}
+                      key={
+                        category.id
+                      }
+                      value={
+                        category.id
+                      }
                     >
-                      {category.name}
+                      {
+                        category.name
+                      }
                     </option>
                   )
                 )}
-
               </select>
-
             </div>
-
 
             {/* SEQUENCE */}
 
             <div className="add-form-group">
-
               <label>
                 Sequence *
               </label>
@@ -1428,25 +1640,23 @@ const EditPackage = () => {
                 type="number"
                 min="1"
                 name="sequence"
-                value={form.sequence}
-                onChange={handleChange}
+                value={
+                  form.sequence
+                }
+                onChange={
+                  handleChange
+                }
               />
-
             </div>
-
           </div>
-
         </section>
-
 
         {/* ====================================================
             PRICING
         ==================================================== */}
 
         <section className="add-package-section">
-
           <div className="add-section-header">
-
             <h2>
               Pricing
             </h2>
@@ -1455,14 +1665,10 @@ const EditPackage = () => {
               Configure original and
               selling price.
             </p>
-
           </div>
 
-
           <div className="add-form-grid">
-
             <div className="add-form-group">
-
               <label>
                 Original Price *
               </label>
@@ -1475,15 +1681,14 @@ const EditPackage = () => {
                 value={
                   form.original_price
                 }
-                onChange={handleChange}
+                onChange={
+                  handleChange
+                }
                 placeholder="0.00"
               />
-
             </div>
 
-
             <div className="add-form-group">
-
               <label>
                 Selling Price *
               </label>
@@ -1496,148 +1701,51 @@ const EditPackage = () => {
                 value={
                   form.selling_price
                 }
-                onChange={handleChange}
+                onChange={
+                  handleChange
+                }
                 placeholder="0.00"
               />
-
             </div>
-
           </div>
-
         </section>
-
-
-        {/* ====================================================
-            PURCHASE TYPE
-        ==================================================== */}
-
-        <section className="add-package-section">
-
-          <div className="add-section-header">
-
-            <h2>
-              Purchase Type
-            </h2>
-
-            <p>
-              Select how this package is
-              available to customers.
-            </p>
-
-          </div>
-
-
-          <div className="add-form-grid">
-
-            <div className="add-form-group">
-
-              <label>
-                Purchase Type *
-              </label>
-
-              <select
-                value={
-                  form.purchase_type
-                }
-                onChange={(e) =>
-                  handlePurchaseTypeChange(
-                    e.target.value
-                  )
-                }
-              >
-
-                <option value="prepaid_package">
-                  Prepaid Package
-                </option>
-
-                <option value="open_plan">
-                  Open Plan
-                </option>
-
-              </select>
-
-            </div>
-
-
-            <div className="add-form-group">
-
-              <label>
-                Button Action
-              </label>
-
-              <input
-                type="text"
-                value={
-                  form.button_action
-                    ? form.button_action
-                        .replaceAll(
-                          "_",
-                          " "
-                        )
-                        .replace(
-                          /\b\w/g,
-                          (char) =>
-                            char.toUpperCase()
-                        )
-                    : ""
-                }
-                readOnly
-              />
-
-            </div>
-
-          </div>
-
-        </section>
-
 
         {/* ====================================================
             BILLING
         ==================================================== */}
 
         <section className="add-package-section billing-section">
-
           <div className="add-section-header">
-
             <h2>
               Billing
             </h2>
 
             <p>
-              Configure how and when the
-              customer will be charged.
+              Configure how and when
+              the customer will be
+              charged.
             </p>
-
           </div>
 
-
           <div className="add-form-grid">
-
-
-            {/* BILLING MODE */}
-
             <div className="add-form-group full-width">
-
               <label>
                 Billing Mode{" "}
                 <span>*</span>
               </label>
 
-
               <div className="billing-select-wrapper">
-
                 <button
                   type="button"
                   className="billing-select-trigger"
                   onClick={() =>
                     setShowBillingModeDropdown(
-                      (prev) => !prev
+                      (prev) =>
+                        !prev
                     )
                   }
                 >
-
                   <span>
-
                     {form.billing_mode ===
                     "one_time"
                       ? "One Time"
@@ -1645,7 +1753,6 @@ const EditPackage = () => {
                         "autopay"
                       ? "Autopay"
                       : "Select Billing Mode"}
-
                   </span>
 
                   <FaChevronDown
@@ -1655,34 +1762,29 @@ const EditPackage = () => {
                         : ""
                     }
                   />
-
                 </button>
 
-
                 {showBillingModeDropdown && (
-
                   <div className="billing-select-dropdown">
-
                     <div className="billing-info-box">
-
                       <FaQuestionCircle />
 
                       <div>
-
                         <strong>
-                          Choose how the customer pays
+                          Choose how the
+                          customer pays
                         </strong>
 
                         <span>
-                          One Time means one payment.
-                          Autopay means recurring
-                          automatic payments.
+                          One Time means
+                          one payment.
+                          Autopay means
+                          recurring
+                          automatic
+                          payments.
                         </span>
-
                       </div>
-
                     </div>
-
 
                     {/* ONE TIME */}
 
@@ -1695,7 +1797,6 @@ const EditPackage = () => {
                           : ""
                       }`}
                       onClick={() => {
-
                         handleBillingModeChange(
                           "one_time"
                         );
@@ -1703,39 +1804,38 @@ const EditPackage = () => {
                         setShowBillingModeDropdown(
                           false
                         );
-
                       }}
                     >
-
                       <div className="billing-option-icon">
                         <FaCreditCard />
                       </div>
 
                       <div className="billing-option-content">
-
                         <strong>
                           One Time
                         </strong>
 
                         <span>
-                          Customer pays once.
-                          No recurring payment
-                          will be made.
+                          Customer pays
+                          once. No
+                          recurring
+                          payment will
+                          be made.
                         </span>
 
                         <small>
-                          Example: ₹2,000 package
-                          → customer pays ₹2,000
+                          Example:
+                          ₹2,000 package
+                          → customer
+                          pays ₹2,000
                           only once.
                         </small>
-
                       </div>
-
                     </button>
-
 
                     {/* AUTOPAY */}
 
+                    {/* 
                     <button
                       type="button"
                       className={`billing-option ${
@@ -1745,7 +1845,6 @@ const EditPackage = () => {
                           : ""
                       }`}
                       onClick={() => {
-
                         handleBillingModeChange(
                           "autopay"
                         );
@@ -1753,53 +1852,50 @@ const EditPackage = () => {
                         setShowBillingModeDropdown(
                           false
                         );
-
                       }}
                     >
-
                       <div className="billing-option-icon">
                         <FaSyncAlt />
                       </div>
 
                       <div className="billing-option-content">
-
                         <strong>
                           Autopay
                         </strong>
 
                         <span>
-                          Customer is charged
-                          automatically according
-                          to the billing schedule.
+                          Customer is
+                          charged
+                          automatically
+                          according to
+                          the billing
+                          schedule.
                         </span>
 
                         <small>
-                          Example: ₹2,000 every month
-                          → payment is automatically
-                          collected each month.
-                        </small>
-
+                          Example:
+                          ₹2,000 every
+                          month →
+                          payment is
+                          automatically
+                          collected
+                          each month.
+                        </smode
+                        small>
                       </div>
-
                     </button>
-
+                    */}
                   </div>
-
                 )}
-
               </div>
-
             </div>
-
 
             {/* AUTOPAY FIELDS */}
 
             {form.billing_mode ===
               "autopay" && (
               <>
-
                 <div className="add-form-group">
-
                   <label>
                     Billing Period *
                   </label>
@@ -1809,11 +1905,13 @@ const EditPackage = () => {
                     value={
                       form.billing_period
                     }
-                    onChange={handleChange}
+                    onChange={
+                      handleChange
+                    }
                   >
-
                     <option value="">
-                      Select Billing Period
+                      Select Billing
+                      Period
                     </option>
 
                     <option value="monthly">
@@ -1827,14 +1925,10 @@ const EditPackage = () => {
                     <option value="yearly">
                       Yearly
                     </option>
-
                   </select>
-
                 </div>
 
-
                 <div className="add-form-group">
-
                   <label>
                     Billing Interval *
                   </label>
@@ -1846,15 +1940,14 @@ const EditPackage = () => {
                     value={
                       form.billing_interval
                     }
-                    onChange={handleChange}
+                    onChange={
+                      handleChange
+                    }
                     placeholder="e.g. 1"
                   />
-
                 </div>
 
-
                 <div className="add-form-group">
-
                   <label>
                     Billing Cycle Count *
                   </label>
@@ -1866,15 +1959,14 @@ const EditPackage = () => {
                     value={
                       form.billing_cycle_count
                     }
-                    onChange={handleChange}
+                    onChange={
+                      handleChange
+                    }
                     placeholder="e.g. 12"
                   />
-
                 </div>
 
-
                 <div className="add-form-group">
-
                   <label>
                     Validity Days
                   </label>
@@ -1886,23 +1978,20 @@ const EditPackage = () => {
                     value={
                       form.validity_days
                     }
-                    onChange={handleChange}
+                    onChange={
+                      handleChange
+                    }
                     placeholder="e.g. 365"
                   />
-
                 </div>
-
               </>
             )}
-
 
             {/* ONE TIME VALIDITY */}
 
             {form.billing_mode ===
               "one_time" && (
-
               <div className="add-form-group">
-
                 <label>
                   Validity Days
                 </label>
@@ -1914,27 +2003,22 @@ const EditPackage = () => {
                   value={
                     form.validity_days
                   }
-                  onChange={handleChange}
+                  onChange={
+                    handleChange
+                  }
                   placeholder="e.g. 30"
                 />
-
               </div>
-
             )}
-
           </div>
-
         </section>
-
 
         {/* ====================================================
             TAGS
         ==================================================== */}
 
         <section className="add-package-section">
-
           <div className="add-section-header">
-
             <h2>
               Tags
             </h2>
@@ -1942,22 +2026,16 @@ const EditPackage = () => {
             <p>
               Add tags for this package.
             </p>
-
           </div>
 
-
           <div className="tag-input-wrapper">
-
             <div className="package-tags">
-
               {form.tags.map(
                 (tag, index) => (
-
                   <span
                     className="package-tag"
                     key={`${tag}-${index}`}
                   >
-
                     {tag}
 
                     <button
@@ -1970,14 +2048,10 @@ const EditPackage = () => {
                     >
                       <FaTimes />
                     </button>
-
                   </span>
-
                 )
               )}
-
             </div>
-
 
             <input
               type="text"
@@ -1985,44 +2059,39 @@ const EditPackage = () => {
                 form.tagInput
               }
               onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  tagInput:
-                    e.target.value,
-                }))
+                setForm(
+                  (prev) => ({
+                    ...prev,
+                    tagInput:
+                      e.target.value,
+                  })
+                )
               }
               onKeyDown={
                 handlePackageTagKeyDown
               }
               placeholder="Type tag and press Enter"
             />
-
           </div>
-
         </section>
-
 
         {/* ====================================================
             CONFIGURATION
         ==================================================== */}
 
         <section className="add-package-section">
-
           <div className="add-section-header configuration-header">
-
             <div>
-
               <h2>
                 Package Configuration
               </h2>
 
               <p>
-                Update the benefits included
-                in this package.
+                Update the benefits
+                included in this
+                package.
               </p>
-
             </div>
-
 
             <button
               type="button"
@@ -2034,23 +2103,19 @@ const EditPackage = () => {
               <FaPlus />
               Add Benefit
             </button>
-
           </div>
-
 
           {form.configuration.length ===
           0 ? (
-
             <div className="configuration-empty">
-
               <h3>
                 No Benefits Added
               </h3>
 
               <p>
-                Click "Add Benefit" to
-                configure what customers
-                receive.
+                Click "Add Benefit"
+                to configure what
+                customers receive.
               </p>
 
               <button
@@ -2063,28 +2128,19 @@ const EditPackage = () => {
                 <FaPlus />
                 Add First Benefit
               </button>
-
             </div>
-
           ) : (
-
             <div className="configuration-list">
-
               {form.configuration.map(
                 (config, index) => (
-
                   <div
                     className="configuration-card"
-                    key={index}
+                    key={`${config.name}-${index}`}
                   >
-
-
                     {/* BENEFIT HEADER */}
 
                     <div className="configuration-card-header">
-
                       <div>
-
                         <span>
                           Benefit{" "}
                           {index + 1}
@@ -2094,9 +2150,7 @@ const EditPackage = () => {
                           {config.label ||
                             "Benefit"}
                         </h3>
-
                       </div>
-
 
                       <button
                         type="button"
@@ -2109,19 +2163,14 @@ const EditPackage = () => {
                       >
                         <FaTrash />
                       </button>
-
                     </div>
-
 
                     {/* BASIC BENEFIT */}
 
                     <div className="add-form-grid">
-
-
                       {/* NAME */}
 
                       <div className="add-form-group">
-
                         <label>
                           Benefit Name *
                         </label>
@@ -2131,23 +2180,26 @@ const EditPackage = () => {
                           value={
                             config.name
                           }
-                          onChange={(e) =>
-                            updateConfiguration(
-                              index,
-                              "name",
-                              e.target.value
-                            )
-                          }
-                          placeholder="e.g. Doctor Consultation"
+                          readOnly
+                          disabled
                         />
 
+                        <div className="benefit-field-help">
+                          <small>
+                            This is the
+                            Benefit ID
+                            from the
+                            Benefit
+                            master and
+                            cannot be
+                            changed.
+                          </small>
+                        </div>
                       </div>
-
 
                       {/* LABEL */}
 
                       <div className="add-form-group">
-
                         <label>
                           Customer Label *
                         </label>
@@ -2161,56 +2213,51 @@ const EditPackage = () => {
                             updateConfiguration(
                               index,
                               "label",
-                              e.target.value
+                              e.target
+                                .value
                             )
                           }
-                          placeholder="e.g. Doctor Consultation"
+                          placeholder="e.g. 1 Diet Follow-up"
                         />
 
+                        <div className="benefit-field-help">
+                          <small>
+                            This is the
+                            label shown
+                            to the
+                            customer.
+                          </small>
+                        </div>
                       </div>
-
 
                       {/* TYPE */}
 
                       <div className="add-form-group">
-
                         <label>
                           Benefit Type *
                         </label>
 
-                        <select
+                        <input
+                          type="text"
                           value={
                             config.type
                           }
-                          onChange={(e) =>
-                            changeConfigurationType(
-                              index,
-                              e.target.value
-                            )
-                          }
-                        >
+                          readOnly
+                          disabled
+                        />
 
-                          <option value="flag">
-                            Flag
-                          </option>
-
-                          <option value="consumable">
-                            Consumable
-                          </option>
-
-                          <option value="chat_pool">
-                            Chat Pool
-                          </option>
-
-                          <option value="rule">
-                            Rule
-                          </option>
-
-                        </select>
-
+                        <div className="benefit-field-help">
+                          <small>
+                            Benefit type
+                            comes from
+                            the Benefit
+                            API and
+                            cannot be
+                            changed here.
+                          </small>
+                        </div>
 
                         <div className="benefit-type-help">
-
                           {config.type ===
                             "flag" && (
                             <>
@@ -2219,35 +2266,40 @@ const EditPackage = () => {
                               </div>
 
                               <p>
-                                Use this when
-                                the benefit is
-                                simply included
-                                in the package.
+                                Use this
+                                when the
+                                benefit is
+                                simply
+                                included in
+                                the package.
                               </p>
 
                               <div className="benefit-help-example">
                                 <strong>
                                   Example:
                                 </strong>{" "}
-                                Premium Support
-                                → Included in
-                                package.
+                                Premium
+                                Support
+                                → Included
+                                in package.
                               </div>
                             </>
                           )}
-
 
                           {config.type ===
                             "consumable" && (
                             <>
                               <div className="benefit-help-title">
-                                Consumable Benefit
+                                Consumable
+                                Benefit
                               </div>
 
                               <p>
-                                Customer gets
-                                a fixed number
-                                of uses.
+                                Customer
+                                gets a
+                                fixed
+                                number of
+                                uses.
                               </p>
 
                               <div className="benefit-help-example">
@@ -2260,19 +2312,14 @@ const EditPackage = () => {
                               </div>
                             </>
                           )}
-
                         </div>
-
                       </div>
-
 
                       {/* COUNT */}
 
                       {config.type ===
                         "consumable" && (
-
                         <div className="add-form-group">
-
                           <label>
                             Count *
                           </label>
@@ -2287,38 +2334,38 @@ const EditPackage = () => {
                               updateConfiguration(
                                 index,
                                 "count",
-                                e.target.value
+                                e.target
+                                  .value
                               )
                             }
                             placeholder="e.g. 5"
                           />
 
                           <div className="benefit-field-help">
-
                             <small>
-                              How many times
-                              can the
+                              How many
+                              times can
+                              the
                               customer use
-                              this benefit?
+                              this
+                              benefit?
                             </small>
-
                           </div>
-
                         </div>
-
                       )}
-
                     </div>
 
-
-                    {/* ELIGIBILITY */}
+                    {/* ==================================================
+                        ELIGIBILITY
+                    ================================================== */}
 
                     <div className="add-form-grid">
+                      {/* ELIGIBLE AFTER DAYS */}
 
                       <div className="add-form-group">
-
                         <label>
-                          Eligible After Days
+                          Eligible After
+                          Days
                         </label>
 
                         <input
@@ -2331,29 +2378,33 @@ const EditPackage = () => {
                             updateConfiguration(
                               index,
                               "eligible_after_days",
-                              e.target.value
+                              e.target
+                                .value
                             )
                           }
                           placeholder="e.g. 15"
                         />
 
                         <div className="benefit-field-help">
-
                           <small>
                             Benefit becomes
-                            available after
-                            this many days.
+                            available
+                            after this
+                            many days.
+                            Leave blank
+                            if it is
+                            available
+                            immediately.
                           </small>
-
                         </div>
-
                       </div>
 
+                      {/* REQUIRED COMPLETED CAPABILITY */}
 
                       <div className="add-form-group">
-
                         <label>
-                          Requires Completed Benefit
+                          Requires Completed
+                          Benefit
                         </label>
 
                         <input
@@ -2366,312 +2417,199 @@ const EditPackage = () => {
                             updateConfiguration(
                               index,
                               "requires_completed_capability",
-                              e.target.value
+                              e.target
+                                .value
                             )
                           }
                           placeholder="e.g. Diet consultation"
                         />
 
                         <div className="benefit-field-help">
-
                           <small>
-                            Enter the benefit
-                            that must be
-                            completed first.
+                            Enter the
+                            benefit that
+                            must be
+                            completed
+                            before this
+                            benefit becomes
+                            available.
                           </small>
-
                         </div>
-
                       </div>
-
                     </div>
 
-
-                    {/* MATCH RULES */}
+                    {/* ==================================================
+                        MATCH RULES - READ ONLY
+                    ================================================== */}
 
                     <div className="match-rules-box">
-
                       <div className="match-rules-header">
-
                         <div>
-
                           <h4>
                             Match Rules
                           </h4>
 
                           <p>
-                            Select when this
-                            benefit should
-                            apply.
+                            These values
+                            come directly
+                            from the
+                            selected
+                            Benefit and
+                            cannot be
+                            changed while
+                            editing the
+                            package.
                           </p>
-
                         </div>
-
                       </div>
 
-
                       <div className="add-form-grid">
-
-
                         {/* FOLLOW UP */}
 
                         <div className="add-form-group">
-
                           <label>
                             Is Follow-up?
                           </label>
 
-                          <select
+                          <input
+                            type="text"
                             value={
                               config
                                 .match_rules
                                 ?.is_followup
-                                ? "true"
-                                : "false"
+                                ? "Yes"
+                                : "No"
                             }
-                            onChange={(e) =>
-                              updateMatchRule(
-                                index,
-                                "is_followup",
-                                e.target.value ===
-                                  "true"
-                              )
-                            }
-                          >
-
-                            <option value="false">
-                              No
-                            </option>
-
-                            <option value="true">
-                              Yes
-                            </option>
-
-                          </select>
+                            readOnly
+                            disabled
+                          />
 
                           <div className="benefit-field-help">
-
                             <small>
-                              Select Yes if
-                              this benefit
-                              applies only
-                              to follow-up
-                              consultations.
+                              This value is
+                              controlled by
+                              the Benefit
+                              master.
                             </small>
-
                           </div>
-
                         </div>
-
 
                         {/* DIETITIAN */}
 
                         <div className="add-form-group">
-
                           <label>
                             Is Dietitian?
                           </label>
 
-                          <select
+                          <input
+                            type="text"
                             value={
                               config
                                 .match_rules
                                 ?.is_dietitian
-                                ? "true"
-                                : "false"
+                                ? "Yes"
+                                : "No"
                             }
-                            onChange={(e) =>
-                              updateMatchRule(
-                                index,
-                                "is_dietitian",
-                                e.target.value ===
-                                  "true"
-                              )
-                            }
-                          >
-
-                            <option value="false">
-                              No
-                            </option>
-
-                            <option value="true">
-                              Yes
-                            </option>
-
-                          </select>
+                            readOnly
+                            disabled
+                          />
 
                           <div className="benefit-field-help">
-
                             <small>
-                              Select Yes if
-                              this benefit
-                              applies to
-                              dietitian
-                              services.
+                              This value is
+                              controlled by
+                              the Benefit
+                              master.
                             </small>
-
                           </div>
-
                         </div>
-
                       </div>
-
                     </div>
-
                   </div>
-
                 )
               )}
-
             </div>
-
           )}
-
         </section>
-
 
         {/* ====================================================
             STATUS
         ==================================================== */}
 
         <section className="add-package-section">
-
           <div className="add-section-header">
-
             <h2>
               Status & Availability
             </h2>
 
             <p>
-              Control package availability.
+              Control package
+              availability.
             </p>
-
           </div>
 
-
           <div className="status-checkbox-row">
-
-
             {/* ACTIVE */}
 
             <label>
-
               <input
                 type="checkbox"
                 checked={
                   form.is_active
                 }
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
+                  setForm(
+                    (prev) => ({
+                      ...prev,
 
-                    is_active:
-                      e.target.checked,
-                  }))
+                      is_active:
+                        e.target
+                          .checked,
+                    })
+                  )
                 }
               />
 
               Active
-
             </label>
-
-
-            {/* AVAILABLE TO ALL */}
-
-            <label>
-
-              <input
-                type="checkbox"
-                checked={
-                  form.available_to_all_users
-                }
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-
-                    available_to_all_users:
-                      e.target.checked,
-                  }))
-                }
-              />
-
-              Available To All Users
-
-            </label>
-
-
-            {/* CAN PURCHASE */}
-
-            <label>
-
-              <input
-                type="checkbox"
-                checked={
-                  form.can_be_purchased
-                }
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-
-                    can_be_purchased:
-                      e.target.checked,
-                  }))
-                }
-              />
-
-              Can Be Purchased
-
-            </label>
-
           </div>
-
         </section>
-
 
         {/* ====================================================
             FOOTER
         ==================================================== */}
 
         <div className="add-package-footer">
-
-
           <button
             type="button"
             className="package-cancel-button"
             onClick={() =>
-              navigate("/packages")
+              navigate(
+                "/packages"
+              )
             }
             disabled={loading}
           >
-
             <FaTimes />
 
             Cancel
-
           </button>
-
 
           <button
             type="submit"
             className="package-save-button"
             disabled={loading}
           >
-
             <FaSave />
 
             {loading
               ? "Updating..."
               : "Update Package"}
-
           </button>
-
         </div>
-
       </form>
-
     </div>
   );
 };
-
 
 export default EditPackage;

@@ -298,7 +298,7 @@ function App() {
         <Route
           path="/packages/add"
           element={
-            <ProtectedRoute permission="add_pakages">
+            <ProtectedRoute >
               <Layout>
                 <AddPackages/>
               </Layout>
