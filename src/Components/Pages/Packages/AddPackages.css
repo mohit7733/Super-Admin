@@ -2112,3 +2112,765 @@
   box-shadow: none;
 }
 
+/* =========================================================
+   PACKAGE BENEFITS
+   ========================================================= */
+
+.package-section {
+  width: 100%;
+}
+
+.package-section .section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.package-section .section-heading h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.package-section .section-heading p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #777;
+}
+
+
+/* =========================================================
+   BENEFIT MULTI SELECT DROPDOWN
+   ========================================================= */
+
+.benefit-multiselect {
+  position: relative;
+  width: 100%;
+}
+
+.benefit-select-button {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+
+  color: #333;
+  font-size: 14px;
+  font-family: inherit;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.benefit-select-button:hover {
+  border-color: #0d614e;
+}
+
+.benefit-select-button:focus {
+  outline: none;
+  border-color: #0d614e;
+  box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.08);
+}
+
+.benefit-select-button svg {
+  font-size: 12px;
+  color: #666;
+  transition: transform 0.2s ease;
+}
+
+.rotate-chevron {
+  transform: rotate(180deg);
+}
+
+
+/* =========================================================
+   DROPDOWN MENU
+   ========================================================= */
+
+.benefit-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+
+  max-height: 280px;
+  overflow-y: auto;
+
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  z-index: 1000;
+  padding: 6px 0;
+}
+
+
+/* =========================================================
+   BENEFIT OPTION
+   ========================================================= */
+
+.benefit-option {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  cursor: pointer;
+
+  font-size: 14px;
+  color: #333;
+
+  transition: background 0.2s ease;
+}
+
+.benefit-option:hover {
+  background: #f5f8f7;
+}
+
+.benefit-option.selected {
+  background: #eef7f4;
+}
+
+
+/* Checkbox */
+
+.benefit-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+
+  accent-color: #0d614e;
+
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+
+/* Benefit name */
+
+.benefit-option-text {
+  flex: 1;
+
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   DROPDOWN STATES
+   ========================================================= */
+
+.benefit-dropdown-loading,
+.benefit-dropdown-empty {
+  padding: 16px;
+
+  text-align: center;
+
+  font-size: 14px;
+  color: #777;
+}
+
+
+/* =========================================================
+   CONFIGURATION LIST
+   ========================================================= */
+
+.configuration-list {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  margin-top: 20px;
+}
+
+
+/* =========================================================
+   BENEFIT CARD
+   ========================================================= */
+
+.configuration-card {
+  width: 100%;
+
+  padding: 20px;
+
+  background: #fff;
+
+  border: 1px solid #e2e2e2;
+  border-radius: 10px;
+
+  box-sizing: border-box;
+
+  transition: box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.configuration-card:hover {
+  border-color: #d1d1d1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+
+/* =========================================================
+   CARD HEADER
+   ========================================================= */
+
+.configuration-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+
+  border-bottom: 1px solid #eeeeee;
+}
+
+.configuration-card-header h3 {
+  margin: 0 0 6px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  color: #222;
+}
+
+.benefit-id {
+  display: block;
+
+  font-size: 12px;
+  color: #888;
+
+  word-break: break-all;
+}
+
+
+/* =========================================================
+   REMOVE BUTTON
+   ========================================================= */
+
+.remove-configuration-btn {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #f0d7d7;
+  border-radius: 6px;
+
+  background: #fff;
+
+  color: #d9534f;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  flex-shrink: 0;
+}
+
+.remove-configuration-btn:hover {
+  background: #fff4f4;
+  border-color: #d9534f;
+}
+
+.remove-configuration-btn svg {
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   CONFIGURATION FIELDS
+   ========================================================= */
+
+.configuration-fields {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+.configuration-fields .full-width {
+  grid-column: 1 / -1;
+}
+
+
+/* =========================================================
+   FORM GROUP
+   ========================================================= */
+
+.configuration-fields .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.configuration-fields .form-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+}
+
+.configuration-fields input {
+  width: 100%;
+  min-height: 42px;
+
+  padding: 0 12px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #ddd;
+  border-radius: 7px;
+
+  background: #fff;
+
+  color: #333;
+
+  font-size: 14px;
+  font-family: inherit;
+
+  outline: none;
+}
+
+.configuration-fields input:focus {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.08);
+}
+
+.configuration-fields input[readonly] {
+  background: #f7f7f7;
+  color: #666;
+  cursor: default;
+}
+
+
+/* =========================================================
+   MATCH RULES
+   ========================================================= */
+
+.match-rules-box {
+  width: 100%;
+
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 12px;
+
+  padding: 12px;
+
+  box-sizing: border-box;
+
+  background: #f8f9f9;
+
+  border: 1px solid #e6e6e6;
+  border-radius: 7px;
+}
+
+.match-rule-item {
+  min-width: 180px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 10px 12px;
+
+  background: #fff;
+
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+}
+
+.match-rule-item span {
+  font-size: 13px;
+  color: #666;
+}
+
+.match-rule-item strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0d614e;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-configuration {
+  width: 100%;
+
+  padding: 28px 20px;
+
+  box-sizing: border-box;
+
+  text-align: center;
+
+  background: #fafafa;
+
+  border: 1px dashed #d8d8d8;
+  border-radius: 8px;
+
+  color: #888;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .configuration-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .configuration-fields .full-width {
+    grid-column: auto;
+  }
+
+  .match-rule-item {
+    width: 100%;
+  }
+
+  .configuration-card {
+    padding: 16px;
+  }
+
+  .configuration-card-header h3 {
+    font-size: 15px;
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .benefit-select-button {
+    min-height: 44px;
+    padding: 0 12px;
+  }
+
+  .benefit-dropdown-menu {
+    max-height: 240px;
+  }
+
+  .configuration-card-header {
+    gap: 10px;
+  }
+
+  .configuration-fields {
+    gap: 14px;
+  }
+
+}/* =========================================================
+   BENEFIT MULTI SELECT
+========================================================= */
+
+.benefit-multiselect {
+  position: relative;
+  width: 100%;
+}
+
+/* Main selected area */
+.benefit-select-button {
+  width: 100%;
+  min-height: 58px;
+  padding: 8px 48px 8px 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  background: #ffffff;
+  border: 1px solid #d6dfe1;
+  border-radius: 10px;
+
+  cursor: pointer;
+  text-align: left;
+}
+
+/* Selected benefit chips container */
+.selected-benefits-display {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  min-width: 0;
+}
+
+/* Placeholder */
+.benefit-placeholder {
+  color: #777;
+  font-size: 15px;
+}
+
+/* Individual selected benefit */
+.selected-benefit-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  padding: 8px 10px 8px 12px;
+
+  background: #eef7f4;
+  color: #075f4e;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+/* Benefit name */
+.selected-benefit-name {
+  line-height: 1.2;
+}
+
+/* X button inside chip */
+.selected-benefit-remove {
+  width: 20px;
+  height: 20px;
+
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background: transparent;
+
+  color: #075f4e;
+  font-size: 17px;
+  font-weight: 700;
+
+  cursor: pointer;
+  line-height: 1;
+}
+
+.selected-benefit-remove:hover {
+  color: #c62828;
+}
+
+/* Chevron */
+.benefit-select-button svg {
+  flex-shrink: 0;
+  color: #111;
+  font-size: 14px;
+}
+
+.rotate-chevron {
+  transform: rotate(180deg);
+}
+
+
+/* =========================================================
+   DROPDOWN
+========================================================= */
+
+.benefit-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+
+  z-index: 1000;
+
+  max-height: 330px;
+  overflow-y: auto;
+
+  padding: 8px;
+
+  background: #ffffff;
+
+  border: 1px solid #dfe5e5;
+  border-radius: 10px;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
+}
+
+/* Each benefit option */
+.benefit-option {
+  min-height: 52px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  transition: background 0.15s ease;
+}
+
+.benefit-option:hover {
+  background: #f4f8f7;
+}
+
+/* Selected option */
+.benefit-option.selected {
+  background: #eef7f4;
+}
+
+/* Checkbox */
+.benefit-option input[type="checkbox"] {
+  width: 21px;
+  height: 21px;
+
+  margin: 0;
+
+  accent-color: #0d614e;
+
+  flex-shrink: 0;
+
+  cursor: pointer;
+}
+
+/* Benefit name inside dropdown */
+.benefit-option-text {
+  color: #172020;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Loading / empty */
+.benefit-dropdown-loading,
+.benefit-dropdown-empty {
+  padding: 20px;
+  text-align: center;
+
+  color: #777;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.benefit-dropdown-menu::-webkit-scrollbar {
+  width: 7px;
+}
+
+.benefit-dropdown-menu::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 10px;
+}
+
+.benefit-dropdown-menu::-webkit-scrollbar-thumb {
+  background: #0d614e;
+  border-radius: 10px;
+}/* =========================================================
+   BENEFIT DROPDOWN OPTION
+========================================================= */
+
+.benefit-option {
+  width: 100%;
+  min-height: 52px;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+
+  gap: 12px;
+
+  padding: 10px 14px;
+
+  box-sizing: border-box;
+
+  border-radius: 8px;
+  cursor: pointer;
+
+  transition: background 0.15s ease;
+}
+
+.benefit-option:hover {
+  background: #f4f8f7;
+}
+
+.benefit-option.selected {
+  background: #eef7f4;
+}
+
+
+/* =========================================================
+   CHECKBOX
+========================================================= */
+
+.benefit-option input[type="checkbox"] {
+  width: 22px !important;
+  height: 22px !important;
+
+  min-width: 22px !important;
+  max-width: 22px !important;
+
+  flex: 0 0 22px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  accent-color: #0d614e;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   BENEFIT NAME
+========================================================= */
+
+.benefit-option-text {
+  display: block !important;
+
+  flex: 1 1 auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #172020;
+  font-size: 16px;
+  font-weight: 600;
+
+  line-height: 22px;
+
+  white-space: nowrap;
+}

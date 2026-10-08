@@ -244,18 +244,14 @@ const AddPackage = () => {
         Array.isArray(benefitData)
           ? benefitData
               .map((item) => ({
-                // =====================================
-                // BENEFIT ID
-                // =====================================
+              
 
                 id:
                   item?.id ||
                   item?.benefit_id ||
                   item?.value,
 
-                // =====================================
-                // BENEFIT NAME
-                // =====================================
+             
 
                 name:
                   item?.name ||
@@ -778,9 +774,7 @@ const AddPackage = () => {
     return "";
   };
 
-  // =====================================================
-  // SUBMIT
-  // =====================================================
+ 
 
   const handleSubmit = async (
     e
@@ -814,26 +808,19 @@ const AddPackage = () => {
           "superadmin_token"
         );
 
-      // ==========================================
-      // CLEAN CONFIGURATION
-      // ==========================================
 
       const configuration =
         form.configuration.map(
           (config) => {
-            // =====================================
-            // BASIC BENEFIT PAYLOAD
-            // =====================================
-
+           
             const cleanConfig = {
-              // IMPORTANT:
-              // This is the Benefit UUID.
+            
               name:
                 String(
                   config.name
                 ).trim(),
 
-              // Customer-facing label.
+            
               label:
                 String(
                   config.label
@@ -845,10 +832,7 @@ const AddPackage = () => {
                 config.type,
             };
 
-            // =====================================
-            // COUNT
-            // =====================================
-
+          
             if (
               config.type ===
                 "consumable" ||
@@ -861,12 +845,6 @@ const AddPackage = () => {
                 );
             }
 
-            // =====================================
-            // ELIGIBLE AFTER DAYS
-            // =====================================
-
-            // Editable by admin.
-            // Only send when a value is entered.
 
             if (
               config.eligible_after_days !==
@@ -881,13 +859,6 @@ const AddPackage = () => {
                   config.eligible_after_days
                 );
             }
-
-            // =====================================
-            // REQUIRED COMPLETED CAPABILITY
-            // =====================================
-
-            // Editable by admin.
-            // Only send when a value is entered.
 
             if (
               config.requires_completed_capability &&
@@ -1400,13 +1371,7 @@ const AddPackage = () => {
 
         </section>
 
-        {/* ============================================
-            BILLING
-        ============================================ */}
-
-   {/* ============================================
-    BILLING
-============================================ */}
+       
 
 <section className="add-package-section billing-section">
 
@@ -1817,9 +1782,6 @@ const AddPackage = () => {
 
               </button>
 
-              {/* ========================================
-                  DROPDOWN
-              ======================================== */}
 
             {showBenefitDropdown && (
   <div className="benefit-multiselect-dropdown">
@@ -1845,7 +1807,7 @@ const AddPackage = () => {
               isSelected ? "benefit-option-selected" : ""
             }`}
             onClick={() => {
-              // Already selected → Unselect
+           
               if (isSelected) {
                 const selectedIndex =
                   form.configuration.findIndex(
@@ -1859,11 +1821,10 @@ const AddPackage = () => {
                 return;
               }
 
-              // Not selected → Select
               addConfiguration(benefit);
             }}
           >
-            {/* CHECKBOX */}
+            
             <span
               className={`benefit-checkbox ${
                 isSelected ? "checked" : ""
@@ -1872,7 +1833,7 @@ const AddPackage = () => {
               {isSelected && <FaCheck />}
             </span>
 
-            {/* BENEFIT NAME */}
+
             <span className="benefit-option-text">
               <strong>{benefit.name}</strong>
 
@@ -1938,10 +1899,7 @@ const AddPackage = () => {
                     }
                   >
 
-                    {/* ==================================
-                        HEADER
-                    ================================== */}
-
+                 
                     <div className="configuration-card-header">
 
                       <div>
@@ -1978,30 +1936,13 @@ const AddPackage = () => {
 
                     <div className="add-form-grid">
 
-                      {/* BENEFIT NAME */}
+
+                     
 
                       <div className="add-form-group">
 
                         <label>
-                          Benefit Name
-                        </label>
-
-                        <input
-                          type="text"
-                          value={
-                            config.name
-                          }
-                          readOnly
-                        />
-
-                      </div>
-
-                      {/* CUSTOMER LABEL */}
-
-                      <div className="add-form-group">
-
-                        <label>
-                          Customer Label
+                        Benefit
                         </label>
 
                         <input
@@ -2014,7 +1955,7 @@ const AddPackage = () => {
 
                       </div>
 
-                      {/* BENEFIT TYPE */}
+                      
 
                       <div className="add-form-group">
 
@@ -2041,7 +1982,7 @@ const AddPackage = () => {
 
                       </div>
 
-                      {/* COUNT */}
+                      
 
                       {config.type ===
                         "consumable" && (
@@ -2140,7 +2081,6 @@ const AddPackage = () => {
 
                         </div>
 
-                        {/* REQUIRED COMPLETED BENEFIT */}
 
                         <div className="add-form-group">
 
