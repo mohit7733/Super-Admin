@@ -3,22 +3,24 @@ import { useNavigate } from "react-router-dom";
 
 import {
   FaArrowLeft,
-  FaPlus,
   FaTrash,
   FaSave,
   FaTimes,
   FaChevronDown,
   FaQuestionCircle,
   FaCreditCard,
+  FaCheck,
 } from "react-icons/fa";
 
 import BASE_URL from "../../../Base";
 import "./AddPackages.css";
 
-
-
+// =====================================================
+// EMPTY CONFIGURATION
+// =====================================================
 
 const createEmptyConfiguration = () => ({
+  benefit_id: "",
   name: "",
   label: "",
   type: "flag",
@@ -28,40 +30,61 @@ const createEmptyConfiguration = () => ({
   tags: [],
   tagInput: "",
 
-  match_rules: {
-    is_followup: false,
-    is_dietitian: false,
-  },
+  // Read-only values coming from Benefit API
+  match_rules: {},
 
+  // Editable package-level values
   eligible_after_days: "",
   requires_completed_capability: "",
 });
 
-
-
+// =====================================================
+// COMPONENT
+// =====================================================
 
 const AddPackage = () => {
   const navigate = useNavigate();
 
-  const [categories, setCategories] = useState([]);
+  // ===================================================
+  // CATEGORIES
+  // ===================================================
 
-  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
 
+  // ===================================================
+  // BENEFITS
+  // ===================================================
+
+  const [benefits, setBenefits] = useState([]);
+  const [benefitLoading, setBenefitLoading] = useState(false);
+  const [showBenefitDropdown, setShowBenefitDropdown] =
+    useState(false);
+
+  // ===================================================
+  // GENERAL STATES
+  // ===================================================
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // ===================================================
+  // BILLING DROPDOWN
+  // ===================================================
 
   const [
     showBillingModeDropdown,
     setShowBillingModeDropdown,
   ] = useState(false);
 
-
+  // ===================================================
+  // FORM
+  // ===================================================
 
   const [form, setForm] = useState({
     name: "",
     description: "",
-
     category: "",
 
     original_price: "",
@@ -71,7 +94,6 @@ const AddPackage = () => {
     button_action: "purchase_package",
 
     billing_mode: "one_time",
-
     billing_period: "",
     billing_interval: "",
     billing_cycle_count: "",
@@ -90,10 +112,9 @@ const AddPackage = () => {
     configuration: [],
   });
 
-
-  // =======================================================
+  // =====================================================
   // FETCH CATEGORIES
-  // =======================================================
+  // =====================================================
 
   const fetchCategories = async () => {
     try {
@@ -102,18 +123,8 @@ const AddPackage = () => {
       const token =
         sessionStorage.getItem("superadmin_token");
 
-      /*
-       * Use your actual package-category endpoint here.
-       *
-       * If your backend endpoint is:
-       * /packages/admin/categories/
-       *
-       * then replace the URL below.
-       */
-
       const response = await fetch(
-        `${BASE_URL}/packages/admin/category/
-`,
+        `${BASE_URL}/packages/admin/category/`,
         {
           method: "GET",
 
@@ -167,7 +178,6 @@ const AddPackage = () => {
           : [];
 
       setCategories(normalizedCategories);
-
     } catch (err) {
       console.error(
         "Category Error:",
@@ -175,21 +185,182 @@ const AddPackage = () => {
       );
 
       setCategories([]);
-
     } finally {
       setCategoryLoading(false);
     }
   };
 
+  // =====================================================
+  // FETCH BENEFITS
+  // =====================================================
+
+  const fetchBenefits = async () => {
+    try {
+      setBenefitLoading(true);
+
+      const token =
+        sessionStorage.getItem("superadmin_token");
+
+      const response = await fetch(
+        `${BASE_URL}/packages/admin/benefit/`,
+        {
+          method: "GET",
+
+          headers: {
+            "Content-Type": "application/json",
+
+            ...(token
+              ? {
+                  Authorization: `Bearer ${token}`,
+                }
+              : {}),
+
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      console.log(
+        "BENEFIT API RESPONSE:",
+        result
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message ||
+            "Failed to load benefits."
+        );
+      }
+
+      const benefitData =
+        result?.data?.results ||
+        result?.data ||
+        result?.results ||
+        [];
+
+      const normalizedBenefits =
+        Array.isArray(benefitData)
+          ? benefitData
+              .map((item) => ({
+                // =====================================
+                // BENEFIT ID
+                // =====================================
+
+                id:
+                  item?.id ||
+                  item?.benefit_id ||
+                  item?.value,
+
+                // =====================================
+                // BENEFIT NAME
+                // =====================================
+
+                name:
+                  item?.name ||
+                  item?.benefit_name ||
+                  item?.title ||
+                  item?.label ||
+                  "",
+
+                // =====================================
+                // BENEFIT LABEL
+                // =====================================
+
+                label:
+                  item?.label ||
+                  item?.benefit_label ||
+                  item?.name ||
+                  item?.benefit_name ||
+                  "",
+
+                // =====================================
+                // BENEFIT TYPE
+                // =====================================
+
+                type:
+                  item?.fulfillment_mode ||
+                  item?.type ||
+                  item?.benefit_type ||
+                  "flag",
+
+                fulfillment_mode:
+                  item?.fulfillment_mode ||
+                  "flag",
+
+                // =====================================
+                // OTHER API VALUES
+                // =====================================
+
+                unit:
+                  item?.unit || "none",
+
+                description:
+                  item?.description || "",
+
+                tags:
+                  Array.isArray(item?.tags)
+                    ? item.tags
+                    : [],
+
+                // =====================================
+                // MATCH RULES
+                // READ ONLY
+                // =====================================
+
+                match_rules:
+                  item?.match_rules || {},
+
+                // =====================================
+                // DEFAULT EXTRA DETAILS
+                // =====================================
+
+                default_extra_details:
+                  item?.default_extra_details || {},
+              }))
+              .filter(
+                (item) =>
+                  item.id &&
+                  item.name
+              )
+          : [];
+
+      setBenefits(normalizedBenefits);
+
+      console.log(
+        "NORMALIZED BENEFITS:",
+        normalizedBenefits
+      );
+    } catch (err) {
+      console.error(
+        "Benefit Error:",
+        err
+      );
+
+      setBenefits([]);
+
+      setError(
+        err?.message ||
+          "Failed to load benefits."
+      );
+    } finally {
+      setBenefitLoading(false);
+    }
+  };
+
+  // =====================================================
+  // INITIAL API CALLS
+  // =====================================================
 
   useEffect(() => {
     fetchCategories();
+    fetchBenefits();
   }, []);
 
-
-  // =======================================================
-  // BASIC FORM CHANGE
-  // =======================================================
+  // =====================================================
+  // NORMAL INPUT CHANGE
+  // =====================================================
 
   const handleChange = (e) => {
     const {
@@ -203,10 +374,9 @@ const AddPackage = () => {
     }));
   };
 
-
-  // =======================================================
+  // =====================================================
   // PURCHASE TYPE
-  // =======================================================
+  // =====================================================
 
   const handlePurchaseTypeChange = (
     value
@@ -228,10 +398,9 @@ const AddPackage = () => {
     }));
   };
 
-
-  // =======================================================
+  // =====================================================
   // BILLING MODE
-  // =======================================================
+  // =====================================================
 
   const handleBillingModeChange = (
     value
@@ -251,10 +420,9 @@ const AddPackage = () => {
     }));
   };
 
-
-  // =======================================================
+  // =====================================================
   // PACKAGE TAGS
-  // =======================================================
+  // =====================================================
 
   const addPackageTag = () => {
     const tag =
@@ -285,7 +453,6 @@ const AddPackage = () => {
     }));
   };
 
-
   const removePackageTag = (
     index
   ) => {
@@ -298,7 +465,6 @@ const AddPackage = () => {
     }));
   };
 
-
   const handlePackageTagKeyDown = (
     e
   ) => {
@@ -309,26 +475,114 @@ const AddPackage = () => {
     }
   };
 
+  // =====================================================
+  // ADD BENEFIT CONFIGURATION
+  // =====================================================
 
-  // =======================================================
-  // ADD CONFIGURATION
-  // =======================================================
+  const addConfiguration = (
+    benefit
+  ) => {
+    if (!benefit?.id) return;
 
-  const addConfiguration = () => {
-    setForm((prev) => ({
-      ...prev,
+    setForm((prev) => {
+      const alreadySelected =
+        prev.configuration.some(
+          (item) =>
+            item.benefit_id ===
+            benefit.id
+        );
 
-      configuration: [
-        ...prev.configuration,
-        createEmptyConfiguration(),
-      ],
-    }));
+      if (alreadySelected) {
+        return prev;
+      }
+
+      const benefitType =
+        benefit.fulfillment_mode ||
+        benefit.type ||
+        benefit.benefit_type ||
+        "flag";
+
+      const defaultDetails =
+        benefit.default_extra_details ||
+        {};
+
+      return {
+        ...prev,
+
+        configuration: [
+          ...prev.configuration,
+
+          {
+            // ==================================
+            // INTERNAL ID
+            // ==================================
+
+            benefit_id:
+              benefit.id,
+
+            // ==================================
+            // BACKEND VALUES
+            // ==================================
+
+            // IMPORTANT:
+            // Backend expects benefit UUID
+            // in "name".
+            name:
+              benefit.id,
+
+            label:
+              benefit.label ||
+              benefit.name ||
+              "",
+
+            type:
+              benefitType,
+
+            // ==================================
+            // EDITABLE COUNT
+            // ==================================
+
+            count:
+              benefitType ===
+                "consumable" ||
+              benefitType ===
+                "chat_pool"
+                ? 1
+                : "",
+
+            // ==================================
+            // EDITABLE ELIGIBILITY
+            // ==================================
+
+            eligible_after_days:
+              defaultDetails
+                ?.eligible_after_days ??
+              "",
+
+            requires_completed_capability:
+              defaultDetails
+                ?.requires_completed_capability ??
+              "",
+
+            // ==================================
+            // READ-ONLY MATCH RULES
+            // ==================================
+
+            // These come directly from
+            // the selected Benefit API.
+            // Admin cannot edit them here.
+            match_rules:
+              benefit.match_rules ||
+              {},
+          },
+        ],
+      };
+    });
   };
 
-
-  // =======================================================
-  // REMOVE CONFIGURATION
-  // =======================================================
+  // =====================================================
+  // REMOVE BENEFIT
+  // =====================================================
 
   const removeConfiguration = (
     index
@@ -338,15 +592,15 @@ const AddPackage = () => {
 
       configuration:
         prev.configuration.filter(
-          (_, i) => i !== index
+          (_, i) =>
+            i !== index
         ),
     }));
   };
 
-
-  // =======================================================
-  // UPDATE CONFIGURATION
-  // =======================================================
+  // =====================================================
+  // UPDATE BENEFIT
+  // =====================================================
 
   const updateConfiguration = (
     index,
@@ -362,187 +616,26 @@ const AddPackage = () => {
             i === index
               ? {
                   ...item,
-                  [field]: value,
+                  [field]:
+                    value,
                 }
               : item
         ),
     }));
   };
 
-
-  // =======================================================
-  // CHANGE CONFIGURATION TYPE
-  // =======================================================
-
- const changeConfigurationType = (index, type) => {
-  setForm((prev) => ({
-    ...prev,
-
-    configuration: prev.configuration.map((item, i) => {
-      if (i !== index) {
-        return item;
-      }
-
-      return {
-        ...item,
-
-        type,
-
-        count:
-          type === "consumable" ||
-          type === "chat_pool"
-            ? item.count || 1
-            : "",
-
-        match_rules: item.match_rules || {
-          is_followup: false,
-          is_dietitian: false,
-        },
-
-        eligible_after_days:
-          item.eligible_after_days || "",
-
-        requires_completed_capability:
-          item.requires_completed_capability || "",
-      };
-    }),
-  }));
-};
-
-
-  // =======================================================
-  // MATCH RULES
-  // =======================================================
-
-  const updateMatchRule = (
-    index,
-    field,
-    value
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-
-      configuration:
-        prev.configuration.map(
-          (item, i) =>
-            i === index
-              ? {
-                  ...item,
-
-                  match_rules: {
-                    ...(item.match_rules || {}),
-
-                    [field]: value,
-                  },
-                }
-              : item
-        ),
-    }));
-  };
-
-
-  // =======================================================
-  // CONFIGURATION TAGS
-  // =======================================================
-
-  const addConfigurationTag = (
-    index
-  ) => {
-    const config =
-      form.configuration[index];
-
-    const tag =
-      config?.tagInput?.trim();
-
-    if (!tag) return;
-
-    const alreadyExists =
-      config.tags?.some(
-        (existingTag) =>
-          existingTag.toLowerCase() ===
-          tag.toLowerCase()
-      );
-
-    if (alreadyExists) {
-      return;
-    }
-
-    setForm((prev) => ({
-      ...prev,
-
-      configuration:
-        prev.configuration.map(
-          (item, i) =>
-            i === index
-              ? {
-                  ...item,
-
-                  tags: [
-                    ...(item.tags || []),
-                    tag,
-                  ],
-
-                  tagInput: "",
-                }
-              : item
-        ),
-    }));
-  };
-
-
-  const removeConfigurationTag = (
-    configIndex,
-    tagIndex
-  ) => {
-    setForm((prev) => ({
-      ...prev,
-
-      configuration:
-        prev.configuration.map(
-          (item, i) =>
-            i === configIndex
-              ? {
-                  ...item,
-
-                  tags:
-                    item.tags.filter(
-                      (_, index) =>
-                        index !== tagIndex
-                    ),
-                }
-              : item
-        ),
-    }));
-  };
-
-
-  const handleConfigurationTagKeyDown = (
-    e,
-    index
-  ) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-
-      addConfigurationTag(index);
-    }
-  };
-
-
-  // =======================================================
+  // =====================================================
   // VALIDATION
-  // =======================================================
+  // =====================================================
 
   const validateForm = () => {
-
     if (!form.name.trim()) {
       return "Package name is required.";
     }
 
-
     if (!form.category) {
       return "Please select a category.";
     }
-
 
     if (
       form.original_price === "" ||
@@ -551,14 +644,12 @@ const AddPackage = () => {
       return "Original price is required.";
     }
 
-
     if (
       form.selling_price === "" ||
       form.selling_price === null
     ) {
       return "Selling price is required.";
     }
-
 
     if (
       Number(form.original_price) < 0 ||
@@ -567,24 +658,14 @@ const AddPackage = () => {
       return "Price cannot be negative.";
     }
 
-
-    if (
-      Number(form.selling_price) >
-      Number(form.original_price)
-    ) {
-      // Allowed - no restriction
-    }
-
-
-    // =====================================================
-    // AUTOPAY VALIDATION
-    // =====================================================
+    // =========================================
+    // AUTOPAY
+    // =========================================
 
     if (
       form.billing_mode ===
       "autopay"
     ) {
-
       if (!form.billing_period) {
         return "Billing period is required for autopay.";
       }
@@ -612,77 +693,110 @@ const AddPackage = () => {
       }
     }
 
+    // =========================================
+    // BENEFITS
+    // =========================================
 
-    // =====================================================
-    // CONFIGURATION VALIDATION
-    // =====================================================
+    if (
+      form.configuration.length === 0
+    ) {
+      return "Please select at least one benefit.";
+    }
 
     for (
       let i = 0;
       i < form.configuration.length;
       i++
     ) {
-
       const config =
         form.configuration[i];
 
-
       if (
         !config.name ||
-        !config.name.trim()
+        !String(config.name).trim()
       ) {
-        return `Benefit ${i + 1}: name is required.`;
+        return `Benefit ${
+          i + 1
+        }: name is required.`;
       }
-
 
       if (
         !config.label ||
-        !config.label.trim()
+        !String(config.label).trim()
       ) {
-        return `Benefit ${i + 1}: customer label is required.`;
+        return `Benefit ${
+          i + 1
+        }: customer label is required.`;
       }
 
+      // =====================================
+      // CONSUMABLE / CHAT POOL COUNT
+      // =====================================
 
-      // Count only for these two types
       if (
-        config.type === "consumable" ||
-        config.type === "chat_pool"
+        config.type ===
+          "consumable" ||
+        config.type ===
+          "chat_pool"
       ) {
-
         if (
-          !config.count ||
+          config.count === "" ||
+          config.count === null ||
+          config.count === undefined ||
           Number(config.count) < 1
         ) {
-          return `Benefit ${i + 1}: count must be at least 1.`;
+          return `Benefit ${
+            i + 1
+          }: count must be at least 1.`;
+        }
+      }
+
+      // =====================================
+      // ELIGIBLE AFTER DAYS
+      // =====================================
+
+      if (
+        config.eligible_after_days !==
+          "" &&
+        config.eligible_after_days !==
+          null &&
+        config.eligible_after_days !==
+          undefined
+      ) {
+        if (
+          Number(
+            config.eligible_after_days
+          ) < 0
+        ) {
+          return `Benefit ${
+            i + 1
+          }: eligible after days cannot be negative.`;
         }
       }
     }
 
-
     return "";
   };
 
-
-  // =======================================================
+  // =====================================================
   // SUBMIT
-  // =======================================================
+  // =====================================================
 
   const handleSubmit = async (
     e
   ) => {
-
     e.preventDefault();
 
     setError("");
     setSuccess("");
 
-
     const validationError =
       validateForm();
 
-
     if (validationError) {
-      setError(validationError);
+      setError(
+        validationError
+      );
 
       window.scrollTo({
         top: 0,
@@ -692,106 +806,137 @@ const AddPackage = () => {
       return;
     }
 
-
     try {
-
       setLoading(true);
-
 
       const token =
         sessionStorage.getItem(
           "superadmin_token"
         );
 
-
-      // ===================================================
+      // ==========================================
       // CLEAN CONFIGURATION
-      // ===================================================
+      // ==========================================
 
-   const configuration = form.configuration.map((config) => {
-  const cleanConfig = {
-    name: config.name.trim(),
-    label: config.label.trim(),
-    type: config.type,
-  };
+      const configuration =
+        form.configuration.map(
+          (config) => {
+            // =====================================
+            // BASIC BENEFIT PAYLOAD
+            // =====================================
 
-  // =====================================================
-  // COUNT
-  // Only for consumable / chat_pool
-  // =====================================================
+            const cleanConfig = {
+              // IMPORTANT:
+              // This is the Benefit UUID.
+              name:
+                String(
+                  config.name
+                ).trim(),
 
-  if (
-    config.type === "consumable" ||
-    config.type === "chat_pool"
-  ) {
-    cleanConfig.count = Number(config.count);
-  }
+              // Customer-facing label.
+              label:
+                String(
+                  config.label
+                ).trim(),
 
-  // =====================================================
-  // TAGS
-  // =====================================================
+              // IMPORTANT:
+              // Send benefit type as well.
+              type:
+                config.type,
+            };
 
-  if (
-    config.tags &&
-    config.tags.length > 0
-  ) {
-    cleanConfig.tags = config.tags;
-  }
+            // =====================================
+            // COUNT
+            // =====================================
 
-  // =====================================================
-  // MATCH RULES
-  // Add only when actually configured
-  // =====================================================
+            if (
+              config.type ===
+                "consumable" ||
+              config.type ===
+                "chat_pool"
+            ) {
+              cleanConfig.count =
+                Number(
+                  config.count
+                );
+            }
 
-  const hasMatchRules =
-    config.match_rules?.is_followup === true ||
-    config.match_rules?.is_dietitian === true;
+            // =====================================
+            // ELIGIBLE AFTER DAYS
+            // =====================================
 
-  if (hasMatchRules) {
-    cleanConfig.match_rules = {
-      is_followup: Boolean(
-        config.match_rules?.is_followup
-      ),
-      is_dietitian: Boolean(
-        config.match_rules?.is_dietitian
-      ),
-    };
-  }
+            // Editable by admin.
+            // Only send when a value is entered.
 
-  // =====================================================
-  // ELIGIBLE AFTER DAYS
-  // =====================================================
+            if (
+              config.eligible_after_days !==
+                "" &&
+              config.eligible_after_days !==
+                null &&
+              config.eligible_after_days !==
+                undefined
+            ) {
+              cleanConfig.eligible_after_days =
+                Number(
+                  config.eligible_after_days
+                );
+            }
 
-  if (
-    config.eligible_after_days !== "" &&
-    config.eligible_after_days !== null &&
-    config.eligible_after_days !== undefined
-  ) {
-    cleanConfig.eligible_after_days =
-      Number(config.eligible_after_days);
-  }
+            // =====================================
+            // REQUIRED COMPLETED CAPABILITY
+            // =====================================
 
-  // =====================================================
-  // REQUIRES COMPLETED CAPABILITY
-  // =====================================================
+            // Editable by admin.
+            // Only send when a value is entered.
 
-  if (
-    config.requires_completed_capability &&
-    config.requires_completed_capability.trim()
-  ) {
-    cleanConfig.requires_completed_capability =
-      config.requires_completed_capability.trim();
-  }
+            if (
+              config.requires_completed_capability &&
+              String(
+                config.requires_completed_capability
+              ).trim()
+            ) {
+              cleanConfig.requires_completed_capability =
+                String(
+                  config.requires_completed_capability
+                ).trim();
+            }
 
-  return cleanConfig;
-});
+            // =====================================
+            // MATCH RULES
+            // =====================================
 
-      // ===================================================
+            // IMPORTANT:
+            // match_rules are NOT editable from
+            // this form.
+            //
+            // They are copied automatically from
+            // the selected Benefit API and sent
+            // unchanged in the package payload.
+
+            if (
+              config.match_rules &&
+              typeof config.match_rules ===
+                "object" &&
+              !Array.isArray(
+                config.match_rules
+              ) &&
+              Object.keys(
+                config.match_rules
+              ).length > 0
+            ) {
+              cleanConfig.match_rules =
+                config.match_rules;
+            }
+
+            return cleanConfig;
+          }
+        );
+
+      // ==========================================
       // PAYLOAD
-      // ===================================================
+      // ==========================================
 
       const payload = {
-
         name:
           form.name.trim(),
 
@@ -802,10 +947,14 @@ const AddPackage = () => {
           form.category,
 
         original_price:
-          Number(form.original_price),
+          Number(
+            form.original_price
+          ),
 
         selling_price:
-          Number(form.selling_price),
+          Number(
+            form.selling_price
+          ),
 
         purchase_type:
           form.purchase_type,
@@ -839,7 +988,8 @@ const AddPackage = () => {
             : null,
 
         validity_days:
-          form.validity_days === ""
+          form.validity_days ===
+          ""
             ? null
             : Number(
                 form.validity_days
@@ -849,7 +999,9 @@ const AddPackage = () => {
           form.tags,
 
         sequence:
-          Number(form.sequence),
+          Number(
+            form.sequence
+          ),
 
         is_active:
           form.is_active,
@@ -860,19 +1012,22 @@ const AddPackage = () => {
         can_be_purchased:
           form.can_be_purchased,
 
-        configuration,
+        configuration:
+          configuration,
       };
-
 
       console.log(
         "CREATE PACKAGE PAYLOAD:",
-        payload
+        JSON.stringify(
+          payload,
+          null,
+          2
+        )
       );
 
-
-      // ===================================================
+      // ==========================================
       // API
-      // ===================================================
+      // ==========================================
 
       const response =
         await fetch(
@@ -881,7 +1036,6 @@ const AddPackage = () => {
             method: "POST",
 
             headers: {
-
               "Content-Type":
                 "application/json",
 
@@ -903,67 +1057,49 @@ const AddPackage = () => {
           }
         );
 
-
       const result =
         await response.json();
 
-
       if (!response.ok) {
-
         throw new Error(
           result?.message ||
+            result?.detail ||
             "Failed to create package."
         );
       }
-
-
-      // ===================================================
-      // SUCCESS
-      // ===================================================
 
       setSuccess(
         "Package created successfully."
       );
 
-
       setTimeout(() => {
         navigate("/packages");
       }, 800);
-
-
     } catch (err) {
-
       console.error(
         "Create Package Error:",
         err
       );
 
-
       setError(
         err?.message ||
           "Something went wrong while creating package."
       );
-
-
     } finally {
-
       setLoading(false);
     }
   };
 
-
-  // =======================================================
+  // =====================================================
   // RENDER
-  // =======================================================
+  // =====================================================
 
   return (
-
     <div className="package-page add-package-page">
 
-
-      {/* ==================================================
+      {/* ===============================================
           HEADER
-      ================================================== */}
+      =============================================== */}
 
       <div className="package-page-header">
 
@@ -996,13 +1132,11 @@ const AddPackage = () => {
 
       </div>
 
-
-      {/* ==================================================
+      {/* ===============================================
           ERROR
-      ================================================== */}
+      =============================================== */}
 
       {error && (
-
         <div className="package-error">
 
           <strong>
@@ -1023,40 +1157,30 @@ const AddPackage = () => {
           </button>
 
         </div>
-
       )}
 
-
-      {/* ==================================================
+      {/* ===============================================
           SUCCESS
-      ================================================== */}
+      =============================================== */}
 
       {success && (
-
         <div className="package-success">
-
           <strong>
             {success}
           </strong>
-
         </div>
-
       )}
-
-
-      {/* ==================================================
-          FORM
-      ================================================== */}
 
       <form
         className="add-package-form"
-        onSubmit={handleSubmit}
+        onSubmit={
+          handleSubmit
+        }
       >
 
-
-        {/* ==================================================
+        {/* ============================================
             BASIC DETAILS
-        ================================================== */}
+        ============================================ */}
 
         <section className="add-package-section">
 
@@ -1073,49 +1197,61 @@ const AddPackage = () => {
 
           </div>
 
-
-          <div className="add-form-grid">
-
+          <div className="add-form-grid basic-details-grid">
 
             {/* PACKAGE NAME */}
 
-            <div className="add-form-group full-width">
+            <div className="add-form-group full-width-field">
 
               <label>
-                Package Name *
+                Package Name <span>*</span>
               </label>
 
               <input
                 type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
+                value={
+                  form.name
+                }
+                onChange={(e) =>
+                  setForm(
+                    (prev) => ({
+                      ...prev,
+                      name:
+                        e.target.value,
+                    })
+                  )
+                }
                 placeholder="Enter package name"
               />
 
             </div>
 
-
             {/* DESCRIPTION */}
 
-            <div className="add-form-group full-width">
+            <div className="add-form-group full-width-field">
 
               <label>
                 Description
               </label>
 
               <textarea
-                name="description"
+                rows="4"
                 value={
                   form.description
                 }
-                onChange={handleChange}
+                onChange={(e) =>
+                  setForm(
+                    (prev) => ({
+                      ...prev,
+                      description:
+                        e.target.value,
+                    })
+                  )
+                }
                 placeholder="Enter package description"
-                rows={4}
               />
 
             </div>
-
 
             {/* CATEGORY */}
 
@@ -1127,9 +1263,15 @@ const AddPackage = () => {
 
               <select
                 name="category"
-                value={form.category}
-                onChange={handleChange}
-                disabled={categoryLoading}
+                value={
+                  form.category
+                }
+                onChange={
+                  handleChange
+                }
+                disabled={
+                  categoryLoading
+                }
               >
 
                 <option value="">
@@ -1138,24 +1280,26 @@ const AddPackage = () => {
                     : "Select Category"}
                 </option>
 
-
                 {categories.map(
                   (category) => (
-
                     <option
-                      key={category.id}
-                      value={category.id}
+                      key={
+                        category.id
+                      }
+                      value={
+                        category.id
+                      }
                     >
-                      {category.name}
+                      {
+                        category.name
+                      }
                     </option>
-
                   )
                 )}
 
               </select>
 
             </div>
-
 
             {/* SEQUENCE */}
 
@@ -1169,8 +1313,12 @@ const AddPackage = () => {
                 type="number"
                 min="1"
                 name="sequence"
-                value={form.sequence}
-                onChange={handleChange}
+                value={
+                  form.sequence
+                }
+                onChange={
+                  handleChange
+                }
               />
 
             </div>
@@ -1179,10 +1327,9 @@ const AddPackage = () => {
 
         </section>
 
-
-        {/* ==================================================
+        {/* ============================================
             PRICING
-        ================================================== */}
+        ============================================ */}
 
         <section className="add-package-section">
 
@@ -1199,9 +1346,7 @@ const AddPackage = () => {
 
           </div>
 
-
           <div className="add-form-grid">
-
 
             {/* ORIGINAL PRICE */}
 
@@ -1219,12 +1364,13 @@ const AddPackage = () => {
                 value={
                   form.original_price
                 }
-                onChange={handleChange}
+                onChange={
+                  handleChange
+                }
                 placeholder="0.00"
               />
 
             </div>
-
 
             {/* SELLING PRICE */}
 
@@ -1242,7 +1388,9 @@ const AddPackage = () => {
                 value={
                   form.selling_price
                 }
-                onChange={handleChange}
+                onChange={
+                  handleChange
+                }
                 placeholder="0.00"
               />
 
@@ -1252,287 +1400,231 @@ const AddPackage = () => {
 
         </section>
 
-
-        {/* ==================================================
+        {/* ============================================
             BILLING
-        ================================================== */}
+        ============================================ */}
 
-        <section className="add-package-section billing-section">
+   {/* ============================================
+    BILLING
+============================================ */}
 
-          <div className="add-section-header">
+<section className="add-package-section billing-section">
 
-            <h2>
-              Billing
-            </h2>
+  <div className="add-section-header">
 
-            <p>
-              Configure how and when the
-              customer will be charged.
-            </p>
+    <h2>
+      Billing
+    </h2>
 
-          </div>
+    <p>
+      Configure how and when the customer will be charged.
+    </p>
 
+  </div>
 
-          <div className="add-form-grid">
+  <div className="add-form-grid">
 
+    {/* ==========================================
+        BILLING MODE
+    ========================================== */}
 
-            {/* BILLING MODE */}
+    <div className="add-form-group full-width">
 
-            <div className="add-form-group full-width">
+      <label>
+        Billing Mode <span>*</span>
+      </label>
 
-              <label>
-                Billing Mode{" "}
-                <span>*</span>
-              </label>
+      <div className="billing-select-wrapper">
 
+        <button
+          type="button"
+          className="billing-select-trigger"
+          onClick={() =>
+            setShowBillingModeDropdown(
+              (prev) => !prev
+            )
+          }
+        >
 
-              <div className="billing-select-wrapper">
+          <span>
+            {form.billing_mode === "one_time"
+              ? "One Time"
+              : form.billing_mode === "autopay"
+              ? "Autopay"
+              : "Select Billing Mode"}
+          </span>
 
-                <button
-                  type="button"
-                  className="billing-select-trigger"
-                  onClick={() =>
-                    setShowBillingModeDropdown(
-                      (prev) => !prev
-                    )
-                  }
-                >
+          <FaChevronDown
+            className={
+              showBillingModeDropdown
+                ? "billing-arrow-up"
+                : ""
+            }
+          />
 
-                  <span>
+        </button>
 
-                    {form.billing_mode ===
-                    "one_time"
-                      ? "One Time"
-                      : form.billing_mode ===
-                        "autopay"
-                      ? "Autopay"
-                      : "Select Billing Mode"}
+        {showBillingModeDropdown && (
 
-                  </span>
+          <div className="billing-select-dropdown">
 
+            {/* INFO */}
 
-                  <FaChevronDown
-                    className={
-                      showBillingModeDropdown
-                        ? "billing-arrow-up"
-                        : ""
-                    }
-                  />
+            <div className="billing-info-box">
 
-                </button>
+              <FaQuestionCircle />
 
+              <div>
 
-                {showBillingModeDropdown && (
+                <strong>
+                  Choose how the customer pays
+                </strong>
 
-                  <div className="billing-select-dropdown">
-
-
-                    <div className="billing-info-box">
-
-                      <FaQuestionCircle />
-
-                      <div>
-
-                        <strong>
-                          Choose how the customer pays
-                        </strong>
-
-                        <span>
-                          One Time means the customer
-                          pays once.
-                        </span>
-
-                      </div>
-
-                    </div>
-
-
-                    {/* ONE TIME */}
-
-                    <button
-                      type="button"
-                      className={`billing-option ${
-                        form.billing_mode ===
-                        "one_time"
-                          ? "billing-option-selected"
-                          : ""
-                      }`}
-                      onClick={() => {
-
-                        handleBillingModeChange(
-                          "one_time"
-                        );
-
-                        setShowBillingModeDropdown(
-                          false
-                        );
-
-                      }}
-                    >
-
-                      <div className="billing-option-icon">
-
-                        <FaCreditCard />
-
-                      </div>
-
-
-                      <div className="billing-option-content">
-
-                        <strong>
-                          One Time
-                        </strong>
-
-                        <span>
-                          Customer pays once.
-                          No recurring payment
-                          will be made.
-                        </span>
-
-                        <small>
-                          Example: ₹2,000 package
-                          → customer pays ₹2,000
-                          only once.
-                        </small>
-
-                      </div>
-
-                    </button>
-
-
-                  </div>
-
-                )}
+                <span>
+                  One Time means one payment.
+                  Autopay means recurring automatic
+                  payments.
+                </span>
 
               </div>
 
             </div>
 
+            {/* ==================================
+                ONE TIME
+            ================================== */}
 
-            {/* =================================================
-                AUTOPAY FIELDS
-            ================================================= */}
+            <button
+              type="button"
+              className={`billing-option ${
+                form.billing_mode === "one_time"
+                  ? "billing-option-selected"
+                  : ""
+              }`}
+              onClick={() => {
 
-            {form.billing_mode ===
-              "autopay" && (
+                handleBillingModeChange(
+                  "one_time"
+                );
 
-              <>
+                setShowBillingModeDropdown(
+                  false
+                );
 
+              }}
+            >
 
-                {/* BILLING PERIOD */}
+              <div className="billing-option-icon">
+                <FaCreditCard />
+              </div>
 
-                <div className="add-form-group">
+              <div className="billing-option-content">
 
-                  <label>
-                    Billing Period *
-                  </label>
+                <strong>
+                  One Time
+                </strong>
 
-                  <select
-                    name="billing_period"
-                    value={
-                      form.billing_period
-                    }
-                    onChange={handleChange}
-                  >
+                <span>
+                  Customer pays once.
+                  No recurring payment
+                  will be made.
+                </span>
 
-                    <option value="">
-                      Select Billing Period
-                    </option>
+                <small>
+                  Example: ₹2,000 package →
+                  customer pays ₹2,000 only once.
+                </small>
 
-                    <option value="monthly">
-                      Monthly
-                    </option>
+              </div>
 
-                    <option value="quarterly">
-                      Quarterly
-                    </option>
+            </button>
 
-                    <option value="yearly">
-                      Yearly
-                    </option>
+            {/* ==================================
+                AUTOPAY - DISABLED FOR NOW
+            ================================== */}
 
-                  </select>
+            {/*
+            <button
+              type="button"
+              className={`billing-option ${
+                form.billing_mode === "autopay"
+                  ? "billing-option-selected"
+                  : ""
+              }`}
+              onClick={() => {
 
-                </div>
+                handleBillingModeChange(
+                  "autopay"
+                );
 
+                setShowBillingModeDropdown(
+                  false
+                );
 
-                {/* BILLING INTERVAL */}
+              }}
+            >
 
-                <div className="add-form-group">
+              <div className="billing-option-icon">
+                <FaSyncAlt />
+              </div>
 
-                  <label>
-                    Billing Interval *
-                  </label>
+              <div className="billing-option-content">
 
-                  <input
-                    type="number"
-                    min="1"
-                    name="billing_interval"
-                    value={
-                      form.billing_interval
-                    }
-                    onChange={handleChange}
-                    placeholder="e.g. 1"
-                  />
+                <strong>
+                  Autopay
+                </strong>
 
-                </div>
+                <span>
+                  Customer is charged
+                  automatically.
+                </span>
 
+              </div>
 
-                {/* CYCLE COUNT */}
-
-                <div className="add-form-group">
-
-                  <label>
-                    Billing Cycle Count *
-                  </label>
-
-                  <input
-                    type="number"
-                    min="1"
-                    name="billing_cycle_count"
-                    value={
-                      form.billing_cycle_count
-                    }
-                    onChange={handleChange}
-                    placeholder="e.g. 12"
-                  />
-
-                </div>
-
-
-                {/* VALIDITY */}
-
-                <div className="add-form-group">
-
-                  <label>
-                    Validity Days
-                  </label>
-
-                  <input
-                    type="number"
-                    min="1"
-                    name="validity_days"
-                    value={
-                      form.validity_days
-                    }
-                    onChange={handleChange}
-                    placeholder="e.g. 365"
-                  />
-
-                </div>
-
-              </>
-
-            )}
+            </button>
+            */}
 
           </div>
 
-        </section>
+        )}
 
+      </div>
 
-        {/* ==================================================
-            PACKAGE TAGS
-        ================================================== */}
+    </div>
+
+    
+
+    <div className="add-form-group">
+
+      <label>
+        Validity Days <span>*</span>
+      </label>
+
+      <input
+        type="number"
+        min="1"
+        name="validity_days"
+        value={form.validity_days}
+        onChange={handleChange}
+        placeholder="e.g. 365"
+      />
+
+      <div className="benefit-field-help">
+
+        <small>
+          Number of days the package remains
+          valid after purchase.
+        </small>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+      
 
         <section className="add-package-section">
 
@@ -1547,7 +1639,6 @@ const AddPackage = () => {
             </p>
 
           </div>
-
 
           <div className="tag-input-wrapper">
 
@@ -1581,19 +1672,20 @@ const AddPackage = () => {
 
             </div>
 
-
             <input
               type="text"
               value={
                 form.tagInput
               }
               onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
+                setForm(
+                  (prev) => ({
+                    ...prev,
 
-                  tagInput:
-                    e.target.value,
-                }))
+                    tagInput:
+                      e.target.value,
+                  })
+                )
               }
               onKeyDown={
                 handlePackageTagKeyDown
@@ -1605,637 +1697,599 @@ const AddPackage = () => {
 
         </section>
 
-
-        {/* ==================================================
-            PACKAGE CONFIGURATION
-        ================================================== */}
-{/* ==================================================
-    PACKAGE CONFIGURATION / BENEFITS
-================================================== */}
-
-<section className="add-package-section">
-
-  <div className="add-section-header configuration-header">
-
-    <div>
-      <h2>
-        Package Configuration
-      </h2>
-
-      <p>
-        Add the benefits included in this package.
-      </p>
-    </div>
-
-    <button
-      type="button"
-      className="add-benefit-button"
-      onClick={addConfiguration}
-    >
-      <FaPlus />
-      Add Benefit
-    </button>
-
-  </div>
-
-
-  {/* ==================================================
-      NO BENEFITS
-  ================================================== */}
-
-  {form.configuration.length === 0 ? (
-
-    <div className="configuration-empty">
-
-      <h3>
-        No Benefits Added
-      </h3>
-
-      <p>
-        Click "Add Benefit" to configure what
-        customers receive in this package.
-      </p>
-
-      <button
-        type="button"
-        className="add-benefit-button"
-        onClick={addConfiguration}
-      >
-        <FaPlus />
-        Add First Benefit
-      </button>
-
-    </div>
-
-  ) : (
-
-    <div className="configuration-list">
-
-      {form.configuration.map(
-        (config, index) => (
-
-          <div
-            className="configuration-card"
-            key={index}
-          >
-
-            {/* ==================================================
-                BENEFIT HEADER
-            ================================================== */}
-
-            <div className="configuration-card-header">
-
-              <div>
-
-                <span>
-                  Benefit {index + 1}
-                </span>
-
-                <h3>
-                  {config.label ||
-                    "New Benefit"}
-                </h3>
-
-              </div>
-
-              <button
-                type="button"
-                className="remove-benefit-button"
-                onClick={() =>
-                  removeConfiguration(index)
-                }
-              >
-                <FaTrash />
-              </button>
-
-            </div>
-
-
-            {/* ==================================================
-                BASIC BENEFIT DETAILS
-            ================================================== */}
-
-            <div className="add-form-grid">
-
-
-              {/* ============================
-                  BENEFIT NAME
-              ============================ */}
-
-              <div className="add-form-group">
-
-                <label>
-                  Benefit Name *
-                </label>
-
-                <input
-                  type="text"
-                  value={config.name}
-                  onChange={(e) =>
-                    updateConfiguration(
-                      index,
-                      "name",
-                      e.target.value
-                    )
-                  }
-                  placeholder="e.g. Doctor Consultation"
-                />
-
-              </div>
-
-
-              {/* ============================
-                  CUSTOMER LABEL
-              ============================ */}
-
-              <div className="add-form-group">
-
-                <label>
-                  Customer Label *
-                </label>
-
-                <input
-                  type="text"
-                  value={config.label}
-                  onChange={(e) =>
-                    updateConfiguration(
-                      index,
-                      "label",
-                      e.target.value
-                    )
-                  }
-                  placeholder="e.g. Doctor Consultation"
-                />
-
-              </div>
-
-
-              {/* ============================
-                  BENEFIT TYPE
-              ============================ */}
-
-              <div className="add-form-group">
-
-                <label>
-                  Benefit Type *
-                </label>
-
-                <select
-                  value={config.type}
-                  onChange={(e) =>
-                    changeConfigurationType(
-                      index,
-                      e.target.value
-                    )
-                  }
-                >
-
-                  <option value="flag">
-                    Flag
-                  </option>
-
-                  <option value="consumable">
-                    Consumable
-                  </option>
-
-                  <option value="chat_pool">
-                    Chat Pool
-                  </option>
-
-                  <option value="rule">
-                    Rule
-                  </option>
-
-                </select>
-
-
-                {/* ==================================================
-                    BENEFIT TYPE EXPLANATION
-                ================================================== */}
-
-                <div className="benefit-type-help">
-
-
-                  {/* ============================
-                      FLAG
-                  ============================ */}
-
-                  {config.type === "flag" && (
-                    <>
-
-                      <div className="benefit-help-title">
-                        Flag Benefit
-                      </div>
-
-                      <p>
-                        Use this when the benefit is
-                        simply included in the package.
-                        There is no usage limit or count.
-                      </p>
-
-                      <div className="benefit-help-example">
-
-                        <strong>
-                          Example:
-                        </strong>
-
-                         {" "}
-                        Premium Support →
-                        Included in the package. 
-
-                      </div>
-
-                    </>
-                  )}
-
-
-                  {/* ============================
-                      CONSUMABLE
-                  ============================ */}
-
-                  {config.type === "consumable" && (
-                    <>
-
-                      <div className="benefit-help-title">
-                        Consumable Benefit
-                      </div>
-
-                      <p>
-                        Use this when the customer gets
-                        a fixed number of uses. The
-                        customer can consume the benefit
-                        until the Count is finished.
-                      </p>
-
-                      <div className="benefit-help-example">
-
-                        <strong>
-                          Example:
-                        </strong>
-
-                        {" "}
-                        Doctor Consultation →
-                        Count 5 →
-                        Customer can use 5 consultations.
-
-                      </div>
-
-                    </>
-                  )}
-
-
-                  {/* ============================
-                      CHAT POOL
-                  ============================ */}
-
-                  {/* {config.type === "chat_pool" && (
-                    <>
-
-                      <div className="benefit-help-title">
-                        Chat Pool Benefit
-                      </div>
-
-                      <p>
-                        Use this when the customer gets
-                        a pool of chat sessions or chat
-                        credits that can be consumed.
-                      </p>
-
-                      <div className="benefit-help-example">
-
-                        <strong>
-                          Example:
-                        </strong>
-
-                        {" "}
-                        Chat Support →
-                        Customer gets chat sessions
-                        from the available chat pool.
-
-                      </div>
-
-                    </>
-                  )} */}
-
-
-                  {/* ============================
-                      RULE
-                  ============================ */}
-
-                  {/* {config.type === "rule" && (
-                    <>
-
-                      <div className="benefit-help-title">
-                        Rule-Based Benefit
-                      </div>
-
-                      <p>
-                        Use this when the benefit should
-                        apply only when specific conditions
-                        or rules are matched.
-                      </p>
-
-                      <div className="benefit-help-example">
-
-                        <strong>
-                          Example:
-                        </strong>
-
-                        {" "}
-                        Follow-up Consultation →
-                        Applies only when the consultation
-                        is a follow-up.
-
-                      </div>
-
-                    </>
-                  )} */}
-
-                </div>
-
-              </div>
-
-
-              {/* ==================================================
-                  COUNT
-                  ONLY FOR CONSUMABLE
-              ================================================== */}
-
-              {config.type === "consumable" && (
-
-                <div className="add-form-group">
-
-                  <label>
-                    Count *
-                  </label>
-
-                  <input
-                    type="number"
-                    min="1"
-                    value={config.count}
-                    onChange={(e) =>
-                      updateConfiguration(
-                        index,
-                        "count",
-                        e.target.value
-                      )
-                    }
-                    placeholder="e.g. 5"
-                  />
-
-                  <div className="benefit-field-help">
-
-                    <strong>
-                      How many times can it be used?
-                    </strong>
-
-                    <p>
-                      Enter the total number of times
-                      the customer can use this benefit.
-                    </p>
-
-                    <small>
-                      Example: Count 5 means the
-                      customer can use this benefit
-                      5 times.
-                    </small>
-
-                  </div>
-{/* ==================================================
-    ELIGIBILITY RULES
-================================================== */}
-
-<div className="add-form-grid">
-
-  {/* ELIGIBLE AFTER DAYS */}
-
-  <div className="add-form-group">
-
-    <label>
-      Eligible After Days
-    </label>
-
-    <input
-      type="number"
-      min="0"
-      value={config.eligible_after_days}
-      onChange={(e) =>
-        updateConfiguration(
-          index,
-          "eligible_after_days",
-          e.target.value
-        )
-      }
-      placeholder="e.g. 15"
-    />
-
-    <div className="benefit-field-help">
-      <small>
-        Use this when the benefit becomes available
-        only after a certain number of days.
-      </small>
-
-      <small>
-        Example: 15 means the customer can use
-        this benefit after 15 days.
-      </small>
-    </div>
-
-  </div>
-
-
-  {/* REQUIRED COMPLETED BENEFIT */}
-
-  <div className="add-form-group">
-
-    <label>
-      Requires Completed Benefit
-    </label>
-
-    <input
-      type="text"
-      value={
-        config.requires_completed_capability || ""
-      }
-      onChange={(e) =>
-        updateConfiguration(
-          index,
-          "requires_completed_capability",
-          e.target.value
-        )
-      }
-      placeholder="e.g. Diet consultation"
-    />
-
-    <div className="benefit-field-help">
-      <small>
-        Enter the benefit that must be completed
-        before this benefit becomes available.
-      </small>
-
-      <small>
-        Example: Diet consultation
-      </small>
-    </div>
-
-  </div>
-
-</div>
-                </div>
-
-              )}
-
-            </div>
-
-
        
-        
+        <section className="add-package-section">
 
-           
+          <div className="add-section-header configuration-header">
 
+            <div>
 
-            <div className="match-rules-box">
+              <h2>
+                Package Configuration
+              </h2>
 
-              <div className="match-rules-header">
-
-                <div>
-
-                  <h4>
-                    Match Rules
-                  </h4>
-
-                  <p>
-                    Select when this benefit should
-                    apply to the customer.
-                  </p>
-
-                </div>
-
-              </div>
-
-
-              <div className="add-form-grid">
-
-
-                {/* ============================
-                    IS FOLLOW-UP
-                ============================ */}
-
-                <div className="add-form-group">
-
-                  <label>
-                    Is Follow-up?
-                  </label>
-
-                  <select
-                    value={
-                      config.match_rules
-                        ?.is_followup
-                        ? "true"
-                        : "false"
-                    }
-                    onChange={(e) =>
-                      updateMatchRule(
-                        index,
-                        "is_followup",
-                        e.target.value ===
-                          "true"
-                      )
-                    }
-                  >
-
-                    <option value="false">
-                      No
-                    </option>
-
-                    <option value="true">
-                      Yes
-                    </option>
-
-                  </select>
-
-                  <div className="benefit-field-help">
-
-                    <small>
-                      Select Yes if this benefit
-                      should apply only to
-                      follow-up consultations.
-                    </small>
-
-                  </div>
-
-                </div>
-
-
-                {/* ============================
-                    IS DIETITIAN
-                ============================ */}
-
-                <div className="add-form-group">
-
-                  <label>
-                    Is Dietitian?
-                  </label>
-
-                  <select
-                    value={
-                      config.match_rules
-                        ?.is_dietitian
-                        ? "true"
-                        : "false"
-                    }
-                    onChange={(e) =>
-                      updateMatchRule(
-                        index,
-                        "is_dietitian",
-                        e.target.value ===
-                          "true"
-                      )
-                    }
-                  >
-
-                    <option value="false">
-                      No
-                    </option>
-
-                    <option value="true">
-                      Yes
-                    </option>
-
-                  </select>
-
-                  <div className="benefit-field-help">
-
-                    <small>
-                      Select Yes if this benefit
-                      should apply specifically
-                      to dietitian services.
-                    </small>
-
-                  </div>
-
-                </div>
-
-              </div>
+              <p>
+                Select the benefits included
+                in this package.
+              </p>
 
             </div>
 
           </div>
 
-        )
-      )}
+          {/* ==========================================
+              BENEFIT MULTI SELECT
+          ========================================== */}
 
-    </div>
+          <div className="add-form-group full-width-field">
 
-  )}
+            <label>
+              Select Benefits{" "}
+              <span>*</span>
+            </label>
 
-</section>
+            <div className="benefit-multiselect-wrapper">
 
+              {/* TRIGGER */}
 
+              <button
+                type="button"
+                className="benefit-multiselect-trigger"
+                onClick={() =>
+                  setShowBenefitDropdown(
+                    (prev) =>
+                      !prev
+                  )
+                }
+              >
 
-        {/* ==================================================
-            STATUS
-        ================================================== */}
+                <div className="selected-benefit-values">
+
+                  {form.configuration
+                    .length === 0 ? (
+
+                    <span className="benefit-placeholder">
+
+                      {benefitLoading
+                        ? "Loading benefits..."
+                        : "Select benefits"}
+
+                    </span>
+
+                  ) : (
+
+                    form.configuration.map(
+                      (config) => (
+
+                        <span
+                          key={
+                            config.benefit_id
+                          }
+                          className="selected-benefit-chip"
+                        >
+
+                          {config.label ||
+                            config.name}
+
+                          <span
+                            className="selected-benefit-chip-remove"
+                            onClick={(e) => {
+
+                              e.stopPropagation();
+
+                              const selectedIndex =
+                                form.configuration.findIndex(
+                                  (item) =>
+                                    item.benefit_id ===
+                                    config.benefit_id
+                                );
+
+                              if (
+                                selectedIndex !==
+                                -1
+                              ) {
+                                removeConfiguration(
+                                  selectedIndex
+                                );
+                              }
+
+                            }}
+                          >
+                            <FaTimes />
+                          </span>
+
+                        </span>
+
+                      )
+                    )
+
+                  )}
+
+                </div>
+
+                <FaChevronDown
+                  className={
+                    showBenefitDropdown
+                      ? "benefit-arrow-up"
+                      : ""
+                  }
+                />
+
+              </button>
+
+              {/* ========================================
+                  DROPDOWN
+              ======================================== */}
+
+            {showBenefitDropdown && (
+  <div className="benefit-multiselect-dropdown">
+    {benefitLoading ? (
+      <div className="benefit-dropdown-loading">
+        Loading benefits...
+      </div>
+    ) : benefits.length === 0 ? (
+      <div className="benefit-dropdown-empty">
+        No benefits available.
+      </div>
+    ) : (
+      benefits.map((benefit) => {
+        const isSelected = form.configuration.some(
+          (item) => item.benefit_id === benefit.id
+        );
+
+        return (
+          <button
+            type="button"
+            key={benefit.id}
+            className={`benefit-dropdown-option ${
+              isSelected ? "benefit-option-selected" : ""
+            }`}
+            onClick={() => {
+              // Already selected → Unselect
+              if (isSelected) {
+                const selectedIndex =
+                  form.configuration.findIndex(
+                    (item) => item.benefit_id === benefit.id
+                  );
+
+                if (selectedIndex !== -1) {
+                  removeConfiguration(selectedIndex);
+                }
+
+                return;
+              }
+
+              // Not selected → Select
+              addConfiguration(benefit);
+            }}
+          >
+            {/* CHECKBOX */}
+            <span
+              className={`benefit-checkbox ${
+                isSelected ? "checked" : ""
+              }`}
+            >
+              {isSelected && <FaCheck />}
+            </span>
+
+            {/* BENEFIT NAME */}
+            <span className="benefit-option-text">
+              <strong>{benefit.name}</strong>
+
+              {benefit.label &&
+                benefit.label !== benefit.name && (
+                  <small>{benefit.label}</small>
+                )}
+            </span>
+          </button>
+        );
+      })
+    )}
+  </div>
+)}
+
+            </div>
+
+            <div className="benefit-selection-help">
+
+              <small>
+                Select one or more benefits
+                from the list. You can select
+                multiple benefits for the same
+                package.
+              </small>
+
+            </div>
+
+          </div>
+
+          {/* ==========================================
+              SELECTED BENEFITS
+          ========================================== */}
+
+          {form.configuration.length ===
+          0 ? (
+
+            <div className="configuration-empty">
+
+              <h3>
+                No Benefits Selected
+              </h3>
+
+              <p>
+                Select one or more benefits
+                from the dropdown above.
+              </p>
+
+            </div>
+
+          ) : (
+
+            <div className="configuration-list">
+
+              {form.configuration.map(
+                (config, index) => (
+
+                  <div
+                    className="configuration-card"
+                    key={
+                      config.benefit_id ||
+                      index
+                    }
+                  >
+
+                    {/* ==================================
+                        HEADER
+                    ================================== */}
+
+                    <div className="configuration-card-header">
+
+                      <div>
+
+                        <span>
+                          Benefit{" "}
+                          {index + 1}
+                        </span>
+
+                        <h3>
+                          {config.label ||
+                            config.name}
+                        </h3>
+
+                      </div>
+
+                      <button
+                        type="button"
+                        className="remove-benefit-button"
+                        onClick={() =>
+                          removeConfiguration(
+                            index
+                          )
+                        }
+                      >
+                        <FaTrash />
+                      </button>
+
+                    </div>
+
+                    {/* ==================================
+                        BENEFIT BASIC DETAILS
+                    ================================== */}
+
+                    <div className="add-form-grid">
+
+                      {/* BENEFIT NAME */}
+
+                      <div className="add-form-group">
+
+                        <label>
+                          Benefit Name
+                        </label>
+
+                        <input
+                          type="text"
+                          value={
+                            config.name
+                          }
+                          readOnly
+                        />
+
+                      </div>
+
+                      {/* CUSTOMER LABEL */}
+
+                      <div className="add-form-group">
+
+                        <label>
+                          Customer Label
+                        </label>
+
+                        <input
+                          type="text"
+                          value={
+                            config.label
+                          }
+                          readOnly
+                        />
+
+                      </div>
+
+                      {/* BENEFIT TYPE */}
+
+                      <div className="add-form-group">
+
+                        <label>
+                          Benefit Type
+                        </label>
+
+                        <input
+                          type="text"
+                          value={
+                            config.type ===
+                            "consumable"
+                              ? "Consumable"
+                              : config.type ===
+                                "chat_pool"
+                              ? "Chat Pool"
+                              : config.type ===
+                                "rule"
+                              ? "Rule"
+                              : "Flag"
+                          }
+                          readOnly
+                        />
+
+                      </div>
+
+                      {/* COUNT */}
+
+                      {config.type ===
+                        "consumable" && (
+
+                        <div className="add-form-group">
+
+                          <label>
+                            Usage Count *
+                          </label>
+
+                          <input
+                            type="number"
+                            min="1"
+                            value={
+                              config.count
+                            }
+                            onChange={(e) =>
+                              updateConfiguration(
+                                index,
+                                "count",
+                                e.target.value
+                              )
+                            }
+                            placeholder="e.g. 5"
+                          />
+
+                          <div className="benefit-field-help">
+
+                            <small>
+                              Enter how many
+                              times the
+                              customer can
+                              use this
+                              benefit.
+                            </small>
+
+                          </div>
+
+                        </div>
+
+                      )}
+
+                    </div>
+
+                    {/* =================================
+                        ELIGIBILITY
+                    ================================= */}
+
+                    {config.type ===
+                      "consumable" && (
+
+                      <div className="add-form-grid">
+
+                        {/* ELIGIBLE AFTER DAYS */}
+
+                        <div className="add-form-group">
+
+                          <label>
+                            Eligible After Days
+                          </label>
+
+                          <input
+                            type="number"
+                            min="0"
+                            value={
+                              config.eligible_after_days
+                            }
+                            onChange={(e) =>
+                              updateConfiguration(
+                                index,
+                                "eligible_after_days",
+                                e.target.value
+                              )
+                            }
+                            placeholder="e.g. 15"
+                          />
+
+                          <div className="benefit-field-help">
+
+                            <small>
+                              The benefit
+                              becomes
+                              available
+                              after this
+                              many days.
+                            </small>
+
+                            <small>
+                              Example: 15 means
+                              the benefit becomes
+                              available after
+                              15 days.
+                            </small>
+
+                          </div>
+
+                        </div>
+
+                        {/* REQUIRED COMPLETED BENEFIT */}
+
+                        <div className="add-form-group">
+
+                          <label>
+                            Requires Completed Benefit
+                          </label>
+
+                          <input
+                            type="text"
+                            value={
+                              config.requires_completed_capability ||
+                              ""
+                            }
+                            onChange={(e) =>
+                              updateConfiguration(
+                                index,
+                                "requires_completed_capability",
+                                e.target.value
+                              )
+                            }
+                            placeholder="e.g. Diet consultation"
+                          />
+
+                          <div className="benefit-field-help">
+
+                            <small>
+                              Enter the benefit
+                              that must be
+                              completed before
+                              this benefit
+                              becomes
+                              available.
+                            </small>
+
+                            <small>
+                              Example: Diet
+                              consultation
+                            </small>
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                    )}
+
+                    {/* =================================
+                        MATCH RULES - READ ONLY
+                    ================================= */}
+
+                    {config.match_rules &&
+                      Object.keys(
+                        config.match_rules
+                      ).length > 0 && (
+
+                      <div className="match-rules-box">
+
+                        <div className="match-rules-header">
+
+                          <div>
+
+                            <h4>
+                              Match Rules
+                            </h4>
+
+                            <p>
+                              These rules are
+                              automatically taken
+                              from the selected
+                              benefit and cannot
+                              be edited here.
+                            </p>
+
+                          </div>
+
+                        </div>
+
+                        <div className="add-form-grid">
+
+                          {Object.entries(
+                            config.match_rules
+                          ).map(
+                            (
+                              [
+                                ruleKey,
+                                ruleValue,
+                              ]
+                            ) => (
+
+                              <div
+                                className="add-form-group"
+                                key={
+                                  ruleKey
+                                }
+                              >
+
+                                <label>
+                                  {ruleKey
+                                    .replace(
+                                      /_/g,
+                                      " "
+                                    )
+                                    .replace(
+                                      /\b\w/g,
+                                      (char) =>
+                                        char.toUpperCase()
+                                    )}
+                                </label>
+
+                                <input
+                                  type="text"
+                                  value={
+                                    typeof ruleValue ===
+                                    "boolean"
+                                      ? ruleValue
+                                        ? "Yes"
+                                        : "No"
+                                      : String(
+                                          ruleValue ??
+                                            ""
+                                        )
+                                  }
+                                  readOnly
+                                />
+
+                              </div>
+
+                            )
+                          )}
+
+                        </div>
+
+                      </div>
+
+                    )}
+
+                  </div>
+
+                )
+              )}
+
+            </div>
+
+          )}
+
+        </section>
+
+       
 
         <section className="add-package-section">
 
@@ -2247,11 +2301,7 @@ const AddPackage = () => {
 
           </div>
 
-
           <div className="status-checkbox-row">
-
-
-            {/* ACTIVE */}
 
             <label>
 
@@ -2261,12 +2311,14 @@ const AddPackage = () => {
                   form.is_active
                 }
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
+                  setForm(
+                    (prev) => ({
+                      ...prev,
 
-                    is_active:
-                      e.target.checked,
-                  }))
+                      is_active:
+                        e.target.checked,
+                    })
+                  )
                 }
               />
 
@@ -2274,21 +2326,14 @@ const AddPackage = () => {
 
             </label>
 
-
-            
-
-
           </div>
 
         </section>
 
-
-        {/* ==================================================
-            FOOTER
-        ================================================== */}
+        
+        
 
         <div className="add-package-footer">
-
 
           <button
             type="button"
@@ -2296,7 +2341,9 @@ const AddPackage = () => {
             onClick={() =>
               navigate("/packages")
             }
-            disabled={loading}
+            disabled={
+              loading
+            }
           >
 
             <FaTimes />
@@ -2305,11 +2352,12 @@ const AddPackage = () => {
 
           </button>
 
-
           <button
             type="submit"
             className="package-save-button"
-            disabled={loading}
+            disabled={
+              loading
+            }
           >
 
             <FaSave />
@@ -2320,15 +2368,12 @@ const AddPackage = () => {
 
           </button>
 
-
         </div>
-
 
       </form>
 
     </div>
   );
 };
-
 
 export default AddPackage;
