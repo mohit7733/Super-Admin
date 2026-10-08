@@ -575,97 +575,202 @@ const timelineData = buildTimeline();
     )}
 
   </div>
- <div className="ordertracking-card">
 
-            <div className="ordertracking-card-head">
-              <span className="ordertracking-card-title">
-                Order Summary
-              </span>
-            </div>
 
-            <div className="ordertracking-kv-row">
+<div className="ordertracking-card">
 
-              <span className="ordertracking-kv-label">
-                Status
-              </span>
+  <div className="ordertracking-card-head">
+    <span className="ordertracking-card-title">
+      Order Summary
+    </span>
+  </div>
 
-              <span
-                className={`ordertracking-badge ${getStatusClass(
-                  currentStatus
-                )}`}
-                style={{
-                  padding: "3px 10px 3px 8px",
-                  fontSize: "11.5px",
-                }}
-              >
-                {formatStatus(currentStatus)}
-              </span>
+  {/* STATUS */}
+  <div className="ordertracking-kv-row">
+    <span className="ordertracking-kv-label">
+      Status
+    </span>
 
-            </div>
+    <span
+      className={`ordertracking-badge ${getStatusClass(
+        currentStatus
+      )}`}
+      style={{
+        padding: "3px 10px 3px 8px",
+        fontSize: "11.5px",
+      }}
+    >
+      {formatStatus(currentStatus)}
+    </span>
+  </div>
 
-            <div className="ordertracking-kv-row">
-              <span className="ordertracking-kv-label">
-                Your subtotal
-              </span>
+ 
+  <div className="ordertracking-kv-row">
+    <span className="ordertracking-kv-label">
+      Items subtotal
+    </span>
 
-              <span className="ordertracking-kv-value">
-                {formatAmount(order.total_amount)}
-              </span>
-            </div>
+    <span className="ordertracking-kv-value">
+      {formatAmount(order.amount_breakup?.items_total)}
+    </span>
+  </div>
 
-            <div className="ordertracking-kv-row">
+  {/* DISCOUNT */}
+  <div className="ordertracking-kv-row">
+    <span className="ordertracking-kv-label">
+      Discount
+    </span>
 
-              <span className="ordertracking-kv-label">
-                Discount
-              </span>
+    <span className="ordertracking-kv-value">
+      {Number(order.amount_breakup?.discount || 0) === 0
+        ? "₹0.00"
+        : `- ${formatAmount(order.amount_breakup?.discount)}`}
+    </span>
+  </div>
 
-              <span className="ordertracking-kv-value">
-                {formatAmount(order.total_discount)}
-              </span>
 
-            </div>
 
-            <div className="ordertracking-kv-row">
+  <div className="ordertracking-kv-row">
+    <span className="ordertracking-kv-label">
+      Delivery charges
+    </span>
 
-              <span className="ordertracking-kv-label">
-                Shipping charges
-              </span>
+    <span className="ordertracking-kv-value">
+      {Number(order.amount_breakup?.delivery_charges || 0) === 0
+        ? "Free"
+        : formatAmount(order.amount_breakup?.delivery_charges)}
+    </span>
+  </div>
 
-              <span className="ordertracking-kv-value">
-                {Number(order.shipping_charges || 0) === 0
-                  ? "Free"
-                  : formatAmount(order.shipping_charges)}
-              </span>
+  
+  <div className="ordertracking-kv-row">
+    <span className="ordertracking-kv-label">
+      COD charges
+    </span>
 
-            </div>
+    <span className="ordertracking-kv-value">
+      {Number(order.amount_breakup?.cod_charges || 0) === 0
+        ? "₹0.00"
+        : formatAmount(order.amount_breakup?.cod_charges)}
+    </span>
+  </div>
 
-            <div className="ordertracking-kv-row">
+  {/* GST */}
+  <div className="ordertracking-kv-row">
+    <span className="ordertracking-kv-label">
+      GST
+    </span>
 
-              <span className="ordertracking-kv-label">
-                Order total
-              </span>
+    <span className="ordertracking-kv-value">
+      {formatAmount(
+        order.amount_breakup?.gst_amount ??
+          order.amount_breakup?.tax_amount
+      )}
+    </span>
+  </div>
 
-              <span className="ordertracking-kv-value">
-                {formatAmount(order.total_amount)}
-              </span>
+  {/* PLATFORM FEE */}
+  <div className="ordertracking-kv-row">
+    <span className="ordertracking-kv-label">
+      Platform fee
+    </span>
 
-            </div>
+    <span className="ordertracking-kv-value">
+      {formatAmount(order.amount_breakup?.platform_fee)}
+    </span>
+  </div>
 
-            <div className="ordertracking-kv-row">
+  {/* OTHER CHARGES */}
+  <div className="ordertracking-kv-row">
+    <span className="ordertracking-kv-label">
+      Other charges
+    </span>
 
-              <span className="ordertracking-kv-label">
-                Prepaid amount
-              </span>
+    <span className="ordertracking-kv-value">
+      {formatAmount(order.amount_breakup?.other_charges)}
+    </span>
+  </div>
 
-              <span className="ordertracking-kv-value">
-                {formatAmount(order.prepaid_amount)}
-              </span>
+  {/* TOTAL */}
+  <div
+    className="ordertracking-kv-row"
+    style={{
+      marginTop: "8px",
+      paddingTop: "12px",
+      borderTop: "1px solid #e5e7eb",
+    }}
+  >
+    <span
+      className="ordertracking-kv-label"
+      style={{
+        fontWeight: 700,
+        color: "#111827",
+      }}
+    >
+      Order total
+    </span>
 
-            </div>
+    <span
+      className="ordertracking-kv-value"
+      style={{
+        fontWeight: 700,
+        color: "#0D614E",
+      }}
+    >
+      {formatAmount(
+        order.amount_breakup?.total_amount ??
+          order.total_amount
+      )}
+    </span>
+  </div>
 
-          </div>
+  {/* PREPAID AMOUNT */}
+  <div className="ordertracking-kv-row">
+    <span className="ordertracking-kv-label">
+      Prepaid amount
+    </span>
 
-  {/* ================= PAYMENT ================= */}
+    <span className="ordertracking-kv-value">
+      {formatAmount(order.prepaid_amount)}
+    </span>
+  </div>
+
+  {/* AMOUNT DUE */}
+  <div
+    className="ordertracking-kv-row"
+    style={{
+      marginTop: "4px",
+      paddingTop: "10px",
+      borderTop: "1px dashed #d1d5db",
+    }}
+  >
+    <span
+      className="ordertracking-kv-label"
+      style={{
+        fontWeight: 700,
+      }}
+    >
+      Amount due
+    </span>
+
+    <span
+      className="ordertracking-kv-value"
+      style={{
+        fontWeight: 700,
+      }}
+    >
+      {formatAmount(
+        Number(order.amount_breakup?.total_amount ?? order.total_amount) -
+          Number(order.prepaid_amount || 0)
+      )}
+    </span>
+  </div>
+
+</div>
+
+
+
+
   <div className="ordertracking-card">
 
     <div className="ordertracking-card-head">
