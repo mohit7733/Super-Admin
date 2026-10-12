@@ -133,8 +133,8 @@ const AddPackage = () => {
 
             ...(token
               ? {
-                  Authorization: `Bearer ${token}`,
-                }
+                Authorization: `Bearer ${token}`,
+              }
               : {}),
 
             "ngrok-skip-browser-warning": "true",
@@ -147,7 +147,7 @@ const AddPackage = () => {
       if (!response.ok) {
         throw new Error(
           result?.message ||
-            "Failed to load package categories."
+          "Failed to load package categories."
         );
       }
 
@@ -160,21 +160,21 @@ const AddPackage = () => {
       const normalizedCategories =
         Array.isArray(categoryData)
           ? categoryData
-              .map((item) => ({
-                id:
-                  item?.id ||
-                  item?.category_id ||
-                  item?.value,
+            .map((item) => ({
+              id:
+                item?.id ||
+                item?.category_id ||
+                item?.value,
 
-                name:
-                  item?.name ||
-                  item?.category_name ||
-                  item?.label ||
-                  "",
-              }))
-              .filter(
-                (item) => item.id && item.name
-              )
+              name:
+                item?.name ||
+                item?.category_name ||
+                item?.label ||
+                "",
+            }))
+            .filter(
+              (item) => item.id && item.name
+            )
           : [];
 
       setCategories(normalizedCategories);
@@ -211,8 +211,8 @@ const AddPackage = () => {
 
             ...(token
               ? {
-                  Authorization: `Bearer ${token}`,
-                }
+                Authorization: `Bearer ${token}`,
+              }
               : {}),
 
             "ngrok-skip-browser-warning": "true",
@@ -230,7 +230,7 @@ const AddPackage = () => {
       if (!response.ok) {
         throw new Error(
           result?.message ||
-            "Failed to load benefits."
+          "Failed to load benefits."
         );
       }
 
@@ -243,83 +243,83 @@ const AddPackage = () => {
       const normalizedBenefits =
         Array.isArray(benefitData)
           ? benefitData
-              .map((item) => ({
-              
+            .map((item) => ({
 
-                id:
-                  item?.id ||
-                  item?.benefit_id ||
-                  item?.value,
 
-             
+              id:
+                item?.id ||
+                item?.benefit_id ||
+                item?.value,
 
-                name:
-                  item?.name ||
-                  item?.benefit_name ||
-                  item?.title ||
-                  item?.label ||
-                  "",
 
-                // =====================================
-                // BENEFIT LABEL
-                // =====================================
 
-                label:
-                  item?.label ||
-                  item?.benefit_label ||
-                  item?.name ||
-                  item?.benefit_name ||
-                  "",
+              name:
+                item?.name ||
+                item?.benefit_name ||
+                item?.title ||
+                item?.label ||
+                "",
 
-                // =====================================
-                // BENEFIT TYPE
-                // =====================================
+              // =====================================
+              // BENEFIT LABEL
+              // =====================================
 
-                type:
-                  item?.fulfillment_mode ||
-                  item?.type ||
-                  item?.benefit_type ||
-                  "flag",
+              label:
+                item?.label ||
+                item?.benefit_label ||
+                item?.name ||
+                item?.benefit_name ||
+                "",
 
-                fulfillment_mode:
-                  item?.fulfillment_mode ||
-                  "flag",
+              // =====================================
+              // BENEFIT TYPE
+              // =====================================
 
-                // =====================================
-                // OTHER API VALUES
-                // =====================================
+              type:
+                item?.fulfillment_mode ||
+                item?.type ||
+                item?.benefit_type ||
+                "flag",
 
-                unit:
-                  item?.unit || "none",
+              fulfillment_mode:
+                item?.fulfillment_mode ||
+                "flag",
 
-                description:
-                  item?.description || "",
+              // =====================================
+              // OTHER API VALUES
+              // =====================================
 
-                tags:
-                  Array.isArray(item?.tags)
-                    ? item.tags
-                    : [],
+              unit:
+                item?.unit || "none",
 
-                // =====================================
-                // MATCH RULES
-                // READ ONLY
-                // =====================================
+              description:
+                item?.description || "",
 
-                match_rules:
-                  item?.match_rules || {},
+              tags:
+                Array.isArray(item?.tags)
+                  ? item.tags
+                  : [],
 
-                // =====================================
-                // DEFAULT EXTRA DETAILS
-                // =====================================
+              // =====================================
+              // MATCH RULES
+              // READ ONLY
+              // =====================================
 
-                default_extra_details:
-                  item?.default_extra_details || {},
-              }))
-              .filter(
-                (item) =>
-                  item.id &&
-                  item.name
-              )
+              match_rules:
+                item?.match_rules || {},
+
+              // =====================================
+              // DEFAULT EXTRA DETAILS
+              // =====================================
+
+              default_extra_details:
+                item?.default_extra_details || {},
+            }))
+            .filter(
+              (item) =>
+                item.id &&
+                item.name
+            )
           : [];
 
       setBenefits(normalizedBenefits);
@@ -338,7 +338,7 @@ const AddPackage = () => {
 
       setError(
         err?.message ||
-          "Failed to load benefits."
+        "Failed to load benefits."
       );
     } finally {
       setBenefitLoading(false);
@@ -408,10 +408,10 @@ const AddPackage = () => {
 
       ...(value === "one_time"
         ? {
-            billing_period: "",
-            billing_interval: "",
-            billing_cycle_count: "",
-          }
+          billing_period: "",
+          billing_interval: "",
+          billing_cycle_count: "",
+        }
         : {}),
     }));
   };
@@ -516,6 +516,11 @@ const AddPackage = () => {
             benefit_id:
               benefit.id,
 
+            Service_name:
+              benefit.label ||
+              benefit.name ||
+              "",
+
             // ==================================
             // BACKEND VALUES
             // ==================================
@@ -541,7 +546,7 @@ const AddPackage = () => {
             count:
               benefitType ===
                 "consumable" ||
-              benefitType ===
+                benefitType ===
                 "chat_pool"
                 ? 1
                 : "",
@@ -611,10 +616,10 @@ const AddPackage = () => {
           (item, i) =>
             i === index
               ? {
-                  ...item,
-                  [field]:
-                    value,
-                }
+                ...item,
+                [field]:
+                  value,
+              }
               : item
         ),
     }));
@@ -711,18 +716,16 @@ const AddPackage = () => {
         !config.name ||
         !String(config.name).trim()
       ) {
-        return `Benefit ${
-          i + 1
-        }: name is required.`;
+        return `Benefit ${i + 1
+          }: name is required.`;
       }
 
       if (
         !config.label ||
         !String(config.label).trim()
       ) {
-        return `Benefit ${
-          i + 1
-        }: customer label is required.`;
+        return `Benefit ${i + 1
+          }: customer label is required.`;
       }
 
       // =====================================
@@ -731,9 +734,9 @@ const AddPackage = () => {
 
       if (
         config.type ===
-          "consumable" ||
+        "consumable" ||
         config.type ===
-          "chat_pool"
+        "chat_pool"
       ) {
         if (
           config.count === "" ||
@@ -741,9 +744,8 @@ const AddPackage = () => {
           config.count === undefined ||
           Number(config.count) < 1
         ) {
-          return `Benefit ${
-            i + 1
-          }: count must be at least 1.`;
+          return `Benefit ${i + 1
+            }: count must be at least 1.`;
         }
       }
 
@@ -753,20 +755,19 @@ const AddPackage = () => {
 
       if (
         config.eligible_after_days !==
-          "" &&
+        "" &&
         config.eligible_after_days !==
-          null &&
+        null &&
         config.eligible_after_days !==
-          undefined
+        undefined
       ) {
         if (
           Number(
             config.eligible_after_days
           ) < 0
         ) {
-          return `Benefit ${
-            i + 1
-          }: eligible after days cannot be negative.`;
+          return `Benefit ${i + 1
+            }: eligible after days cannot be negative.`;
         }
       }
     }
@@ -774,7 +775,7 @@ const AddPackage = () => {
     return "";
   };
 
- 
+
 
   const handleSubmit = async (
     e
@@ -812,15 +813,15 @@ const AddPackage = () => {
       const configuration =
         form.configuration.map(
           (config) => {
-           
+
             const cleanConfig = {
-            
+
               name:
                 String(
                   config.name
                 ).trim(),
 
-            
+
               label:
                 String(
                   config.label
@@ -832,12 +833,12 @@ const AddPackage = () => {
                 config.type,
             };
 
-          
+
             if (
               config.type ===
-                "consumable" ||
+              "consumable" ||
               config.type ===
-                "chat_pool"
+              "chat_pool"
             ) {
               cleanConfig.count =
                 Number(
@@ -848,11 +849,11 @@ const AddPackage = () => {
 
             if (
               config.eligible_after_days !==
-                "" &&
+              "" &&
               config.eligible_after_days !==
-                null &&
+              null &&
               config.eligible_after_days !==
-                undefined
+              undefined
             ) {
               cleanConfig.eligible_after_days =
                 Number(
@@ -887,7 +888,7 @@ const AddPackage = () => {
             if (
               config.match_rules &&
               typeof config.match_rules ===
-                "object" &&
+              "object" &&
               !Array.isArray(
                 config.match_rules
               ) &&
@@ -938,33 +939,33 @@ const AddPackage = () => {
 
         billing_period:
           form.billing_mode ===
-          "autopay"
+            "autopay"
             ? form.billing_period
             : null,
 
         billing_interval:
           form.billing_mode ===
-          "autopay"
+            "autopay"
             ? Number(
-                form.billing_interval
-              )
+              form.billing_interval
+            )
             : null,
 
         billing_cycle_count:
           form.billing_mode ===
-          "autopay"
+            "autopay"
             ? Number(
-                form.billing_cycle_count
-              )
+              form.billing_cycle_count
+            )
             : null,
 
         validity_days:
           form.validity_days ===
-          ""
+            ""
             ? null
             : Number(
-                form.validity_days
-              ),
+              form.validity_days
+            ),
 
         tags:
           form.tags,
@@ -1012,9 +1013,9 @@ const AddPackage = () => {
 
               ...(token
                 ? {
-                    Authorization:
-                      `Bearer ${token}`,
-                  }
+                  Authorization:
+                    `Bearer ${token}`,
+                }
                 : {}),
 
               "ngrok-skip-browser-warning":
@@ -1034,8 +1035,8 @@ const AddPackage = () => {
       if (!response.ok) {
         throw new Error(
           result?.message ||
-            result?.detail ||
-            "Failed to create package."
+          result?.detail ||
+          "Failed to create package."
         );
       }
 
@@ -1054,7 +1055,7 @@ const AddPackage = () => {
 
       setError(
         err?.message ||
-          "Something went wrong while creating package."
+        "Something went wrong while creating package."
       );
     } finally {
       setLoading(false);
@@ -1371,144 +1372,143 @@ const AddPackage = () => {
 
         </section>
 
-       
 
-<section className="add-package-section billing-section">
 
-  <div className="add-section-header">
+        <section className="add-package-section billing-section">
 
-    <h2>
-      Billing
-    </h2>
+          <div className="add-section-header">
 
-    <p>
-      Configure how and when the customer will be charged.
-    </p>
+            <h2>
+              Billing
+            </h2>
 
-  </div>
+            <p>
+              Configure how and when the customer will be charged.
+            </p>
 
-  <div className="add-form-grid">
+          </div>
 
-    {/* ==========================================
+          <div className="add-form-grid">
+
+            {/* ==========================================
         BILLING MODE
     ========================================== */}
 
-    <div className="add-form-group full-width">
+            <div className="add-form-group full-width">
 
-      <label>
-        Billing Mode <span>*</span>
-      </label>
+              <label>
+                Billing Mode <span>*</span>
+              </label>
 
-      <div className="billing-select-wrapper">
+              <div className="billing-select-wrapper">
 
-        <button
-          type="button"
-          className="billing-select-trigger"
-          onClick={() =>
-            setShowBillingModeDropdown(
-              (prev) => !prev
-            )
-          }
-        >
+                <button
+                  type="button"
+                  className="billing-select-trigger"
+                  onClick={() =>
+                    setShowBillingModeDropdown(
+                      (prev) => !prev
+                    )
+                  }
+                >
 
-          <span>
-            {form.billing_mode === "one_time"
-              ? "One Time"
-              : form.billing_mode === "autopay"
-              ? "Autopay"
-              : "Select Billing Mode"}
-          </span>
+                  <span>
+                    {form.billing_mode === "one_time"
+                      ? "One Time"
+                      : form.billing_mode === "autopay"
+                        ? "Autopay"
+                        : "Select Billing Mode"}
+                  </span>
 
-          <FaChevronDown
-            className={
-              showBillingModeDropdown
-                ? "billing-arrow-up"
-                : ""
-            }
-          />
+                  <FaChevronDown
+                    className={
+                      showBillingModeDropdown
+                        ? "billing-arrow-up"
+                        : ""
+                    }
+                  />
 
-        </button>
+                </button>
 
-        {showBillingModeDropdown && (
+                {showBillingModeDropdown && (
 
-          <div className="billing-select-dropdown">
+                  <div className="billing-select-dropdown">
 
-            {/* INFO */}
+                    {/* INFO */}
 
-            <div className="billing-info-box">
+                    <div className="billing-info-box">
 
-              <FaQuestionCircle />
+                      <FaQuestionCircle />
 
-              <div>
+                      <div>
 
-                <strong>
-                  Choose how the customer pays
-                </strong>
+                        <strong>
+                          Choose how the customer pays
+                        </strong>
 
-                <span>
-                  One Time means one payment.
-                  Autopay means recurring automatic
-                  payments.
-                </span>
+                        <span>
+                          One Time means one payment.
+                          Autopay means recurring automatic
+                          payments.
+                        </span>
 
-              </div>
+                      </div>
 
-            </div>
+                    </div>
 
-            {/* ==================================
+                    {/* ==================================
                 ONE TIME
             ================================== */}
 
-            <button
-              type="button"
-              className={`billing-option ${
-                form.billing_mode === "one_time"
-                  ? "billing-option-selected"
-                  : ""
-              }`}
-              onClick={() => {
+                    <button
+                      type="button"
+                      className={`billing-option ${form.billing_mode === "one_time"
+                        ? "billing-option-selected"
+                        : ""
+                        }`}
+                      onClick={() => {
 
-                handleBillingModeChange(
-                  "one_time"
-                );
+                        handleBillingModeChange(
+                          "one_time"
+                        );
 
-                setShowBillingModeDropdown(
-                  false
-                );
+                        setShowBillingModeDropdown(
+                          false
+                        );
 
-              }}
-            >
+                      }}
+                    >
 
-              <div className="billing-option-icon">
-                <FaCreditCard />
-              </div>
+                      <div className="billing-option-icon">
+                        <FaCreditCard />
+                      </div>
 
-              <div className="billing-option-content">
+                      <div className="billing-option-content">
 
-                <strong>
-                  One Time
-                </strong>
+                        <strong>
+                          One Time
+                        </strong>
 
-                <span>
-                  Customer pays once.
-                  No recurring payment
-                  will be made.
-                </span>
+                        <span>
+                          Customer pays once.
+                          No recurring payment
+                          will be made.
+                        </span>
 
-                <small>
-                  Example: ₹2,000 package →
-                  customer pays ₹2,000 only once.
-                </small>
+                        <small>
+                          Example: ₹2,000 package →
+                          customer pays ₹2,000 only once.
+                        </small>
 
-              </div>
+                      </div>
 
-            </button>
+                    </button>
 
-            {/* ==================================
+                    {/* ==================================
                 AUTOPAY - DISABLED FOR NOW
             ================================== */}
 
-            {/*
+                    {/*
             <button
               type="button"
               className={`billing-option ${
@@ -1549,47 +1549,47 @@ const AddPackage = () => {
             </button>
             */}
 
+                  </div>
+
+                )}
+
+              </div>
+
+            </div>
+
+
+
+            <div className="add-form-group">
+
+              <label>
+                Validity Days <span>*</span>
+              </label>
+
+              <input
+                type="number"
+                min="1"
+                name="validity_days"
+                value={form.validity_days}
+                onChange={handleChange}
+                placeholder="e.g. 365"
+              />
+
+              <div className="benefit-field-help">
+
+                <small>
+                  Number of days the package remains
+                  valid after purchase.
+                </small>
+
+              </div>
+
+            </div>
+
           </div>
 
-        )}
+        </section>
 
-      </div>
 
-    </div>
-
-    
-
-    <div className="add-form-group">
-
-      <label>
-        Validity Days <span>*</span>
-      </label>
-
-      <input
-        type="number"
-        min="1"
-        name="validity_days"
-        value={form.validity_days}
-        onChange={handleChange}
-        placeholder="e.g. 365"
-      />
-
-      <div className="benefit-field-help">
-
-        <small>
-          Number of days the package remains
-          valid after purchase.
-        </small>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-      
 
         <section className="add-package-section">
 
@@ -1662,7 +1662,7 @@ const AddPackage = () => {
 
         </section>
 
-       
+
         <section className="add-package-section">
 
           <div className="add-section-header configuration-header">
@@ -1783,71 +1783,69 @@ const AddPackage = () => {
               </button>
 
 
-            {showBenefitDropdown && (
-  <div className="benefit-multiselect-dropdown">
-    {benefitLoading ? (
-      <div className="benefit-dropdown-loading">
-        Loading benefits...
-      </div>
-    ) : benefits.length === 0 ? (
-      <div className="benefit-dropdown-empty">
-        No benefits available.
-      </div>
-    ) : (
-      benefits.map((benefit) => {
-        const isSelected = form.configuration.some(
-          (item) => item.benefit_id === benefit.id
-        );
+              {showBenefitDropdown && (
+                <div className="benefit-multiselect-dropdown">
+                  {benefitLoading ? (
+                    <div className="benefit-dropdown-loading">
+                      Loading benefits...
+                    </div>
+                  ) : benefits.length === 0 ? (
+                    <div className="benefit-dropdown-empty">
+                      No benefits available.
+                    </div>
+                  ) : (
+                    benefits.map((benefit) => {
+                      const isSelected = form.configuration.some(
+                        (item) => item.benefit_id === benefit.id
+                      );
 
-        return (
-          <button
-            type="button"
-            key={benefit.id}
-            className={`benefit-dropdown-option ${
-              isSelected ? "benefit-option-selected" : ""
-            }`}
-            onClick={() => {
-           
-              if (isSelected) {
-                const selectedIndex =
-                  form.configuration.findIndex(
-                    (item) => item.benefit_id === benefit.id
-                  );
+                      return (
+                        <button
+                          type="button"
+                          key={benefit.id}
+                          className={`benefit-dropdown-option ${isSelected ? "benefit-option-selected" : ""
+                            }`}
+                          onClick={() => {
 
-                if (selectedIndex !== -1) {
-                  removeConfiguration(selectedIndex);
-                }
+                            if (isSelected) {
+                              const selectedIndex =
+                                form.configuration.findIndex(
+                                  (item) => item.benefit_id === benefit.id
+                                );
 
-                return;
-              }
+                              if (selectedIndex !== -1) {
+                                removeConfiguration(selectedIndex);
+                              }
 
-              addConfiguration(benefit);
-            }}
-          >
-            
-            <span
-              className={`benefit-checkbox ${
-                isSelected ? "checked" : ""
-              }`}
-            >
-              {isSelected && <FaCheck />}
-            </span>
+                              return;
+                            }
+
+                            addConfiguration(benefit);
+                          }}
+                        >
+
+                          <span
+                            className={`benefit-checkbox ${isSelected ? "checked" : ""
+                              }`}
+                          >
+                            {isSelected && <FaCheck />}
+                          </span>
 
 
-            <span className="benefit-option-text">
-              <strong>{benefit.name}</strong>
+                          <span className="benefit-option-text">
+                            <strong>{benefit.name}</strong>
 
-              {benefit.label &&
-                benefit.label !== benefit.name && (
-                  <small>{benefit.label}</small>
-                )}
-            </span>
-          </button>
-        );
-      })
-    )}
-  </div>
-)}
+                            {benefit.label &&
+                              benefit.label !== benefit.name && (
+                                <small>{benefit.label}</small>
+                              )}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              )}
 
             </div>
 
@@ -1869,7 +1867,7 @@ const AddPackage = () => {
           ========================================== */}
 
           {form.configuration.length ===
-          0 ? (
+            0 ? (
 
             <div className="configuration-empty">
 
@@ -1899,7 +1897,7 @@ const AddPackage = () => {
                     }
                   >
 
-                 
+
                     <div className="configuration-card-header">
 
                       <div>
@@ -1910,8 +1908,7 @@ const AddPackage = () => {
                         </span>
 
                         <h3>
-                          {config.label ||
-                            config.name}
+                          {config.Service_name}
                         </h3>
 
                       </div>
@@ -1933,29 +1930,30 @@ const AddPackage = () => {
                     {/* ==================================
                         BENEFIT BASIC DETAILS
                     ================================== */}
-
+                    {console.log(config)}
                     <div className="add-form-grid">
-
-
-                     
-
                       <div className="add-form-group">
-
                         <label>
-                        Benefit
+                          Benefit
                         </label>
-
                         <input
                           type="text"
                           value={
                             config.label
                           }
-                          readOnly
+                          onChange={(e) =>
+                            updateConfiguration(
+                              index,
+                              "label",
+                              e.target.value
+                            )
+                          }
+                        // readOnly
                         />
 
                       </div>
 
-                      
+
 
                       <div className="add-form-group">
 
@@ -1967,63 +1965,63 @@ const AddPackage = () => {
                           type="text"
                           value={
                             config.type ===
-                            "consumable"
+                              "consumable"
                               ? "Consumable"
                               : config.type ===
                                 "chat_pool"
-                              ? "Chat Pool"
-                              : config.type ===
-                                "rule"
-                              ? "Rule"
-                              : "Flag"
+                                ? "Chat Pool"
+                                : config.type ===
+                                  "rule"
+                                  ? "Rule"
+                                  : "Flag"
                           }
                           readOnly
                         />
 
                       </div>
 
-                      
+
 
                       {config.type ===
                         "consumable" && (
 
-                        <div className="add-form-group">
+                          <div className="add-form-group">
 
-                          <label>
-                            Usage Count *
-                          </label>
+                            <label>
+                              Usage Count *
+                            </label>
 
-                          <input
-                            type="number"
-                            min="1"
-                            value={
-                              config.count
-                            }
-                            onChange={(e) =>
-                              updateConfiguration(
-                                index,
-                                "count",
-                                e.target.value
-                              )
-                            }
-                            placeholder="e.g. 5"
-                          />
+                            <input
+                              type="number"
+                              min="1"
+                              value={
+                                config.count
+                              }
+                              onChange={(e) =>
+                                updateConfiguration(
+                                  index,
+                                  "count",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="e.g. 5"
+                            />
 
-                          <div className="benefit-field-help">
+                            <div className="benefit-field-help">
 
-                            <small>
-                              Enter how many
-                              times the
-                              customer can
-                              use this
-                              benefit.
-                            </small>
+                              <small>
+                                Enter how many
+                                times the
+                                customer can
+                                use this
+                                benefit.
+                              </small>
+
+                            </div>
 
                           </div>
 
-                        </div>
-
-                      )}
+                        )}
 
                     </div>
 
@@ -2034,99 +2032,99 @@ const AddPackage = () => {
                     {config.type ===
                       "consumable" && (
 
-                      <div className="add-form-grid">
+                        <div className="add-form-grid">
 
-                        {/* ELIGIBLE AFTER DAYS */}
+                          {/* ELIGIBLE AFTER DAYS */}
 
-                        <div className="add-form-group">
+                          <div className="add-form-group">
 
-                          <label>
-                            Eligible After Days
-                          </label>
+                            <label>
+                              Eligible After Days
+                            </label>
 
-                          <input
-                            type="number"
-                            min="0"
-                            value={
-                              config.eligible_after_days
-                            }
-                            onChange={(e) =>
-                              updateConfiguration(
-                                index,
-                                "eligible_after_days",
-                                e.target.value
-                              )
-                            }
-                            placeholder="e.g. 15"
-                          />
+                            <input
+                              type="number"
+                              min="0"
+                              value={
+                                config.eligible_after_days
+                              }
+                              onChange={(e) =>
+                                updateConfiguration(
+                                  index,
+                                  "eligible_after_days",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="e.g. 15"
+                            />
 
-                          <div className="benefit-field-help">
+                            <div className="benefit-field-help">
 
-                            <small>
-                              The benefit
-                              becomes
-                              available
-                              after this
-                              many days.
-                            </small>
+                              <small>
+                                The benefit
+                                becomes
+                                available
+                                after this
+                                many days.
+                              </small>
 
-                            <small>
-                              Example: 15 means
-                              the benefit becomes
-                              available after
-                              15 days.
-                            </small>
+                              <small>
+                                Example: 15 means
+                                the benefit becomes
+                                available after
+                                15 days.
+                              </small>
+
+                            </div>
+
+                          </div>
+
+
+                          <div className="add-form-group">
+
+                            <label>
+                              Requires Completed Benefit
+                            </label>
+
+                            <input
+                              type="text"
+                              value={
+                                config.requires_completed_capability ||
+                                ""
+                              }
+                              onChange={(e) =>
+                                updateConfiguration(
+                                  index,
+                                  "requires_completed_capability",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="e.g. Diet consultation"
+                            />
+
+                            <div className="benefit-field-help">
+
+                              <small>
+                                Enter the benefit
+                                that must be
+                                completed before
+                                this benefit
+                                becomes
+                                available.
+                              </small>
+
+                              <small>
+                                Example: Diet
+                                consultation
+                              </small>
+
+                            </div>
 
                           </div>
 
                         </div>
 
-
-                        <div className="add-form-group">
-
-                          <label>
-                            Requires Completed Benefit
-                          </label>
-
-                          <input
-                            type="text"
-                            value={
-                              config.requires_completed_capability ||
-                              ""
-                            }
-                            onChange={(e) =>
-                              updateConfiguration(
-                                index,
-                                "requires_completed_capability",
-                                e.target.value
-                              )
-                            }
-                            placeholder="e.g. Diet consultation"
-                          />
-
-                          <div className="benefit-field-help">
-
-                            <small>
-                              Enter the benefit
-                              that must be
-                              completed before
-                              this benefit
-                              becomes
-                              available.
-                            </small>
-
-                            <small>
-                              Example: Diet
-                              consultation
-                            </small>
-
-                          </div>
-
-                        </div>
-
-                      </div>
-
-                    )}
+                      )}
 
                     {/* =================================
                         MATCH RULES - READ ONLY
@@ -2137,86 +2135,86 @@ const AddPackage = () => {
                         config.match_rules
                       ).length > 0 && (
 
-                      <div className="match-rules-box">
+                        <div className="match-rules-box">
 
-                        <div className="match-rules-header">
+                          <div className="match-rules-header">
 
-                          <div>
+                            <div>
 
-                            <h4>
-                              Match Rules
-                            </h4>
+                              <h4>
+                                Match Rules
+                              </h4>
 
-                            <p>
-                              These rules are
-                              automatically taken
-                              from the selected
-                              benefit and cannot
-                              be edited here.
-                            </p>
+                              <p>
+                                These rules are
+                                automatically taken
+                                from the selected
+                                benefit and cannot
+                                be edited here.
+                              </p>
+
+                            </div>
+
+                          </div>
+
+                          <div className="add-form-grid">
+
+                            {Object.entries(
+                              config.match_rules
+                            ).map(
+                              (
+                                [
+                                  ruleKey,
+                                  ruleValue,
+                                ]
+                              ) => (
+
+                                <div
+                                  className="add-form-group"
+                                  key={
+                                    ruleKey
+                                  }
+                                >
+
+                                  <label>
+                                    {ruleKey
+                                      .replace(
+                                        /_/g,
+                                        " "
+                                      )
+                                      .replace(
+                                        /\b\w/g,
+                                        (char) =>
+                                          char.toUpperCase()
+                                      )}
+                                  </label>
+
+                                  <input
+                                    type="text"
+                                    value={
+                                      typeof ruleValue ===
+                                        "boolean"
+                                        ? ruleValue
+                                          ? "Yes"
+                                          : "No"
+                                        : String(
+                                          ruleValue ??
+                                          ""
+                                        )
+                                    }
+                                    readOnly
+                                  />
+
+                                </div>
+
+                              )
+                            )}
 
                           </div>
 
                         </div>
 
-                        <div className="add-form-grid">
-
-                          {Object.entries(
-                            config.match_rules
-                          ).map(
-                            (
-                              [
-                                ruleKey,
-                                ruleValue,
-                              ]
-                            ) => (
-
-                              <div
-                                className="add-form-group"
-                                key={
-                                  ruleKey
-                                }
-                              >
-
-                                <label>
-                                  {ruleKey
-                                    .replace(
-                                      /_/g,
-                                      " "
-                                    )
-                                    .replace(
-                                      /\b\w/g,
-                                      (char) =>
-                                        char.toUpperCase()
-                                    )}
-                                </label>
-
-                                <input
-                                  type="text"
-                                  value={
-                                    typeof ruleValue ===
-                                    "boolean"
-                                      ? ruleValue
-                                        ? "Yes"
-                                        : "No"
-                                      : String(
-                                          ruleValue ??
-                                            ""
-                                        )
-                                  }
-                                  readOnly
-                                />
-
-                              </div>
-
-                            )
-                          )}
-
-                        </div>
-
-                      </div>
-
-                    )}
+                      )}
 
                   </div>
 
@@ -2229,7 +2227,7 @@ const AddPackage = () => {
 
         </section>
 
-       
+
 
         <section className="add-package-section">
 
@@ -2270,8 +2268,8 @@ const AddPackage = () => {
 
         </section>
 
-        
-        
+
+
 
         <div className="add-package-footer">
 
