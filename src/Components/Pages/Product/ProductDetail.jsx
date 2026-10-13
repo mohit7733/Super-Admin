@@ -1282,46 +1282,64 @@ const handleVariantAction = async (
  
       </div>
 
-  {/* ===== ACTION MODAL ===== */}
+ 
 {showActionModal && selectedVariantForAction && (
   <div
     className="confirm-overlay"
     onClick={() => {
       setShowActionModal(false);
+      setSelectedVariantForAction(null);
+      setHsnError("");
+      setTaxClassError("");
+      setReason("");
     }}
   >
     <div
-      className="confirm-modal"
+      className={`reason-modal modern-reason-modal ${
+        actionType === "approve"
+          ? "product-approve-modal"
+          : ""
+      }`}
       onClick={(e) => e.stopPropagation()}
     >
-
       {/* Close Button */}
       <button
+        type="button"
         className="closes-modal"
         onClick={() => {
           setShowActionModal(false);
           setSelectedVariantForAction(null);
           setHsnCode("");
           setTaxClass("");
+          setHsnError("");
+          setTaxClassError("");
           setReason("");
         }}
       >
         <BsX />
       </button>
 
-      {/* Approval / Action Icon */}
-      <div className="approval-icon-wrapper">
-        {actionType === "approve" ? (
-          <FaCheckCircle className="approval-icon" />
-        ) : actionType === "reject" ? (
-          <FaTimesCircle className="approval-icon" />
+      {/* Dynamic Icon */}
+      <div
+        className={`reason-icon ${
+          actionType === "reject"
+            ? "reject-bg"
+            : actionType === "suspend"
+            ? "suspend-bg"
+            : "approve-bg"
+        }`}
+      >
+        {actionType === "reject" ? (
+          <FaTimesCircle />
+        ) : actionType === "suspend" ? (
+          <FaBan />
         ) : (
-          <FaBan className="approval-icon" />
+          <FaCheckCircle />
         )}
       </div>
 
-      {/* Title */}
-      <h2 className="confirm-title">
+      {/* Dynamic Heading */}
+      <h2>
         {actionType === "approve"
           ? "Approve Product Variant"
           : actionType === "reject"
@@ -1329,125 +1347,158 @@ const handleVariantAction = async (
           : "Suspend Product Variant"}
       </h2>
 
-      {/* Description */}
-      <p className="confirm-description">
+      <p className="reason-subtitle">
         {actionType === "approve"
-          ? "Review and update the variant details before approving."
+          ? "Review the variant details before approving."
           : actionType === "reject"
           ? "Please provide a reason for rejecting this variant."
           : "Please provide a reason for suspending this variant."}
       </p>
 
-      {/* ================= VARIANT INFORMATION ================= */}
+      {/* Variant Information */}
       <div
-        className="vendor-info-card"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-        }}
+        className={`vendor-info-card ${
+          actionType === "reject"
+            ? "reject-card"
+            : actionType === "suspend"
+            ? "suspend-card"
+            : ""
+        }`}
       >
-
-        {/* Variant Name */}
         <div className="vendor-row">
-          <span className="label">
-            Variant Name
-          </span>
+          <span className="label">Variant Name</span>
 
-          <span className="value approve-text">
+          <span
+            className={`value ${
+              actionType === "reject"
+                ? "reject-text"
+                : actionType === "suspend"
+                ? "suspend-text"
+                : "approve-text"
+            }`}
+          >
             {selectedVariantForAction?.title || "N/A"}
           </span>
         </div>
 
+        <div className="vendor-row">
+          <span className="label">SKU</span>
+          <span className="value">
+            {selectedVariantForAction?.sku_code ||
+              selectedVariantForAction?.variant_code ||
+              "N/A"}
+          </span>
+        </div>
+
        
-{/* HSN CODE */}
-{actionType === "approve" && (
-  <div className="vendor-row">
-    <label className="label">
-      HSN Code <span style={{ color: "#dc3545" }}>*</span>
-    </label>
 
-    <input
-      type="text"
-      inputMode="numeric"
-      maxLength={8}
-      value={hsnCode}
-      onChange={(e) => {
-        const value = e.target.value;
+        {/* HSN Code */}
+        {actionType === "approve" && (
+          <div className="vendor-row hsn-tax-field">
+            <label className="label" htmlFor="approval-hsn-code">
+              HSN Code <span>*</span>
+            </label>
 
-        // Allow only numeric digits
-        if (!/^\d*$/.test(value)) {
-          setHsnError("Only numbers are allowed.");
-          return;
-        }
+            <div className="hsn-input-wrap">
+              <input
+                id="approval-hsn-code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                maxLength={8}
+                value={hsnCode}
+                placeholder="Enter 8-digit HSN Code"
+                className={`approval-input ${
+                  hsnError ? "approval-input-error" : ""
+                }`}
+                onChange={(e) => {
+                  const rawValue = e.target.value;
+                  const numericValue = rawValue
+                    .replace(/\D/g, "")
+                    .slice(0, 8);
 
-        setHsnCode(value);
-        setHsnError(
-          value.length > 0 && value.length < 8
-            ? "HSN Code must be exactly 8 digits."
-            : ""
-        );
-      }}
-      placeholder="Enter 8-digit HSN Code"
-      className="approval-input"
-    />
+                  setHsnCode(numericValue);
 
-    {hsnError && (
-      <small className="validation-error">
-        {hsnError}
-      </small>
-    )}
-  </div>
-)}
+                  if (/\D/.test(rawValue)) {
+                    setHsnError("Only numbers are allowed.");
+                  } else if (
+                    numericValue.length > 0 &&
+                    numericValue.length !== 8
+                  ) {
+                    setHsnError(
+                      "HSN Code must be exactly 8 digits."
+                    );
+                  } else {
+                    setHsnError("");
+                  }
+                }}
+              />
 
+              {hsnError && (
+                <small className="validation-error">
+                  {hsnError}
+                </small>
+              )}
+            </div>
+          </div>
+        )}
 
+        {/* Tax Class */}
+        {actionType === "approve" && (
+          <div className="vendor-row hsn-tax-field">
+            <label className="label" htmlFor="approval-tax-class">
+              Tax Class <span>*</span>
+            </label>
 
-{/* TAX CLASS */}
-{actionType === "approve" && (
-  <div className="vendor-row">
-    <label className="label">
-      Tax Class <span style={{ color: "#dc3545" }}>*</span>
-    </label>
+            <div className="hsn-input-wrap">
+              <select
+                id="approval-tax-class"
+                value={taxClass}
+                className={`approval-input approval-select ${
+                  taxClassError ? "approval-input-error" : ""
+                }`}
+                onChange={(e) => {
+                  setTaxClass(e.target.value);
+                  setTaxClassError(
+                    e.target.value
+                      ? ""
+                      : "Please select Tax Class."
+                  );
+                }}
+              >
+                <option value="">Select Tax Class</option>
 
-    <select
-      value={taxClass}
-      onChange={(e) => {
-        setTaxClass(e.target.value);
-        setTaxClassError(
-          e.target.value ? "" : "Please select Tax Class."
-        );
-      }}
-      className="approval-input approval-select"
-    >
-      <option value="">Select Tax Class</option>
+                {taxClasses.map((tax) => (
+                  <option key={tax.id} value={tax.id}>
+                    {tax.name} ({tax.percentage}%)
+                  </option>
+                ))}
+              </select>
 
-      {taxClasses.map((tax) => (
-        <option key={tax.id} value={tax.id}>
-          {tax.name} ({tax.percentage}%)
-        </option>
-      ))}
-    </select>
-
-    {taxClassError && (
-      <small className="validation-error">
-        {taxClassError}
-      </small>
-    )}
-  </div>
-)}
-
-
+              {taxClassError && (
+                <small className="validation-error">
+                  {taxClassError}
+                </small>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ================= REJECT / SUSPEND REASON ================= */}
-      {(actionType === "reject" || actionType === "suspend") && (
+      {/* Reject / Suspend Reason */}
+      {(actionType === "reject" ||
+        actionType === "suspend") && (
         <div className="reason-field">
           <label>
             Reason <span>*</span>
           </label>
 
           <textarea
-            className="reason-box"
+            className={`reason-box ${
+              actionType === "reject"
+                ? "reject-reason-box"
+                : "suspend-reason-box"
+            }`}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder={
@@ -1459,10 +1510,30 @@ const handleVariantAction = async (
         </div>
       )}
 
-      {/* ================= INFORMATION BOX ================= */}
-      <div className="info-box">
-        <span className="info-icon">
-          ℹ
+      {/* Information Message */}
+      <div
+        className={`info-box ${
+          actionType === "reject"
+            ? "reject-info-box"
+            : actionType === "suspend"
+            ? "suspend-info-box"
+            : ""
+        }`}
+      >
+        <span
+          className={`infos-icon ${
+            actionType === "reject"
+              ? "reject-infos-icon"
+              : actionType === "suspend"
+              ? "suspend-infos-icon"
+              : ""
+          }`}
+        >
+          {actionType === "reject"
+            ? "✕"
+            : actionType === "suspend"
+            ? "⏸"
+            : "ℹ"}
         </span>
 
         <span>
@@ -1474,89 +1545,68 @@ const handleVariantAction = async (
         </span>
       </div>
 
-      {/* ================= BUTTONS ================= */}
+      {/* Footer Buttons */}
       <div className="confirm-buttons">
-
-        {/* Cancel */}
         <button
+          type="button"
           className="cancels-btn"
           onClick={() => {
             setShowActionModal(false);
             setSelectedVariantForAction(null);
             setHsnCode("");
             setTaxClass("");
+            setHsnError("");
+            setTaxClassError("");
             setReason("");
           }}
         >
           Cancel
         </button>
 
-        {/* Action Button */}
         <button
-          className={
-            actionType === "approve"
-              ? `approve-btn ${
-                  !hsnCode.trim() || !taxClass
-                    ? "approve-btn-disabled"
-                    : ""
-                }`
-              : actionType === "reject"
-              ? "approve-btn rejects-btn"
-              : "approve-btn suspend-btn"
-          }
+          type="button"
+          className={`approve-btn ${
+            actionType === "reject"
+              ? "rejects-btn"
+              : actionType === "suspend"
+              ? "suspend-btn"
+              : !/^\d{8}$/.test(hsnCode) || !taxClass
+              ? "approve-btn-disabled"
+              : ""
+          }`}
           onClick={() => {
-
-            /* ================= APPROVE VALIDATION ================= */
             if (actionType === "approve") {
-
-              // Both empty
-              if (!hsnCode.trim() && !taxClass) {
+              if (!/^\d{8}$/.test(hsnCode)) {
+                setHsnError(
+                  "HSN Code must be exactly 8 digits."
+                );
                 toast.error(
-                  "Please enter HSN Code and select Tax Class."
+                  "Please enter a valid 8-digit HSN Code."
                 );
                 return;
               }
 
-              // HSN empty
-              if (!hsnCode.trim()) {
-                toast.error(
-                  "Please enter HSN Code."
-                );
-                return;
-              }
-
-              // Tax Class empty
               if (!taxClass) {
-                toast.error(
+                setTaxClassError(
                   "Please select Tax Class."
                 );
+                toast.error("Please select Tax Class.");
                 return;
               }
             }
 
-           
-            
-            if (actionType === "reject") {
-              if (!reason.trim()) {
-                toast.error(
-                  "Please enter rejection reason."
-                );
-                return;
-              }
+            if (
+              (actionType === "reject" ||
+                actionType === "suspend") &&
+              !reason.trim()
+            ) {
+              toast.error(
+                actionType === "reject"
+                  ? "Please enter rejection reason."
+                  : "Please enter suspension reason."
+              );
+              return;
             }
-
-     
-            if (actionType === "suspend") {
-              if (!reason.trim()) {
-                toast.error(
-                  "Please enter suspension reason."
-                );
-
-                
-                return;
-              }
-            }
-
 
             handleVariantAction(
               selectedVariantForAction.id,
@@ -1571,12 +1621,11 @@ const handleVariantAction = async (
             ? "Reject"
             : "Suspend"}
         </button>
-
       </div>
-
     </div>
   </div>
 )}
+
 <ToastContainer position="top-center" autoClose={2000} />
     
     </div>

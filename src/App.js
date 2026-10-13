@@ -103,6 +103,7 @@ import Packagescategory from './Components/Pages/Packages/Packagescategory';
 import AddPackages from './Components/Pages/Packages/AddPackages';
 import EditPackage from './Components/Pages/Packages/EditPackage';
 import ReturnRequests from './Components/Pages/Order/ReturnRequests';
+import Customerpurchase from './Components/Pages/Packages/Customerpurchase';
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -165,6 +166,18 @@ function App() {
             <ProtectedRoute permission="edit_packages">
               <Layout>
                 <EditPackage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        
+        <Route
+          path="/get buyers detail"
+          element={
+            <ProtectedRoute permission="manage_buy_packages">
+              <Layout>
+                <Customerpurchase />
               </Layout>
             </ProtectedRoute>
           }

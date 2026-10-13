@@ -3731,3 +3731,56 @@
 .confirm-modal .approval-input::placeholder {
   color: #9aa0a6;
 }
+.hsn-tax-field {
+  display: grid !important;
+  grid-template-columns: minmax(120px, 1fr) minmax(0, 1.2fr);
+  align-items: start !important;
+  column-gap: 16px;
+  row-gap: 6px;
+  width: 100%;
+}
+
+.hsn-tax-field > .label {
+  padding-top: 12px;
+}
+
+.hsn-input-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  gap: 6px;
+}
+
+.hsn-input-wrap .approval-input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.hsn-input-wrap .validation-error {
+  display: block;
+  width: 100%;
+  color: #dc3545;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
+.hsn-input-wrap .approval-input-error {
+  border-color: #dc3545 !important;
+}
+
+@media (max-width: 600px) {
+  .hsn-tax-field {
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+  }
+
+  .hsn-tax-field > .label {
+    padding-top: 0;
+  }
+}
