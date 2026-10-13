@@ -346,6 +346,12 @@ export const SidebarData = () => [
       path: "/package-category",
       permission: "manage_packages",
     },
+    {
+      title:"Buyer Record",
+      icon: <MdCategory style={{ fontSize: 20 }} />,
+      path: "/get buyers detail",
+      permission: "manage_buy_packages",
+    },
   ],
 },
 

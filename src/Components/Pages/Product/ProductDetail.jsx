@@ -103,6 +103,8 @@ function ProductDetail() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [hsnCode, setHsnCode] = useState("");
 const [taxClass, setTaxClass] = useState("");
+const [hsnError, setHsnError] = useState("");
+const [taxClassError, setTaxClassError] = useState("");
   const [expandedSections, setExpandedSections] = useState({
     productInfo: true,
     pricing: true,
@@ -233,8 +235,7 @@ const fetchTaxClasses = async () => {
     }
   };
 
- 
-  const handleVariantAction = async (
+const handleVariantAction = async (
   variantId,
   action,
   reasonText = ""
@@ -242,14 +243,16 @@ const fetchTaxClasses = async () => {
   try {
     const token = sessionStorage.getItem("superadmin_token");
 
+    // Validate rejection/suspension reason
     if (
-      (action === "reject" || action === "rejected") &&
+      (action === "reject" || action === "suspend") &&
       !reasonText.trim()
     ) {
-      toast.error("Please enter rejection reason");
+      toast.error("Please enter reason");
       return;
     }
 
+    // Prepare API payload
     const payload = {
       variant_id: variantId,
       status:
@@ -260,15 +263,33 @@ const fetchTaxClasses = async () => {
           : "suspended",
     };
 
-    if (action === "reject") {
-      payload.reason = reasonText;
+    // Add HSN Code and Tax Class when approving
+    if (action === "approve") {
+      if (!hsnCode.trim()) {
+        toast.error("Please enter HSN Code");
+        return;
+      }
+
+      if (!taxClass) {
+        toast.error("Please select Tax Class");
+        return;
+      }
+
+      payload.hsn_code = hsnCode.trim();
+      payload.tax_class = taxClass;
+    }
+
+    // Add reason for rejection or suspension
+    if (action === "reject" || action === "suspend") {
+      payload.reason = reasonText.trim();
     }
 
     const response = await fetch(
-         `${BASE_URL}/vendors/admin/variant/${variantId}/review-status/`,
+      `${BASE_URL}/vendors/admin/variant/${variantId}/review-status/`,
       {
         method: "PATCH",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "true",
@@ -281,34 +302,58 @@ const fetchTaxClasses = async () => {
 
     if (!response.ok || !result.success) {
       throw new Error(
-        result.message || "Failed to update status"
+        result.message || "Failed to update variant status"
       );
     }
 
     const newStatus = payload.status;
 
-    
+    // Update variants list
+    setVariants((prev) =>
+      prev.map((item) =>
+        item.id === variantId
+          ? {
+              ...item,
+              approval_status: newStatus,
+              hsn_code:
+                action === "approve"
+                  ? hsnCode.trim()
+                  : item.hsn_code,
+              tax_class:
+                action === "approve"
+                  ? taxClass
+                  : item.tax_class,
+              reason:
+                action === "reject" || action === "suspend"
+                  ? reasonText.trim()
+                  : item.reason,
+            }
+          : item
+      )
+    );
 
-   
-   setVariants((prev) =>
-  prev.map((item) =>
-    item.id === variantId
-      ? {
-          ...item,
-          approval_status: newStatus,
-          reason: action === "reject" ? reasonText : item.reason,
-        }
-      : item
-  )
-);
+    // Update selected variant
+    setSelectedVariant((prev) =>
+      prev?.id === variantId
+        ? {
+            ...prev,
+            approval_status: newStatus,
+            hsn_code:
+              action === "approve"
+                ? hsnCode.trim()
+                : prev.hsn_code,
+            tax_class:
+              action === "approve"
+                ? taxClass
+                : prev.tax_class,
+            reason:
+              action === "reject" || action === "suspend"
+                ? reasonText.trim()
+                : prev.reason,
+          }
+        : prev
+    );
 
-if (selectedVariant?.id === variantId) {
-  setSelectedVariant((prev) => ({
-    ...prev,
-    approval_status: newStatus,
-    reason: action === "reject" ? reasonText : prev.reason,
-  }));
-}
     toast.success(
       `Variant ${
         action === "approve"
@@ -319,14 +364,20 @@ if (selectedVariant?.id === variantId) {
       } successfully`
     );
 
+    // Close modal and reset fields
     setShowActionModal(false);
     setSelectedVariantForAction(null);
+    setHsnCode("");
+    setTaxClass("");
     setReason("");
     setOpenMenuId(null);
-  } 
- catch (error) {
-  toast.error("Server Error. Please try again later.");
-}
+
+  } catch (error) {
+    console.error("Variant action error:", error);
+    toast.error(
+      error.message || "Server Error. Please try again later."
+    );
+  }
 };
 
   const handleBulkAction = async (action) => {
@@ -1308,67 +1359,83 @@ if (selectedVariant?.id === variantId) {
           </span>
         </div>
 
-        {/* SKU */}
-        <div className="vendor-row">
-          <span className="label">
-            SKU
-          </span>
+       
+{/* HSN CODE */}
+{actionType === "approve" && (
+  <div className="vendor-row">
+    <label className="label">
+      HSN Code <span style={{ color: "#dc3545" }}>*</span>
+    </label>
 
-          <span className="value">
-            {selectedVariantForAction?.sku_code ||
-              selectedVariantForAction?.variant_code ||
-              "N/A"}
-          </span>
-        </div>
+    <input
+      type="text"
+      inputMode="numeric"
+      maxLength={8}
+      value={hsnCode}
+      onChange={(e) => {
+        const value = e.target.value;
 
-        {/* ================= HSN CODE ================= */}
-        {actionType === "approve" && (
-          <div className="vendor-row">
-            <span className="label">
-              HSN Code <span style={{ color: "#dc3545" }}>*</span>
-            </span>
+        // Allow only numeric digits
+        if (!/^\d*$/.test(value)) {
+          setHsnError("Only numbers are allowed.");
+          return;
+        }
 
-            <input
-              type="text"
-              value={hsnCode}
-              onChange={(e) => {
-                setHsnCode(e.target.value);
-              }}
-              placeholder="Enter HSN Code"
-              className="approval-input"
-            />
-          </div>
-        )}
+        setHsnCode(value);
+        setHsnError(
+          value.length > 0 && value.length < 8
+            ? "HSN Code must be exactly 8 digits."
+            : ""
+        );
+      }}
+      placeholder="Enter 8-digit HSN Code"
+      className="approval-input"
+    />
 
-        {/* ================= TAX CLASS ================= */}
-        {actionType === "approve" && (
-          <div className="vendor-row">
-            <span className="label">
-              Tax Class <span style={{ color: "#dc3545" }}>*</span>
-            </span>
+    {hsnError && (
+      <small className="validation-error">
+        {hsnError}
+      </small>
+    )}
+  </div>
+)}
 
-            <select
-              value={taxClass}
-              onChange={(e) => {
-                setTaxClass(e.target.value);
-              }}
-              className="approval-input approval-select"
-            >
-              <option value="">
-                Select Tax Class
-              </option>
 
-              {taxClasses.map((tax) => (
-                <option
-                  key={tax.id}
-                  value={tax.id}
-                >
-                  {tax.name} ({tax.percentage}%)
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+
+{/* TAX CLASS */}
+{actionType === "approve" && (
+  <div className="vendor-row">
+    <label className="label">
+      Tax Class <span style={{ color: "#dc3545" }}>*</span>
+    </label>
+
+    <select
+      value={taxClass}
+      onChange={(e) => {
+        setTaxClass(e.target.value);
+        setTaxClassError(
+          e.target.value ? "" : "Please select Tax Class."
+        );
+      }}
+      className="approval-input approval-select"
+    >
+      <option value="">Select Tax Class</option>
+
+      {taxClasses.map((tax) => (
+        <option key={tax.id} value={tax.id}>
+          {tax.name} ({tax.percentage}%)
+        </option>
+      ))}
+    </select>
+
+    {taxClassError && (
+      <small className="validation-error">
+        {taxClassError}
+      </small>
+    )}
+  </div>
+)}
+
 
       </div>
 
