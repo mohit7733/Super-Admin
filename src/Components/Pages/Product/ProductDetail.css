@@ -3704,4 +3704,30 @@
     height: 28px;
     font-size: 12px;
   }
+}.confirm-modal .approval-input {
+  flex: 1;
+  max-width:45%;
+  height: 42px;
+  padding: 0 13px;
+  box-sizing: border-box;
+
+  border: 1px solid #d9dfe5;
+  border-radius: 7px;
+
+  background: #fff;
+  color: #333;
+  font-family: inherit;
+  font-size: 13px;
+
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.confirm-modal .approval-input:focus {
+  border-color: #0D614E;
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.08);
+}
+
+.confirm-modal .approval-input::placeholder {
+  color: #9aa0a6;
 }

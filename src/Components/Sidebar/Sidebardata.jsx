@@ -525,6 +525,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
       permission: "view_consultation_refund",
       icon: <FaMoneyBillWave size={18} />
     },
+     {
+      title: "Return Requests",
+      path: "/ReturnRequests",
+      permission: "view_return_request",
+      icon: <FaMoneyBillWave size={18} />
+    },
   ],
 },
 

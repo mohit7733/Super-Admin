@@ -76,7 +76,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 function ProductDetail() {
   const navigate = useNavigate();
   const { productId } = useParams();
-  
+  const [taxClasses, setTaxClasses] = useState([]);
+
  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -100,6 +101,8 @@ function ProductDetail() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [hsnCode, setHsnCode] = useState("");
+const [taxClass, setTaxClass] = useState("");
   const [expandedSections, setExpandedSections] = useState({
     productInfo: true,
     pricing: true,
@@ -111,6 +114,7 @@ function ProductDetail() {
   
   useEffect(() => {
     fetchProductDetails();
+    fetchTaxClasses();
   
   }, [productId]);
 
@@ -161,7 +165,35 @@ function ProductDetail() {
       setLoading(false);
     }
   };
+const fetchTaxClasses = async () => {
+  try {
+    const token = sessionStorage.getItem("superadmin_token");
 
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/unicommerce-tax-class/
+`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Failed to fetch tax classes");
+    }
+
+    setTaxClasses(result.data || []);
+  } catch (error) {
+    console.error("Tax classes error:", error);
+    toast.error("Failed to load tax classes");
+  }
+};
 
  
   const applyFilters = () => {
@@ -969,11 +1001,23 @@ if (selectedVariant?.id === variantId) {
                       <div className="action-buttons-group horizontal">
                         <button 
                           className="actionss-btn approves-btn"
-                          onClick={() => {
-                            setSelectedVariantForAction(selectedVariant);
-                            setShowActionModal(true);
-                            setActionType('approve');
-                          }}
+                onClick={() => {
+  setSelectedVariantForAction(selectedVariant);
+
+  setHsnCode(selectedVariant?.hsn_code || "");
+
+  const existingTaxClass = taxClasses.find(
+    (tax) =>
+      tax.id === selectedVariant?.tax_class ||
+      tax.code === selectedVariant?.tax_class ||
+      tax.name === selectedVariant?.tax_class
+  );
+
+  setTaxClass(existingTaxClass?.id || "");
+
+  setShowActionModal(true);
+  setActionType("approve");
+}}
                         >
                           <FaCheckCircle /> Approve
                         </button>
@@ -1187,134 +1231,285 @@ if (selectedVariant?.id === variantId) {
  
       </div>
 
-      {/* ===== ACTION MODAL ===== */}
-      {showActionModal && selectedVariantForAction && (
-        <div className="modal-overlay" onClick={() => setShowActionModal(false)}>
-          <div className="modal-content animate-slide-up" onClick={(e) => e.stopPropagation()}>
-            <div className="modalp-header">
-              <h3>
-                {actionType === 'approve' ? 'Approve' :
-                 actionType === 'reject' ? 'Reject' : 
-                 actionType === 'suspend' ? 'Suspend' : 'Variant Details'}
-              </h3>
-              <button className="modal-close" onClick={() => setShowActionModal(false)}>
-                <BsX />
-              </button>
-            </div>
-            <div className="modal-body">
-              {actionType === 'view' ? (
-                <div className="modal-variant-details">
-                  <div className="modal-image-section">
-                    <img 
-                      src={selectedVariantForAction.media?.find(m => m.is_cover)?.media_url || selectedVariantForAction.media?.[0]?.media_url || 'https://via.placeholder.com/200'}
-                      alt={selectedVariantForAction.title}
-                      className="modal-variant-image"
-                      onError={(e) => e.target.src = 'https://via.placeholder.com/200'}
-                    />
-                  </div>
-                  <div className="modal-variant-info">
-                    <div className="modal-info-row">
-                      <span className="modal-info-label">Title</span>
-                      <span className="modal-info-value">{selectedVariantForAction.title}</span>
-                    </div>
-                    <div className="modal-info-row">
-                      <span className="modal-info-label">SKU</span>
-                      <span className="modal-info-value sku-code">{selectedVariantForAction.variant_code}</span>
-                    </div>
-                    <div className="modal-info-row">
-                      <span className="modal-info-label">Size</span>
-                      <span className="modal-info-value">{selectedVariantForAction.size} {selectedVariantForAction.weightage}</span>
-                    </div>
-                    <div className="modal-info-row">
-                      <span className="modal-info-label">MRP</span>
-                      <span className="modal-info-value mrp">₹{parseFloat(selectedVariantForAction.mrp).toFixed(2)}</span>
-                    </div>
-                    <div className="modal-info-row">
-                      <span className="modal-info-label">Selling Price</span>
-                      <span className="modal-info-value selling">₹{parseFloat(selectedVariantForAction.selling_price).toFixed(2)}</span>
-                    </div>
-                    <div className="modal-info-row">
-                      <span className="modal-info-label">Stock</span>
-                      <span className="modal-info-value">{selectedVariantForAction.stock} units</span>
-                    </div>
-                    <div className="modal-info-row">
-                      <span className="modal-info-label">Status</span>
-                      <span className="modal-info-value">{getStatusBadge(selectedVariantForAction.status)}</span>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="modal-action-content">
-                  <div className="modal-variant-summary">
-                    <img 
-                      src={selectedVariantForAction.media?.find(m => m.is_cover)?.media_url || selectedVariantForAction.media?.[0]?.media_url || 'https://via.placeholder.com/60'}
-                      alt={selectedVariantForAction.title}
-                      className="modal-summary-image"
-                      onError={(e) => e.target.src = 'https://via.placeholder.com/60'}
-                    />
-                    <div>
-                      <div className="summary-title">{selectedVariantForAction.title}</div>
-                      <div className="summary-sku">{selectedVariantForAction.variant_code}</div>
-                    </div>
-                    <div className="summary-status">{getStatusBadge(selectedVariantForAction.status)}</div>
-                  </div>
+  {/* ===== ACTION MODAL ===== */}
+{showActionModal && selectedVariantForAction && (
+  <div
+    className="confirm-overlay"
+    onClick={() => {
+      setShowActionModal(false);
+    }}
+  >
+    <div
+      className="confirm-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
 
-                  <div className="action-confirmation">
-                    <div className="confirmation-icon">
-                      {actionType === 'approve' && <FaCheckCircle className="icon-approve" />}
-                      {actionType === 'reject' && <FaTimesCircle className="icon-reject" />}
-                      {actionType === 'suspend' && <FaBan className="icon-suspend" />}
-                    </div>
-                    <h4>
-                      {actionType === 'approve' ? 'Approve this variant?' :
-                       actionType === 'reject' ? 'Reject this variant?' : 
-                       'Suspend this variant?'}
-                    </h4>
-                    <p>
-                      {actionType === 'approve' ? 'This will make the variant available for purchase.' :
-                       actionType === 'reject' ? 'This will reject the variant and hide it from the catalog.' : 
-                       'This will temporarily suspend the variant.'}
-                    </p>
-                  </div>
+      {/* Close Button */}
+      <button
+        className="closes-modal"
+        onClick={() => {
+          setShowActionModal(false);
+          setSelectedVariantForAction(null);
+          setHsnCode("");
+          setTaxClass("");
+          setReason("");
+        }}
+      >
+        <BsX />
+      </button>
 
-                  {(actionType === 'reject' || actionType === 'suspend') && (
-                    <div className="form-group">
-                      <label htmlFor="reason">Reason for {actionType}ing:</label>
-                      <textarea
-                        id="reason"
-                        className="reason-input"
-                        rows="4"
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        placeholder={`Please provide a detailed reason for ${actionType}ing this variant...`}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button className="btns-secondary" onClick={() => setShowActionModal(false)}>
-                {actionType === 'view' ? 'Close' : 'Cancel'}
-              </button>
-              {actionType !== 'view' && (
-                <button
-                  className={`btn-${actionType}`}
-                  onClick={() => handleVariantAction(
-                    selectedVariantForAction.id,
-                    actionType,
-                    reason
-                  )}
-                  disabled={actionType !== 'approve' && !reason.trim()}
-                >
-                  {actionType === 'approve' ? 'Approve' :
-                   actionType === 'reject' ? 'Reject' : 'Suspend'}
-                </button>
-              )}
-            </div>
+      {/* Approval / Action Icon */}
+      <div className="approval-icon-wrapper">
+        {actionType === "approve" ? (
+          <FaCheckCircle className="approval-icon" />
+        ) : actionType === "reject" ? (
+          <FaTimesCircle className="approval-icon" />
+        ) : (
+          <FaBan className="approval-icon" />
+        )}
+      </div>
+
+      {/* Title */}
+      <h2 className="confirm-title">
+        {actionType === "approve"
+          ? "Approve Product Variant"
+          : actionType === "reject"
+          ? "Reject Product Variant"
+          : "Suspend Product Variant"}
+      </h2>
+
+      {/* Description */}
+      <p className="confirm-description">
+        {actionType === "approve"
+          ? "Review and update the variant details before approving."
+          : actionType === "reject"
+          ? "Please provide a reason for rejecting this variant."
+          : "Please provide a reason for suspending this variant."}
+      </p>
+
+      {/* ================= VARIANT INFORMATION ================= */}
+      <div
+        className="vendor-info-card"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
+      >
+
+        {/* Variant Name */}
+        <div className="vendor-row">
+          <span className="label">
+            Variant Name
+          </span>
+
+          <span className="value approve-text">
+            {selectedVariantForAction?.title || "N/A"}
+          </span>
+        </div>
+
+        {/* SKU */}
+        <div className="vendor-row">
+          <span className="label">
+            SKU
+          </span>
+
+          <span className="value">
+            {selectedVariantForAction?.sku_code ||
+              selectedVariantForAction?.variant_code ||
+              "N/A"}
+          </span>
+        </div>
+
+        {/* ================= HSN CODE ================= */}
+        {actionType === "approve" && (
+          <div className="vendor-row">
+            <span className="label">
+              HSN Code <span style={{ color: "#dc3545" }}>*</span>
+            </span>
+
+            <input
+              type="text"
+              value={hsnCode}
+              onChange={(e) => {
+                setHsnCode(e.target.value);
+              }}
+              placeholder="Enter HSN Code"
+              className="approval-input"
+            />
           </div>
+        )}
+
+        {/* ================= TAX CLASS ================= */}
+        {actionType === "approve" && (
+          <div className="vendor-row">
+            <span className="label">
+              Tax Class <span style={{ color: "#dc3545" }}>*</span>
+            </span>
+
+            <select
+              value={taxClass}
+              onChange={(e) => {
+                setTaxClass(e.target.value);
+              }}
+              className="approval-input approval-select"
+            >
+              <option value="">
+                Select Tax Class
+              </option>
+
+              {taxClasses.map((tax) => (
+                <option
+                  key={tax.id}
+                  value={tax.id}
+                >
+                  {tax.name} ({tax.percentage}%)
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+      </div>
+
+      {/* ================= REJECT / SUSPEND REASON ================= */}
+      {(actionType === "reject" || actionType === "suspend") && (
+        <div className="reason-field">
+          <label>
+            Reason <span>*</span>
+          </label>
+
+          <textarea
+            className="reason-box"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder={
+              actionType === "reject"
+                ? "Enter reason for rejection..."
+                : "Enter reason for suspension..."
+            }
+          />
         </div>
       )}
+
+      {/* ================= INFORMATION BOX ================= */}
+      <div className="info-box">
+        <span className="info-icon">
+          ℹ
+        </span>
+
+        <span>
+          {actionType === "approve"
+            ? "HSN Code and Tax Class are required before approving this variant."
+            : actionType === "reject"
+            ? "The variant will be rejected and hidden from the catalog."
+            : "The variant will temporarily lose availability on the platform."}
+        </span>
+      </div>
+
+      {/* ================= BUTTONS ================= */}
+      <div className="confirm-buttons">
+
+        {/* Cancel */}
+        <button
+          className="cancels-btn"
+          onClick={() => {
+            setShowActionModal(false);
+            setSelectedVariantForAction(null);
+            setHsnCode("");
+            setTaxClass("");
+            setReason("");
+          }}
+        >
+          Cancel
+        </button>
+
+        {/* Action Button */}
+        <button
+          className={
+            actionType === "approve"
+              ? `approve-btn ${
+                  !hsnCode.trim() || !taxClass
+                    ? "approve-btn-disabled"
+                    : ""
+                }`
+              : actionType === "reject"
+              ? "approve-btn rejects-btn"
+              : "approve-btn suspend-btn"
+          }
+          onClick={() => {
+
+            /* ================= APPROVE VALIDATION ================= */
+            if (actionType === "approve") {
+
+              // Both empty
+              if (!hsnCode.trim() && !taxClass) {
+                toast.error(
+                  "Please enter HSN Code and select Tax Class."
+                );
+                return;
+              }
+
+              // HSN empty
+              if (!hsnCode.trim()) {
+                toast.error(
+                  "Please enter HSN Code."
+                );
+                return;
+              }
+
+              // Tax Class empty
+              if (!taxClass) {
+                toast.error(
+                  "Please select Tax Class."
+                );
+                return;
+              }
+            }
+
+           
+            
+            if (actionType === "reject") {
+              if (!reason.trim()) {
+                toast.error(
+                  "Please enter rejection reason."
+                );
+                return;
+              }
+            }
+
+     
+            if (actionType === "suspend") {
+              if (!reason.trim()) {
+                toast.error(
+                  "Please enter suspension reason."
+                );
+
+                
+                return;
+              }
+            }
+
+
+            handleVariantAction(
+              selectedVariantForAction.id,
+              actionType,
+              reason
+            );
+          }}
+        >
+          {actionType === "approve"
+            ? "Approve"
+            : actionType === "reject"
+            ? "Reject"
+            : "Suspend"}
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
 <ToastContainer position="top-center" autoClose={2000} />
     
     </div>

@@ -102,6 +102,7 @@ import Packages from './Components/Pages/Packages/Packages';
 import Packagescategory from './Components/Pages/Packages/Packagescategory';
 import AddPackages from './Components/Pages/Packages/AddPackages';
 import EditPackage from './Components/Pages/Packages/EditPackage';
+import ReturnRequests from './Components/Pages/Order/ReturnRequests';
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -217,6 +218,16 @@ function App() {
             <ProtectedRoute permission="manage_legal_policies">
               <Layout>
                 <Policy />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/ReturnRequests"
+          element={
+            <ProtectedRoute permission="view_return_request">
+              <Layout>
+                <ReturnRequests />
               </Layout>
             </ProtectedRoute>
           }
