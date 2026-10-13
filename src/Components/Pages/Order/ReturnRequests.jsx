@@ -971,7 +971,7 @@ const ReturnRequests = () => {
           </div>
         </div>
 
-        {/* RETURN REASON */}
+       
         <div className="return-view-card">
           <h3 className="return-view-card-title">
             Return Reason
