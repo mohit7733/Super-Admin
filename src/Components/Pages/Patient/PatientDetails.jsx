@@ -19,6 +19,8 @@ import {
 } from "react-icons/fa";
  import Documents from "../Vendor/Documents"
 
+ import PackageDetail from "./Packagedetail"
+
 import {
   FiCheckCircle,
   FiXCircle,
@@ -676,6 +678,12 @@ useEffect(() => {
           </button>
 
           
+ <button
+            className={activeTab === "PackagesPurchase" ? "active-tab" : ""}
+            onClick={() => setActiveTab("PackagesPurchase")}
+          >
+        Package Detail
+          </button>
 
           
         </div>
@@ -929,7 +937,9 @@ useEffect(() => {
              </div>
            )
          }
-
+{activeTab === "PackagesPurchase" && (
+  <PackageDetail patientId={PatientId} />
+)}
 {activeTab === "documents" && (
   <div className="documents-tab">
     {DocumentLoading ? (

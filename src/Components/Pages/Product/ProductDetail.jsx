@@ -1338,7 +1338,7 @@ const handleVariantAction = async (
         )}
       </div>
 
-      {/* Dynamic Heading */}
+   
       <h2>
         {actionType === "approve"
           ? "Approve Product Variant"
@@ -1389,6 +1389,7 @@ const handleVariantAction = async (
               "N/A"}
           </span>
         </div>
+
 
        
 
