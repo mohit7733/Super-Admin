@@ -55,9 +55,7 @@ const ConsultationRefundRequest = () => {
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  /* =========================================================
-     GET REFUND REQUESTS
-  ========================================================= */
+ 
 
   const getRefundRequests = async (page = 1) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -254,9 +252,7 @@ const ConsultationRefundRequest = () => {
     }
   };
 
-  /* =========================================================
-     REJECT
-  ========================================================= */
+
 
   const handleReject = (item) => {
     setOpenActionId(null);

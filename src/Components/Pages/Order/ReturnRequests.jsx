@@ -20,12 +20,16 @@ import { useNavigate } from "react-router-dom";
 
 import BASE_URL from "../../../Base";
 import "./ConsultationRefundRequest.css";
-import "./ReturnRequests.css"
+import "./ReturnRequests.css";
 
 const PAGE_SIZE = 5;
 
 const ReturnRequests = () => {
   const navigate = useNavigate();
+
+  // ==========================================
+  // STATES
+  // ==========================================
 
   const [returnRequests, setReturnRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -42,15 +46,19 @@ const ReturnRequests = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedReturn, setSelectedReturn] = useState(null);
 
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [selectedApproveReturn, setSelectedApproveReturn] =
+    useState(null);
+
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedReturnId, setSelectedReturnId] = useState(null);
   const [rejectNote, setRejectNote] = useState("");
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-  // --------------------------------------------------
+  // ==========================================
   // AUTHENTICATION
-  // --------------------------------------------------
+  // ==========================================
 
   const getToken = () =>
     sessionStorage.getItem("superadmin_token");
@@ -62,18 +70,22 @@ const ReturnRequests = () => {
     "ngrok-skip-browser-warning": "true",
   });
 
-  // --------------------------------------------------
+  const handleSessionExpired = () => {
+    sessionStorage.removeItem("superadmin_token");
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+  };
+
+  // ==========================================
   // FETCH RETURN REQUESTS
   // GET /order/admin/returns/
-  // --------------------------------------------------
+  // ==========================================
 
   const fetchReturnRequests = async (requestedPage = page) => {
     const token = getToken();
 
     if (!token) {
-      sessionStorage.removeItem("superadmin_token");
-      toast.error("Session expired. Please login again");
-      navigate("/login");
+      handleSessionExpired();
       return;
     }
 
@@ -99,9 +111,7 @@ const ReturnRequests = () => {
       );
 
       if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
+        handleSessionExpired();
         return;
       }
 
@@ -136,14 +146,12 @@ const ReturnRequests = () => {
       setTotalCount(count);
       setPage(requestedPage);
 
-      // If the current page becomes invalid after rejection,
-      // navigate back to the previous page.
       if (list.length === 0 && requestedPage > 1 && count > 0) {
-        fetchReturnRequests(requestedPage - 1);
+        await fetchReturnRequests(requestedPage - 1);
+        return;
       }
     } catch (err) {
       console.error("Fetch Return Requests Error:", err);
-
       setError(err.message || "Something went wrong");
       setReturnRequests([]);
       setTotalCount(0);
@@ -154,13 +162,12 @@ const ReturnRequests = () => {
 
   useEffect(() => {
     fetchReturnRequests(1);
-    // Initial fetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
-  // --------------------------------------------------
+  // ==========================================
   // FIELD HELPERS
-  // --------------------------------------------------
+  // ==========================================
 
   const getReturnId = (item) =>
     item?.return_id ??
@@ -169,10 +176,10 @@ const ReturnRequests = () => {
     "";
 
   const getOrderId = (item) =>
-    item?.order_display_code ??
     item?.order_code ??
-    item?.order_id ??
+    item?.order_display_code ??
     item?.order?.order_code ??
+    item?.order_id ??
     item?.order?.id ??
     "—";
 
@@ -184,11 +191,17 @@ const ReturnRequests = () => {
     item?.user?.name ??
     "—";
 
-    const getCustomerEmail = (item) =>
-      item?.customer?.email??"_";
+  const getCustomerEmail = (item) =>
+    item?.customer?.email ??
+    item?.user?.email ??
+    item?.email ??
+    "—";
 
   const getCustomerPhone = (item) =>
-   item?.customer?.phone_number??
+    item?.customer?.phone_number ??
+    item?.customer?.phone ??
+    item?.user?.phone_number ??
+    item?.phone_number ??
     "—";
 
   const getStatus = (item) =>
@@ -200,6 +213,22 @@ const ReturnRequests = () => {
     item?.note ??
     item?.customer_note ??
     "";
+
+  const getReturnItems = (item) =>
+    Array.isArray(item?.items) ? item.items : [];
+
+  const getProductImage = (item) =>
+    item?.product_image ||
+    item?.cover_image ||
+    item?.variant_images?.[0] ||
+    "";
+
+  const getReturnAmount = (item) =>
+    getReturnItems(item).reduce(
+      (total, product) =>
+        total + Number(product?.total_price || 0),
+      0
+    );
 
   const formatLabel = (value) => {
     if (value === null || value === undefined || value === "") {
@@ -236,6 +265,19 @@ const ReturnRequests = () => {
     };
   };
 
+  const formatDateTime = (value) => {
+    const date = formatDate(value);
+
+    return date ? (
+      <div className="refund-date-time">
+        <span className="refund-date">{date.date}</span>
+        <span className="refund-time">{date.time}</span>
+      </div>
+    ) : (
+      "—"
+    );
+  };
+
   const getStatusClass = (status) => {
     switch (String(status ?? "").toLowerCase()) {
       case "approved":
@@ -257,20 +299,25 @@ const ReturnRequests = () => {
     }
   };
 
-  const formatDateTime = (value) => {
-    const date = formatDate(value);
+  const formatFullDate = (value) => {
+    if (!value) return "—";
 
-    return date ? (
-      <div className="refund-date-time">
-        <span className="refund-date">{date.date}</span>
-        <span className="refund-time">{date.time}</span>
-      </div>
-    ) : (
-      "—"
-    );
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return "—";
+
+    return date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
-  
+  // ==========================================
+  // SEARCH AND STATISTICS
+  // ==========================================
 
   const filteredRequests = returnRequests.filter((item) => {
     const search = searchTerm.trim().toLowerCase();
@@ -282,20 +329,19 @@ const ReturnRequests = () => {
       getOrderId(item),
       getCustomerName(item),
       getCustomerPhone(item),
+      getCustomerEmail(item),
       getReason(item),
       item?.status,
       item?.id,
-      item?.order?.order_code,
+      ...getReturnItems(item).map(
+        (product) => product?.product_name
+      ),
     ];
 
     return searchableFields.some((value) =>
       String(value ?? "").toLowerCase().includes(search)
     );
   });
-
-  // --------------------------------------------------
-  // STATISTICS
-  // --------------------------------------------------
 
   const pendingCount = returnRequests.filter(
     (item) => getStatus(item) === "pending"
@@ -317,9 +363,9 @@ const ReturnRequests = () => {
     setPage(1);
   };
 
-  // --------------------------------------------------
+  // ==========================================
   // VIEW RETURN REQUEST
-  // --------------------------------------------------
+  // ==========================================
 
   const handleView = (item) => {
     setOpenActionId(null);
@@ -327,9 +373,103 @@ const ReturnRequests = () => {
     setShowViewModal(true);
   };
 
-  // --------------------------------------------------
+  const closeViewModal = () => {
+    setShowViewModal(false);
+  };
+
+  // ==========================================
+  // OPEN APPROVE MODAL
+  // ==========================================
+
+  const openApproveModal = (item) => {
+    const id = getReturnId(item);
+
+    setOpenActionId(null);
+
+    if (!id) {
+      toast.error("Return request ID is missing");
+      return;
+    }
+
+    setSelectedReturn(item);
+    setSelectedApproveReturn(item);
+    setShowViewModal(false);
+    setShowApproveModal(true);
+  };
+
+  const closeApproveModal = () => {
+    if (actionLoading) return;
+
+    setShowApproveModal(false);
+    setSelectedApproveReturn(null);
+  };
+
+  // ==========================================
+  // APPROVE RETURN REQUEST
+  //
+  // Confirm the exact endpoint with your backend.
+  // ==========================================
+
+  const handleApproveReturn = async () => {
+    const returnItem = selectedApproveReturn;
+    const returnId = getReturnId(returnItem);
+
+    if (!returnId) {
+      toast.error("Return request ID is missing");
+      return;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+      handleSessionExpired();
+      return;
+    }
+
+    setActionLoading(true);
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/order/admin/returns/${returnId}/approve/`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        handleSessionExpired();
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!response.ok || result?.success === false) {
+        throw new Error(
+          result?.message || "Failed to approve return request"
+        );
+      }
+
+      toast.success(
+        result?.message || "Return request approved successfully"
+      );
+
+      setShowApproveModal(false);
+      setSelectedApproveReturn(null);
+      setSelectedReturn(null);
+
+      await fetchReturnRequests(page);
+    } catch (err) {
+      console.error("Approve Return Error:", err);
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // ==========================================
   // OPEN REJECT MODAL
-  // --------------------------------------------------
+  // ==========================================
 
   const openRejectModal = (item) => {
     setOpenActionId(null);
@@ -344,13 +484,19 @@ const ReturnRequests = () => {
     setSelectedReturn(item);
     setSelectedReturnId(id);
     setRejectNote("");
+    setShowViewModal(false);
     setShowRejectModal(true);
   };
 
-  // --------------------------------------------------
-  // REJECT RETURN REQUEST
-  // POST /order/admin/returns/{return_id}/reject/
-  // --------------------------------------------------
+  const closeRejectModal = () => {
+    if (actionLoading) return;
+
+    setShowRejectModal(false);
+    setSelectedReturnId(null);
+    setRejectNote("");
+  };
+
+  
 
   const handleRejectReturn = async () => {
     if (!selectedReturnId) {
@@ -366,9 +512,7 @@ const ReturnRequests = () => {
     const token = getToken();
 
     if (!token) {
-      sessionStorage.removeItem("superadmin_token");
-      toast.error("Session expired. Please login again");
-      navigate("/login");
+      handleSessionExpired();
       return;
     }
 
@@ -387,9 +531,7 @@ const ReturnRequests = () => {
       );
 
       if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
+        handleSessionExpired();
         return;
       }
 
@@ -408,6 +550,7 @@ const ReturnRequests = () => {
       setShowRejectModal(false);
       setSelectedReturnId(null);
       setRejectNote("");
+      setSelectedReturn(null);
 
       await fetchReturnRequests(page);
     } catch (err) {
@@ -418,9 +561,6 @@ const ReturnRequests = () => {
     }
   };
 
-  // --------------------------------------------------
-  // PAGINATION
-  // --------------------------------------------------
 
   const handlePageChange = (nextPage) => {
     if (
@@ -435,10 +575,7 @@ const ReturnRequests = () => {
     fetchReturnRequests(nextPage);
   };
 
-  // --------------------------------------------------
-  // RENDER
-  // --------------------------------------------------
-
+ 
   return (
     <>
       {/* PAGE HEADER */}
@@ -453,7 +590,10 @@ const ReturnRequests = () => {
       {/* STATISTICS */}
 
       <div className="stats2-grid">
-        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+        <div
+          className="stat2-card"
+          style={{ borderTopColor: "#0D614E" }}
+        >
           <div
             className="stat2-icon"
             style={{
@@ -470,7 +610,10 @@ const ReturnRequests = () => {
           </div>
         </div>
 
-        <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+        <div
+          className="stat2-card"
+          style={{ borderTopColor: "#0D614E" }}
+        >
           <div
             className="stat2-icon"
             style={{
@@ -487,7 +630,10 @@ const ReturnRequests = () => {
           </div>
         </div>
 
-        <div className="stat2-card" style={{ borderTopColor: "#dc3545" }}>
+        <div
+          className="stat2-card"
+          style={{ borderTopColor: "#dc3545" }}
+        >
           <div
             className="stat2-icon"
             style={{
@@ -504,7 +650,10 @@ const ReturnRequests = () => {
           </div>
         </div>
 
-        <div className="stat2-card" style={{ borderTopColor: "#d99b00" }}>
+        <div
+          className="stat2-card"
+          style={{ borderTopColor: "#d99b00" }}
+        >
           <div
             className="stat2-icon"
             style={{
@@ -522,8 +671,7 @@ const ReturnRequests = () => {
         </div>
       </div>
 
-      {/* SEARCH AND FILTERS */}
-
+   
       <div className="refund-filter-bar">
         <div className="refund-search-wrapper">
           <FaSearch className="refund-search-icon" />
@@ -561,9 +709,7 @@ const ReturnRequests = () => {
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
-            <option value="processing">Processing</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+         
           </select>
 
           {hasActiveFilters && (
@@ -589,7 +735,7 @@ const ReturnRequests = () => {
         </div>
       </div>
 
-      {/* TABLE */}
+      {/* RETURN REQUESTS TABLE */}
 
       <div className="refund-table-wrapper">
         <table className="refund-table">
@@ -618,6 +764,7 @@ const ReturnRequests = () => {
               <tr>
                 <td colSpan="7" className="refund-empty">
                   {error}
+
                   <button
                     type="button"
                     className="refund-menu-item"
@@ -709,7 +856,9 @@ const ReturnRequests = () => {
                           title="Actions"
                           onClick={() =>
                             setOpenActionId(
-                              openActionId === returnId ? null : returnId
+                              openActionId === returnId
+                                ? null
+                                : returnId
                             )
                           }
                         >
@@ -728,14 +877,25 @@ const ReturnRequests = () => {
                             </button>
 
                             {status === "pending" && (
-                              <button
-                                type="button"
-                                className="refund-menu-item refund-reject-item"
-                                onClick={() => openRejectModal(item)}
-                              >
-                                <FaCircleXmark size={13} />
-                                <span>Reject</span>
-                              </button>
+                              <>
+                                <button
+                                  type="button"
+                                  className="refund-menu-item"
+                                  onClick={() => openApproveModal(item)}
+                                >
+                                  <FaCircleCheck size={13} />
+                                  <span>Approve Return</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className="refund-menu-item refund-reject-item"
+                                  onClick={() => openRejectModal(item)}
+                                >
+                                  <FaCircleXmark size={13} />
+                                  <span>Reject</span>
+                                </button>
+                              </>
                             )}
                           </div>
                         )}
@@ -784,7 +944,10 @@ const ReturnRequests = () => {
                     (number >= page - 1 && number <= page + 1)
                 )
                 .reduce((result, number, index, pages) => {
-                  if (index > 0 && number - pages[index - 1] > 1) {
+                  if (
+                    index > 0 &&
+                    number - pages[index - 1] > 1
+                  ) {
                     result.push("dots-" + number);
                   }
 
@@ -819,7 +982,11 @@ const ReturnRequests = () => {
             <button
               type="button"
               className="refund-pagination-btn refund-pagination-arrow"
-              disabled={page >= totalPages || totalPages === 0 || loading}
+              disabled={
+                page >= totalPages ||
+                totalPages === 0 ||
+                loading
+              }
               onClick={() => handlePageChange(page + 1)}
             >
               ›
@@ -828,377 +995,738 @@ const ReturnRequests = () => {
         </div>
       </div>
 
-   
-{/* ==========================================
-    RETURN REQUEST VIEW DRAWER
-========================================== */}
+      {/* ==========================================
+          RETURN REQUEST VIEW DRAWER
+      ========================================== */}
 
-{showViewModal && (
-  <div
-    className="return-view-overlay"
-    onClick={() => {
-      setShowViewModal(false);
-    }}
-  >
-    <div
-      className="return-view-drawer"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* FIXED HEADER */}
-      <div className="return-view-header">
-        <div className="return-view-header-info">
-          <h2>
-            {String(
-              selectedReturn?.id ||
-              selectedReturn?.return_id ||
-              selectedReturnId ||
-              "Return Request"
-            )}
-          </h2>
-
-          <p>
-            Requested on:{" "}
-            {selectedReturn?.created_at
-              ? new Date(
-                  selectedReturn.created_at
-                ).toLocaleString("en-IN", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "—"}
-          </p>
-
-          <span className="return-view-status">
-            {String(
-              selectedReturn?.status || "Pending"
-            ).replace(/_/g, " ")}
-          </span>
-        </div>
-
-        <button
-          type="button"
-          className="return-view-close"
-          aria-label="Close return details"
-          onClick={() => setShowViewModal(false)}
+      {showViewModal && selectedReturn && (
+        <div
+          className="return-view-overlay"
+          onClick={closeViewModal}
         >
-          <IoClose />
-        </button>
-      </div>
-
-    
-      <div className="return-view-content">
-
-      
-        <div className="return-view-card">
-          <h3 className="return-view-card-title">
-            Return Request Summary
-          </h3>
-
-          <p className="return-view-card-subtitle">
-            Review the customer's return request details.
-          </p>
-
-          <div className="return-view-details">
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Return ID
-              </span>
-
-              <span className="return-view-detail-value">
-                {String(
-                  selectedReturn?.id ||
-                  selectedReturn?.return_id ||
-                  selectedReturnId ||
-                  "—"
-                )}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Order ID
-              </span>
-
-              <span className="return-view-detail-value">
-                {String(
-                  getOrderId(selectedReturn || {}) || "—"
-                )}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Customer
-              </span>
-
-              <span className="return-view-detail-value">
-                {getCustomerName(selectedReturn || {}) || "—"}
-              </span>
-            </div>
-               <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Phone Number
-              </span>
-
-              <span className="return-view-detail-value">
-                {getCustomerPhone(selectedReturn || {}) || "—"}
-              </span>
-            </div>
-              <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Email
-              </span>
-
-              <span className="return-view-detail-value">
-                {getCustomerEmail(selectedReturn || {}) || "—"}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Status
-              </span>
-
-              <span className="return-view-detail-value">
-                {String(
-                  selectedReturn?.status || "Pending"
-                ).replace(/_/g, " ")}
-              </span>
-            </div>
-          </div>
-        </div>
-
-       
-        <div className="return-view-card">
-          <h3 className="return-view-card-title">
-            Return Reason
-          </h3>
-
-          <div className="return-view-reason">
-            {selectedReturn?.reason ||
-              selectedReturn?.return_reason ||
-              selectedReturn?.customer_reason ||
-              "No return reason provided."}
-          </div>
-        </div>
-
-        {/* ADDITIONAL DETAILS */}
-        <div className="return-view-card">
-          <h3 className="return-view-card-title">
-            Additional Details
-          </h3>
-
-          <div className="return-view-details">
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Requested Date
-              </span>
-
-              <span className="return-view-detail-value">
-                {selectedReturn?.created_at
-                  ? new Date(
-                      selectedReturn.created_at
-                    ).toLocaleDateString("en-IN")
-                  : "—"}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Updated Date
-              </span>
-
-              <span className="return-view-detail-value">
-                {selectedReturn?.updated_at
-                  ? new Date(
-                      selectedReturn.updated_at
-                    ).toLocaleDateString("en-IN")
-                  : "—"}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Rejection Reason
-              </span>
-
-              <span className="return-view-detail-value">
-                {selectedReturn?.rejection_reason ||
-                  selectedReturn?.reject_reason ||
-                  "—"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* FIXED FOOTER */}
-      <div className="return-view-footer">
-        <button
-          type="button"
-          className="return-view-cancel"
-          onClick={() => setShowViewModal(false)}
-        >
-          Close
-        </button>
-
-        {String(selectedReturn?.status || "").toLowerCase() ===
-          "pending" && (
-          <button
-            type="button"
-            className="return-view-primary"
-            onClick={() => {
-              setShowViewModal(false);
-              setSelectedReturnId(
-                selectedReturn?.id ||
-                selectedReturn?.return_id
-              );
-              setRejectNote("");
-              setShowRejectModal(true);
-            }}
+          <div
+            className="return-view-drawer"
+            onClick={(e) => e.stopPropagation()}
           >
-            Reject Return
-          </button>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+            {/* HEADER */}
 
- 
-{showRejectModal && (
-  
-  <div
-    className="return-request-confirm-overlay"
-    onClick={() => {
-      if (!actionLoading) {
-        setShowRejectModal(false);
-        setSelectedReturnId(null);
-        setRejectNote("");
-      }
-    }}
-  >
-    <div
-      className="return-request-modal"
-      onClick={(e) => e.stopPropagation()}
-    >
-      
-      <div className="return-request-modal-header">
-        <button
-          type="button"
-          className="return-request-modal-close"
-          disabled={actionLoading}
-          aria-label="Close modal"
-          onClick={() => {
-            if (actionLoading) return;
-            setShowRejectModal(false);
-            setSelectedReturnId(null);
-            setRejectNote("");
-          }}
-        >
-          <IoClose />
-        </button>
+            <div className="return-view-header">
+              <div className="return-view-header-info">
+                <h2>{String(getReturnId(selectedReturn))}</h2>
 
-        <div className="return-request-reason-icon">
-          <FaTimes />
-        </div>
+                <p>
+                  Requested on:{" "}
+                  {formatFullDate(
+                    selectedReturn?.created_at ??
+                      selectedReturn?.requested_at
+                  )}
+                </p>
 
-        <h2>Reject Return Request</h2>
+                <span
+                  className={`refund-status ${getStatusClass(
+                    getStatus(selectedReturn)
+                  )}`}
+                >
+                  {formatLabel(getStatus(selectedReturn))}
+                </span>
+              </div>
 
-        <p className="return-request-reason-subtitle">
-          Please provide a reason for rejecting this return request.
-        </p>
-      </div>
+              <button
+                type="button"
+                className="return-view-close"
+                aria-label="Close return details"
+                onClick={closeViewModal}
+              >
+                <IoClose />
+              </button>
+            </div>
 
-    
-      <div className="return-request-scroll-content">
-        <div className="return-request-info-card">
-          <div className="return-request-info-row">
-            <span className="return-request-label">Return ID</span>
-            <span className="return-request-value return-request-reject-text">
-              {String(selectedReturnId || "—")}
-            </span>
+            {/* DRAWER CONTENT */}
+
+            <div className="return-view-content">
+              <div className="return-view-card">
+                <h3 className="return-view-card-title">
+                  Return Request Summary
+                </h3>
+
+                <p className="return-view-card-subtitle">
+                  Review the customer's return request details.
+                </p>
+
+                <div className="return-view-details">
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Return ID
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {String(getReturnId(selectedReturn))}
+                    </span>
+                  </div>
+
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Order ID
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {String(getOrderId(selectedReturn))}
+                    </span>
+                  </div>
+
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Customer
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {getCustomerName(selectedReturn)}
+                    </span>
+                  </div>
+
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Phone Number
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {getCustomerPhone(selectedReturn)}
+                    </span>
+                  </div>
+
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Email
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {getCustomerEmail(selectedReturn)}
+                    </span>
+                  </div>
+
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Status
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {formatLabel(getStatus(selectedReturn))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* RETURN REASON */}
+
+              <div className="return-view-card">
+                <h3 className="return-view-card-title">
+                  Return Reason
+                </h3>
+
+                <div className="return-view-reason">
+                  {getReason(selectedReturn) ||
+                    "No return reason provided."}
+                </div>
+              </div>
+
+              {/* RETURN PRODUCTS */}
+
+              <div className="return-view-card">
+                <h3 className="return-view-card-title">
+                  Return Products
+                </h3>
+
+                {getReturnItems(selectedReturn).length > 0 ? (
+                  <div className="return-approve-product-list">
+                    {getReturnItems(selectedReturn).map(
+                      (product, index) => (
+                        <div
+                          className="return-approve-product"
+                          key={
+                            product.id ||
+                            product.order_item_id ||
+                            index
+                          }
+                        >
+                          <div className="return-approve-product-image">
+                            {getProductImage(product) ? (
+                              <img
+                                src={getProductImage(product)}
+                                alt={
+                                  product.product_name ||
+                                  "Return product"
+                                }
+                              />
+                            ) : (
+                              <FaMoneyBillWave />
+                            )}
+                          </div>
+
+                          <div className="return-approve-product-details">
+                            <h4>
+                              {product.product_name ||
+                                "Unnamed Product"}
+                            </h4>
+
+                            <p>
+                              {product.variant_name || "—"}
+                            </p>
+
+                            <div className="return-approve-product-meta">
+                              <span>
+                                SKU: {product.sku_code || "—"}
+                              </span>
+
+                              <span>
+                                Qty: {Number(product.quantity || 0)}
+                              </span>
+                            </div>
+
+                            <div className="return-approve-product-price">
+                              ₹
+                              {Number(
+                                product.total_price || 0
+                              ).toFixed(2)}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    )}
+
+                    <div className="return-approve-total">
+                      <span>Total Product Amount</span>
+
+                      <strong>
+                        ₹{getReturnAmount(selectedReturn).toFixed(2)}
+                      </strong>
+                    </div>
+                  </div>
+                ) : (
+                  <p>No product details available.</p>
+                )}
+              </div>
+
+              {/* RETURN EVIDENCE */}
+
+              {Array.isArray(selectedReturn?.media) &&
+                selectedReturn.media.length > 0 && (
+                  <div className="return-view-card">
+                    <h3 className="return-view-card-title">
+                      Return Photos / Evidence
+                    </h3>
+
+                    <div className="return-approve-media-list">
+                      {selectedReturn.media.map((media, index) => (
+                        <a
+                          key={media.id || index}
+                          href={media.media_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="return-approve-media-item"
+                        >
+                          {media.media_type === "image" ? (
+                            <img
+                              src={media.media_url}
+                              alt={`Return evidence ${index + 1}`}
+                            />
+                          ) : (
+                            <span>
+                              View attachment {index + 1}
+                            </span>
+                          )}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* ADDITIONAL DETAILS */}
+
+              <div className="return-view-card">
+                <h3 className="return-view-card-title">
+                  Additional Details
+                </h3>
+
+                <div className="return-view-details">
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Requested Date
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {formatFullDate(selectedReturn?.created_at)}
+                    </span>
+                  </div>
+
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Updated Date
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {formatFullDate(selectedReturn?.updated_at)}
+                    </span>
+                  </div>
+
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Review Note
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {selectedReturn?.review_note || "—"}
+                    </span>
+                  </div>
+
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Reverse Pickup Code
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {selectedReturn?.unicommerce_reverse_pickup_code ||
+                        "—"}
+                    </span>
+                  </div>
+
+                  <div className="return-view-detail-row">
+                    <span className="return-view-detail-label">
+                      Sync Status
+                    </span>
+
+                    <span className="return-view-detail-value">
+                      {formatLabel(
+                        selectedReturn?.unicommerce_sync_status
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* DRAWER FOOTER */}
+
+            <div className="return-view-footer">
+              <button
+                type="button"
+                className="return-view-cancel"
+                onClick={closeViewModal}
+              >
+                Close
+              </button>
+
+              {getStatus(selectedReturn) === "pending" && (
+                <>
+                  <button
+                    type="button"
+                    className="return-view-primary"
+                    onClick={() => openRejectModal(selectedReturn)}
+                  >
+                    <FaCircleXmark />
+                    Reject Return
+                  </button>
+
+                  <button
+                    type="button"
+                    className="return-approve-confirm-btn"
+                    onClick={() => openApproveModal(selectedReturn)}
+                  >
+                    <FaCircleCheck />
+                    Approve Return
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-
-          <div className="return-request-info-row">
-            <span className="return-request-label">Order ID</span>
-            <span className="return-request-value">
-              {String(getOrderId(selectedReturn || {}))}
-            </span>
-          </div>
-
-          <div className="return-request-info-row">
-            <span className="return-request-label">Customer</span>
-            <span className="return-request-value">
-              {getCustomerName(selectedReturn || {})}
-            </span>
-          </div>
         </div>
+      )}
 
-        <div className="return-request-reason-field">
-          <label>
-            Rejection Reason <span>*</span>
-          </label>
+      {/* ==========================================
+          APPROVE RETURN REQUEST MODAL
+      ========================================== */}
 
-          <textarea
-            className="return-request-reason-box"
-            value={rejectNote}
-            onChange={(e) => setRejectNote(e.target.value)}
-            placeholder="Enter reason for rejecting this return..."
-            rows={5}
-            maxLength={1000}
-            disabled={actionLoading}
-          />
-
-          <small>{rejectNote.length}/1000 characters</small>
-        </div>
-
-        <div className="return-request-info-box">
-          <span className="return-request-info-icon">
-            <FaTimes />
-          </span>
-
-          <span>
-            The rejection reason will be submitted with the return
-            request response.
-          </span>
-        </div>
-      </div>
-
-      {/* FIXED FOOTER */}
-      <div className="return-request-confirm-buttons">
-        <button
-          type="button"
-          className="return-request-cancel-btn"
-          disabled={actionLoading}
-          onClick={() => {
-            if (actionLoading) return;
-            setShowRejectModal(false);
-            setSelectedReturnId(null);
-            setRejectNote("");
-          }}
+      {showApproveModal && selectedApproveReturn && (
+        <div
+          className="return-approve-overlay"
+          onClick={closeApproveModal}
         >
-          Cancel
-        </button>
+          <div
+            className="return-approve-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* MODAL HEADER */}
 
-        <button
-          type="button"
-          className="return-request-reject-btn"
-          disabled={actionLoading || !rejectNote.trim()}
-          onClick={handleRejectReturn}
+            <div className="return-approve-header">
+              <button
+                type="button"
+                className="return-approve-close"
+                disabled={actionLoading}
+                aria-label="Close modal"
+                onClick={closeApproveModal}
+              >
+                <IoClose />
+              </button>
+
+              <div className="return-approve-icon-wrapper">
+                <FaCircleCheck className="return-approve-icon" />
+              </div>
+
+              <h2>Approve Return Request</h2>
+
+              <p>
+                Are you sure you want to approve this return request?
+                Please review the products and customer details before
+                proceeding.
+              </p>
+            </div>
+
+            {/* MODAL CONTENT */}
+
+            <div className="return-approve-content">
+              {/* CUSTOMER DETAILS */}
+
+              <div className="return-approve-info-card">
+                <h3>Customer &amp; Order Details</h3>
+
+                <div className="return-approve-info-row">
+                  <span>Return ID</span>
+                  <strong>
+                    {String(getReturnId(selectedApproveReturn))}
+                  </strong>
+                </div>
+
+                <div className="return-approve-info-row">
+                  <span>Order ID</span>
+                  <strong>
+                    {String(getOrderId(selectedApproveReturn))}
+                  </strong>
+                </div>
+
+                <div className="return-approve-info-row">
+                  <span>Customer Name</span>
+                  <strong>
+                    {getCustomerName(selectedApproveReturn)}
+                  </strong>
+                </div>
+
+                <div className="return-approve-info-row">
+                  <span>Phone Number</span>
+                  <strong>
+                    {getCustomerPhone(selectedApproveReturn)}
+                  </strong>
+                </div>
+
+                <div className="return-approve-info-row">
+                  <span>Email</span>
+                  <strong>
+                    {getCustomerEmail(selectedApproveReturn)}
+                  </strong>
+                </div>
+
+                <div className="return-approve-info-row">
+                  <span>Return Reason</span>
+                  <strong>
+                    {formatLabel(getReason(selectedApproveReturn))}
+                  </strong>
+                </div>
+              </div>
+
+              {/* RETURN PRODUCTS */}
+
+              <div className="return-approve-products-card">
+                <div className="return-approve-section-heading">
+                  <div>
+                    <h3>Return Products</h3>
+                    <p>
+                      Products included in this return request
+                    </p>
+                  </div>
+
+                  <span className="return-approve-item-count">
+                    {getReturnItems(selectedApproveReturn).length}{" "}
+                    {getReturnItems(selectedApproveReturn).length === 1
+                      ? "Item"
+                      : "Items"}
+                  </span>
+                </div>
+
+                {getReturnItems(selectedApproveReturn).length > 0 ? (
+                  <div className="return-approve-product-list">
+                    {getReturnItems(selectedApproveReturn).map(
+                      (product, index) => (
+                        <div
+                          className="return-approve-product"
+                          key={
+                            product.id ||
+                            product.order_item_id ||
+                            index
+                          }
+                        >
+                          <div className="return-approve-product-image">
+                            {getProductImage(product) ? (
+                              <img
+                                src={getProductImage(product)}
+                                alt={
+                                  product.product_name ||
+                                  "Return product"
+                                }
+                              />
+                            ) : (
+                              <span>
+                                <FaMoneyBillWave />
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="return-approve-product-details">
+                            <h4>
+                              {product.product_name ||
+                                "Unnamed Product"}
+                            </h4>
+
+                            <p>
+                              {product.variant_name || "Default Variant"}
+                            </p>
+
+                            <div className="return-approve-product-meta">
+                              <span>
+                                SKU: {product.sku_code || "—"}
+                              </span>
+
+                              <span>
+                                Qty: {Number(product.quantity || 0)}
+                              </span>
+                            </div>
+
+                            <div className="return-approve-product-price">
+                              ₹
+                              {Number(
+                                product.total_price || 0
+                              ).toFixed(2)}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    )}
+
+                    <div className="return-approve-total">
+                      <span>Total Product Amount</span>
+
+                      <strong>
+                        ₹
+                        {getReturnAmount(
+                          selectedApproveReturn
+                        ).toFixed(2)}
+                      </strong>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="return-approve-no-products">
+                    No product details available.
+                  </div>
+                )}
+              </div>
+
+              {/* RETURN PHOTOS */}
+
+              {Array.isArray(selectedApproveReturn?.media) &&
+                selectedApproveReturn.media.length > 0 && (
+                  <div className="return-approve-info-card">
+                    <h3>Return Photos / Evidence</h3>
+
+                    <div className="return-approve-media-list">
+                      {selectedApproveReturn.media.map(
+                        (media, index) => (
+                          <a
+                            key={media.id || index}
+                            href={media.media_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="return-approve-media-item"
+                          >
+                            {media.media_type === "image" ? (
+                              <img
+                                src={media.media_url}
+                                alt={`Return evidence ${index + 1}`}
+                              />
+                            ) : (
+                              <span>
+                                View attachment {index + 1}
+                              </span>
+                            )}
+                          </a>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {/* INFORMATION NOTICE */}
+
+              <div className="return-approve-notice">
+                <span className="return-approve-notice-icon">
+                  ℹ
+                </span>
+
+                <p>
+                  Approving this request confirms the return request.
+                  Review the product details and customer evidence
+                  before proceeding. Reverse pickup and refund
+                  processing depend on the backend return workflow.
+                </p>
+              </div>
+            </div>
+
+            {/* MODAL FOOTER */}
+
+            <div className="return-approve-footer">
+              <button
+                type="button"
+                className="return-approve-cancel-btn"
+                disabled={actionLoading}
+                onClick={closeApproveModal}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="return-approve-confirm-btn"
+                disabled={actionLoading}
+                onClick={handleApproveReturn}
+              >
+                <FaCircleCheck />
+
+                {actionLoading
+                  ? "Approving..."
+                  : "Approve Return"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          REJECT RETURN REQUEST MODAL
+      ========================================== */}
+
+      {showRejectModal && (
+        <div
+          className="return-request-confirm-overlay"
+          onClick={closeRejectModal}
         >
-          {actionLoading ? "Rejecting..." : "Reject Return"}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+          <div
+            className="return-request-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="return-request-modal-header">
+              <button
+                type="button"
+                className="return-request-modal-close"
+                disabled={actionLoading}
+                aria-label="Close modal"
+                onClick={closeRejectModal}
+              >
+                <IoClose />
+              </button>
 
+              <div className="return-request-reason-icon">
+                <FaTimes />
+              </div>
 
+              <h2>Reject Return Request</h2>
+
+              <p className="return-request-reason-subtitle">
+                Please provide a reason for rejecting this return
+                request.
+              </p>
+            </div>
+
+            <div className="return-request-scroll-content">
+              <div className="return-request-info-card">
+                <div className="return-request-info-row">
+                  <span className="return-request-label">
+                    Return ID
+                  </span>
+
+                  <span className="return-request-value return-request-reject-text">
+                    {String(selectedReturnId || "—")}
+                  </span>
+                </div>
+
+                <div className="return-request-info-row">
+                  <span className="return-request-label">
+                    Order ID
+                  </span>
+
+                  <span className="return-request-value">
+                    {String(getOrderId(selectedReturn || {}))}
+                  </span>
+                </div>
+
+                <div className="return-request-info-row">
+                  <span className="return-request-label">
+                    Customer
+                  </span>
+
+                  <span className="return-request-value">
+                    {getCustomerName(selectedReturn || {})}
+                  </span>
+                </div>
+              </div>
+
+              <div className="return-request-reason-field">
+                <label>
+                  Rejection Reason <span>*</span>
+                </label>
+
+                <textarea
+                  className="return-request-reason-box"
+                  value={rejectNote}
+                  onChange={(e) => setRejectNote(e.target.value)}
+                  placeholder="Enter reason for rejecting this return..."
+                  rows={5}
+                  maxLength={1000}
+                  disabled={actionLoading}
+                />
+
+                <small>{rejectNote.length}/1000 characters</small>
+              </div>
+
+              <div className="return-request-info-box">
+                <span className="return-request-info-icon">
+                  <FaTimes />
+                </span>
+
+                <span>
+                  The rejection reason will be submitted with the
+                  return request response.
+                </span>
+              </div>
+            </div>
+
+            <div className="return-request-confirm-buttons">
+              <button
+                type="button"
+                className="return-request-cancel-btn"
+                disabled={actionLoading}
+                onClick={closeRejectModal}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="return-request-reject-btn"
+                disabled={actionLoading || !rejectNote.trim()}
+                onClick={handleRejectReturn}
+              >
+                {actionLoading ? "Rejecting..." : "Reject Return"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ToastContainer position="top-center" autoClose={2000} />
     </>
@@ -1206,4 +1734,3 @@ const ReturnRequests = () => {
 };
 
 export default ReturnRequests;
-

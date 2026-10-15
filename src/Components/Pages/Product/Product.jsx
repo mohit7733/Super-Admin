@@ -37,6 +37,7 @@ const Product = () => {
   const [expandedProductId, setExpandedProductId] = useState(null);
 
   const totalPages = Math.ceil(totalCount / pageSize);
+  const [variantStatus, setVariantStatus] = useState("");
 
   const pages = Array.from(
     { length: totalPages },
@@ -114,82 +115,85 @@ const handleVariantStatusToggle = async (variant) => {
     );
   }
 };
-  const fetchProducts = async (page = 1, search = "") => {
-    const token = sessionStorage.getItem("superadmin_token");
+ const fetchProducts = async (
+  page = 1,
+  search = "",
+  status = variantStatus
+) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-    if (!token) {
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setLoadingProduct(true);
+  setError(null);
+
+  try {
+    const params = new URLSearchParams();
+    params.set("page", page);
+
+    if (search.trim()) {
+      params.set("search", search.trim());
+    }
+
+    if (status) {
+      params.set("variant_status", status);
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/product/?${params.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
     }
 
-    setLoadingProduct(true);
-    setError(null);
+    const data = await response.json();
 
-    try {
-      let url = `${BASE_URL}/vendors/admin/product/?page=${page}`;
-
-      if (search.trim()) {
-        url += `&search=${encodeURIComponent(search.trim())}`;
-      }
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      });
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch products");
-      }
-
-      const data = await response.json();
-
-      console.log("Product API Response:", data);
-
-      setProducts(data?.data?.results || []);
-      setTotalCount(data?.data?.count || 0);
-      setNextPage(data?.data?.next || null);
-      setPreviousPage(data?.data?.previous || null);
-      setCurrentPage(page);
-    } catch (err) {
-      console.error("Product Fetch Error:", err);
-
-      setError("Something went wrong while fetching data.");
-      toast.error("Failed to fetch product data");
-    } finally {
-      setLoadingProduct(false);
+    if (!response.ok) {
+      throw new Error(data?.message || "Failed to fetch products");
     }
-  };
 
-  useEffect(() => {
+    setProducts(data?.data?.results || []);
+    setTotalCount(data?.data?.count || 0);
+    setNextPage(data?.data?.next || null);
+    setPreviousPage(data?.data?.previous || null);
+    setCurrentPage(page);
+  } catch (err) {
+    console.error("Product Fetch Error:", err);
+    setError("Something went wrong while fetching data.");
+    toast.error(err?.message || "Failed to fetch product data");
+  } finally {
+    setLoadingProduct(false);
+  }
+};
+
+  
+useEffect(() => {
   const timer = setTimeout(() => {
     setExpandedProductId(null);
-    setCurrentPage(1);
-
-    fetchProducts(1, searchTerm);
+    fetchProducts(1, searchTerm, variantStatus);
   }, 500);
 
   return () => clearTimeout(timer);
-}, [searchTerm]);
+}, [searchTerm, variantStatus]);
 
-  // =========================================================
-  // SEARCH
-  // =========================================================
 
+  
   const handleSearch = (e) => {
     e.preventDefault();
 
@@ -199,10 +203,7 @@ const handleVariantStatusToggle = async (variant) => {
     fetchProducts(1, searchTerm);
   };
 
-  // =========================================================
-  // PRODUCT VIEW
-  // =========================================================
-
+ 
   const handleViewProduct = (id) => {
     navigate(`/Productdetail/${id}`);
   };
@@ -444,10 +445,15 @@ const getSystemSku = (variant) => {
           SEARCH
       ====================================================== */}
 
-      <form
-        className="mainproduct-search-section"
-        onSubmit={handleSearch}
-      ><div className="mainproduct-search-section">
+     
+<form
+  className="mainproduct-search-section"
+  onSubmit={(e) => {
+    e.preventDefault();
+    setExpandedProductId(null);
+    fetchProducts(1, searchTerm, variantStatus);
+  }}
+>
   <div className="mainproduct-search-wrapper">
     <BsSearch className="mainproduct-search-icon" />
 
@@ -459,18 +465,34 @@ const getSystemSku = (variant) => {
       onChange={(e) => {
         setSearchTerm(e.target.value);
         setExpandedProductId(null);
+        setCurrentPage(1);
       }}
     />
   </div>
-</div>
 
-        {/* <button
-          type="submit"
-          className="mainproduct-search-button"
-        >
-          Search
-        </button> */}
-      </form>
+  <div className="mainproduct-filter-wrapper">
+    <BsBoxSeam className="mainproduct-filter-icon" />
+
+    <select
+      className="mainproduct-status-filter"
+      value={variantStatus}
+      onChange={(e) => {
+        setVariantStatus(e.target.value);
+        setCurrentPage(1);
+        setExpandedProductId(null);
+      }}
+      aria-label="Filter products by variant status"
+    >
+      <option value="">All Variant Statuses</option>
+      
+      <option value="approved">Approved</option>
+      <option value="pending">Pending</option>
+      <option value="rejected">Rejected</option>
+      <option value="suspended">Suspended</option>
+    </select>
+  </div>
+</form>
+
 
       {/* =====================================================
           PRODUCT LIST

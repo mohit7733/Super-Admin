@@ -24,6 +24,7 @@ const Category = () => {
   const [isActive, setIsActive] = useState(false);
   const [Sequence,setSequence]=useState("");
   const[EditSequence,setEditSequence]=useState("");
+  const [isProductSale, setIsProductSale] = useState(false);
 
   const [deleteModal, setDeleteModal] = useState(false);
   const [categoryId, setCategoryId] = useState(null);
@@ -252,6 +253,10 @@ const Category = () => {
         code: CategoryCode.toUpperCase().trim(),
         redirect_url: redirectUrl,
         sequence:Sequence,
+        is_product_sale:isProductSale
+
+
+
       };
 
 
@@ -367,6 +372,7 @@ const Category = () => {
         is_active: isActive,
         redirect_url: redirectUrl,
         sequence:EditSequence,
+        is_product_sale:isProductSale,
       };
 
       const response = await fetch(
@@ -1171,6 +1177,24 @@ const Category = () => {
                   <span>Active</span>
                 </div>
               </div>
+            
+<div className="form-group">
+  <label>Product Sale</label>
+
+  <div className="checkbox-row">
+    <input
+      type="checkbox"
+      checked={isProductSale}
+      onChange={(e) => setIsProductSale(e.target.checked)}
+    />
+    <span>Product Sale</span>
+  </div>
+
+  <small style={{ color: "#6b7280", fontSize: "13px" }}>
+    Enable this option if products can be sold under this service category.
+  </small>
+</div>
+
 
               <div className="modal-footer">
                 <button
@@ -1371,6 +1395,22 @@ const Category = () => {
                 </div>
               </div>
 
+<div className="form-group">
+  <label>Product Sale</label>
+
+  <div className="checkbox-row">
+    <input
+      type="checkbox"
+      checked={isProductSale}
+      onChange={(e) => setIsProductSale(e.target.checked)}
+    />
+    <span>Product Sale</span>
+  </div>
+
+  <small style={{ color: "#6b7280", fontSize: "13px" }}>
+    Enable this option if products can be sold under this service category.
+  </small>
+</div>
               
 
               <div className="modal-footer">

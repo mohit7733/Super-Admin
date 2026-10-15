@@ -52,8 +52,64 @@ const AddPackage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [form, setForm] = useState(createEmptyForm);
+
+  // =====================================================
+  // FIELD-LEVEL VALIDATION HELPERS
+  // =====================================================
+
+  const clearFieldError = (field) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+
+      const updated = { ...prev };
+      delete updated[field];
+      return updated;
+    });
+  };
+
+  const clearConfigurationErrors = (index) => {
+    setFieldErrors((prev) => {
+      const updated = { ...prev };
+
+      [
+        `benefit_${index}_label`,
+        `benefit_${index}_count`,
+        `benefit_${index}_eligible_after_days`,
+      ].forEach((key) => {
+        delete updated[key];
+      });
+
+      delete updated.configuration;
+      return updated;
+    });
+  };
+
+  const renderFieldError = (field) =>
+    fieldErrors[field] ? (
+      <small
+        role="alert"
+        style={{
+          display: "block",
+          width: "100%",
+          marginTop: "5px",
+          color: "#dc3545",
+          fontSize: "12px",
+          lineHeight: "1.4",
+          fontWeight: 500,
+        }}
+      >
+        {fieldErrors[field]}
+      </small>
+    ) : null;
+
+  const updateField = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    clearFieldError(field);
+    setError("");
+  };
 
   // =====================================================
   // COMMON API HEADERS
@@ -187,7 +243,6 @@ const AddPackage = () => {
                 "flag",
 
               unit: item?.unit || "none",
-
               description: item?.description || "",
 
               tags: Array.isArray(item?.tags)
@@ -203,7 +258,6 @@ const AddPackage = () => {
         : [];
 
       setBenefits(normalized);
-
       console.log("NORMALIZED BENEFITS:", normalized);
     } catch (err) {
       console.error("Benefit Error:", err);
@@ -225,11 +279,7 @@ const AddPackage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    updateField(name, value);
   };
 
   const handlePurchaseTypeChange = (value) => {
@@ -249,6 +299,18 @@ const AddPackage = () => {
         ? ""
         : prev.billing_cycle_count,
     }));
+
+    setFieldErrors((prev) => {
+      const updated = { ...prev };
+
+      if (isOpenPlan) {
+        delete updated.billing_period;
+        delete updated.billing_interval;
+        delete updated.billing_cycle_count;
+      }
+
+      return updated;
+    });
   };
 
   const handleBillingModeChange = (value) => {
@@ -261,6 +323,18 @@ const AddPackage = () => {
       billing_cycle_count:
         value === "one_time" ? "" : prev.billing_cycle_count,
     }));
+
+    if (value === "one_time") {
+      setFieldErrors((prev) => {
+        const updated = { ...prev };
+        delete updated.billing_period;
+        delete updated.billing_interval;
+        delete updated.billing_cycle_count;
+        return updated;
+      });
+    }
+
+    setError("");
   };
 
   // =====================================================
@@ -325,37 +399,26 @@ const AddPackage = () => {
           ...prev.configuration,
           {
             benefit_id: benefit.id,
-
-            // IMPORTANT:
-            // name is the actual capability UUID.
             name: benefit.id,
-
-            // Editable customer-facing label.
             label: benefit.label || benefit.name || "",
-
-            // Used internally for conditional form fields.
-            // Never send type in the package payload.
             type,
-
             count:
               type === "consumable" || type === "chat_pool"
                 ? 1
                 : "",
-
             eligible_after_days:
               defaultDetails.eligible_after_days ?? "",
-
             requires_completed_capability:
               defaultDetails.requires_completed_capability ?? "",
-
-            // Used to display Benefit API rules only.
             match_rules: benefit.match_rules || {},
-
             Service_name: benefit.name || "",
           },
         ],
       };
     });
+
+    clearFieldError("configuration");
+    setError("");
   };
 
   // =====================================================
@@ -369,6 +432,37 @@ const AddPackage = () => {
         (_, i) => i !== index
       ),
     }));
+
+    setFieldErrors((prev) => {
+      const updated = {};
+
+      Object.entries(prev).forEach(([key, value]) => {
+        if (!key.startsWith("benefit_")) {
+          if (key !== "configuration") updated[key] = value;
+          return;
+        }
+
+        const match = key.match(/^benefit_(\d+)_(.+)$/);
+
+        if (!match) {
+          updated[key] = value;
+          return;
+        }
+
+        const currentIndex = Number(match[1]);
+
+        if (currentIndex < index) {
+          updated[key] = value;
+        } else if (currentIndex > index) {
+          updated[`benefit_${currentIndex - 1}_${match[2]}`] =
+            value;
+        }
+      });
+
+      return updated;
+    });
+
+    setError("");
   };
 
   // =====================================================
@@ -382,6 +476,10 @@ const AddPackage = () => {
         i === index ? { ...item, [field]: value } : item
       ),
     }));
+
+    clearFieldError(`benefit_${index}_${field}`);
+    clearFieldError("configuration");
+    setError("");
   };
 
   // =====================================================
@@ -389,35 +487,40 @@ const AddPackage = () => {
   // =====================================================
 
   const validateForm = () => {
+    const errors = {};
+
     if (!form.name.trim()) {
-      return "Package name is required.";
+      errors.name = "Package name is required.";
     }
 
     if (!form.category) {
-      return "Please select a category.";
+      errors.category = "Please select a category.";
     }
 
     if (
       form.original_price === "" ||
       form.original_price === null
     ) {
-      return "Original price is required.";
+      errors.original_price = "Original price is required.";
+    } else if (
+      !Number.isFinite(Number(form.original_price)) ||
+      Number(form.original_price) < 0
+    ) {
+      errors.original_price =
+        "Please enter a valid, non-negative original price.";
     }
 
     if (
       form.selling_price === "" ||
       form.selling_price === null
     ) {
-      return "Selling price is required.";
-    }
-
-    if (
-      !Number.isFinite(Number(form.original_price)) ||
+      errors.selling_price = "Selling price is required.";
+    } else if (
       !Number.isFinite(Number(form.selling_price)) ||
-      Number(form.original_price) < 0 ||
       Number(form.selling_price) < 0
     ) {
-      return "Please enter valid, non-negative prices.";
+      errors.selling_price =
+        "Please enter a valid, non-negative selling price.";
     }
 
     if (
@@ -425,7 +528,8 @@ const AddPackage = () => {
       form.billing_mode === "autopay"
     ) {
       if (!form.billing_period) {
-        return "Billing period is required for autopay.";
+        errors.billing_period =
+          "Billing period is required for autopay.";
       }
 
       if (
@@ -433,7 +537,8 @@ const AddPackage = () => {
         !Number.isInteger(Number(form.billing_interval)) ||
         Number(form.billing_interval) < 1
       ) {
-        return "Billing interval must be a whole number of at least 1.";
+        errors.billing_interval =
+          "Billing interval must be a whole number of at least 1.";
       }
 
       if (
@@ -441,7 +546,8 @@ const AddPackage = () => {
         !Number.isInteger(Number(form.billing_cycle_count)) ||
         Number(form.billing_cycle_count) < 1
       ) {
-        return "Billing cycle count must be a whole number of at least 1.";
+        errors.billing_cycle_count =
+          "Billing cycle count must be a whole number of at least 1.";
       }
     }
 
@@ -450,29 +556,32 @@ const AddPackage = () => {
       (!Number.isInteger(Number(form.validity_days)) ||
         Number(form.validity_days) < 1)
     ) {
-      return "Validity days must be a whole number of at least 1.";
+      errors.validity_days =
+        "Validity days must be a whole number of at least 1.";
     }
 
     if (
+      form.sequence === "" ||
       !Number.isInteger(Number(form.sequence)) ||
       Number(form.sequence) < 1
     ) {
-      return "Sequence must be a whole number of at least 1.";
+      errors.sequence =
+        "Sequence must be a whole number of at least 1.";
     }
 
     if (form.configuration.length === 0) {
-      return "Please select at least one benefit.";
+      errors.configuration = "Please select at least one benefit.";
     }
 
-    for (let i = 0; i < form.configuration.length; i++) {
-      const config = form.configuration[i];
-
+    form.configuration.forEach((config, index) => {
       if (!config.benefit_id || !String(config.name).trim()) {
-        return `Benefit ${i + 1}: valid capability ID is required.`;
+        errors.configuration =
+          "Please select at least one valid benefit.";
       }
 
       if (!config.label?.trim()) {
-        return `Benefit ${i + 1}: label is required.`;
+        errors[`benefit_${index}_label`] =
+          "Benefit label is required.";
       }
 
       if (
@@ -484,7 +593,8 @@ const AddPackage = () => {
           !Number.isInteger(Number(config.count)) ||
           Number(config.count) < 1
         ) {
-          return `Benefit ${i + 1}: count must be a whole number of at least 1.`;
+          errors[`benefit_${index}_count`] =
+            "Count must be a whole number of at least 1.";
         }
       }
 
@@ -495,11 +605,12 @@ const AddPackage = () => {
         (!Number.isInteger(Number(config.eligible_after_days)) ||
           Number(config.eligible_after_days) < 0)
       ) {
-        return `Benefit ${i + 1}: eligible after days must be zero or greater.`;
+        errors[`benefit_${index}_eligible_after_days`] =
+          "Eligible after days must be zero or greater.";
       }
-    }
+    });
 
-    return "";
+    return errors;
   };
 
   // =====================================================
@@ -511,18 +622,31 @@ const AddPackage = () => {
     setError("");
     setSuccess("");
 
-    const validationError = validateForm();
+    const validationErrors = validateForm();
+    setFieldErrors(validationErrors);
 
-    if (validationError) {
-      setError(validationError);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (Object.keys(validationErrors).length > 0) {
+      const firstField = Object.keys(validationErrors)[0];
+
+      const element = document.querySelector(
+        `[name="${firstField}"]`
+      );
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
       return;
     }
 
     try {
       setLoading(true);
 
-      // Only API-supported configuration fields are sent.
       const configuration = form.configuration.map((config) => {
         const cleanConfig = {
           name: String(config.benefit_id).trim(),
@@ -565,45 +689,31 @@ const AddPackage = () => {
       const payload = {
         name: form.name.trim(),
         description: form.description.trim(),
-
-        // Send category UUID, not a category object.
         category: form.category,
-
         purchase_type: form.purchase_type,
         button_action: form.button_action,
-
         billing_mode: isAutopay ? "autopay" : "one_time",
-
         billing_period: isAutopay ? form.billing_period : null,
-
         billing_interval: isAutopay
           ? Number(form.billing_interval)
           : null,
-
         billing_cycle_count: isAutopay
           ? Number(form.billing_cycle_count)
           : null,
-
         original_price: Number(form.original_price),
         selling_price: Number(form.selling_price),
-
         validity_days:
           form.validity_days === ""
             ? null
             : Number(form.validity_days),
-
         sequence: Number(form.sequence),
         tags: form.tags,
         is_active: form.is_active,
-
-        // Open plans are not purchasable.
         can_be_purchased:
           form.purchase_type === "open_plan"
             ? false
             : form.can_be_purchased,
-
         available_to_all_users: form.available_to_all_users,
-
         configuration,
       };
 
@@ -692,6 +802,7 @@ const AddPackage = () => {
       <form
         className="add-package-form"
         onSubmit={handleSubmit}
+        noValidate
       >
         {/* BASIC DETAILS */}
 
@@ -709,16 +820,13 @@ const AddPackage = () => {
 
               <input
                 type="text"
+                name="name"
                 value={form.name}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    name: e.target.value,
-                  }))
-                }
+                onChange={handleChange}
                 placeholder="Enter package name"
-                required
               />
+
+              {renderFieldError("name")}
             </div>
 
             <div className="add-form-group full-width-field">
@@ -747,7 +855,6 @@ const AddPackage = () => {
                 value={form.category}
                 onChange={handleChange}
                 disabled={categoryLoading}
-                required
               >
                 <option value="">
                   {categoryLoading
@@ -756,14 +863,13 @@ const AddPackage = () => {
                 </option>
 
                 {categories.map((category) => (
-                  <option
-                    key={category.id}
-                    value={category.id}
-                  >
+                  <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
                 ))}
               </select>
+
+              {renderFieldError("category")}
             </div>
 
             <div className="add-form-group">
@@ -778,38 +884,9 @@ const AddPackage = () => {
                 name="sequence"
                 value={form.sequence}
                 onChange={handleChange}
-                required
               />
-            </div>
 
-            <div className="add-form-group">
-              <label>
-                Purchase Type <span>*</span>
-              </label>
-
-              <select
-                value={form.purchase_type}
-                onChange={(e) =>
-                  handlePurchaseTypeChange(e.target.value)
-                }
-              >
-                <option value="prepaid_package">
-                  Prepaid Package
-                </option>
-                <option value="open_plan">
-                  Open Plan
-                </option>
-              </select>
-            </div>
-
-            <div className="add-form-group">
-              <label>Button Action</label>
-
-              <input
-                type="text"
-                value={form.button_action}
-                readOnly
-              />
+              {renderFieldError("sequence")}
             </div>
           </div>
         </section>
@@ -836,8 +913,9 @@ const AddPackage = () => {
                 value={form.original_price}
                 onChange={handleChange}
                 placeholder="0.00"
-                required
               />
+
+              {renderFieldError("original_price")}
             </div>
 
             <div className="add-form-group">
@@ -853,8 +931,9 @@ const AddPackage = () => {
                 value={form.selling_price}
                 onChange={handleChange}
                 placeholder="0.00"
-                required
               />
+
+              {renderFieldError("selling_price")}
             </div>
           </div>
         </section>
@@ -966,7 +1045,6 @@ const AddPackage = () => {
                       name="billing_period"
                       value={form.billing_period}
                       onChange={handleChange}
-                      required
                     >
                       <option value="">Select Period</option>
                       <option value="daily">Daily</option>
@@ -974,6 +1052,8 @@ const AddPackage = () => {
                       <option value="monthly">Monthly</option>
                       <option value="yearly">Yearly</option>
                     </select>
+
+                    {renderFieldError("billing_period")}
                   </div>
 
                   <div className="add-form-group">
@@ -989,8 +1069,9 @@ const AddPackage = () => {
                       value={form.billing_interval}
                       onChange={handleChange}
                       placeholder="e.g. 1"
-                      required
                     />
+
+                    {renderFieldError("billing_interval")}
                   </div>
 
                   <div className="add-form-group">
@@ -1006,8 +1087,9 @@ const AddPackage = () => {
                       value={form.billing_cycle_count}
                       onChange={handleChange}
                       placeholder="e.g. 12"
-                      required
                     />
+
+                    {renderFieldError("billing_cycle_count")}
                   </div>
                 </>
               )}
@@ -1024,6 +1106,8 @@ const AddPackage = () => {
                 onChange={handleChange}
                 placeholder="e.g. 30 or 365"
               />
+
+              {renderFieldError("validity_days")}
 
               <div className="benefit-field-help">
                 <small>
@@ -1076,10 +1160,7 @@ const AddPackage = () => {
               placeholder="Type tag and press Enter"
             />
 
-            <button
-              type="button"
-              onClick={addPackageTag}
-            >
+            <button type="button" onClick={addPackageTag}>
               Add Tag
             </button>
           </div>
@@ -1216,6 +1297,8 @@ const AddPackage = () => {
               )}
             </div>
 
+            {renderFieldError("configuration")}
+
             <div className="benefit-selection-help">
               <small>
                 Select one or more benefits. Each benefit can have
@@ -1252,8 +1335,6 @@ const AddPackage = () => {
                   </div>
 
                   <div className="add-form-grid">
-                    {/* CAPABILITY NAME - READ ONLY */}
-
                     <div className="add-form-group">
                       <label>Benefit Name</label>
 
@@ -1264,8 +1345,6 @@ const AddPackage = () => {
                       />
                     </div>
 
-                    {/* NEW EDITABLE LABEL FIELD */}
-
                     <div className="add-form-group">
                       <label>
                         Benefit Label <span>*</span>
@@ -1273,6 +1352,7 @@ const AddPackage = () => {
 
                       <input
                         type="text"
+                        name={`benefit_${index}_label`}
                         value={config.label || ""}
                         onChange={(e) =>
                           updateConfiguration(
@@ -1282,8 +1362,9 @@ const AddPackage = () => {
                           )
                         }
                         placeholder="Enter customer-facing label"
-                        required
                       />
+
+                      {renderFieldError(`benefit_${index}_label`)}
 
                       <div className="benefit-field-help">
                         <small>
@@ -1292,8 +1373,6 @@ const AddPackage = () => {
                         </small>
                       </div>
                     </div>
-
-                    {/* BENEFIT TYPE */}
 
                     <div className="add-form-group">
                       <label>Benefit Type</label>
@@ -1313,8 +1392,6 @@ const AddPackage = () => {
                       />
                     </div>
 
-                    {/* COUNT */}
-
                     {(config.type === "consumable" ||
                       config.type === "chat_pool") && (
                       <div className="add-form-group">
@@ -1324,6 +1401,7 @@ const AddPackage = () => {
 
                         <input
                           type="number"
+                          name={`benefit_${index}_count`}
                           min="1"
                           step="1"
                           value={config.count}
@@ -1335,8 +1413,9 @@ const AddPackage = () => {
                             )
                           }
                           placeholder="e.g. 5"
-                          required
                         />
+
+                        {renderFieldError(`benefit_${index}_count`)}
 
                         <div className="benefit-field-help">
                           <small>
@@ -1348,8 +1427,6 @@ const AddPackage = () => {
                     )}
                   </div>
 
-                  {/* ELIGIBILITY */}
-
                   {(config.type === "consumable" ||
                     config.type === "chat_pool") && (
                     <div className="add-form-grid">
@@ -1358,6 +1435,7 @@ const AddPackage = () => {
 
                         <input
                           type="number"
+                          name={`benefit_${index}_eligible_after_days`}
                           min="0"
                           step="1"
                           value={config.eligible_after_days}
@@ -1370,6 +1448,10 @@ const AddPackage = () => {
                           }
                           placeholder="e.g. 15"
                         />
+
+                        {renderFieldError(
+                          `benefit_${index}_eligible_after_days`
+                        )}
 
                         <div className="benefit-field-help">
                           <small>
@@ -1396,9 +1478,7 @@ const AddPackage = () => {
                             )
                           }
                         >
-                          <option value="">
-                            No prerequisite
-                          </option>
+                          <option value="">No prerequisite</option>
 
                           {benefits.map((benefit) => (
                             <option
@@ -1420,8 +1500,6 @@ const AddPackage = () => {
                       </div>
                     </div>
                   )}
-
-                  {/* MATCH RULES - DISPLAY ONLY */}
 
                   {config.match_rules &&
                     Object.keys(config.match_rules).length > 0 && (
