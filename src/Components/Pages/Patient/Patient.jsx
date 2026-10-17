@@ -212,7 +212,7 @@ setSelectedPatient(null);
           <BsSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Search patient by name..."
+            placeholder="Search patient by name ,phone number..."
             className="search-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

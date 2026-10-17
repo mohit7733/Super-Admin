@@ -45,7 +45,21 @@ import "./PatientDetails.css";
 const PatientDetails = () => {
  
   const[activeTab,setActiveTab]=useState("Consultation");
-   
+   const [TransactionTotalCount, setTransactionTotalCount] = useState(0);
+const [TransactionCurrentPage, setTransactionCurrentPage] = useState(1);
+const [TransactionNextPage, setTransactionNextPage] = useState(null);
+const [TransactionPreviousPage, setTransactionPreviousPage] = useState(null);
+
+const transactionPageSize = 10;
+
+const transactionTotalPages = Math.ceil(
+  TransactionTotalCount / transactionPageSize
+);
+
+const transactionPages = Array.from(
+  { length: transactionTotalPages },
+  (_, i) => i + 1
+);
    
    const[TransactionLoading,setTransactionLoading]=useState(false);
    const[TransactionError,setTransactionError]=useState(null);
@@ -124,46 +138,69 @@ const navigate = useNavigate();
 
 const fetchedOnce = useRef(false);
 
-const getTransactionlist = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
+const getTransactionlist = async (page = 1) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-    if (!token) {
-      toast.error("Session Expired , Login Again")
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    setTransactionLoading(true);
+    setTransactionError(null);
+
+    const response = await fetch(
+      `${BASE_URL}/payments/admin/transactions/?patient_id=${PatientId}&page=${page}&page_size=${transactionPageSize}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "ngrok-skip-browser-warning": "true",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
       navigate("/login");
+      return;
     }
 
-    try {
-      setTransactionLoading(true);
+    const data = await response.json();
 
-      const response = await fetch(
-       `${BASE_URL}/payments/admin/transactions/?patient_id=${PatientId}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "ngrok-skip-browser-warning": "true",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      console.log("Category API Response:", data);
-
-
-      setTransactionData(data.data.results);
-    } catch (error) {
-      console.error(error.message);
-
-      setTransactionError("Something went wrong while fetching categories");
-
-      toast.error("Failed to fetch Category Data");
-    } finally {
-      setTransactionLoading(false);
+    if (!response.ok || data.success === false) {
+      throw new Error(data.message || "Failed to fetch transactions");
     }
-  };
+
+    // Adjust these fields if your API uses a different response structure.
+    const result = data.data;
+
+    const transactions = Array.isArray(result?.results)
+      ? result.results
+      : Array.isArray(result)
+        ? result
+        : [];
+
+    setTransactionData(transactions);
+    setTransactionTotalCount(result?.count ?? transactions.length);
+    setTransactionCurrentPage(page);
+    setTransactionNextPage(result?.next ?? null);
+    setTransactionPreviousPage(result?.previous ?? null);
+  } catch (error) {
+    console.error("Transaction API Error:", error);
+    setTransactionError(
+      error.message || "Something went wrong while fetching transactions"
+    );
+    toast.error("Failed to fetch transaction data");
+  } finally {
+    setTransactionLoading(false);
+  }
+};
 
  const getConsultationhistory = async (page = 1) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -950,156 +987,219 @@ useEffect(() => {
   </div>
 )}
 
-       {
-                 activeTab === "Transaction" && (
-                   <div className="consultation-main-card">
-       
-       
-                     <div className="consultation-header">
-       
-                       <div className="consultation-title-wrap">
-       
-                         <div className="consultation-line"></div>
-       
-                         <div>
-                           <h2>Transaction History</h2>
-       
-                           <p>
-                             Track all transaction activities,
-                             Completed, Failed, and pending requests
-                           </p>
-                         </div>
-       
-                       </div>
-       
-                     </div>
-       
-       
-                    <div className="vendors-stats stats2-grid">
-                          <div className="stat2-card">
-                            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                          <FaClock size={24} />
-                            </div>
-                            <div className="stat2-info">
-                              <h3>Pending</h3>
-                              <div className="stat2-value">0</div>
-                            </div>
-                          </div>
+ 
+{
+  activeTab === "Transaction" && (
+    <div className="consultation-main-card">
+      {/* Header */}
+      <div className="consultation-header">
+        <div className="consultation-title-wrap">
+          <div className="consultation-line"></div>
 
-                          <div className="stat2-card">
-                            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                    <MdTimerOff size={16} />
-                            </div>
-                            <div className="stat2-info">
-                              <h3>Expired</h3>
-                              <div className="stat2-value">0</div>
-                            </div>
-                          </div>
-                          
-                  
-                          <div className="stat2-card">
-                            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                              <FaCheckCircle size={16} />
-                            </div>
-                            <div className="stat2-info">
-                              <h3>Success</h3>
-                              <div className="stat2-value"> 0</div>
-                            </div>
-                          </div>
-                  
-                          <div className="stat2-card">
-                            <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                              <FaTimesCircle size={16} />
-                            </div>
-                            <div className="stat2-info">
-                              <h3>Failed</h3>
-                              <div className="stat2-value">0</div>
-                            </div>
-                          </div>
-                  
-                  <div className="stat2-card">
-                    <div
-                      className="stat2-icon"
-                      style={{ background: "#0D614E20", color: "#0D614E" }}
+          <div>
+            <h2>Transaction History</h2>
+            <p>
+              Track all transaction activities, completed,
+              failed, and pending requests
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Transaction Stats */}
+      <div className="vendors-stats stats2-grid">
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaClock size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Pending</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <MdTimerOff size={16} />
+          </div>
+          <div className="stat2-info">
+            <h3>Expired</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaCheckCircle size={16} />
+          </div>
+          <div className="stat2-info">
+            <h3>Success</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaTimesCircle size={16} />
+          </div>
+          <div className="stat2-info">
+            <h3>Failed</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
+
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaUndoAlt size={24} />
+          </div>
+          <div className="stat2-info">
+            <h3>Refunded</h3>
+            <div className="stat2-value">0</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Transaction Table */}
+      <div className="table-wrapper1">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Patient Name</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Payment Method</th>
+              <th>Doctor Name</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {TransactionLoading ? (
+              Array(3)
+                .fill(0)
+                .map((_, index) => (
+                  <tr key={index}>
+                    <td colSpan="7">
+                      <div className="skeleton-row"></div>
+                    </td>
+                  </tr>
+                ))
+            ) : TransactionError ? (
+              <tr>
+                <td
+                  colSpan="7"
+                  style={{ color: "red", textAlign: "center" }}
+                >
+                  {TransactionError}
+                </td>
+              </tr>
+            ) : TransactionData.length > 0 ? (
+              TransactionData.map((transaction) => (
+                <tr key={transaction.id}>
+                  <td>{transaction.transaction_id || "N/A"}</td>
+
+                  <td>{transaction.patient?.name || "N/A"}</td>
+
+                  <td>{transaction.amount ?? "N/A"}</td>
+
+                  <td>
+                    {transaction.paid_at
+                      ? new Date(transaction.paid_at).toLocaleDateString(
+                          "en-GB"
+                        )
+                      : "-"}
+                  </td>
+
+                  <td>{transaction.payment_method || "N/A"}</td>
+
+                  <td>{transaction.doctor?.name || "N/A"}</td>
+
+                  <td>
+                    <span
+                      className="status-badge"
+                      style={getStatusStyle(transaction.status)}
                     >
-                      <FaUndoAlt size={24} />
-                    </div>
-                    <div className="stat2-info">
-                      <h3>Refunded</h3>
-                      <div className="stat2-value">0</div>
-                    </div>
-                  </div>
-                        </div>
-       
-                     <div classsName="table-wrapper1">
-                       <table className="data-table" >
-                         <thead>
-                           <tr>
-                             <th>Id</th>
-                             <th>Patient Name</th>                   
-                             <th>Amount</th>
-                             <th> Date</th>
-                             <th> Payment Method</th>
-                           <th> Doctor name</th>
-                                <th>Status</th>
-       
-                           </tr>
-                         </thead>
-                         { TransactionLoading? (
-                           Array(3).fill(0).map((_, i) => (
-                             <tr key={i}>
-                               <td colSpan="10"><div className="skeleton-row"></div></td>
-                             </tr>
-                           ))
-                         ) : TransactionError ? (
-                           <p colSpan="6" style={{ color: "red" }}>{TransactionError}</p>
-                         ) : (
-                           <tbody>
-                             {TransactionData && TransactionData.length > 0 ? (
-                        TransactionData.map((transaction, index) => (
-                                 <tr key={transaction.id}>
-                                   <td >{transaction.transaction_id}</td>
-                                  <td>{transaction.patient?.name || "N/A"}</td>
-                                   <td>{transaction.amount}</td>
-                               <td>
-  {transaction.paid_at
-    ? new Date(transaction.paid_at).toLocaleDateString("en-GB")
-    : "-"}
-</td>
-                                   <td>{transaction.payment_method}</td>
-                                   <td>{transaction.doctor?.name || "N/A"}</td>
-                                 <td>
-         <span
-           className="status-badge"
-           style={getStatusStyle(transaction.status)}
-         >
-           {transaction.status}
-         </span>
-       </td>
-                                  
-       
-                               
-                                 </tr>
-                               ))
-                             ) : (
-                               <tr>
-                                 <td colSpan="10" style={{ textAlign: "center" }}>
-                                   No Data Found
-                                 </td>
-                               </tr>
-                             )}
-                           </tbody>
-                         )}
-                       </table>
-       
-       
-       
-       
-                     </div>
-       
-                   </div>
-                 )
-               }
+                      {transaction.status || "N/A"}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center" }}>
+                  No Data Found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Transaction Pagination */}
+      {transactionTotalPages > 1 && (
+        <div className="pagination">
+          <button
+            type="button"
+            onClick={() =>
+              getTransactionlist(TransactionCurrentPage - 1)
+            }
+            disabled={
+              !TransactionPreviousPage || TransactionLoading
+            }
+          >
+            Prev
+          </button>
+
+          {transactionPages.map((page) => (
+            <button
+              type="button"
+              key={page}
+              onClick={() => getTransactionlist(page)}
+              disabled={TransactionLoading}
+              style={{
+                fontWeight:
+                  TransactionCurrentPage === page ? "bold" : "normal",
+                background:
+                  TransactionCurrentPage === page ? "#0D614E" : "#fff",
+                color:
+                  TransactionCurrentPage === page ? "#fff" : "#0D614E",
+              }}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            type="button"
+            onClick={() =>
+              getTransactionlist(TransactionCurrentPage + 1)
+            }
+            disabled={!TransactionNextPage || TransactionLoading}
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
      
    
     </div>

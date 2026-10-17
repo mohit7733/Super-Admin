@@ -1,0 +1,367 @@
+
+/* App Review page additions */
+
+.app-review-page {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.app-review-page * {
+  box-sizing: border-box;
+}
+
+.app-review-page .page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.app-review-page .page-header h2 {
+  margin: 0 0 6px;
+}
+
+.app-review-page .app-review-refresh-btn {
+  border: none;
+  background: #0d614e;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.app-review-page .app-review-refresh-btn:hover {
+  background: #094b3c;
+}
+
+.app-review-page .app-review-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Android / iOS buttons */
+
+.app-review-platform-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 18px 0 24px;
+}
+
+.app-review-platform-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 20px;
+  border: 1px solid #d9e3df;
+  background: #fff;
+  color: #475569;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-review-platform-btn svg {
+  font-size: 19px;
+}
+
+.app-review-platform-btn:hover {
+  border-color: #0d614e;
+  color: #0d614e;
+}
+
+.app-review-platform-btn.active {
+  background: #0d614e;
+  border-color: #0d614e;
+  color: #fff;
+}
+
+/* Reviewer column */
+
+.app-review-user {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 150px;
+}
+
+.app-review-email {
+  font-size: 12px;
+  color: #718096;
+  overflow-wrap: anywhere;
+}
+
+.app-review-text {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.app-review-table td {
+  vertical-align: middle;
+}
+
+.app-review-table th {
+  white-space: nowrap;
+}
+
+/* Rating stars */
+
+.app-review-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.app-review-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #f5a623;
+  font-size: 12px;
+}
+
+.app-review-rating > span:last-child,
+.app-review-rating strong {
+  color: #475569;
+  font-size: 12px;
+}
+
+/* Platform label */
+
+.app-review-platform-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: #eef5f2;
+  color: #0d614e;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.app-review-platform-tag svg {
+  font-size: 14px;
+}
+
+/* Status action button */
+
+.app-review-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-review-toggle-btn.deactivate {
+  background: #fff1f0;
+  color: #d14343;
+  border-color: #ffd6d2;
+}
+
+.app-review-toggle-btn.deactivate:hover {
+  background: #d14343;
+  color: #fff;
+}
+
+.app-review-toggle-btn.activate {
+  background: #eaf7ef;
+  color: #21834a;
+  border-color: #c6ead2;
+}
+
+.app-review-toggle-btn.activate:hover {
+  background: #21834a;
+  color: #fff;
+}
+
+/* Empty state */
+
+.app-review-empty {
+  padding: 35px 15px !important;
+  text-align: center;
+  color: #64748b;
+}
+
+.app-review-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-review-empty-content > svg {
+  font-size: 26px;
+  color: #94a3b8;
+}
+
+.app-review-empty-content p {
+  margin: 0;
+  font-weight: 600;
+  color: #334155;
+}
+
+.app-review-empty-content span {
+  font-size: 13px;
+}
+
+.app-review-pagination-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  color: #64748b;
+}
+
+.app-review-page .pagination-arrow:disabled,
+.app-review-page .pagination-page:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Status modal additions */
+
+.app-review-status-modal {
+  max-width: 480px;
+  width: calc(100% - 32px);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.app-review-status-modal h3 {
+  margin: 14px 0 8px;
+  color: #1e293b;
+}
+
+.app-review-status-modal .reason-subtitle {
+  line-height: 1.5;
+}
+
+.app-review-status-modal .reason-field {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.app-review-status-modal .reason-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.app-review-status-modal .reason-box {
+  width: 100%;
+  min-height: 100px;
+  padding: 11px 12px;
+  border: 1px solid #d7e0dc;
+  border-radius: 7px;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.app-review-status-modal .reason-box:focus {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.1);
+}
+
+.app-review-required {
+  color: #d14343;
+}
+
+.app-review-activate-bg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5f6eb;
+  color: #21834a;
+}
+
+/* Drawer buttons */
+
+.app-review-footer-deactivate {
+  background: #fff1f0 !important;
+  color: #c53030 !important;
+  border-color: #ffd6d2 !important;
+}
+
+.app-review-footer-activate {
+  background: #0d614e !important;
+  color: #fff !important;
+  border-color: #0d614e !important;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .app-review-page .page-header {
+    align-items: flex-start;
+  }
+
+  .app-review-platform-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .app-review-platform-btn {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .app-review-page .filter-controls {
+    flex-wrap: wrap;
+  }
+
+  .app-review-page .search-wrapper {
+    width: 100%;
+  }
+
+  .app-review-page .status-filter-select {
+    max-width: 100%;
+  }
+
+  .app-review-table {
+    min-width: 950px;
+  }
+
+  .app-review-page .review-pagination {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .app-review-page .pagination-controls {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-review-platform-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .app-review-page .app-review-refresh-btn {
+    width: 100%;
+  }
+}

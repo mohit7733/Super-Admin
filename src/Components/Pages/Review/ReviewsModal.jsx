@@ -214,7 +214,7 @@ const ReviewsModal = ({ review, onClose }) => {
               <div className="productReviewDetails">
 
                 <h4>
-                  {review.product_name || "N/A"}
+                  {review.variant_name || "N/A"}
                 </h4>
 
                 <p className="detailLabel">

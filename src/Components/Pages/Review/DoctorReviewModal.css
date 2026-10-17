@@ -1,26 +1,24 @@
+
 .doctor-review-modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-
   background: rgba(15, 23, 42, 0.42);
   backdrop-filter: blur(3px);
 
   display: flex;
   justify-content: center;
   align-items: center;
-
-  padding: 20px;
+  padding: 15px;
 }
 
+/* ===== MODAL WIDTH REDUCED ===== */
 .doctor-review-modal {
-  width: 900px;
-  max-width: 100%;
-  max-height: 94vh;
-
+  width: 700px;
+  max-width: 95vw;
+  max-height: 92vh;
   background: #fff;
-  border-radius: 4px;
-
+  border-radius: 12px;
   overflow: hidden;
 
   display: flex;
@@ -29,44 +27,38 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
 }
 
-
-/* HEADER */
-
+/* ===== HEADER ===== */
 .doctor-review-header {
-  padding: 30px 36px 24px;
-
+  padding: 20px 24px 16px;
   border-bottom: 1px solid #e8edf3;
 
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
 }
 
 .doctor-review-header h2 {
   margin: 0;
-
   color: #071b41;
-
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 750;
 }
 
 .doctor-review-id {
-  margin: 14px 0 12px;
-
+  margin: 10px 0;
   color: #64748b;
-
-  font-size: 14px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .doctor-review-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
-
+  flex-wrap: wrap;
+  gap: 8px;
   color: #64748b;
-
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .doctor-review-date {
@@ -80,12 +72,11 @@
 }
 
 .doctor-status {
-  padding: 9px 17px;
-
+  display: inline-block;
+  padding: 7px 13px;
   border-radius: 25px;
-
+  font-size: 12px;
   font-weight: 700;
-
   text-transform: lowercase;
 }
 
@@ -100,13 +91,11 @@
 }
 
 .doctor-modal-close {
+  flex-shrink: 0;
   border: none;
   background: transparent;
-
   color: #64748b;
-
-  font-size: 27px;
-
+  font-size: 25px;
   cursor: pointer;
 }
 
@@ -114,83 +103,75 @@
   color: #071b41;
 }
 
-
-/* BODY */
-
+/* ===== SCROLLABLE BODY ===== */
 .doctor-review-body {
- padding:5px 8px;
-
+  padding: 12px 0px;
   overflow-y: auto;
+  min-height: 0;
 }
 
-
-/* TOP GRID */
-
+/* IMPORTANT:
+   Patient and Doctor cards will appear one below another */
 .doctor-top-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
 }
 
-
-/* INFORMATION CARD */
-
+/* ===== PATIENT / DOCTOR CARDS ===== */
 .doctor-info-card {
-  min-height: 270px;
+  width: 100%;
+  min-width: 0;
+  min-height: auto;
+  box-sizing: border-box;
 
   border: 1px solid #dfe6ef;
-
-  border-radius: 17px;
-
-  padding: 25px;
+  border-radius: 12px;
+  padding: 17px 18px;
 }
 
 .doctor-card-title {
   display: flex;
   align-items: center;
-  gap: 11px;
-
-  margin-bottom: 28px;
+  gap: 9px;
+  margin-bottom: 16px;
 }
 
 .doctor-card-title svg {
   color: #0878ff;
-
-  font-size: 21px;
+  font-size: 19px;
+  flex-shrink: 0;
 }
 
 .doctor-card-title h3 {
   margin: 0;
-
   color: #071b41;
-
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 750;
 }
 
+/* Person details */
 .doctor-person {
   display: flex;
-  gap: 18px;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
 }
 
 .doctor-avatar {
-  width: 78px;
-  height: 78px;
-
-  flex-shrink: 0;
-
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
   border-radius: 50%;
 
   background: #edf5ff;
-
   color: #0878ff;
 
   display: flex;
   align-items: center;
   justify-content: center;
-
-  font-size: 29px;
+  font-size: 24px;
 }
 
 .doctor-avatar-green {
@@ -199,206 +180,168 @@
 }
 
 .doctor-person-content {
+  flex: 1;
   min-width: 0;
 }
 
 .doctor-person-content h4 {
-  margin: 2px 0 18px;
-
+  margin: 1px 0 12px;
   color: #071b41;
-
-  font-size: 21px;
+  font-size: 18px;
   font-weight: 750;
+  overflow-wrap: anywhere;
 }
 
 .doctor-person-content > span {
   display: block;
-
-  margin-bottom: 6px;
-
+  margin-bottom: 5px;
   color: #8090aa;
-
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .doctor-id-row {
   display: flex;
   align-items: flex-start;
-
-  gap: 7px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .doctor-id-row p {
-  margin: 0 0 16px;
-
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 12px;
   color: #61708b;
-
-  font-size: 14px;
-
-  line-height: 1.55;
-
-  word-break: break-all;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .doctor-id-row button {
+  flex-shrink: 0;
   border: none;
   background: transparent;
-
   color: #64748b;
-
   cursor: pointer;
-
   padding: 2px;
+  font-size: 15px;
+}
 
-  font-size: 16px;
+.doctor-id-text {
+  margin: 0 0 12px;
+  color: #61708b;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .reviewed-title {
   margin-bottom: 7px !important;
 }
 
-.reviewed-yes {
+.reviewed-yes,
+.reviewed-no {
   display: inline-block;
-
-  padding: 8px 17px;
-
+  padding: 7px 14px;
   border-radius: 22px;
-
-  background: #e6f8ef;
-
-  color: #078647;
-
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+}
+
+.reviewed-yes {
+  background: #e6f8ef;
+  color: #078647;
 }
 
 .reviewed-no {
-  display: inline-block;
-
-  padding: 8px 17px;
-
-  border-radius: 22px;
-
   background: #fff0f0;
-
   color: #dc3d3d;
-
-  font-size: 13px;
-  font-weight: 700;
 }
 
-.doctor-id-text {
-  margin: 0 0 20px;
-
-  color: #61708b;
-
-  font-size: 12px;
-
-  line-height: 1.5;
-
-  word-break: break-all;
-}
-
-
-/* IMAGES */
-
+/* ===== DOCTOR IMAGES ===== */
 .doctor-image-thumbnails {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  margin-top: 12px;
 }
 
 .doctor-thumbnail {
-  width: 62px;
-  height: 62px;
-
-  border-radius: 9px;
-
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: 8px;
   overflow: hidden;
-
   border: 2px solid transparent;
-
   cursor: pointer;
+  padding: 0;
 }
 
-.doctor-thumbnail.selected {
-  border-color: #0878ff;
-}
-
+.doctor-thumbnail.selected,
 .doctor-thumbnail:hover {
   border-color: #0878ff;
 }
 
 .doctor-thumbnail img {
+  display: block;
   width: 100%;
   height: 100%;
-
   object-fit: cover;
 }
 
-
-/* SECTION */
-
+/* ===== SECTION CARDS ===== */
 .doctor-section-card {
-  margin-top: 20px;
-
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 12px;
   border: 1px solid #dfe6ef;
-
-  border-radius: 17px;
-
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .doctor-section-header {
-  height: 68px;
-
-  padding: 0 26px;
-
+  min-height: 50px;
+  padding: 12px 18px;
   border-bottom: 1px solid #e8edf3;
 
   display: flex;
   align-items: center;
-
-  gap: 11px;
+  gap: 9px;
 }
 
 .doctor-section-header svg {
   color: #0878ff;
-
-  font-size: 21px;
+  font-size: 19px;
 }
 
 .doctor-section-header h3 {
   margin: 0;
-
   color: #071b41;
-
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 750;
 }
 
-
-/* RATING */
-
+/* ===== RATING ===== */
 .doctor-rating-body {
-  min-height: 90px;
-
-  padding: 20px 26px;
+  min-height: 65px;
+  padding: 16px 18px;
 
   display: flex;
   align-items: center;
-
-  gap: 22px;
+  flex-wrap: wrap;
+  gap: 14px;
 }
 
 .doctor-stars {
   display: flex;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .doctor-modal-star {
   color: #d8dee8;
-
-  font-size: 24px;
+  font-size: 21px;
 }
 
 .doctor-modal-star.filled {
@@ -407,81 +350,60 @@
 
 .doctor-rating-body strong {
   color: #071b41;
-
-  font-size: 18px;
+  font-size: 16px;
 }
 
-
-/* REVIEW */
-
+/* ===== REVIEW CONTENT ===== */
 .doctor-review-content {
-  min-height: 72px;
-
-  padding: 22px 26px;
-
+  min-height: 45px;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
 }
 
 .doctor-review-content p {
   margin: 0;
-
   color: #61708b;
-
-  font-size: 15px;
-
+  font-size: 13px;
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .doctor-empty {
   color: #9aa6b8 !important;
-
   font-style: italic;
 }
 
-
-/* REPLY DATE */
-
+/* ===== REPLY DATE ===== */
 .doctor-reply-date {
-  margin-top: 10px;
-
+  margin-top: 8px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
-
   color: #8a97aa;
-
   font-size: 12px;
 }
 
-
-/* INFO GRID */
-
+/* ===== OTHER INFORMATION ===== */
 .doctor-info-grid {
-  padding: 24px 26px;
-
+  padding: 16px 18px;
   display: grid;
-
   grid-template-columns: 1fr 1fr;
-
-  gap: 24px;
+  gap: 16px;
 }
 
 .doctor-info-grid span {
   display: block;
-
-  margin-bottom: 6px;
-
+  margin-bottom: 5px;
   color: #8a97aa;
-
   font-size: 12px;
 }
 
 .doctor-info-grid strong {
   color: #071b41;
-
-  font-size: 14px;
-
+  font-size: 13px;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 
@@ -493,111 +415,119 @@
   color: #dc3d3d;
 }
 
-
-/* FOOTER */
-
+/* ===== FOOTER ===== */
 .doctor-modal-footer {
-  padding: 16px 36px;
-
+  padding: 12px 20px;
   border-top: 1px solid #e8edf3;
-
   display: flex;
   justify-content: flex-end;
+  flex-shrink: 0;
+  background: #fff;
 }
 
 .doctor-close-button {
-  padding: 10px 23px;
-
+  padding: 9px 18px;
   border: none;
   border-radius: 7px;
-
   background: #071b41;
-
   color: white;
-
   font-size: 13px;
   font-weight: 600;
-
   cursor: pointer;
 }
 
+.doctor-close-button:hover {
+  background: #0d614e;
+}
 
-/* IMAGE PREVIEW */
-
+/* ===== IMAGE PREVIEW ===== */
 .doctor-image-preview {
   position: fixed;
   inset: 0;
-
   z-index: 10000;
-
   background: rgba(0, 0, 0, 0.82);
 
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
 }
 
 .doctor-image-preview img {
   max-width: 88%;
   max-height: 88%;
-
   object-fit: contain;
-
   border-radius: 8px;
 }
 
 .doctor-image-preview-close {
   position: absolute;
-
   top: 20px;
   right: 25px;
-
   width: 42px;
   height: 42px;
-
   border: none;
   border-radius: 50%;
-
   background: white;
-
   color: #071b41;
-
   font-size: 21px;
-
   cursor: pointer;
 }
 
-
-/* RESPONSIVE */
-
-@media (max-width: 700px) {
-
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
   .doctor-review-modal-overlay {
     padding: 8px;
   }
 
   .doctor-review-modal {
-    max-height: 96vh;
+    width: 100%;
+    max-width: 100%;
+    max-height: 95vh;
+    border-radius: 10px;
   }
 
   .doctor-review-header {
-    padding: 22px;
+    padding: 16px;
   }
 
   .doctor-review-header h2 {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .doctor-review-body {
-    padding: 18px;
+    padding: 12px;
   }
 
-  .doctor-top-grid {
-    grid-template-columns: 1fr;
+  .doctor-info-card {
+    padding: 14px;
+  }
+
+  .doctor-person {
+    gap: 10px;
+  }
+
+  .doctor-avatar {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+    font-size: 20px;
+  }
+
+  .doctor-person-content h4 {
+    font-size: 16px;
   }
 
   .doctor-info-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
+  .doctor-rating-body {
+    gap: 10px;
+  }
+
+  .doctor-modal-footer {
+    padding: 10px 12px;
+  }
 }

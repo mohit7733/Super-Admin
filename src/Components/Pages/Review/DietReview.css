@@ -1,0 +1,659 @@
+
+
+.diet-review-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(2px);
+  animation: dietReviewOverlayFade 0.2s ease;
+}
+
+
+.diet-review-details-drawer {
+  display: flex;
+  flex-direction: column;
+  width: 450px;
+  max-width: 92vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: -6px 0 25px rgba(0, 0, 0, 0.12);
+  animation: dietReviewDrawerSlide 0.25s ease;
+}
+
+
+
+.diet-review-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.diet-review-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.diet-review-header-info h2 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: 19px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.diet-review-header-info p {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.diet-review-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.diet-review-drawer-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #64748b;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.diet-review-drawer-close:hover {
+  background: #f1f5f9;
+  color: #0d614e;
+}
+
+/* ==========================================
+   STATUS BADGES
+========================================== */
+
+.diet-review-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.diet-review-status-badge.active {
+  background: #e9f9ef;
+  color: #15803d;
+}
+
+.diet-review-status-badge.inactive {
+  background: #feecec;
+  color: #dc2626;
+}
+
+.diet-review-status-badge.unverified {
+  background: #fff4db;
+  color: #b7791f;
+}
+
+/* ==========================================
+   SCROLLABLE BODY
+========================================== */
+
+.diet-review-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 13px;
+  background: #f8fafc;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.diet-review-drawer-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.diet-review-drawer-body::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #cbd5e1;
+}
+
+/* ==========================================
+   COMMON CARDS
+========================================== */
+
+.diet-review-drawer-card {
+  margin: 0 0 11px;
+  padding: 15px;
+  border: 1px solid #e0e7ef;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.025);
+}
+
+.diet-review-drawer-card:last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================
+   PATIENT REVIEW SUMMARY
+========================================== */
+
+.diet-review-summary-card {
+  padding: 17px;
+}
+
+.diet-review-summary-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.diet-review-summary-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.diet-review-section-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.diet-review-summary-top h3 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.diet-review-summary-top p {
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.diet-review-summary-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #e7f5ef;
+  color: #0d614e;
+  font-size: 18px;
+}
+
+/* ==========================================
+   RATING
+========================================== */
+
+.diet-review-rating-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  padding-top: 13px;
+  border-top: 1px solid #e8edf2;
+}
+
+.diet-review-rating-large {
+  color: #0d614e;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.diet-review-rating-large span {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.diet-review-rating-stars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.diet-review-star-filled {
+  color: #f59e0b;
+}
+
+.diet-review-star-empty {
+  color: #cbd5e1;
+}
+
+.diet-review-rating-number {
+  margin-left: 3px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+/* ==========================================
+   CARD HEADINGS
+========================================== */
+
+.diet-review-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.diet-review-card-heading h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.diet-review-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: #e7f5ef;
+  color: #0d614e;
+  font-size: 14px;
+}
+
+/* ==========================================
+   DETAIL ROWS
+========================================== */
+
+.diet-review-detail-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.diet-review-detail-row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.diet-review-detail-row > span {
+  flex: 0 0 37%;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.diet-review-detail-row strong {
+  flex: 1;
+  min-width: 0;
+  color: #111827;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: right;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.diet-review-id-text {
+  font-size: 11px !important;
+}
+
+/* ==========================================
+   REVIEW FEEDBACK
+========================================== */
+
+.diet-review-feedback-content {
+  padding: 12px;
+  border: 1px solid #edf0f4;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   STATUS DETAILS
+========================================== */
+
+.diet-review-status-detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.diet-review-status-detail p {
+  margin: 0;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.diet-review-reason-content {
+  margin-top: 10px;
+  padding: 11px;
+  border: 1px solid #fee2e2;
+  border-radius: 9px;
+  background: #fff7f7;
+}
+
+.diet-review-reason-content strong {
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+.diet-review-reason-content p {
+  margin: 6px 0 0;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.diet-review-drawer-footer {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  padding: 11px 15px;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.diet-review-footer-btn {
+  padding: 9px 16px;
+  border: 1px solid #0d614e;
+  border-radius: 8px;
+  background: #0d614e;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.diet-review-footer-btn:hover {
+  background: #094b3d;
+}
+
+
+@keyframes dietReviewDrawerSlide {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes dietReviewOverlayFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================
+   TABLET AND MOBILE
+========================================== */
+
+@media (max-width: 600px) {
+  .diet-review-details-drawer {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .diet-review-drawer-header {
+    padding: 14px;
+  }
+
+  .diet-review-header-info h2 {
+    font-size: 17px;
+  }
+
+  .diet-review-drawer-body {
+    padding: 10px;
+  }
+
+  .diet-review-drawer-card {
+    padding: 13px;
+    margin-bottom: 9px;
+    border-radius: 11px;
+  }
+
+  .diet-review-summary-card {
+    padding: 14px;
+  }
+
+  .diet-review-summary-top h3 {
+    font-size: 16px;
+  }
+
+  .diet-review-rating-box {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .diet-review-detail-row {
+    gap: 8px;
+  }
+
+  .diet-review-detail-row > span {
+    flex-basis: 34%;
+  }
+
+  .diet-review-detail-row strong {
+    font-size: 12px;
+  }
+
+  .diet-review-drawer-footer {
+    padding: 10px 12px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .diet-review-drawer-overlay,
+  .diet-review-details-drawer {
+    animation: none;
+  }
+}
+
+/* Active Confirmation Modal */
+.active-confirm-modal {
+  position: relative;
+  width: min(440px, calc(100vw - 32px));
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.2);
+  animation: activeModalEnter 0.2s ease-out;
+}
+
+.active-confirm-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.active-confirm-close:hover {
+  background: #f1f5f9;
+  color: #0d614e;
+}
+
+.active-confirm-icon {
+  width: 54px;
+  height: 54px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dcfce7;
+  color: #0d8a62;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.active-confirm-modal h2 {
+  margin: 0 32px 10px 0;
+  color: #0d614e;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.active-confirm-description {
+  margin: 0 0 22px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.active-confirm-review-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 13px 15px;
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.active-confirm-review-info span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.active-confirm-review-info strong {
+  color: #334155;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.active-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.active-confirm-actions button {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.active-confirm-cancel {
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.active-confirm-cancel:hover {
+  background: #f1f5f9;
+}
+
+.active-confirm-submit {
+  background: #0d614e;
+  color: #ffffff;
+  border: 1px solid #0d614e;
+}
+
+.active-confirm-submit:hover:not(:disabled) {
+  background: #094c3d;
+}
+
+.active-confirm-actions button:disabled,
+.active-confirm-close:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes activeModalEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .active-confirm-modal {
+    padding: 24px 20px;
+  }
+
+  .active-confirm-actions button {
+    flex: 1;
+    padding: 0 10px;
+  }
+}

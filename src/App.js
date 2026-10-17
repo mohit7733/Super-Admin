@@ -104,6 +104,7 @@ import AddPackages from './Components/Pages/Packages/AddPackages';
 import EditPackage from './Components/Pages/Packages/EditPackage';
 import ReturnRequests from './Components/Pages/Order/ReturnRequests';
 import Customerpurchase from './Components/Pages/Packages/Customerpurchase';
+import AppReview from './Components/Pages/Review/AppReview';
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -166,6 +167,17 @@ function App() {
             <ProtectedRoute permission="edit_packages">
               <Layout>
                 <EditPackage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/Review/App"
+          element={
+            <ProtectedRoute permission="view_app_review">
+              <Layout>
+                <AppReview />
               </Layout>
             </ProtectedRoute>
           }

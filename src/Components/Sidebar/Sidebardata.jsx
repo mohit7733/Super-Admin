@@ -13,10 +13,13 @@ import { FaFileContract } from 'react-icons/fa';
 import { FaGift } from 'react-icons/fa6';
 import {FaSyncAlt} from 'react-icons/fa';
 import {FaMoneyBillWave} from 'react-icons/fa';
-import { MdInventory2 } from "react-icons/md";
+import { MdInventory2,MdInventory } from "react-icons/md";
 import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
 
-
+import {
+ 
+  MdRateReview,
+} from "react-icons/md";
 
 import { FiClock } from "react-icons/fi";
 import { FaTag, FaTicketAlt, FaUsers, FaClipboardList,FaCogs, FaDatabase, FaBoxes, FaHeartbeat, FaHospital, FaBriefcaseMedical, FaCalendarCheck ,} from "react-icons/fa";
@@ -441,28 +444,26 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
         permission: "view_products",
         icon: <FaBoxOpen size={18} />
       },
-      // {
-      //   title: "Brand Management",
-      //   path: "/product/brandname",
-      //   permission: "manage_brand_name",
-      //   icon: <MdBrandingWatermark size={18} />
-      // },
+      {
+        title: "Stock Management",
+        path: "/Stock/Management",
+        permission: "manage_brand_name",
+        icon: <MdBrandingWatermark size={18}
+        
+        
+        />
+      },
        {
       title: "Bulk Upload",
       path: "/admin/bulk-upload-products",
       permission: "manage_product_bulk",
       icon: <FiUploadCloud size={18} />
     },
-      // {
-      //   title: "Stock Management",
-      //   path: "/Product/Stock",
-      //   permission: "manage_stock",
-      //   icon: <MdInventory size={18} />
-      // },
+    
     ],
   },
 
-  // ========== YOGA MANAGEMENT ==========
+ 
   {
     title: "Yoga Management",
     icon: <GiLotusFlower size={20} />,

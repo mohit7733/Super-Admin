@@ -1,1280 +1,1374 @@
-import React, { useState ,useEffect,useRef } from 'react'
+
+import React, { useState, useEffect, useRef } from "react";
 import ExcelJS from "exceljs";
-import { FiEye ,FiUpload} from 'react-icons/fi';
+import { FiEye, FiUpload, FiTrash2 } from "react-icons/fi";
 import {
   FaChartLine,
   FaCalendarAlt,
-  FaTags,
-  FaCheckCircle,
-  FaEdit,
   FaTag,
+  FaEdit,
   FaCopy,
   FaTimes,
+  FaFileExcel,
 } from "react-icons/fa";
-
-import { BsSearch,BsPlus } from "react-icons/bs";
-import { FiTrash2 } from "react-icons/fi";
+import { BsSearch, BsPlus, BsX } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import BASE_URL from "../../../Base";
-import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from "react-toastify";
 
 const Brand = () => {
-   
-    const[Error,setError]=useState(null);
-    const[Loading,setLoading]=useState(false);
-    const[BrandModal,setBrandModal]=useState(false);
-    const[addErrors,setAddErrors]=useState({});
-    const navigate = useNavigate();
-    const [addLoading, setAddLoading] = useState(false);
-    const[UpdateLoading,setUpdateLoading]=useState(false);
-    
-const [allBrandData, setAllBrandData] = useState([]);
-const [ BrandForm, setBrandForm] = useState({
-  name: "",
-  description: "",
-  is_active: false,
-   logo: null,
-   sequence:"",
-});
-const [searchTerm, setSearchTerm] = useState("");
-const [existingLogo, setExistingLogo] = useState("");
-const editLogoRef = useRef(null);
-const [previewImage, setPreviewImage] = useState("");
+  const navigate = useNavigate();
 
+  const [Error, setError] = useState(null);
+  const [Loading, setLoading] = useState(false);
+  const [BrandModal, setBrandModal] = useState(false);
+  const [addErrors, setAddErrors] = useState({});
+  const [addLoading, setAddLoading] = useState(false);
+  const [UpdateLoading, setUpdateLoading] = useState(false);
+
+  const [allBrandData, setAllBrandData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const [existingLogo, setExistingLogo] = useState("");
+  const editLogoRef = useRef(null);
+  const brandLogoRef = useRef(null);
+
+  const [previewImage, setPreviewImage] = useState("");
   const [deleteModal, setDeleteModal] = useState(false);
-const [BrandId, setBrandId] = useState(null);
-const brandLogoRef = useRef(null);
-const resetBrandForm = () => {
-  setBrandForm({
+  const [BrandId, setBrandId] = useState(null);
+  const [editModal, setEditModal] = useState(false);
+
+  const [BrandForm, setBrandForm] = useState({
     name: "",
     description: "",
     is_active: false,
     logo: null,
+    sequence: "",
   });
 
-  setAddErrors({});
+  const [editForm, setEditForm] = useState({
+    id: "",
+    name: "",
+    description: "",
+    is_active: true,
+    sequence: "",
+    logo: null,
+  });
 
-  if (brandLogoRef.current) {
-    brandLogoRef.current.value = "";
-  }
-};
+  const [editErrors, setEditErrors] = useState({});
 
+  // Check brand status
+  const isActiveBrand = (item) =>
+    item?.is_active === true ||
+    String(item?.is_active).toLowerCase() === "true";
 
-const handleEditChange = (e) => {
-  const { name, value, type, checked } = e.target;
+  // Search + status filtering
+  const filteredBrands = allBrandData.filter((item) => {
+    const keyword = searchTerm.trim().toLowerCase();
 
-  setEditForm((prev) => ({
-    ...prev,
-    [name]: type === "checkbox" ? checked : value,
-  }));
+    const matchesSearch = (item.name || "")
+      .toLowerCase()
+      .includes(keyword);
 
-  setEditErrors((prev) => ({
-    ...prev,
-    [name]: "",
-  }));
-};
+    const isActive = isActiveBrand(item);
 
-const [editModal, setEditModal] = useState(false);
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && isActive) ||
+      (statusFilter === "inactive" && !isActive);
 
-const [editForm, setEditForm] = useState({
-  id: "",
-  name: "",
-  description: "",
-  is_active: true,
-  sequence:"",
+    return matchesSearch && matchesStatus;
+  });
 
-});
-const [editErrors, setEditErrors] = useState({});
+  // Clear search and status filters
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
 
-const filteredBrands = allBrandData.filter((item) => {
-  const keyword = searchTerm.trim().toLowerCase();
+  // Dashboard statistics
+  const totalBrands = allBrandData.length;
+  const activeBrands = allBrandData.filter(isActiveBrand).length;
+  const inactiveBrands = totalBrands - activeBrands;
 
-  return (
-    item.name?.toLowerCase().includes(keyword) 
-  
-  );
-});
-const uploadImage = async (file) => {
-  const token = sessionStorage.getItem("superadmin_token");
-
-  try {
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("dir", "health_issues");
-
-    const response = await fetch(`${BASE_URL}/user/upload/`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
+  // Reset add brand form
+  const resetBrandForm = () => {
+    setBrandForm({
+      name: "",
+      description: "",
+      is_active: false,
+      logo: null,
+      sequence: "",
     });
 
-    const data = await response.json();
-    console.log("Upload Response:", data);
+    setAddErrors({});
 
-    return data?.data?.url;
-  } catch (error) {
-    console.log(error);
-    toast.error("Image upload failed");
-    return null;
-  }
-};
-const handleExportExcel = async () => {
-  if (!allBrandData || allBrandData.length === 0) {
-    toast.info("No brand data available to export");
-    return;
-  }
-
-  try {
-    const workbook = new ExcelJS.Workbook();
-
-    const worksheet = workbook.addWorksheet("Brands");
-
-    worksheet.columns = [
-      {
-        header: "#",
-        key: "sr_no",
-        width: 8,
-      },
-      {
-        header: "Brand Name",
-        key: "name",
-        width: 30,
-      },
-      {
-        header: "Brand ID",
-        key: "id",
-        width: 38,
-      },
-      {
-        header: "Description",
-        key: "description",
-        width: 40,
-      },
-      {
-        header: "Logo Link",
-        key: "logo",
-        width: 40,
-      },
-      {
-        header: "Sequence",
-        key: "sequence",
-        width: 12,
-      },
-      {
-        header: "Status",
-        key: "status",
-        width: 15,
-      },
-    ];
-
-    allBrandData.forEach((item, index) => {
-      const row = worksheet.addRow({
-        sr_no: index + 1,
-        name: item.name || "",
-        id: item.id || "",
-        description: item.description || "",
-        sequence: item.sequence ?? "",
-        status: item.is_active ? "Active" : "Inactive",
-      });
-
-      // Logo link
-      if (item.logo) {
-        const logoCell = row.getCell("logo");
-
-        logoCell.value = {
-          text: "View Image",
-          hyperlink: item.logo,
-        };
-
-        logoCell.font = {
-          color: { argb: "0563C1" },
-          underline: true,
-        };
-      } else {
-        row.getCell("logo").value = "No Image";
-      }
-    });
-
-    // Header styling
-    worksheet.getRow(1).font = {
-      bold: true,
-    };
-
-    worksheet.getRow(1).alignment = {
-      vertical: "middle",
-      horizontal: "center",
-    };
-
-    worksheet.getRow(1).height = 25;
-
-    // Borders + alignment
-    worksheet.eachRow((row) => {
-      row.eachCell((cell) => {
-        cell.border = {
-          top: {
-            style: "thin",
-            color: { argb: "D9D9D9" },
-          },
-          left: {
-            style: "thin",
-            color: { argb: "D9D9D9" },
-          },
-          bottom: {
-            style: "thin",
-            color: { argb: "D9D9D9" },
-          },
-          right: {
-            style: "thin",
-            color: { argb: "D9D9D9" },
-          },
-        };
-
-        cell.alignment = {
-          vertical: "middle",
-          wrapText: true,
-        };
-      });
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
-
-    const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-
-    const url = window.URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-
-    const today = new Date().toISOString().split("T")[0];
-
-    link.download = `Brands_${today}.xlsx`;
-
-    document.body.appendChild(link);
-    link.click();
-
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-
-    toast.success("Brand Excel exported successfully");
-  } catch (error) {
-    console.error("Excel export error:", error);
-    toast.error("Failed to export Excel");
-  }
-};
-
- const handleToggle = async (id, currentStatus) => {
-  const token = sessionStorage.getItem("superadmin_token");
-  if(!token){
-    toast.error("Session Expired,please login Again");
-    navigate("/login");
-    return;
-  }
-
-  try {
-    const response = await fetch(
-     `${BASE_URL}/vendors/admin/brand-name/?id=${id}`,
-      {
-        method: "PATCH",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-           "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify({
-          is_active: !currentStatus,
-        }),
-      }
-    );
-
-    const data = await response.json();
-    console.log(data);
-
-    toast.success("Status updated successfully");
-
-getbrandlist();
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to update status");
-  }
-};
-const handleBrandChange = (e) => {
-  const { name, value, type, checked } = e.target;
-
-  setBrandForm((prev) => ({
-    ...prev,
-    [name]: type === "checkbox" ? checked : value,
-  }));
-};
-
-const totalBrands = allBrandData.length;
-
-const activeBrands = allBrandData.filter(
-  (item) => item.is_active
-).length;
-
-const inactiveBrands = allBrandData.filter(
-  (item) => !item.is_active
-).length;
-
-const getbrandlist = async () => {
-  const token = sessionStorage.getItem("superadmin_token");
-
-  if (!token) {
-    toast.error("Session expired. Please login again");
-    navigate("/login");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/vendors/admin/brand-name/`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
-    );
-
-    const data = await response.json();
-
-    console.log("Brand List:", data);
-
-    if (response.ok) {
-      setAllBrandData(data.data || []);
-    } else {
-      toast.error("Failed to fetch brands");
+    if (brandLogoRef.current) {
+      brandLogoRef.current.value = "";
     }
-  } catch (err) {
-    console.error(err);
-    toast.error("Something went wrong");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-useEffect(() => {
-  getbrandlist();
-}, []);
+  // Add form input handler
+  const handleBrandChange = (e) => {
+    const { name, value, type, checked } = e.target;
 
+    setBrandForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
+  // Edit form input handler
+  const handleEditChange = (e) => {
+    const { name, value, type, checked } = e.target;
 
-const AddProductBrand = async (e) => {
-  e.preventDefault();
- 
-    let newErrors = {};
+    setEditForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
 
-  if (!BrandForm.name.trim()) {
-    newErrors.name = "Brand name is required";
-  }
+    setEditErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  };
 
-  let logoUrl = "";
+  // Upload image
+  const uploadImage = async (file) => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-if (BrandForm.logo) {
-  logoUrl = await uploadImage(BrandForm.logo);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("dir", "health_issues");
 
-  if (!logoUrl) {
-    toast.error("Logo upload failed");
-    return;
-  }
-}
-  
-
-  setAddErrors(newErrors);
-
-  if (Object.keys(newErrors).length > 0) {
-    Object.values(newErrors).forEach((msg) => {
-      toast.error(msg);
-    });
-    return;
-  }
- setAddLoading(true);
-  const token = sessionStorage.getItem("superadmin_token");
-
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/vendors/admin/brand-name/`,
-      {
+      const response = await fetch(`${BASE_URL}/user/upload/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "true",
         },
-       body: JSON.stringify({
-  name: BrandForm.name.trim(),
-  description: BrandForm.description,
-  is_active: BrandForm.is_active,
-  sequence:BrandForm.sequence,
-  logo: logoUrl,
- 
-})
-      }
-    );
+        body: formData,
+      });
 
-    const data = await response.json();
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data?.message || "Image upload failed");
+        return null;
+      }
+
+      return data?.data?.url || null;
+    } catch (error) {
+      console.error("Image upload error:", error);
+      toast.error("Image upload failed");
+      return null;
+    }
+  };
+
+  // Fetch brands
+  const getbrandlist = async () => {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
     }
 
+    setLoading(true);
+    setError(null);
 
-    if (response.ok) {
-      toast.success("Product Brand Added Successfully");
+    try {
+      const response = await fetch(
+        `${BASE_URL}/vendors/admin/brand-name/`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
 
-      setBrandModal(false);
+      const data = await response.json();
 
-      setBrandForm({
-        name: "",
-        description: "",
-        is_active: false,
-      });
-
-      getbrandlist();
-    }
-    else {
-  const errorMessage =
-    data?.errors?.name?.[0] ||
-    data?.message ||
-    "Failed to add brand";
-
-  toast.error(errorMessage);
-}
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong");
-  }
-  finally{
-    setAddLoading(false);
-  }
-};
-
-const handleUpdateBrand = async (e) => {
-  e.preventDefault();
-
-  let newErrors = {};
-
-  if (!editForm.name.trim()) {
-    newErrors.name = "Brand name is required";
-  }
-
-  setEditErrors(newErrors);
-
-  if (Object.keys(newErrors).length > 0) {
-    toast.error(Object.values(newErrors)[0]);
-    return;
-  }
-setUpdateLoading(true);
-  const token = sessionStorage.getItem("superadmin_token");
-
-  try {
-    let logoUrl = existingLogo;
-
-    // Agar naya logo select hua hai to upload karo
-    if (editForm.logo instanceof File) {
-      logoUrl = await uploadImage(editForm.logo);
-
-      if (!logoUrl) {
-        toast.error("Logo upload failed");
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
         return;
       }
-    }
 
-    const response = await fetch(
-      `${BASE_URL}/vendors/admin/brand-name/?id=${editForm.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify({
-          name: editForm.name.trim(),
-          description: editForm.description,
-          is_active: editForm.is_active,
-          sequence:editForm.sequence,
-          logo: logoUrl, // URL send hoga
-        }),
+      if (response.ok) {
+        setAllBrandData(
+          Array.isArray(data?.data) ? data.data : []
+        );
+      } else {
+        setError(data?.message || "Failed to fetch brands");
+        toast.error(data?.message || "Failed to fetch brands");
       }
-    );
-
-    const data = await response.json();
-
-    if (response.ok) {
-      toast.success("Brand Updated Successfully");
-      setEditModal(false);
-      getbrandlist();
-    } else {
-      toast.error(
-        data?.errors?.name?.[0] ||
-        data?.message ||
-        "Failed to update brand"
-      );
+    } catch (error) {
+      console.error("Brand list error:", error);
+      setError("Something went wrong while fetching brands");
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong");
-  }
-  finally{
-    setUpdateLoading(false);
-  }
-};
-const handleDelete = async (id) => {
-  const token = sessionStorage.getItem("superadmin_token");
+  };
 
-  if (!token) {
-    toast.error("Session expired. Please login again");
-    navigate("/login");
-    return;
-  }
+  useEffect(() => {
+    getbrandlist();
+  }, []);
 
-  try {
-    const response = await fetch(
-      `${BASE_URL}/vendors/admin/brand-name/?id=${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
-    );
+  // Activate / deactivate brand
+  const handleToggle = async (id, currentStatus) => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      toast.error(data?.message || "Failed to delete Brand");
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
       return;
     }
 
-  
-    setAllBrandData((prev) =>
-      prev.filter((item) => item.id !== id)
-    );
+    try {
+      const response = await fetch(
+        `${BASE_URL}/vendors/admin/brand-name/?id=${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({
+            is_active: !currentStatus,
+          }),
+        }
+      );
 
-    toast.success("Brand deleted successfully");
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong while deleting");
-  }
-};
+      const data = await response.json();
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        toast.error(data?.message || "Failed to update status");
+        return;
+      }
+
+      toast.success("Status updated successfully");
+      await getbrandlist();
+    } catch (error) {
+      console.error("Status update error:", error);
+      toast.error("Failed to update status");
+    }
+  };
+
+  // Add brand
+  const AddProductBrand = async (e) => {
+    e.preventDefault();
+
+    const newErrors = {};
+
+    if (!BrandForm.name.trim()) {
+      newErrors.name = "Brand name is required";
+    }
+
+    if (!BrandForm.logo) {
+      newErrors.logo = "Brand logo is required";
+    }
+
+    setAddErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      toast.error(Object.values(newErrors)[0]);
+      return;
+    }
+
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    setAddLoading(true);
+
+    try {
+      const logoUrl = await uploadImage(BrandForm.logo);
+
+      if (!logoUrl) return;
+
+      const response = await fetch(
+        `${BASE_URL}/vendors/admin/brand-name/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({
+            name: BrandForm.name.trim(),
+            description: BrandForm.description,
+            is_active: BrandForm.is_active,
+            sequence: BrandForm.sequence,
+            logo: logoUrl,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+      if (response.ok) {
+        toast.success("Brand added successfully");
+        setBrandModal(false);
+        resetBrandForm();
+        await getbrandlist();
+      } else {
+        toast.error(
+          data?.errors?.name?.[0] ||
+            data?.message ||
+            "Failed to add brand"
+        );
+      }
+    } catch (error) {
+      console.error("Add brand error:", error);
+      toast.error("Something went wrong");
+    } finally {
+      setAddLoading(false);
+    }
+  };
+
+  // Update brand
+  const handleUpdateBrand = async (e) => {
+    e.preventDefault();
+
+    const newErrors = {};
+
+    if (!editForm.name.trim()) {
+      newErrors.name = "Brand name is required";
+    }
+
+    setEditErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      toast.error(Object.values(newErrors)[0]);
+      return;
+    }
+
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    setUpdateLoading(true);
+
+    try {
+      let logoUrl = existingLogo;
+
+      if (editForm.logo instanceof File) {
+        logoUrl = await uploadImage(editForm.logo);
+
+        if (!logoUrl) return;
+      }
+
+      const response = await fetch(
+        `${BASE_URL}/vendors/admin/brand-name/?id=${editForm.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({
+            name: editForm.name.trim(),
+            description: editForm.description,
+            is_active: editForm.is_active,
+            sequence: editForm.sequence,
+            logo: logoUrl,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+      if (response.ok) {
+        toast.success("Brand updated successfully");
+        setEditModal(false);
+        await getbrandlist();
+      } else {
+        toast.error(
+          data?.errors?.name?.[0] ||
+            data?.message ||
+            "Failed to update brand"
+        );
+      }
+    } catch (error) {
+      console.error("Update brand error:", error);
+      toast.error("Something went wrong");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  // Delete brand
+  const handleDelete = async (id) => {
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/vendors/admin/brand-name/?id=${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        toast.error(data?.message || "Failed to delete brand");
+        return;
+      }
+
+      setAllBrandData((prev) =>
+        prev.filter((item) => item.id !== id)
+      );
+
+      toast.success("Brand deleted successfully");
+    } catch (error) {
+      console.error("Delete brand error:", error);
+      toast.error("Something went wrong while deleting");
+    }
+  };
+
+  // Export currently filtered brands to Excel
+  const handleExportExcel = async () => {
+    if (!filteredBrands.length) {
+      toast.info("No brands available to export");
+      return;
+    }
+
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Brands");
+
+      worksheet.columns = [
+        { header: "#", key: "sr_no", width: 8 },
+        { header: "Brand Name", key: "name", width: 30 },
+        { header: "Brand ID", key: "id", width: 38 },
+        { header: "Description", key: "description", width: 40 },
+        { header: "Logo Link", key: "logo", width: 40 },
+        { header: "Sequence", key: "sequence", width: 12 },
+        { header: "Status", key: "status", width: 15 },
+      ];
+
+      filteredBrands.forEach((item, index) => {
+        const row = worksheet.addRow({
+          sr_no: index + 1,
+          name: item.name || "",
+          id: item.id || "",
+          description: item.description || "",
+          sequence: item.sequence ?? "",
+          status: isActiveBrand(item) ? "Active" : "Inactive",
+        });
+
+        const logoCell = row.getCell("logo");
+
+        if (item.logo) {
+          logoCell.value = {
+            text: "View Image",
+            hyperlink: item.logo,
+          };
+
+          logoCell.font = {
+            color: { argb: "0563C1" },
+            underline: true,
+          };
+        } else {
+          logoCell.value = "No Image";
+        }
+      });
+
+      worksheet.getRow(1).font = { bold: true };
+      worksheet.getRow(1).alignment = {
+        vertical: "middle",
+        horizontal: "center",
+      };
+      worksheet.getRow(1).height = 25;
+
+      worksheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: "thin", color: { argb: "D9D9D9" } },
+            left: { style: "thin", color: { argb: "D9D9D9" } },
+            bottom: { style: "thin", color: { argb: "D9D9D9" } },
+            right: { style: "thin", color: { argb: "D9D9D9" } },
+          };
+
+          cell.alignment = {
+            vertical: "middle",
+            wrapText: true,
+          };
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = `Brands_${new Date()
+        .toISOString()
+        .split("T")[0]}.xlsx`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Brand Excel exported successfully");
+    } catch (error) {
+      console.error("Excel export error:", error);
+      toast.error("Failed to export Excel");
+    }
+  };
+
   return (
     <>
-     <div className="page-header">
-            <h1>Brand Name  Management</h1>
-            <p className="page-paragraph">
-              Manage Brand Name, their details
-            </p>
+      <div className="page-header">
+        <h1>Brand Name Management</h1>
+        <p className="page-paragraph">
+          Manage brand names and their details
+        </p>
+      </div>
+
+      {/* Dashboard Statistics */}
+      <div className="vendors-stats stats2-grid">
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaTag size={12} />
           </div>
-    
-              <div className="vendors-stats stats2-grid">
-                <div className="stat2-card">
-                  <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                  <FaTag size={12} />
-                  </div>
-                  <div className="stat2-info">
-                    <h3>Total Brand</h3>
-                    <div className="stat2-value">{totalBrands}</div>
-                  </div>
-                </div>
-        
-                <div className="stat2-card">
-                  <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                    <FaChartLine size={12} />
-                  </div>
-                  <div className="stat2-info">
-                   <h3>Active Brands</h3>
-<div className="stat2-value">{activeBrands}</div>
-                  </div>
-                </div>
-        
-                <div className="stat2-card">
-                  <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                  <FaCalendarAlt size={12} />
-                  </div>
-                  <div className="stat2-info">
-               <h3>InActive Brands</h3>
-<div className="stat2-value">{inactiveBrands}</div>
-                  </div>
-                </div>
-        
-              </div>
-      <div className="controls-section">
-            <div className="search-wrapper">
-              <BsSearch className="search-icon" />
-             <input
-  type="text"
-  placeholder="Search by brand name..."
-  className="search-input"
-  value={searchTerm}
-  onChange={(e) => setSearchTerm(e.target.value)}
-/>
-            </div>
-    
-     <div className="action-buttons">
+          <div className="stat2-info">
+            <h3>Total Brand</h3>
+            <div className="stat2-value">{totalBrands}</div>
+          </div>
+        </div>
 
-  <button
-    className="btn-primary"
-    onClick={handleExportExcel}
-  >
-    Export Excel
-  </button>
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaChartLine size={12} />
+          </div>
+          <div className="stat2-info">
+            <h3>Active Brands</h3>
+            <div className="stat2-value">{activeBrands}</div>
+          </div>
+        </div>
 
-  <button
-    className="btn-primary"
-    onClick={() => {
-      resetBrandForm();
-      setBrandModal(true);
-    }}
-  >
-    <BsPlus size={18} />
-    Add Brand
-  </button>
-
-</div>
-</div>
- <div className="table-wrapper">
-                             <table className="data-table" >
-                               <thead>
-                                 <tr>
-                                   <th>#</th>
-                                   <th>Name </th>
-                                 
-                                   <th>Logo</th>  
-                                    <th> Sequence</th>            
-                                   <th> Status</th>
-<th> Action</th>
-
-                                 </tr>
-                               </thead>
-               <tbody>
-                 {Loading? (
-                   Array(3).fill(0).map((_, i) => (
-                     <tr key={i}>
-                       <td colSpan="6">
-                         <div className="skeleton-row"></div>
-                       </td>
-                     </tr>
-                   ))
-                 ) : Error ? (
-                   <tr>
-                     <td colSpan="6" style={{ color: "red" }}>
-                       {Error}
-                     </td>
-                   </tr>
-                 ) :filteredBrands?.length > 0 ? (
-                   filteredBrands.map((item, index) => (
-                     <tr key={item.id}>
-                       <td>{index + 1}</td>
-               
-                      
-                        <td>
-                                           <strong>{item.name || "N/A"}</strong>
-                                           {item.id && (
-                                             <div className="category-id-wrapper">
-                                               <span className="category-id-text">
-                                                 {item.id}
-                                               </span>
-                       
-                                               <button
-                                                 type="button"
-                                                 className="copy-id-btn"
-                                                 onClick={() => {
-                                                   navigator.clipboard.writeText(item.id);
-                                                   toast.success("Category ID copied!");
-                                                 }}
-                                                 title="Copy Category ID"
-                                               >
-                                                 <FaCopy size={12} />
-                                               </button>
-                                             </div>
-                                           )}
-                                         </td>
-                       
-                     
-                       
-                    <td>
-                    {item.logo ? (
-                      <img
-                        src={item.logo}
-                        alt={item.name}
-                        width="30"
-                        height="30"
-                        style={{
-                          objectFit: "cover",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          border: "1px solid #e0e0e0",
-                        }}
-                         onClick={() => setPreviewImage(item.logo)}
-                      />
-                    ) : (
-                      <span style={{ color: "#999", fontSize: "12px" }}>No image</span>
-                    )}
-                  </td>
-                  <td>{item.sequence}</td>
-             
-         <td>
-                    <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
-                      {item.is_active ? "Active" : "Inactive"}
-                    </span>
-                    <br />
-                    <label className="switch">
-                      <input
-                        type="checkbox"
-                        checked={item.is_active}
-                          onChange={() => handleToggle(item.id, item.is_active)}
-                      />
-                      <span className="slider round"></span>
-                    </label>
-                  </td>
-
-                       <td>
-                                 <div className="action-buttons">
-          <button
-          className="action-btn edit"
-          onClick={() => {
-  setEditForm({
-    id: item.id,
-    name: item.name || "",
-    description: item.description || "",
-    is_active: item.is_active,
-    sequence:item.sequence,
-    logo: null,
-  });
-
-  setExistingLogo(item.logo || "");
-  setEditErrors({});
-  setEditModal(true);
-}}
-        >
-          <FaEdit />
-        </button>
-
-      <button
-       className="action-btn delete"
-       onClick={() => {
-         setBrandId(item.id);
-         setDeleteModal(true);
-       }}
-     >
-       <FiTrash2 />
-     </button>
-               
-               
-               
-                                 </div>
-                               </td>
-                     </tr>
-                   ))
-                 ) : (
-                   <tr>
-                     <td colSpan="6" style={{ textAlign: "center" }}>
-                       No data found
-                     </td>
-                   </tr>
-                 )}
-               </tbody>
-                             </table>                
-                   </div> 
-
-                            {BrandModal && (
-  
-    <div
-    className="prakriti-modal-overlay"
-    onClick={() => setBrandModal(false)}
-  >
-    <div
-      className="prakriti-modal"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="prakriti-modal-header">
-        <h2>Add New Brand</h2>
-        <button
-          className="close-btn"
-          onClick={() => {
-    resetBrandForm();
-    setBrandModal(false);
-  }}
-        >
-          ×
-        </button>
+        <div className="stat2-card">
+          <div
+            className="stat2-icon"
+            style={{ background: "#0D614E20", color: "#0D614E" }}
+          >
+            <FaCalendarAlt size={12} />
+          </div>
+          <div className="stat2-info">
+            <h3>Inactive Brands</h3>
+            <div className="stat2-value">{inactiveBrands}</div>
+          </div>
+        </div>
       </div>
 
-      <form onSubmit={AddProductBrand}
-      className="prakriti-form">
-        <div className="form-group">
-          <label>Brand Name <span className="required">*</span></label>
-         <input
-  type="text"
-  name="name"
-  value={BrandForm.name}
-  onChange={(e) => {
-    handleBrandChange(e);
-
-    setAddErrors((prev) => ({
-      ...prev,
-      name: "",
-    }));
-  }}
-  placeholder="Enter Brand name"
-/>
-
-{addErrors.name && (
-  <p className="error-text">{addErrors.name}</p>
-)}
-        </div>
-
-     <div className="form-group">
-          <label>Sequence</label>
-          <input
-            name="sequence"
-            value={BrandForm.sequence}
-            onChange={handleBrandChange}
-            placeholder="Enter Sequence"
-            type="number"
-          />
-        </div>      
-
-        <div className="form-group">
-          <label>Description</label>
-          <textarea
-            name="description"
-            value={BrandForm.description}
-            onChange={handleBrandChange}
-            placeholder="Enter description"
-            rows="4"
-        
-          />
-        </div>
- 
-          <div className="form-group">
-  <label>
-    Brand Logo <span className="required">*</span>
-  </label>
-
-  <div className="upload-box1">
-    <input
-      ref={brandLogoRef}
-      type="file"
-      accept="image/*"
-      id="brandLogoUpload"
-      onChange={(e) => {
-        const file = e.target.files[0];
-
-        if (file) {
-          setBrandForm((prev) => ({
-            ...prev,
-            logo: file,
-          }));
-
-          setAddErrors((prev) => ({
-            ...prev,
-            logo: "",
-          }));
-        }
-      }}
-    />
-
-    {BrandForm.logo ? (
-      <div className="banner-preview-wrapper">
-        <div className="banner-preview-left">
-          <img
-            src={URL.createObjectURL(BrandForm.logo)}
-            alt="Brand Logo"
-            className="banner-preview-image"
-          />
-        </div>
-
-        <div className="banner-preview-actions">
-          <button
-            type="button"
-            className="preview-btn"
-            onClick={() =>
-              window.open(URL.createObjectURL(BrandForm.logo), "_blank")
-            }
-          >
-            <FiEye />
-          </button>
-
-          <button
-            type="button"
-            className="delete-btn-preview"
-            onClick={() => {
-              setBrandForm((prev) => ({
-                ...prev,
-                logo: null,
-              }));
-
-              if (brandLogoRef.current) {
-                brandLogoRef.current.value = "";
-              }
-            }}
-          >
-            <FiTrash2 />
-          </button>
-        </div>
-      </div>
-    ) : (
-      <label htmlFor="brandLogoUpload" className="upload-label">
-        <div className="upload-content">
-          <span className="upload-icon">⬆</span>
-          <p>Click to upload brand logo</p>
-          <span className="upload-hint">PNG, JPG, JPEG</span>
-        </div>
-      </label>
-    )}
-  </div>
-
-  {addErrors.logo && (
-    <p className="error-text">{addErrors.logo}</p>
-  )}
-</div>
-
-
-        <div className="form-group">
-          <label>Is Active</label>
-
-          <div className="checkbox-row">
+      {/* Search, Filters and Actions */}
+      <div className="filter-category">
+        <div className="filter-controls">
+          <div className="search-wrapper">
+            <BsSearch className="search-icon" />
 
             <input
-              type="checkbox"
-              name="is_active"
-              checked={BrandForm.is_active}
-             onChange={handleBrandChange}
+              type="text"
+              placeholder="Search by brand name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
             />
 
-            
-
+            {searchTerm && (
+              <button
+                type="button"
+                className="clear-search"
+                onClick={() => setSearchTerm("")}
+                aria-label="Clear search"
+              >
+                <BsX />
+              </button>
+            )}
           </div>
-        </div>
 
+          <select
+            className="status-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            aria-label="Filter brands by status"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
 
-        <div className="modal-footer">
-         
-        <button
-  type="button"
-  className="cancel-btn"
-  onClick={() => {
-    resetBrandForm();
-    setBrandModal(false);
-  }}
->
-  Cancel
-</button>
-        
-          
-
-          <button
-  type="submit"
-  className="save-btn"
-  disabled={addLoading}
->
-  {addLoading ? "Adding Brand..." : "Add Brand"}
-</button>
-        </div>
-      </form>
-    </div>
-  </div>
-)} 
-
-{editModal && (
-  <div
-    className="prakriti-modal-overlay"
-    onClick={() => setEditModal(false)}
-  >
-    <div
-      className="prakriti-modal"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="prakriti-modal-header">
-        <h2>Edit Brand </h2>
-
-        <button
-          className="close-btn"
-          onClick={() => setEditModal(false)}
-        >
-          ×
-        </button>
-      </div>
-
-      <form onSubmit={handleUpdateBrand}
-      className='prakriti-form'>
-        <div className="form-group">
-          <label>Category Name</label>
-
-          <input
-            type="text"
-            name="name"
-            value={editForm.name}
-            onChange={handleEditChange}
-            placeholder="Enter category name"
-          />
-
-          {editErrors.name && (
-            <p className="error-text">
-              {editErrors.name}
-            </p>
+          {(searchTerm || statusFilter !== "all") && (
+            <button
+              type="button"
+              className="clear-filters-btn"
+              onClick={clearFilters}
+              title="Clear all filters"
+              aria-label="Clear all filters"
+            >
+              <FiTrash2 />
+            </button>
           )}
         </div>
 
-<div className="form-group">
-          <label>Sequence</label>
-
-          <input
-            type="number"
-            name="sequence"
-            value={editForm.sequence}
-            onChange={handleEditChange}
-            placeholder="Enter sequence"
-          />
-
-        
-        </div>
-        <div className="form-group">
-          <label>Description</label>
-
-          <textarea
-            name="description"
-            value={editForm.description}
-            onChange={handleEditChange}
-            rows="4"
-            placeholder="Enter description"
-          />
-<div className="form-group">
-  <label>Brand Logo</label>
-
-  <div className="upload-box1">
-    <input
-      ref={editLogoRef}
-      type="file"
-      accept="image/*"
-      id="editBrandLogoUpload"
-      style={{ display: "none" }}
-      onChange={(e) => {
-        const file = e.target.files[0];
-
-        if (file) {
-          setEditForm((prev) => ({
-            ...prev,
-            logo: file,
-          }));
-        }
-      }}
-    />
-
-    {(editForm.logo || existingLogo) ? (
-      <div className="banner-preview-wrapper">
-        <div className="banner-preview-left">
-          <img
-            src={
-              editForm.logo
-                ? URL.createObjectURL(editForm.logo)
-                : existingLogo
-            }
-            alt="Brand Logo"
-            className="banner-preview-image"
-          />
-        </div>
-
-        <div className="banner-preview-actions">
+        <div className="category-action-buttons">
           <button
             type="button"
-            className="preview-btn"
-            onClick={() =>
-              window.open(
-                editForm.logo
-                  ? URL.createObjectURL(editForm.logo)
-                  : existingLogo,
-                "_blank"
-              )
-            }
+            className="add-customer-btn"
+            onClick={handleExportExcel}
+            disabled={!filteredBrands.length}
           >
-            <FiEye />
+            <FaFileExcel />
+            Export Excel
           </button>
 
-          <label
-            htmlFor="editBrandLogoUpload"
-            className="preview-btn"
-            style={{ cursor: "pointer" }}
-          >
-            <FiUpload />
-          </label>
-
           <button
             type="button"
-            className="delete-btn-preview"
+            className="add-customer-btn"
             onClick={() => {
-              setEditForm((prev) => ({
-                ...prev,
-                logo: null,
-              }));
-
-              setExistingLogo("");
-
-              if (editLogoRef.current) {
-                editLogoRef.current.value = "";
-              }
+              resetBrandForm();
+              setBrandModal(true);
             }}
           >
-            <FiTrash2 />
+            <BsPlus size={18} />
+            Add Brand
           </button>
         </div>
       </div>
-    ) : (
-      <label htmlFor="editBrandLogoUpload" className="upload-label">
-        <div className="upload-content">
-          <span className="upload-icon">⬆</span>
-          <p>Click to upload brand logo</p>
-        </div>
-      </label>
-    )}
-  </div>
-</div>
-       
-        </div>
 
-        <div className="form-group">
-              <label>Is Active</label>
-            <div className="checkbox-row">
-                 
+      {/* Brands Table */}
+      <div className="table-wrapper">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Logo</th>
+              <th>Sequence</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
 
-          <input
-            type="checkbox"
-            name="is_active"
-            checked={editForm.is_active}
-            onChange={handleEditChange}
-          />
-                 </div>
-       
-        </div>
+          <tbody>
+            {Loading ? (
+              Array(3)
+                .fill(0)
+                .map((_, index) => (
+                  <tr key={index}>
+                    <td colSpan="6">
+                      <div className="skeleton-row" />
+                    </td>
+                  </tr>
+                ))
+            ) : Error ? (
+              <tr>
+                <td colSpan="6" style={{ color: "red" }}>
+                  {Error}
+                </td>
+              </tr>
+            ) : filteredBrands.length > 0 ? (
+              filteredBrands.map((item, index) => {
+                const active = isActiveBrand(item);
 
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="cancel-btn"
-            onClick={() => setEditModal(false)}
-          >
-            Cancel
-          </button>
+                return (
+                  <tr key={item.id}>
+                    <td>{index + 1}</td>
 
-          <button
-            type="submit"
-            className="save-btn"
-          >
-            {UpdateLoading ? "Updating Brand..." : "Update Brand"}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
+                    <td>
+                      <strong>{item.name || "N/A"}</strong>
 
-{deleteModal && (
-  <div
-    className="modal"
-    onClick={() => setDeleteModal(false)}
-  >
-    <div
-      className="modal-content"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h3>Are you sure you want to delete this category?</h3>
+                      {item.id && (
+                        <div className="category-id-wrapper">
+                          <span className="category-id-text">
+                            {item.id}
+                          </span>
 
-      <div className="form-buttons">
-        <button
-          className="otp-btn verify-btn"
+                          <button
+                            type="button"
+                            className="copy-id-btn"
+                            title="Copy Brand ID"
+                            onClick={() => {
+                              navigator.clipboard
+                                .writeText(item.id)
+                                .then(() => toast.success("Brand ID copied!"))
+                                .catch(() => toast.error("Could not copy ID"));
+                            }}
+                          >
+                            <FaCopy size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+
+                    <td>
+                      {item.logo ? (
+                        <img
+                          src={item.logo}
+                          alt={item.name || "Brand logo"}
+                          width="30"
+                          height="30"
+                          style={{
+                            objectFit: "cover",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            border: "1px solid #e0e0e0",
+                          }}
+                          onClick={() => setPreviewImage(item.logo)}
+                        />
+                      ) : (
+                        <span style={{ color: "#999", fontSize: "12px" }}>
+                          No image
+                        </span>
+                      )}
+                    </td>
+
+                    <td>{item.sequence ?? "—"}</td>
+
+                    <td>
+                      <span
+                        className={`status-badge ${
+                          active ? "status-active" : "status-inactive"
+                        }`}
+                      >
+                        {active ? "Active" : "Inactive"}
+                      </span>
+
+                      <br />
+
+                      <label className="switch">
+                        <input
+                          type="checkbox"
+                          checked={active}
+                          onChange={() => handleToggle(item.id, active)}
+                        />
+                        <span className="slider round" />
+                      </label>
+                    </td>
+
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          type="button"
+                          className="action-btn edit"
+                          title="Edit brand"
+                          onClick={() => {
+                            setEditForm({
+                              id: item.id,
+                              name: item.name || "",
+                              description: item.description || "",
+                              is_active: active,
+                              sequence: item.sequence ?? "",
+                              logo: null,
+                            });
+
+                            setExistingLogo(item.logo || "");
+                            setEditErrors({});
+                            setEditModal(true);
+                          }}
+                        >
+                          <FaEdit />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="action-btn delete"
+                          title="Delete brand"
+                          onClick={() => {
+                            setBrandId(item.id);
+                            setDeleteModal(true);
+                          }}
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="6" style={{ textAlign: "center" }}>
+                  No brands found for the selected search or status.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Add Brand Modal */}
+      {BrandModal && (
+        <div
+          className="prakriti-modal-overlay"
           onClick={() => {
-            handleDelete(BrandId);
+            resetBrandForm();
+            setBrandModal(false);
+          }}
+        >
+          <div
+            className="prakriti-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="prakriti-modal-header">
+              <h2>Add New Brand</h2>
+
+              <button
+                type="button"
+                className="close-btn"
+                onClick={() => {
+                  resetBrandForm();
+                  setBrandModal(false);
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={AddProductBrand} className="prakriti-form">
+              <div className="form-group">
+                <label>
+                  Brand Name <span className="required">*</span>
+                </label>
+
+                <input
+                  type="text"
+                  name="name"
+                  value={BrandForm.name}
+                  onChange={(e) => {
+                    handleBrandChange(e);
+                    setAddErrors((prev) => ({ ...prev, name: "" }));
+                  }}
+                  placeholder="Enter brand name"
+                />
+
+                {addErrors.name && (
+                  <p className="error-text">{addErrors.name}</p>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Sequence</label>
+
+                <input
+                  type="number"
+                  name="sequence"
+                  value={BrandForm.sequence}
+                  onChange={handleBrandChange}
+                  placeholder="Enter sequence"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Description</label>
+
+                <textarea
+                  name="description"
+                  value={BrandForm.description}
+                  onChange={handleBrandChange}
+                  placeholder="Enter description"
+                  rows="4"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Brand Logo <span className="required">*</span>
+                </label>
+
+                <div className="upload-box1">
+                  <input
+                    ref={brandLogoRef}
+                    type="file"
+                    accept="image/*"
+                    id="brandLogoUpload"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+
+                      if (file) {
+                        setBrandForm((prev) => ({
+                          ...prev,
+                          logo: file,
+                        }));
+
+                        setAddErrors((prev) => ({
+                          ...prev,
+                          logo: "",
+                        }));
+                      }
+                    }}
+                  />
+
+                  {BrandForm.logo ? (
+                    <div className="banner-preview-wrapper">
+                      <div className="banner-preview-left">
+                        <img
+                          src={URL.createObjectURL(BrandForm.logo)}
+                          alt="Brand logo"
+                          className="banner-preview-image"
+                        />
+                      </div>
+
+                      <div className="banner-preview-actions">
+                        <button
+                          type="button"
+                          className="preview-btn"
+                          onClick={() =>
+                            window.open(
+                              URL.createObjectURL(BrandForm.logo),
+                              "_blank"
+                            )
+                          }
+                        >
+                          <FiEye />
+                        </button>
+
+                        <button
+                          type="button"
+                          className="delete-btn-preview"
+                          onClick={() => {
+                            setBrandForm((prev) => ({
+                              ...prev,
+                              logo: null,
+                            }));
+
+                            if (brandLogoRef.current) {
+                              brandLogoRef.current.value = "";
+                            }
+                          }}
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="brandLogoUpload"
+                      className="upload-label"
+                    >
+                      <div className="upload-content">
+                        <span className="upload-icon">⬆</span>
+                        <p>Click to upload brand logo</p>
+                        <span className="upload-hint">PNG, JPG, JPEG</span>
+                      </div>
+                    </label>
+                  )}
+                </div>
+
+                {addErrors.logo && (
+                  <p className="error-text">{addErrors.logo}</p>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Is Active</label>
+
+                <div className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={BrandForm.is_active}
+                    onChange={handleBrandChange}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => {
+                    resetBrandForm();
+                    setBrandModal(false);
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="save-btn"
+                  disabled={addLoading}
+                >
+                  {addLoading ? "Adding Brand..." : "Add Brand"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Brand Modal */}
+      {editModal && (
+        <div
+          className="prakriti-modal-overlay"
+          onClick={() => setEditModal(false)}
+        >
+          <div
+            className="prakriti-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="prakriti-modal-header">
+              <h2>Edit Brand</h2>
+
+              <button
+                type="button"
+                className="close-btn"
+                onClick={() => setEditModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateBrand} className="prakriti-form">
+              <div className="form-group">
+                <label>Brand Name</label>
+
+                <input
+                  type="text"
+                  name="name"
+                  value={editForm.name}
+                  onChange={handleEditChange}
+                  placeholder="Enter brand name"
+                />
+
+                {editErrors.name && (
+                  <p className="error-text">{editErrors.name}</p>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Sequence</label>
+
+                <input
+                  type="number"
+                  name="sequence"
+                  value={editForm.sequence}
+                  onChange={handleEditChange}
+                  placeholder="Enter sequence"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Description</label>
+
+                <textarea
+                  name="description"
+                  value={editForm.description}
+                  onChange={handleEditChange}
+                  rows="4"
+                  placeholder="Enter description"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Brand Logo</label>
+
+                <div className="upload-box1">
+                  <input
+                    ref={editLogoRef}
+                    type="file"
+                    accept="image/*"
+                    id="editBrandLogoUpload"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+
+                      if (file) {
+                        setEditForm((prev) => ({
+                          ...prev,
+                          logo: file,
+                        }));
+                      }
+                    }}
+                  />
+
+                  {editForm.logo || existingLogo ? (
+                    <div className="banner-preview-wrapper">
+                      <div className="banner-preview-left">
+                        <img
+                          src={
+                            editForm.logo
+                              ? URL.createObjectURL(editForm.logo)
+                              : existingLogo
+                          }
+                          alt="Brand logo"
+                          className="banner-preview-image"
+                        />
+                      </div>
+
+                      <div className="banner-preview-actions">
+                        <button
+                          type="button"
+                          className="preview-btn"
+                          onClick={() =>
+                            window.open(
+                              editForm.logo
+                                ? URL.createObjectURL(editForm.logo)
+                                : existingLogo,
+                              "_blank"
+                            )
+                          }
+                        >
+                          <FiEye />
+                        </button>
+
+                        <label
+                          htmlFor="editBrandLogoUpload"
+                          className="preview-btn"
+                          style={{ cursor: "pointer" }}
+                        >
+                          <FiUpload />
+                        </label>
+
+                        <button
+                          type="button"
+                          className="delete-btn-preview"
+                          onClick={() => {
+                            setEditForm((prev) => ({
+                              ...prev,
+                              logo: null,
+                            }));
+
+                            setExistingLogo("");
+
+                            if (editLogoRef.current) {
+                              editLogoRef.current.value = "";
+                            }
+                          }}
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="editBrandLogoUpload"
+                      className="upload-label"
+                    >
+                      <div className="upload-content">
+                        <span className="upload-icon">⬆</span>
+                        <p>Click to upload brand logo</p>
+                      </div>
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Is Active</label>
+
+                <div className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={editForm.is_active}
+                    onChange={handleEditChange}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => setEditModal(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="save-btn"
+                  disabled={UpdateLoading}
+                >
+                  {UpdateLoading ? "Updating Brand..." : "Update Brand"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal && (
+        <div
+          className="modal"
+          onClick={() => {
             setDeleteModal(false);
             setBrandId(null);
           }}
         >
-          Yes
-        </button>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Are you sure you want to delete this brand?</h3>
 
-        <button
-          onClick={() => {
-            setDeleteModal(false);
-            setBrandId(null);
-          }}
-        >
-          No
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-{previewImage && (
-  <div
-    className="prakriti-modal-overlay"
-    onClick={() => setPreviewImage("")}
-  >
-    <div
-      className="prakriti-modal"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="prakriti-modal-header">
-        <h2>Image Preview</h2>
+            <div className="form-buttons">
+              <button
+                type="button"
+                className="otp-btn verify-btn"
+                onClick={async () => {
+                  const id = BrandId;
 
-        <button
-          className="modal-close-btn"
+                  setDeleteModal(false);
+                  setBrandId(null);
+
+                  if (id) {
+                    await handleDelete(id);
+                  }
+                }}
+              >
+                Yes
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteModal(false);
+                  setBrandId(null);
+                }}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logo Preview Modal */}
+      {previewImage && (
+        <div
+          className="prakriti-modal-overlay"
           onClick={() => setPreviewImage("")}
         >
-          <FaTimes />
-        </button>
-      </div>
+          <div
+            className="prakriti-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="prakriti-modal-header">
+              <h2>Image Preview</h2>
 
-      <div style={{ textAlign: "center", padding: "20px" }}>
-        <img
-          src={previewImage}
-          alt="Brand Preview"
-          style={{
-            display: "block",
-            maxWidth: "100%",
-            maxHeight: "80vh",
-            width: "auto",
-            height: "auto",
-            margin: "0 auto",
-            objectFit: "contain",
-            borderRadius: "10px",
-          }}
-        />
-      </div>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setPreviewImage("")}
+              >
+                <FaTimes />
+              </button>
+            </div>
 
-      <div className="modal-footer">
-        <button
-          className="cancel-btn"
-          onClick={() => setPreviewImage("")}
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              <img
+                src={previewImage}
+                alt="Brand preview"
+                style={{
+                  display: "block",
+                  maxWidth: "100%",
+                  maxHeight: "80vh",
+                  width: "auto",
+                  height: "auto",
+                  margin: "0 auto",
+                  objectFit: "contain",
+                  borderRadius: "10px",
+                }}
+              />
+            </div>
 
- <ToastContainer position="top-center" autoClose={2000} />
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={() => setPreviewImage("")}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-</>
-  )
-}
+      <ToastContainer position="top-center" autoClose={2000} />
+    </>
+  );
+};
 
-export default Brand
+export default Brand;

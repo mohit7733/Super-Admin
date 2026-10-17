@@ -95,7 +95,7 @@ useEffect(() => {
                 { key: 'basic', label: 'Overview' },
                 { key: 'Documents', label: 'Documents' },
                 { key: 'bank', label: 'Bank Details' },
-                { key: 'activity', label: 'Activity Log' },
+                // { key: 'activity', label: 'Activity Log' },
             ];
 
 const handleVendorAction = async ( vendorId,status, reason = "") => {
@@ -428,14 +428,14 @@ const handleVendorReasonSubmit = async () => {
     <div className="info-row-vendor">
       <span className="label">Verified</span>
       <span className="value">
-        {vendorData?.is_verified ? "Yes" : "No"}
+        {vendorData?.status ? "Yes" : "No"}
       </span>
     </div>
 
     <div className="info-row-vendor">
       <span className="label">Active</span>
       <span className="value">
-        {vendorData?.is_active ? "Yes" : "No"}
+        {vendorData?.status ? "Yes" : "No"}
       </span>
     </div>
 
@@ -443,8 +443,8 @@ const handleVendorReasonSubmit = async () => {
     <div className="info-row-vendor">
       <span className="label">Verified At</span>
       <span className="value">
-        {vendorData?.verified_at
-          ? new Date(vendorData.verified_at).toLocaleDateString("en-GB")
+        {vendorData?.approved_at
+          ? new Date(vendorData.approved_at).toLocaleDateString("en-GB")
           : "-"}
       </span>
     </div>
@@ -617,7 +617,7 @@ const handleVendorReasonSubmit = async () => {
         <div className="footer-info">
           <span className="info-icon"><FiInfo size={22} /></span>
           <div>
-            <h4>Review the doctor's profile and take appropriate action.</h4>
+            <h4>Review the vendor's profile and take appropriate action.</h4>
             <p>Please verify all the details before approving.</p>
           </div>
         </div>

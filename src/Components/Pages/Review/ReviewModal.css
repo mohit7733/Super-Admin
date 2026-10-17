@@ -1,6 +1,4 @@
-/* =========================================
-   OVERLAY
-========================================= */
+
 
 .reviewDrawerOverlay {
   position: fixed;
@@ -42,7 +40,7 @@
 ========================================= */
 
 .reviewDrawer {
-  width: 720px;
+  width: 450px;
   max-width: 95vw;
   height: 100vh;
 
@@ -52,7 +50,7 @@
 
   box-shadow: -8px 0 30px rgba(0, 0, 0, 0.12);
 
-  padding: 28px;
+  padding: 10px;
 
   animation: reviewDrawerSlide 0.25s ease;
 }
@@ -176,9 +174,8 @@
 ========================================= */
 
 .reviewTopGrid {
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
+  display:flex;
+  flex-direction: column;
 
   gap: 16px;
 

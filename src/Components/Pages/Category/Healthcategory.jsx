@@ -522,9 +522,9 @@ const Healthcategory = () => {
 
     let newErrors = {};
 
-    if (!categoryForm.service_category_id) {
-      newErrors.service_category_id = "Please select a service category";
-    }
+    // if (!categoryForm.service_category_id) {
+    //   newErrors.service_category_id = "Please select a service category";
+    // }
 
     if (!categoryForm.name.trim()) {
       newErrors.name = "Health category name is required";

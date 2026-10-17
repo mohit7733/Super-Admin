@@ -494,9 +494,7 @@ const getSystemSku = (variant) => {
 </form>
 
 
-      {/* =====================================================
-          PRODUCT LIST
-      ====================================================== */}
+      
 
       <div className="mainproduct-list-container">
 
