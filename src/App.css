@@ -11821,3 +11821,54 @@ flex-direction:column;
     font-size: 12px;
   }
 }
+
+.controls-section {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.status-filter-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 190px;
+}
+
+.status-filter-wrapper label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.vendor-status-filter {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 36px 0 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #344054;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.vendor-status-filter:focus {
+  border-color: #0D614E;
+  box-shadow: 0 0 0 3px #0D614E1a;
+}
+
+@media (max-width: 768px) {
+  .controls-section {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .status-filter-wrapper {
+    width: 100%;
+  }
+}

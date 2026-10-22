@@ -235,6 +235,7 @@ const fetchTaxClasses = async () => {
     }
   };
 
+
 const handleVariantAction = async (
   variantId,
   action,
@@ -243,7 +244,11 @@ const handleVariantAction = async (
   try {
     const token = sessionStorage.getItem("superadmin_token");
 
-    // Validate rejection/suspension reason
+    if (!variantId) {
+      toast.error("Variant ID is missing");
+      return;
+    }
+
     if (
       (action === "reject" || action === "suspend") &&
       !reasonText.trim()
@@ -252,9 +257,8 @@ const handleVariantAction = async (
       return;
     }
 
-    // Prepare API payload
+    // Payload mein variant_id nahi bhejna hai
     const payload = {
-      variant_id: variantId,
       status:
         action === "approve"
           ? "approved"
@@ -263,10 +267,9 @@ const handleVariantAction = async (
           : "suspended",
     };
 
-    // Add HSN Code and Tax Class when approving
     if (action === "approve") {
-      if (!hsnCode.trim()) {
-        toast.error("Please enter HSN Code");
+      if (!/^\d{4,8}$/.test(hsnCode.trim())) {
+        toast.error("Please enter a valid HSN Code");
         return;
       }
 
@@ -276,14 +279,14 @@ const handleVariantAction = async (
       }
 
       payload.hsn_code = hsnCode.trim();
-      payload.tax_class = taxClass;
+      payload.gst_tax_class_id = taxClass;
     }
 
-    // Add reason for rejection or suspension
     if (action === "reject" || action === "suspend") {
       payload.reason = reasonText.trim();
     }
 
+    // Variant ID endpoint URL mein jayegi
     const response = await fetch(
       `${BASE_URL}/vendors/admin/variant/${variantId}/review-status/`,
       {
@@ -308,70 +311,45 @@ const handleVariantAction = async (
 
     const newStatus = payload.status;
 
-    // Update variants list
-    setVariants((prev) =>
-      prev.map((item) =>
-        item.id === variantId
-          ? {
-              ...item,
-              approval_status: newStatus,
-              hsn_code:
-                action === "approve"
-                  ? hsnCode.trim()
-                  : item.hsn_code,
-              tax_class:
-                action === "approve"
-                  ? taxClass
-                  : item.tax_class,
-              reason:
-                action === "reject" || action === "suspend"
-                  ? reasonText.trim()
-                  : item.reason,
-            }
-          : item
-      )
-    );
-
-    // Update selected variant
-    setSelectedVariant((prev) =>
-      prev?.id === variantId
+    const updatedVariant = (item) =>
+      item.id === variantId
         ? {
-            ...prev,
+            ...item,
             approval_status: newStatus,
+            status: newStatus,
             hsn_code:
               action === "approve"
                 ? hsnCode.trim()
-                : prev.hsn_code,
+                : item.hsn_code,
             tax_class:
               action === "approve"
                 ? taxClass
-                : prev.tax_class,
+                : item.tax_class,
             reason:
               action === "reject" || action === "suspend"
                 ? reasonText.trim()
-                : prev.reason,
+                : item.reason,
           }
-        : prev
+        : item;
+
+    setVariants((prev) => prev.map(updatedVariant));
+
+    setSelectedVariant((prev) =>
+      prev ? updatedVariant(prev) : prev
     );
 
-    toast.success(
-      `Variant ${
-        action === "approve"
-          ? "approved"
-          : action === "reject"
-          ? "rejected"
-          : "suspended"
-      } successfully`
-    );
-
-    // Close modal and reset fields
-    setShowActionModal(false);
     setSelectedVariantForAction(null);
+    setShowActionModal(false);
     setHsnCode("");
     setTaxClass("");
+    setHsnError("");
+    setTaxClassError("");
     setReason("");
     setOpenMenuId(null);
 
+    toast.success(
+      `Variant ${newStatus} successfully`
+    );
   } catch (error) {
     console.error("Variant action error:", error);
     toast.error(
@@ -379,6 +357,7 @@ const handleVariantAction = async (
     );
   }
 };
+
 
   const handleBulkAction = async (action) => {
     if (selectedVariants.length === 0) {

@@ -105,6 +105,7 @@ import EditPackage from './Components/Pages/Packages/EditPackage';
 import ReturnRequests from './Components/Pages/Order/ReturnRequests';
 import Customerpurchase from './Components/Pages/Packages/Customerpurchase';
 import AppReview from './Components/Pages/Review/AppReview';
+import StockManagement from './Components/Pages/Product/StockManagement';
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -579,6 +580,16 @@ function App() {
             <ProtectedRoute permission="view_yoga_sessions">
               <Layout>
                 <YogaSession />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+            <Route
+          path="/Stock/Management"
+          element={
+            <ProtectedRoute permission="manage__stock">
+              <Layout>
+                <StockManagement />
               </Layout>
             </ProtectedRoute>
           }

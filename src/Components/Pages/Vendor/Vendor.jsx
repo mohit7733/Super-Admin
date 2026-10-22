@@ -94,59 +94,84 @@ const Vendor = () => {
   const totalPages = Math.ceil(totalCount / pageSize);
   const [approveModal, setApproveModal] = useState(false);
 
-
+const [statusFilter, setStatusFilter] = useState("");
   const navigate = useNavigate();
   const [isApproving, setIsApproving] = useState(false);
 
 
 
- const getVendorList = async (page = 1,search = searchTerm) => {
-    const token = sessionStorage.getItem("superadmin_token");
 
-    if (!token) {
+const getVendorList = async (
+  page = 1,
+  search = searchTerm,
+  status = statusFilter
+) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError(null);
+
+    const params = new URLSearchParams();
+
+    params.append("page", page);
+    params.append("search", search.trim());
+
+    // Send status only when a status is selected
+    if (status) {
+      params.append("status", status);
+    }
+
+    const response = await fetch(
+      `${BASE_URL}/vendors/admin/vendors-list/?${params.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
     }
 
-    try {
-      const response = await fetch(`${BASE_URL}/vendors/admin/vendors-list/?page=${page}&search=${encodeURIComponent(search)}`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-           "ngrok-skip-browser-warning": "true",
-        },
-      });
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
-
-
-      const data = await response.json();
-
-      setVendorData(data.data.results);
-      setTotalCount(data.data.count);
-      setPreviousPage(data.data.previous);
-      setNextPage(data.data.next);
-      setcurentpage(page)
-      setVendorStats(data.data.total_counts);
-
-
-
-    } catch (err) {
-      console.error(err.message);
-      setError("Something went wrong while fetching vendor data.");
-      toast.error("Failed to fetch vendor data");
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error("Failed to fetch vendors");
     }
-  };
+
+    const data = await response.json();
+    const result = data?.data;
+
+    setVendorData(result?.results || []);
+    setTotalCount(result?.count || 0);
+    setPreviousPage(result?.previous || null);
+    setNextPage(result?.next || null);
+    setcurentpage(page);
+
+    if (result?.total_counts) {
+      setVendorStats(result.total_counts);
+    }
+  } catch (err) {
+    console.error("Vendor list error:", err);
+    setError("Something went wrong while fetching vendor data.");
+    toast.error("Failed to fetch vendor data");
+  } finally {
+    setLoading(false);
+  }
+};
+
  
   const handleApproveClick = (vendor) => {
   setSelectedVendorId(vendor.id);
@@ -154,20 +179,17 @@ const Vendor = () => {
   setApproveModal(true);
 };
 
- useEffect(() => {
-  const delay = setTimeout(() => {
-    if (searchTerm.trim() === "") {
-      getVendorList(1, "");
-      return;
-    }
 
-    if (searchTerm.trim().length >= 2) {
-      getVendorList(1, searchTerm);
+useEffect(() => {
+  const delay = setTimeout(() => {
+    if (searchTerm.trim() === "" || searchTerm.trim().length >= 2) {
+      getVendorList(1, searchTerm, statusFilter);
     }
-  }, 1000);
+  }, 500);
 
   return () => clearTimeout(delay);
-}, [searchTerm]);
+}, [searchTerm, statusFilter]);
+
 
 
   const handleDocumentUpload = (e) => {
@@ -583,34 +605,42 @@ console.log("Vendor list fetched");
           </div>
         </div>
       </div>
-      <div className="controls-section">
-        <div className="search-wrapper">
-          <BsSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search vendors by storename..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
+     <div className="controls-section">
+  <div className="search-wrapper">
+    <BsSearch className="search-icon" />
 
-        <div className="action-buttons">
-          {/* <button
-            className="btn-primary"
-            onClick={() => {
-              setVendorverifiedModal(true);
-              setUploadedDocs([]);
-              setEditingId(null);
-              setForm(initialFormState);
-            }}
-          >
-            <BsPlus size={18} />
-            Add Vendor
-          </button> */}
+    <input
+      type="text"
+      placeholder="Search vendors by store name..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="search-input"
+    />
+  </div>
 
-        </div>
-      </div>
+ 
+<div className="action-buttons">
+   <select
+    className="status-filter"
+    value={statusFilter}
+    onChange={(e) => {
+      setStatusFilter(e.target.value);
+      setcurentpage(1);
+    }}
+  >
+    <option value="">All Statuses</option>
+    <option value="pending">Pending</option>
+    <option value="approved">Approved</option>
+    <option value="rejected">Rejected</option>
+    <option value="suspended">Suspended</option>
+  </select>
+</div>
+
+ 
+
+
+ 
+</div>
      <div className="table-wrapper">
   <table className="data-table" ref={bulktableRef}>
     <thead>
@@ -767,7 +797,7 @@ console.log("Vendor list fetched");
   {totalPages > 1 && (
     <div className="pagination">
       <button
-        onClick={() => getVendorList(currentpage - 1, searchTerm)}
+        onClick={() => getVendorList(currentpage - 1, searchTerm,statusFilter)}
         disabled={!previousPage}
       >
         Prev
@@ -776,7 +806,7 @@ console.log("Vendor list fetched");
       {pages.map((page) => (
         <button
           key={page}
-          onClick={() => getVendorList(page, searchTerm)}
+          onClick={() => getVendorList(page, searchTerm,statusFilter)}
           style={{
             fontWeight: currentpage === page ? "bold" : "normal",
             background:

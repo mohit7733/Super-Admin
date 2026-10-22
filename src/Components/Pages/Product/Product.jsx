@@ -140,7 +140,7 @@ const handleVariantStatusToggle = async (variant) => {
     }
 
     if (status) {
-      params.set("variant_status", status);
+      params.set("status", status);
     }
 
     const response = await fetch(
@@ -225,10 +225,6 @@ useEffect(() => {
     );
   };
 
-  // =========================================================
-  // VARIANTS
-  // =========================================================
-
   const getVariants = (product) => {
     if (Array.isArray(product?.variants)) {
       return product.variants;
@@ -251,10 +247,7 @@ useEffect(() => {
     return product?.variant_count ?? product?.variants_count ?? 0;
   };
 
-  // =========================================================
-  // VARIANT IMAGE
-  // =========================================================
-
+  
   const getVariantImage = (variant, product) => {
     return (
       variant?.image_url ||
@@ -707,7 +700,7 @@ const getSystemSku = (variant) => {
 
                   </div>
 
-                  {/* DATES */}
+                 
 
                   <div className="mainproduct-date-section">
 

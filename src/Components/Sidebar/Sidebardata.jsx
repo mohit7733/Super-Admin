@@ -447,7 +447,7 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
       {
         title: "Stock Management",
         path: "/Stock/Management",
-        permission: "manage_brand_name",
+        permission: "manage__stock",
         icon: <MdBrandingWatermark size={18}
         
         

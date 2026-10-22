@@ -1,0 +1,92 @@
+
+.stock-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 15px 18px;
+  border: 1px solid #e5ece8;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(27, 60, 47, 0.04);
+}
+
+.stock-pagination-info {
+  color: #75847e;
+  font-size: 13px;
+}
+
+.stock-pagination-info strong {
+  color: #234638;
+  font-weight: 700;
+}
+
+.stock-pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.stock-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #dce6e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #456354;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stock-page-btn:hover:not(:disabled) {
+  border-color: #0d614e;
+  background: #edf7f1;
+  color: #0d614e;
+}
+
+.stock-page-btn.active {
+  border-color: #0d614e;
+  background: #0d614e;
+  color: #fff;
+}
+
+.stock-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stock-page-btn.stock-prev-next {
+  min-width: 82px;
+}
+
+.stock-page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  color: #8a9890;
+}
+
+@media (max-width: 600px) {
+  .stock-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 14px;
+  }
+
+  .stock-pagination-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

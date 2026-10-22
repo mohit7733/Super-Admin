@@ -322,6 +322,20 @@ const handleRollbackPolicy = async (id) => {
       .replace(/_/g, " ")
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
+  const filteredPolicies = policyData.filter((item) => {
+  const search = searchTerm.trim().toLowerCase();
+
+  if (!search) return true;
+
+  return (
+    (item.name || "").toLowerCase().includes(search) ||
+    (item.code || "").toLowerCase().includes(search) ||
+    (item.policy_type || "").toLowerCase().includes(search) ||
+    (item.category || "").toLowerCase().includes(search) ||
+    (item.status || "").toLowerCase().includes(search) ||
+    String(item.version || "").toLowerCase().includes(search)
+  );
+});
 
   const formatDate = (date) => {
     if (!date) return "-";
@@ -484,40 +498,28 @@ const policyStats = {
 
 </div>
       
-            
-            <div className="filter-category">
-              <div className="filter-controls">
-                <div className="search-wrapper">
-                  <FaSearch className="search-icon" />
-                  <input
-                    type="text"
-                    placeholder="Search by Policy Name..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="search-input"
-                  />
-                  {searchTerm && (
-                    <button className="clear-search" onClick={() => setSearchTerm("")}>
-                      <FaTimes />
-                    </button>
-                  )}
-                </div>
-      
-              
-      
-              </div>
-              <div className="category-action-buttons">
-       
-           <button
-  type="button"
-   className="add-customer-btn"
-  onClick={() => navigate("/AddPolicy")}
->
-  <FaPlus />
-  Create Policy
-</button>
-              </div>
-            </div>
+         <div className="search-wrapper">
+  <FaSearch className="search-icon" />
+
+  <input
+    type="text"
+    placeholder="Search by name, code, type, category or status..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="search-input"
+  />
+
+  {searchTerm && (
+    <button
+      type="button"
+      className="clear-search"
+      onClick={() => setSearchTerm("")}
+      aria-label="Clear search"
+    >
+      <FaTimes />
+    </button>
+  )}
+</div>
 
   
       <div className="table-wrapper policy-table-wrapper">
@@ -556,8 +558,8 @@ const policyStats = {
                   {errorPolicy}
                 </td>
               </tr>
-            ) : policyData?.length > 0 ? (
-              policyData.map((item, index) => (
+            ) : filteredPolicies?.length > 0 ? (
+              filteredPolicies.map((item, index) => (
                 <tr key={item.id}>
                  
                   <td>{index + 1}</td>
@@ -715,15 +717,16 @@ const policyStats = {
                 </tr>
               ))
             ) : (
-              <tr>
-                <td
-                  colSpan="9"
-                  className="policy-empty"
-                >
-                  <FaFileAlt />
-                  <span>No policies found</span>
-                </td>
-              </tr>
+             <tr>
+  <td colSpan="9" className="policy-empty">
+    <FaFileAlt />
+    <span>
+      {searchTerm.trim()
+        ? `No policies found matching "${searchTerm}"`
+        : "No policies found"}
+    </span>
+  </td>
+</tr>
             )}
           </tbody>
         </table>
