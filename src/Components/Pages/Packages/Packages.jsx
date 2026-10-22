@@ -874,7 +874,7 @@ const handleDeletePackage = async () => {
           
           <button
     type="button"
-    className="package-add-button"
+   className="add-customer-btn"
     onClick={() => navigate("/packages/add")}
   >
     <span>+</span>

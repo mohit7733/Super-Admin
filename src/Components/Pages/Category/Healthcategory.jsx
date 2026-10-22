@@ -1478,6 +1478,7 @@ const removeSymptomField = (index) => {
                     }}
                   />
                   {(EditImage || editForm.image_url) ? (
+
                     <div className="banner-preview-wrapper">
                       <div className="banner-preview-left">
                         <img
@@ -1501,7 +1502,7 @@ const removeSymptomField = (index) => {
                                 : editForm.image_url,
                               "_blank"
                             )
-                          }
+                           }
                         >
                           <FiEye />
                         </button>

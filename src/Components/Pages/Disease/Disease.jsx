@@ -49,6 +49,7 @@ const Disease = () => {
   const [StatusModal, setStatusModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [HealthCategoryFilter, setHealthCategoryFilter] = useState("all");
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -96,30 +97,47 @@ const Disease = () => {
   };
 
  
-  const filterData = (data, search, status) => {
-    if (!data) return [];
 
-    let filtered = [...data];
+const filterData = (data, search, status, healthCategory) => {
+  if (!data) return [];
 
-    if (search.trim()) {
-      const term = search.toLowerCase().trim();
-      filtered = filtered.filter(
-        (item) =>
-          item.name?.toLowerCase().includes(term) ||
-          item.code?.toLowerCase().includes(term) ||
-          item.prakriti?.toLowerCase().includes(term) ||
-          item.health_category_name?.toLowerCase().includes(term)
-      );
-    }
+  let filtered = [...data];
 
-    if (status === "active") {
-      filtered = filtered.filter((item) => item.is_active === true);
-    } else if (status === "inactive") {
-      filtered = filtered.filter((item) => item.is_active === false);
-    }
+  // 1. Search filter
+  if (search.trim()) {
+    const term = search.toLowerCase().trim();
 
-    return filtered;
-  };
+    filtered = filtered.filter(
+      (item) =>
+        item.name?.toLowerCase().includes(term) ||
+        item.code?.toLowerCase().includes(term) ||
+        item.prakriti?.toLowerCase().includes(term) ||
+        item.health_category_name?.toLowerCase().includes(term)
+    );
+  }
+
+  // 2. Active / Inactive filter
+  if (status === "active") {
+    filtered = filtered.filter(
+      (item) => item.is_active === true
+    );
+  } else if (status === "inactive") {
+    filtered = filtered.filter(
+      (item) => item.is_active === false
+    );
+  }
+
+  // 3. Health Category filter
+  if (healthCategory !== "all") {
+    filtered = filtered.filter(
+      (item) =>
+        String(item.health_category_id) === String(healthCategory)
+    );
+  }
+
+  return filtered;
+};
+
 
   const openEditModal = (item) => {
     setEditDiseaseId(item.id);
@@ -445,9 +463,16 @@ const validateDiseaseForm = () => {
     getDiseaseList();
   }, []);
 
-  useEffect(() => {
-    setFilteredData(filterData(Data, searchTerm, statusFilter));
-  }, [Data, searchTerm, statusFilter]);
+ useEffect(() => {
+  setFilteredData(
+    filterData(
+      Data,
+      searchTerm,
+      statusFilter,
+      HealthCategoryFilter
+    )
+  );
+}, [Data, searchTerm, statusFilter, HealthCategoryFilter]);
 
   const addSymptomField = () => {
     setFormData((prev) => ({
@@ -1094,6 +1119,7 @@ const exportToExcel = async () => {
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
+    setHealthCategoryFilter("all")
   };
 
   return (
@@ -1142,7 +1168,7 @@ const exportToExcel = async () => {
             <BsSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by name, code, prakriti or category..."
+              placeholder="Search by name, code, prakriti or health category.."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -1163,8 +1189,24 @@ const exportToExcel = async () => {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
+         
+<select
+  className="status-filter-select"
+  value={HealthCategoryFilter}
+  onChange={(e) => setHealthCategoryFilter(e.target.value)}
+>
+  <option value="all">All Health Categories</option>
 
-          {(searchTerm || statusFilter !== "all") && (
+  {HealthCategoryData.map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name}
+    </option>
+  ))}
+</select>
+
+
+          {(searchTerm || statusFilter !== "all" ||
+  HealthCategoryFilter !== "all") && (
             <button className="clear-filters-btn" onClick={clearFilters}>
               Clear Filters
             </button>

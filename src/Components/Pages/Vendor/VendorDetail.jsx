@@ -36,7 +36,21 @@ const [vendorActionType, setVendorActionType] = useState(null);
 const [vendorReason, setVendorReason] = useState("");
 const [approveModal, setApproveModal] = useState(false);
 const [Error, setError] = useState(null);
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
 
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
 const getVendorDetail = async () => {
   const token = sessionStorage.getItem("superadmin_token");
 
@@ -188,9 +202,9 @@ const handleVendorReasonSubmit = async () => {
                                 <div className="vendor-contact">
                                     <span><FaEnvelope />  {vendorData?.business_email || "-"}</span>
                                     <span><FaPhone /> {vendorData?.business_phone || "-"}</span>
-                                    <span><FaCalendarAlt /> Joined:  {vendorData?.verified_at
-      ? new Date(vendorData.verified_at).toLocaleDateString("en-GB")
-      : "-"}</span>
+                                <span>
+  <FaCalendarAlt /> Joined: {formatDate(vendorData?.approved_at)}
+</span>
                                 </div>
                               <span
   className={`status-badge ${vendorData?.approval_status || "pending"}`}

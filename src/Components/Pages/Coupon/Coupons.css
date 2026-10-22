@@ -1351,4 +1351,68 @@ c1e
   .coupon-modal-footer {
     grid-column: 1;
   }
+}/* Coupon search and filters */
+.filters-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 1;
+  margin-bottom: 10px;
+  
+}
+
+.coupon-filter-select {
+  min-width: 145px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+}
+
+.coupon-filter-select:focus {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.1);
+}
+
+.coupon-reset-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.coupon-reset-filter:hover {
+  border-color: #0d614e;
+  color: #0d614e;
+}
+
+@media (max-width: 768px) {
+  .filter-controls {
+    width: 100%;
+  }
+
+  .search-wrapper {
+    width: 100%;
+  }
+
+
+  .coupon-filter-select {
+    flex: 1;
+    min-width: 120px;
+  }
 }

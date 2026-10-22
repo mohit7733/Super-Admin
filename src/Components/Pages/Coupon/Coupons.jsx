@@ -57,7 +57,8 @@ const [couponErrors, setCouponErrors] = useState({});
 
   const [searchTerm, setSearchTerm] = useState("");
 
- 
+ const [sourceFilter, setSourceFilter] = useState("all");
+const [statusFilter, setStatusFilter] = useState("all");
 
   const [visibilityOpen, setVisibilityOpen] = useState(false);
 
@@ -124,7 +125,14 @@ service_category_id: "",
   const [couponForm, setCouponForm] =
     useState(initialCouponForm);
 
-
+const sourceOptions = [
+  ...new Set(
+    coupons
+      .map((coupon) => coupon.source)
+      .filter((source) => source && String(source).trim() !== "")
+      .map((source) => String(source).trim())
+  ),
+].sort((a, b) => a.localeCompare(b));
 
  const resetCouponForm = () => {
   setCouponForm(initialCouponForm);
@@ -706,46 +714,36 @@ const resetEditCouponForm = () => {
 
   
 
-  const filteredCoupons =
-    coupons.filter((coupon) => {
+  const normalizeStatus = (value) => {
+  if (value === true || value === "true" || value === 1) {
+    return "active";
+  }
 
-      const search =
-        searchTerm.toLowerCase();
+  return "inactive";
+};
 
+const filteredCoupons = coupons.filter((coupon) => {
+  const search = searchTerm.trim().toLowerCase();
 
-      return (
+  // Search by coupon code, source, and status
+  const matchesSearch =
+    (coupon.code || "").toLowerCase().includes(search) ||
+    (coupon.source || "").toLowerCase().includes(search) ||
+    (coupon.is_active ? "active" : "inactive").includes(search);
 
-        coupon.code
-          ?.toLowerCase()
-          .includes(search)
+  // Filter by source
+  const matchesSource =
+    sourceFilter === "all" ||
+    coupon.source === sourceFilter;
 
-        ||
+  // Filter by status
+  const matchesStatus =
+    statusFilter === "all" ||
+    (statusFilter === "active" && coupon.is_active === true) ||
+    (statusFilter === "inactive" && coupon.is_active === false);
 
-        coupon.description
-          ?.toLowerCase()
-          .includes(search)
-
-        ||
-
-        coupon.source
-          ?.toLowerCase()
-          .includes(search)
-
-        ||
-
-        coupon.visibility
-          ?.toLowerCase()
-          .includes(search)
-
-        ||
-
-        coupon.applies_to
-          ?.toLowerCase()
-          .includes(search)
-
-      );
-
-    });
+  return matchesSearch && matchesSource && matchesStatus;
+});
 
 
 
@@ -1489,73 +1487,74 @@ const handleEditCouponChange = (e) => {
 
       </div>
 
+<div className="filters-controls">
 
-      <div className="filter-category">
+  {/* SEARCH */}
+  <div className="search-wrapper">
+    <FaSearch className="search-icon" />
 
-        <div className="filter-controls">
+    <input
+      type="text"
+      placeholder="Search by code, source or status..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="search-input"
+    />
 
-          <div className="search-wrapper">
+    {searchTerm && (
+      <button
+        type="button"
+        className="clear-search"
+        onClick={() => setSearchTerm("")}
+      >
+        <FaTimes />
+      </button>
+    )}
+  </div>
 
-            <FaSearch
-              className="search-icon"
-            />
+  {/* SOURCE FILTER */}
+  <select
+    className="coupon-filter-select"
+    value={sourceFilter}
+    onChange={(e) => setSourceFilter(e.target.value)}
+  >
+    <option value="all">All Sources</option>
+    <option value="campaign">Campaign</option>
+    <option value="referral">Referral</option>
+    <option value="reward">Reward</option>
+    <option value="loyalty">Loyalty</option>
+    <option value="admin">Admin</option>
+  </select>
 
-            <input
-              type="text"
-              placeholder="Search by coupon code..."
-              value={searchTerm}
-              onChange={(e) =>
-                setSearchTerm(
-                  e.target.value
-                )
-              }
-              className="search-input"
-            />
+  {/* STATUS FILTER */}
+  <select
+    className="coupon-filter-select"
+    value={statusFilter}
+    onChange={(e) => setStatusFilter(e.target.value)}
+  >
+    <option value="all">All Statuses</option>
+    <option value="active">Active</option>
+    <option value="inactive">Inactive</option>
+  </select>
 
+  {/* RESET FILTERS */}
+  {(searchTerm ||
+    sourceFilter !== "all" ||
+    statusFilter !== "all") && (
+    <button
+      type="button"
+      className="coupon-reset-filter"
+      onClick={() => {
+        setSearchTerm("");
+        setSourceFilter("all");
+        setStatusFilter("all");
+      }}
+    >
+      <FaTimes /> Clear Filters
+    </button>
+  )}
 
-            {searchTerm && (
-
-              <button
-                type="button"
-                className="clear-search"
-                onClick={() =>
-                  setSearchTerm("")
-                }
-              >
-
-                <FaTimes />
-
-              </button>
-
-            )}
-
-          </div>
-
-        </div>
-
-
-    
-
-        <button
-          className="add-customer-btn"
-          onClick={() => {
-
-            resetCouponForm();
-
-            setShowAddCouponModal(
-              true
-            );
-
-          }}
-        >
-
-          <BiPlus />
-
-          Add Coupon
-
-        </button>
-
-      </div>
+</div>
 
 
    

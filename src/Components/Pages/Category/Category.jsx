@@ -253,7 +253,7 @@ const Category = () => {
         code: CategoryCode.toUpperCase().trim(),
         redirect_url: redirectUrl,
         sequence:Sequence,
-        is_product_sale:isProductSale
+        is_product_sale: Boolean(isProductSale)
 
 
 
@@ -282,7 +282,7 @@ const Category = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.success !== false) {
         toast.success("Category added successfully");
         setShowModal(false);
         setCategoryName("");
@@ -290,30 +290,36 @@ const Category = () => {
         setCategoryImage(null);
         setSequence("");
         setIsActive(false);
+        setIsProductSale(false);
         setErrors({});
         getCategoryList();
       } else {
-        let apiErrors = {};
+        const apiErrors = {};
+        const fieldMap = {
+          name: "categoryName",
+          code: "CategoryCode",
+          image_url: "categoryImage",
+          is_product_sale: "isProductSale",
+        };
 
-        if (data.errors) {
-          Object.keys(data.errors).forEach((key) => {
-            if (key === "name") {
-              apiErrors.categoryName = data.errors[key][0];
-            }
+        if (data.errors && typeof data.errors === "object" && Object.keys(data.errors).length > 0) {
+        
+         
+          Object.entries(data.errors).forEach(([key, value]) => {
+            const message = Array.isArray(value)
+              ? value.join(", ")
+              : String(value ?? "Invalid value");
+            const fieldName = fieldMap[key];
 
-            if (key === "code") {
-              apiErrors.CategoryCode = data.errors[key][0];
-            }
+            // if (fieldName) {
+            //   apiErrors[fieldName] = message;
+            
 
-            if (key === "image_url") {
-              apiErrors.categoryImage = data.errors[key][0];
-            }
+            
+            toast.error(`${key}: ${message}`);
           });
 
-          setErrors(apiErrors);
-
-
-          Object.values(apiErrors).forEach((msg) => toast.error(msg));
+          setErrors((prev) => ({ ...prev, ...apiErrors }));
         } else {
           toast.error(data.message || "Failed to add category");
         }
@@ -372,7 +378,7 @@ const Category = () => {
         is_active: isActive,
         redirect_url: redirectUrl,
         sequence:EditSequence,
-        is_product_sale:isProductSale,
+        is_product_sale: Boolean(isProductSale),
       };
 
       const response = await fetch(
@@ -397,7 +403,7 @@ const Category = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.success !== false) {
         toast.success("Category updated successfully");
         setEditModal(false);
         setEditCategoryName("");
@@ -406,28 +412,35 @@ const Category = () => {
         setEditCategoryId(null);
         setExistingImage("");
         setEditErrors({});
+        setIsProductSale(false);
         getCategoryList();
       } else {
-        let apiErrors = {};
+        const apiErrors = {};
+        const fieldMap = {
+          name: "categoryName",
+          code: "CategoryCode",
+          image_url: "categoryImage",
+          is_product_sale: "isProductSale",
+        };
 
-        if (data.errors) {
-          Object.keys(data.errors).forEach((key) => {
-            if (key === "name") {
-              apiErrors.categoryName = data.errors.name[0];
+        if (data.errors && typeof data.errors === "object" && Object.keys(data.errors).length > 0) {
+          // Show the general backend message as well as field-level errors.
+          if (data.message) toast.error(data.message);
+          Object.entries(data.errors).forEach(([key, value]) => {
+            const message = Array.isArray(value)
+              ? value.join(", ")
+              : String(value ?? "Invalid value");
+            const fieldName = fieldMap[key];
+
+            if (fieldName) {
+              apiErrors[fieldName] = message;
             }
 
-            if (key === "code") {
-              apiErrors.CategoryCode = data.errors.code[0];
-            }
-
-            if (key === "image_url") {
-              apiErrors.categoryImage = data.errors.image_url[0];
-            }
+            // Always display every backend validation error in the toast.
+            toast.error(`${key}: ${message}`);
           });
 
-          setEditErrors(apiErrors);
-
-          Object.values(apiErrors).forEach((msg) => toast.error(msg));
+          setEditErrors((prev) => ({ ...prev, ...apiErrors }));
         } else {
           toast.error(data.message || "Failed to update category");
         }
@@ -691,7 +704,8 @@ const Category = () => {
           <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
             <FaCalendarAlt size={16} />
           </div>
-          <div className="stat2-info">
+          <div
+           className="stat2-info">
             <h3>Inactive</h3>
             <div className="stat2-value">{stats.inactive}</div>
           </div>
@@ -751,6 +765,7 @@ const Category = () => {
               setCategoryImage(null);
               setErrors({});
               setIsActive(false);
+              setIsProductSale(false);
               setSequence("");
             }}
           >
@@ -907,6 +922,7 @@ const Category = () => {
                           setEditErrors({});
                           setRedirectUrl(item.redirect_url ||"");
                           setEditSequence(item.sequence||"-");
+                          setIsProductSale(item.is_product_sale === true || item.is_product_sale === "true" || item.is_product_sale === 1)
                         }}
                       >
                         <FaEdit />
@@ -1238,6 +1254,7 @@ const Category = () => {
             setEditCategoryId(null);
             setEditErrors({});
             setEditSequence("");
+            setIsProductSale(false);
           }}
         >
           <div
@@ -1579,7 +1596,16 @@ const Category = () => {
           </div>
         </div>
       )}
-      <ToastContainer position="top-center" autoClose={2000} />
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="colored"
+        style={{ zIndex: 999999 }}
+      />
     </>
   );
 };
