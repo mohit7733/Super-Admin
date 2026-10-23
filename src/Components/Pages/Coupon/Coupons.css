@@ -1355,13 +1355,127 @@ c1e
 .filters-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  flex: 1;
-  margin-bottom: 10px;
-  
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 14px;
+  flex-wrap: nowrap;
+  box-sizing: border-box;
 }
 
+/* Search and filters stay on the left */
+.coupon-filters-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+/* Search field */
+.coupon-filters-left .search-wrapper {
+  flex: 1 1 280px;
+  min-width: 220px;
+  max-width: 500px;
+  margin: 0;
+}
+
+/* Dropdowns */
+.coupon-filter-select {
+  min-width: 145px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.coupon-filter-select:focus {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.1);
+}
+
+/* Add Coupon stays on the right */
+.coupon-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.coupon-filter-actions .add-customer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* Clear filters */
+.coupon-reset-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.coupon-reset-filter:hover {
+  border-color: #0d614e;
+  color: #0d614e;
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .filters-controls {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .coupon-filters-left {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .coupon-filters-left .search-wrapper {
+    max-width: none;
+  }
+
+  .coupon-filter-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 600px) {
+  .coupon-filters-left .search-wrapper {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .coupon-filter-select {
+    flex: 1;
+    min-width: 120px;
+  }
+}
 .coupon-filter-select {
   min-width: 145px;
   height: 42px;

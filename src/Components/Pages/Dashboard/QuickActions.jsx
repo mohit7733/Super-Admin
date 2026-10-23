@@ -1,14 +1,50 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Box,
   Grid2X2,
-  Store,
-  Stethoscope,
+  PackagePlus,
+  Tags,
+  HeartPulse,
+  Activity,
   TicketPercent,
-  Download,
 } from "lucide-react";
 
 const QuickActions = () => {
+  const navigate = useNavigate();
+
+  const actions = [
+    {
+      label: "Add Service",
+      icon: Grid2X2,
+      path: "/main/category",
+    },
+    {
+      label: "Add Product Category",
+      icon: PackagePlus,
+      path: "/main/productcategory",
+    },
+    {
+      label: "Add Brand",
+      icon: Tags,
+      path: "/product/brandname",
+    },
+    {
+      label: "Add Health Category",
+      icon: HeartPulse,
+      path: "/category/healthcategory",
+    },
+    {
+      label: "Add Disease",
+      icon: Activity,
+      path: "/disease",
+    },
+    {
+      label: "Create Coupon",
+      icon: TicketPercent,
+      path: "/coupons",
+    },
+  ];
+
   return (
     <section className="panel">
       <div className="panel-heading">
@@ -16,35 +52,18 @@ const QuickActions = () => {
       </div>
 
       <div className="quick-grid">
-        <button>
-          <Box size={22} />
-          Add Product
-        </button>
-
-        <button>
-          <Grid2X2 size={22} />
-          Add Category
-        </button>
-
-        <button>
-          <Store size={22} />
-          Add Vendor
-        </button>
-
-        <button>
-          <Stethoscope size={22} />
-          Add Doctor
-        </button>
-
-        <button>
-          <TicketPercent size={22} />
-          Create Coupon
-        </button>
-
-        <button>
-          <Download size={22} />
-          Export Report
-        </button>
+        {actions.map(({ label, icon: Icon, path }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => navigate(path)}
+            className="quick-action-btn"
+            title={label}
+          >
+            <Icon size={22} strokeWidth={1.8} />
+            <span>{label}</span>
+          </button>
+        ))}
       </div>
     </section>
   );

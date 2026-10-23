@@ -1,81 +1,202 @@
-
 import React from "react";
 import { ChevronDown } from "lucide-react";
 
-const DahboardRevenue = () => {
+const DahboardRevenue = ({ revenueOverview = {} }) => {
+  const overview =
+    revenueOverview &&
+    typeof revenueOverview === "object" &&
+    !Array.isArray(revenueOverview)
+      ? revenueOverview
+      : {};
+
+  const months = Array.isArray(overview.months)
+    ? overview.months
+    : [];
+
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(Number(value) || 0);
+
+  const formatLakh = (value) => {
+    const amount = Number(value) || 0;
+
+    if (amount >= 100000) {
+      return `₹${(amount / 100000).toFixed(1)}L`;
+    }
+
+    if (amount >= 1000) {
+      return `₹${(amount / 1000).toFixed(0)}K`;
+    }
+
+    return `₹${amount}`;
+  };
+
+  const maxRevenue = Math.max(
+    1,
+    ...months.map((item) => Number(item.revenue) || 0)
+  );
+
+  // Keep the Y-axis scale rounded and readable.
+  const axisMax = Math.ceil(maxRevenue / 4 / 1000) * 1000 || 1000;
+  const yMax = axisMax * 4;
+
+  const chartWidth = 720;
+  const chartHeight = 210;
+  const topPadding = 12;
+  const bottomPadding = 10;
+
+  const points = months.map((item, index) => {
+    const revenue = Number(item.revenue) || 0;
+
+    const x =
+      months.length <= 1
+        ? chartWidth / 2
+        : (index / (months.length - 1)) * chartWidth;
+
+    const y =
+      chartHeight -
+      bottomPadding -
+      (revenue / yMax) * (chartHeight - topPadding - bottomPadding);
+
+    return {
+      x,
+      y,
+      month: item.month || "",
+      revenue,
+    };
+  });
+
+  const linePath = points
+    .map((point, index) =>
+      `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`
+    )
+    .join(" ");
+
+  const areaPath =
+    points.length > 0
+      ? `${linePath} L ${chartWidth} ${chartHeight} L 0 ${chartHeight} Z`
+      : "";
+
+  const yLabels = [4, 3, 2, 1, 0].map((factor) => ({
+    value: (yMax / 4) * factor,
+    label: formatLakh((yMax / 4) * factor),
+  }));
+
   return (
     <section className="panel revenue-panel">
-
       <div className="panel-heading">
-        <h2>Revenue Overview</h2>
+        <div>
+          <h2>Revenue Overview</h2>
+          <small>
+            {overview.year || new Date().getFullYear()} · Total Revenue:{" "}
+            {formatCurrency(overview.total)}
+          </small>
+        </div>
 
-        <button className="link-button">
+        <button type="button" className="link-button">
           This Year
           <ChevronDown size={14} />
         </button>
       </div>
 
       <div className="line-chart">
-
         <div className="y-labels">
-          <span>₹20L</span>
-          <span>₹15L</span>
-          <span>₹10L</span>
-          <span>₹5L</span>
-          <span>₹0</span>
+          {yLabels.map((label, index) => (
+            <span key={index}>{label.label}</span>
+          ))}
         </div>
 
         <svg
-          viewBox="0 0 720 230"
+          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
           preserveAspectRatio="none"
           className="revenue-svg"
+          role="img"
+          aria-label="Monthly revenue chart"
         >
           <defs>
             <linearGradient
-              id="fill"
+              id="revenueFillGradient"
               x1="0"
               x2="0"
               y1="0"
               y2="1"
             >
               <stop
-                offset="0"
+                offset="0%"
                 stopColor="#0d9f2d"
-                stopOpacity=".22"
+                stopOpacity="0.22"
               />
-
               <stop
-                offset="1"
+                offset="100%"
                 stopColor="#061602"
                 stopOpacity="0"
               />
             </linearGradient>
           </defs>
 
-          <path
-            d="M0 182 C24 156 40 175 62 162 S95 111 120 120 S163 135 190 111 S224 65 252 66 S303 39 337 43 S383 20 414 28 S447 85 475 91 S530 77 556 92 S600 139 626 142 S669 171 695 140 S715 118 720 111 L720 230 L0 230 Z"
-            fill="url(#fill)"
-          />
+          {yLabels.map((label, index) => {
+            const y = (index / 4) * chartHeight;
 
-          <path
-            d="M0 182 C24 156 40 175 62 162 S95 111 120 120 S163 135 190 111 S224 65 252 66 S303 39 337 43 S383 20 414 28 S447 85 475 91 S530 77 556 92 S600 139 626 142 S669 171 695 140 S715 118 720 111"
-            fill="none"
-            stroke="#113707"
-            strokeWidth="3"
-          />
+            return (
+              <line
+                key={label.value}
+                x1="0"
+                y1={y}
+                x2={chartWidth}
+                y2={y}
+                stroke="#e5e7eb"
+                strokeWidth="1"
+                strokeDasharray="4 5"
+              />
+            );
+          })}
+
+          {points.length > 0 && (
+            <>
+              <path
+                d={areaPath}
+                fill="url(#revenueFillGradient)"
+              />
+
+              <path
+                d={linePath}
+                fill="none"
+                stroke="#16a34a"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+              />
+
+              {points.map((point, index) => (
+                <circle
+                  key={`${point.month}-${index}`}
+                  cx={point.x}
+                  cy={point.y}
+                  r="3.5"
+                  fill="#16a34a"
+                  stroke="#ffffff"
+                  strokeWidth="1.5"
+                >
+                  <title>
+                    {point.month}: {formatCurrency(point.revenue)}
+                  </title>
+                </circle>
+              ))}
+            </>
+          )}
         </svg>
 
         <div className="x-labels">
-          <span>Jan</span>
-          <span>Feb</span>
-          <span>Mar</span>
-          <span>Apr</span>
-          <span>May</span>
-          <span>Jun</span>
-          <span>Jul</span>
-          <span>Aug</span>
+          {months.map((item, index) => (
+            <span key={item.month_number || index}>
+              {item.month}
+            </span>
+          ))}
         </div>
-
       </div>
     </section>
   );

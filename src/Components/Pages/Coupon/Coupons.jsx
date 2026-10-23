@@ -1487,74 +1487,88 @@ const handleEditCouponChange = (e) => {
 
       </div>
 
+
 <div className="filters-controls">
+  {/* LEFT SIDE: SEARCH + FILTERS */}
+  <div className="coupon-filters-left">
+    <div className="search-wrapper">
+      <FaSearch className="search-icon" />
 
-  {/* SEARCH */}
-  <div className="search-wrapper">
-    <FaSearch className="search-icon" />
+      <input
+        type="text"
+        placeholder="Search by code, source or status..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="search-input"
+      />
 
-    <input
-      type="text"
-      placeholder="Search by code, source or status..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="search-input"
-    />
+      {searchTerm && (
+        <button
+          type="button"
+          className="clear-search"
+          onClick={() => setSearchTerm("")}
+        >
+          <FaTimes />
+        </button>
+      )}
+    </div>
 
-    {searchTerm && (
+    <select
+      className="coupon-filter-select"
+      value={sourceFilter}
+      onChange={(e) => setSourceFilter(e.target.value)}
+    >
+      <option value="all">All Sources</option>
+      <option value="campaign">Campaign</option>
+      <option value="referral">Referral</option>
+      <option value="reward">Reward</option>
+      <option value="loyalty">Loyalty</option>
+      <option value="admin">Admin</option>
+    </select>
+
+    <select
+      className="coupon-filter-select"
+      value={statusFilter}
+      onChange={(e) => setStatusFilter(e.target.value)}
+    >
+      <option value="all">All Statuses</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+
+    {(searchTerm ||
+      sourceFilter !== "all" ||
+      statusFilter !== "all") && (
       <button
         type="button"
-        className="clear-search"
-        onClick={() => setSearchTerm("")}
+        className="coupon-reset-filter"
+        onClick={() => {
+          setSearchTerm("");
+          setSourceFilter("all");
+          setStatusFilter("all");
+        }}
       >
-        <FaTimes />
+        <FaTimes /> Clear Filters
       </button>
     )}
   </div>
 
-  {/* SOURCE FILTER */}
-  <select
-    className="coupon-filter-select"
-    value={sourceFilter}
-    onChange={(e) => setSourceFilter(e.target.value)}
-  >
-    <option value="all">All Sources</option>
-    <option value="campaign">Campaign</option>
-    <option value="referral">Referral</option>
-    <option value="reward">Reward</option>
-    <option value="loyalty">Loyalty</option>
-    <option value="admin">Admin</option>
-  </select>
-
-  {/* STATUS FILTER */}
-  <select
-    className="coupon-filter-select"
-    value={statusFilter}
-    onChange={(e) => setStatusFilter(e.target.value)}
-  >
-    <option value="all">All Statuses</option>
-    <option value="active">Active</option>
-    <option value="inactive">Inactive</option>
-  </select>
-
-  {/* RESET FILTERS */}
-  {(searchTerm ||
-    sourceFilter !== "all" ||
-    statusFilter !== "all") && (
+  {/* RIGHT SIDE: ADD COUPON */}
+  <div className="coupon-filter-actions">
     <button
       type="button"
-      className="coupon-reset-filter"
+      className="add-customer-btn"
       onClick={() => {
-        setSearchTerm("");
-        setSourceFilter("all");
-        setStatusFilter("all");
+        resetCouponForm();
+        setShowAddCouponModal(true);
       }}
     >
-      <FaTimes /> Clear Filters
+      <BiPlus />
+      Add Coupon
     </button>
-  )}
-
+  </div>
 </div>
+
 
 
    

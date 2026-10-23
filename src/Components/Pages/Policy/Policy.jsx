@@ -389,7 +389,7 @@ const policyStats = {
 
       <div className="stats2-grid">
 
-  {/* TOTAL POLICIES */}
+  
   <div
     className="stat2-card"
     style={{
@@ -416,7 +416,7 @@ const policyStats = {
   </div>
 
 
-  {/* PUBLISHED */}
+  
   <div
     className="stat2-card"
     style={{
@@ -443,8 +443,7 @@ const policyStats = {
   </div>
 
 
-  {/* DRAFT */}
-  <div
+   <div
     className="stat2-card"
     style={{
       borderTopColor: "#D97706",
@@ -470,7 +469,7 @@ const policyStats = {
   </div>
 
 
-  {/* ARCHIVED */}
+  
   <div
     className="stat2-card"
     style={{
@@ -497,29 +496,9 @@ const policyStats = {
   </div>
 
 </div>
+
       
-         <div className="search-wrapper">
-  <FaSearch className="search-icon" />
-
-  <input
-    type="text"
-    placeholder="Search by name, code, type, category or status..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-    className="search-input"
-  />
-
-  {searchTerm && (
-    <button
-      type="button"
-      className="clear-search"
-      onClick={() => setSearchTerm("")}
-      aria-label="Clear search"
-    >
-      <FaTimes />
-    </button>
-  )}
-</div>
+         
 
   
       <div className="table-wrapper policy-table-wrapper">
