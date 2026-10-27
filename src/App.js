@@ -106,6 +106,7 @@ import ReturnRequests from './Components/Pages/Order/ReturnRequests';
 import Customerpurchase from './Components/Pages/Packages/Customerpurchase';
 import AppReview from './Components/Pages/Review/AppReview';
 import StockManagement from './Components/Pages/Product/StockManagement';
+import AllActivities from './Components/Pages/AllActivities/AllActivities'
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -617,6 +618,8 @@ function App() {
           }
         />
 
+        
+
         <Route
           path="/question/medical"
           element={
@@ -708,7 +711,16 @@ function App() {
           }
         />
 
-
+<Route
+  path="/all-activities"
+  element={
+    <ProtectedRoute permission="view_all_activities">
+      <Layout>
+        <AllActivities />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
 
         <Route
           path="/customer"

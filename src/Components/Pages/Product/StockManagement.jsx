@@ -633,6 +633,7 @@ const buildApiUrl = useCallback(
             <tr>
               <th>#</th>
               <th>Product</th>
+              <th> Vendor</th>
               <th>Quantity</th>
               <th>MRP</th>
               <th>Selling Price</th>
@@ -748,7 +749,7 @@ const buildApiUrl = useCallback(
                         </div>
                       </div>
                     </td>
-
+<td>{item.vendor_business_name|| "_"} </td>
                     <td>
                       <span
                         className="category-code-badge"

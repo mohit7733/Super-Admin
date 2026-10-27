@@ -11872,3 +11872,24 @@ flex-direction:column;
     width: 100%;
   }
 }
+
+/* Toast should appear above every modal */
+.Toastify__toast-container {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+.Toastify__toast {
+  z-index: 999999 !important;
+}
+
+/* Modal overlay */
+.prakriti-modal-overlay,
+.activeModal-overlay {
+  z-index: 9999;
+}
+
+/* Delete confirmation modal */
+.modal {
+  z-index: 9999;
+}

@@ -3,6 +3,7 @@ import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { IoClose } from "react-icons/io5";
 import { FaArrowLeft } from "react-icons/fa";
+import VendorProducts from "./VendorProducts";
 
 
 import BASE_URL from "../../../Base";
@@ -20,6 +21,7 @@ import BASE_URL from "../../../Base";
 } from "react-icons/fi";
         import './VendorDetail.css';
         import Documents from "./Documents";
+        import VendorStock from "./VendorStock"
         import { useNavigate } from 'react-router-dom';
 
         const VendorDetail = () => {
@@ -105,12 +107,14 @@ useEffect(() => {
   }
 }, [vendorId]);
 
-            const tabs = [
-                { key: 'basic', label: 'Overview' },
-                { key: 'Documents', label: 'Documents' },
-                { key: 'bank', label: 'Bank Details' },
-                // { key: 'activity', label: 'Activity Log' },
-            ];
+           const tabs = [
+  { key: "basic", label: "Overview" },
+  { key: "Documents", label: "Documents" },
+  { key: "bank", label: "Bank Details" },
+  { key: "Product", label: "Product" },
+  { key: "Stock", label: "Stock" },
+  { key: "Order", label: "Order" },
+];
 
 const handleVendorAction = async ( vendorId,status, reason = "") => {
   setVendorLoadingAction(true);
@@ -549,6 +553,9 @@ const handleVendorReasonSubmit = async () => {
 
   
 )}
+{activeTab === "Stock" && (
+  <VendorStock vendorId={vendorId} />
+)}
 
 {activeTab === "bank" && (
   <div className="bank-verification-wrapper">
@@ -616,6 +623,10 @@ const handleVendorReasonSubmit = async () => {
    
   </div>
 )}
+{activeTab === "Product" && (
+  <VendorProducts vendorId={vendorId} />
+)}
+
 
 {activeTab === "Documents" && (
   <div className="documents-tab">

@@ -19,7 +19,6 @@ import InventoryAlerts from "./InventoryAlerts";
 import RecentActivities from "./RecentActivities";
 import QuickActions from "./QuickActions";
 
-// Dashboard API endpoint
 const API_URL = `${BASE_URL}/users/admin/dashboard/`;
 
 const metricConfig = [
@@ -83,7 +82,7 @@ const Dashboard = () => {
   const [range, setRange] = useState(false);
   const [selectedRange, setSelectedRange] = useState("This month");
 
-  // GET Dashboard API - same pattern as Category GET function
+
   const fetchDashboard = async (isRefresh = false) => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -350,7 +349,7 @@ const Dashboard = () => {
 
         <LatestCustomers customers={data.latest_customers || []} />
 
-        <InventoryAlerts />
+        {/* <InventoryAlerts /> */}
 
         <RecentActivities />
 

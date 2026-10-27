@@ -15,6 +15,7 @@ import {FaSyncAlt} from 'react-icons/fa';
 import {FaMoneyBillWave} from 'react-icons/fa';
 import { MdInventory2,MdInventory } from "react-icons/md";
 import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
+import { Activity } from "lucide-react";
 
 import {
  
@@ -462,7 +463,20 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
     
     ],
   },
-
+{
+  title: "Activity Management",
+  icon: <Activity size={20} />,
+  path: "#",
+  permission: "manage_activities",
+  children: [
+    {
+      title: "All Activities",
+      path: "/all-activities",
+      permission: "view_all_activities",
+      icon: <FaListAlt size={18} />
+    }
+  ]
+},
  
   {
     title: "Yoga Management",
