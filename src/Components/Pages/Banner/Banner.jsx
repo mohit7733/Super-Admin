@@ -20,10 +20,7 @@ const BRAND_PREFIX = "CategoryProduct/";
 const Banner = () => {
   const navigate = useNavigate();
 
-  // =========================================================
-  // BANNER STATES
-  // =========================================================
-
+  
   const [BannerData, setBannerData] = useState([]);
   const [BannerLoading, setBannerLoading] = useState(false);
   const [Error, setError] = useState(null);

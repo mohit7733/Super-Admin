@@ -38,6 +38,7 @@ const Healthcategory = () => {
   const [isStatusChanging, setIsStatusChanging] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [serviceCategoryFilter, setServiceCategoryFilter] = useState("all");
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -85,7 +86,8 @@ const Healthcategory = () => {
   };
 
  
-  const filterData = (data, search, status) => {
+  const filterData = (data, search, status, serviceCategoryFilter
+) => {
     let filtered = data;
 
     if (search.trim()) {
@@ -103,6 +105,18 @@ const Healthcategory = () => {
     } else if (status === "inactive") {
       filtered = filtered.filter((item) => item.is_active === false);
     }
+
+      if (serviceCategoryFilter !== "all") {
+    filtered = filtered.filter((item) => {
+      const categoryId =
+        item.service_category_id ??
+        item.service_category?.id ??
+        item.service_category;
+
+      return String(categoryId) === String(serviceCategoryFilter);
+    });
+  }
+
 
     return filtered;
   };
@@ -511,8 +525,8 @@ const Healthcategory = () => {
   }, []);
 
   useEffect(() => {
-    setFilteredData(filterData(HealthCategoryData, searchTerm, statusFilter));
-  }, [HealthCategoryData, searchTerm, statusFilter]);
+    setFilteredData(filterData(HealthCategoryData, searchTerm, statusFilter,serviceCategoryFilter));
+  }, [HealthCategoryData, searchTerm, statusFilter,serviceCategoryFilter]);
 
   const AddHealthCategory = async (e) => {
     e.preventDefault();
@@ -785,6 +799,7 @@ if (symptoms.length === 0) {
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
+    setServiceCategoryFilter("all");
   };
 
 
@@ -916,8 +931,26 @@ const removeSymptomField = (index) => {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
+<select
+  className="status-filter-select"
+  value={serviceCategoryFilter}
+  onChange={(e) => setServiceCategoryFilter(e.target.value)}
+>
+  <option value="all">All Service Categories</option>
 
-          {(searchTerm || statusFilter !== "all") && (
+  {ServiceCategoryData
+    .filter(
+      (cat) =>
+        (cat.is_active === true || cat.is_active === "true") 
+    )
+    .map((cat) => (
+      <option key={cat.id} value={cat.id}>
+        {cat.name}
+        {cat.code ? ` (${cat.code})` : ""}
+      </option>
+    ))}
+</select>
+          {(searchTerm || statusFilter !== "all" || serviceCategoryFilter !== "all") && (
              <button className="clear-filters-btn" onClick={clearFilters}>
                <FiTrash2 />
            </button>
@@ -1734,7 +1767,7 @@ const removeSymptomField = (index) => {
         </div>
       )}
 
-      {/* Preview Image Modal */}
+      
       {previewImage && (
         <div
           className="prakriti-modal-overlay"

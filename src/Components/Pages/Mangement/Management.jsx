@@ -293,6 +293,10 @@ const handleAppointmentAction = async (action) => {
       <FaCheckCircle size={24} />
     </div>
     <div className="stat2-info">
+
+
+
+      
       <h3>Approved Requests</h3>
       <div className="stat2-value">
       0

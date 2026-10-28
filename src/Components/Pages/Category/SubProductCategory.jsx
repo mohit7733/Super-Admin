@@ -23,6 +23,7 @@ const SubProductCategory = () => {
   const [Loading, setLoading] = useState(false);
   const [Error, setError] = useState(null);
   const [ShowCategoryModal, setShowCategoryModal] = useState(false);
+  const [productCategoryFilter, setProductCategoryFilter] = useState("all");
   const navigate = useNavigate();
 
   const [SubCategoryForm, setSubCategoryForm] = useState({
@@ -89,29 +90,42 @@ const SubProductCategory = () => {
   };
 
  
-  const filterData = (data, search, status) => {
-    let filtered = data;
+const filterData = (data, search, status, productCategory) => {
+  let filtered = data;
 
-    if (search.trim()) {
-      const term = search.toLowerCase().trim();
-      filtered = filtered.filter(
-        (item) =>
-          item.name.toLowerCase().includes(term) ||
-          item.code?.toLowerCase().includes(term) ||
-          item.hsn_code?.toLowerCase().includes(term) ||
-          item.product_category_name?.toLowerCase().includes(term)
-      );
-    }
 
-    if (status === "active") {
-      filtered = filtered.filter((item) => item.is_active === true);
-    } else if (status === "inactive") {
-      filtered = filtered.filter((item) => item.is_active === false);
-    }
+  if (search.trim()) {
+    const term = search.toLowerCase().trim();
 
-    return filtered;
-  };
+    filtered = filtered.filter(
+      (item) =>
+        item.name?.toLowerCase().includes(term) ||
+        item.code?.toLowerCase().includes(term) ||
+        item.hsn_code?.toLowerCase().includes(term) ||
+        item.product_category_name?.toLowerCase().includes(term)||
+        item.service_category_name?.toLowerCase().includes(term)
 
+    );
+  }
+
+  
+  if (status === "active") {
+    filtered = filtered.filter((item) => item.is_active === true);
+  } else if (status === "inactive") {
+    filtered = filtered.filter((item) => item.is_active === false);
+  }
+
+  
+  if (productCategory && productCategory !== "all") {
+    filtered = filtered.filter(
+      (item) =>
+        String(item.product_category_id || item.product_category?.id || "") ===
+        String(productCategory)
+    );
+  }
+
+  return filtered;
+};
   const handleCategoryChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -581,9 +595,10 @@ if (!code) {
   }, []);
 
   useEffect(() => {
-    setFilteredData(filterData(Data, searchTerm, statusFilter));
-  }, [Data, searchTerm, statusFilter]);
+    setFilteredData(filterData(Data, searchTerm, statusFilter,productCategoryFilter));
+  }, [Data, searchTerm, statusFilter,productCategoryFilter]);
 
+  
   const getSubProductCategoryList = async () => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -676,6 +691,7 @@ if (!code) {
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
+    setProductCategoryFilter("all")
   };
   const exportToExcel = async () => {
   if (!FilteredData?.length) {
@@ -871,7 +887,7 @@ tax_class_id:item.tax_class_id||"N/A",
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by name, code, HSN or product category..."
+              placeholder="Search by name, code, HSN ,product & service category..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -892,8 +908,22 @@ tax_class_id:item.tax_class_id||"N/A",
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
+      <select
+  className="status-filter-select product-category-filter-select"
+  value={productCategoryFilter}
+  onChange={(e) => setProductCategoryFilter(e.target.value)}
+>
+  <option value="all">All Product Categories</option>
 
-          {(searchTerm || statusFilter !== "all") && (
+  {SubCategoryData.map((category) => (
+    <option key={category.id} value={category.id}>
+      {category.name}
+      {category.code ? ` (${category.code})` : ""}
+    </option>
+  ))}
+</select>
+
+          {(searchTerm || statusFilter !== "all" || productCategoryFilter !== "all") && (
             <button className="clear-filters-btn" onClick={clearFilters}>
             <FiTrash2/>
             </button>

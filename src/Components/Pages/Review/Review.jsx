@@ -330,7 +330,7 @@ const getReviewList = useCallback(async () => {
     }
   };
 
-  // Update product review status
+  
   const confirmStatusChange = async (
     status,
     rejectionReason = ""

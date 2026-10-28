@@ -4,6 +4,7 @@ import "react-toastify/dist/ReactToastify.css"
 import { IoClose } from "react-icons/io5";
 import { FaArrowLeft } from "react-icons/fa";
 import VendorProducts from "./VendorProducts";
+import VendorOrder from './VendorOrder';
 
 
 import BASE_URL from "../../../Base";
@@ -625,6 +626,9 @@ const handleVendorReasonSubmit = async () => {
 )}
 {activeTab === "Product" && (
   <VendorProducts vendorId={vendorId} />
+)}
+{activeTab === "Order" && (
+  <VendorOrder vendorId={vendorId} />
 )}
 
 

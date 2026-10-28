@@ -38,7 +38,7 @@ const ProductCategory = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [productCategoryStatusModal, setProductCategoryStatusModal] =
     useState(false);
-
+const [serviceCategoryFilter, setServiceCategoryFilter] = useState("all");
   const [categoryId, setCategoryId] = useState(null);
   const [selectedProductCategory, setSelectedProductCategory] = useState(null);
   const [ProductPreviewImage, setProductPreviewImage] = useState("");
@@ -85,9 +85,7 @@ const ProductCategory = () => {
   const [addErrors, setAddErrors] = useState({});
   const [editErrors, setEditErrors] = useState({});
 
-  // --------------------------------------------------
-  // AUTHENTICATION
-  // --------------------------------------------------
+  
 
   const getToken = () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -125,9 +123,7 @@ const ProductCategory = () => {
     }
   };
 
-  // --------------------------------------------------
-  // COMMON API ERROR HANDLING
-  // --------------------------------------------------
+  
 
   const showApiErrors = (errors, setErrors) => {
     const fieldErrors = {};
@@ -182,41 +178,79 @@ const ProductCategory = () => {
     });
   };
 
-  const filterData = (data, search, status) => {
-    let filtered = [...data];
+ 
 
-    if (search.trim()) {
-      const term = search.toLowerCase().trim();
+const filterData = (data, search, status, serviceCategory) => {
+  let filtered = [...data];
 
-      filtered = filtered.filter(
-        (item) =>
-          item.name?.toLowerCase().includes(term) ||
-          item.code?.toLowerCase().includes(term) ||
-          item.service_category_name?.toLowerCase().includes(term)
+  // Search filter
+  if (search.trim()) {
+    const term = search.toLowerCase().trim();
+
+    filtered = filtered.filter(
+      (item) =>
+        item.name?.toLowerCase().includes(term) ||
+        item.code?.toLowerCase().includes(term) ||
+        item.service_category_name?.toLowerCase().includes(term)
+    );
+  }
+
+  // Status filter
+  if (status === "active") {
+    filtered = filtered.filter(
+      (item) =>
+        item.is_active === true || item.is_active === "true"
+    );
+  } else if (status === "inactive") {
+    filtered = filtered.filter(
+      (item) =>
+        item.is_active === false || item.is_active === "false"
+    );
+  }
+
+  // Service category filter
+  if (serviceCategory !== "all") {
+    filtered = filtered.filter((item) => {
+      const itemServiceCategoryId =
+        item.service_category_id ??
+        item.service_category?.id ??
+        item.service_category;
+
+      return (
+        String(itemServiceCategoryId ?? "") ===
+        String(serviceCategory)
       );
-    }
+    });
+  }
 
-    if (status === "active") {
-      filtered = filtered.filter(
-        (item) => item.is_active === true || item.is_active === "true"
-      );
-    } else if (status === "inactive") {
-      filtered = filtered.filter(
-        (item) => item.is_active === false || item.is_active === "false"
-      );
-    }
+  return filtered;
+};
 
-    return filtered;
-  };
+useEffect(() => {
+  const result = filterData(
+    HealthCategoryData,
+    searchTerm,
+    statusFilter,
+    serviceCategoryFilter
+  );
 
-  useEffect(() => {
-    setFilteredData(filterData(HealthCategoryData, searchTerm, statusFilter));
-  }, [HealthCategoryData, searchTerm, statusFilter]);
+  setFilteredData(result);
+}, [
+  HealthCategoryData,
+  searchTerm,
+  statusFilter,
+  serviceCategoryFilter,
+]);
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    setStatusFilter("all");
-  };
+const clearFilters = () => {
+  setSearchTerm("");
+  setStatusFilter("all");
+  setServiceCategoryFilter("all");
+};
+const availableServiceCategories = ServiceCategoryData.filter(
+  (cat) => cat.is_active === true && cat.is_product_sale === true
+);
+
 
   // --------------------------------------------------
   // FORM CHANGE HANDLERS
@@ -270,9 +304,6 @@ const ProductCategory = () => {
     }
   };
 
-  // --------------------------------------------------
-  // FETCH PRODUCT CATEGORIES
-  // --------------------------------------------------
 
   const getProductCategoryList = async () => {
     const token = getToken();
@@ -318,9 +349,7 @@ const ProductCategory = () => {
     }
   };
 
-  // --------------------------------------------------
-  // FETCH SERVICE CATEGORIES
-  // --------------------------------------------------
+ 
 
   const getCategoryList = async () => {
     const token = getToken();
@@ -368,19 +397,8 @@ const ProductCategory = () => {
     getCategoryList();
   }, []);
 
-  // --------------------------------------------------
-  // SERVICE CATEGORY DROPDOWN OPTIONS
-  // --------------------------------------------------
+  
 
-  const availableServiceCategories = ServiceCategoryData.filter(
-    (cat) =>
-      (cat.is_active === true || cat.is_active === "true") &&
-      (cat.is_product_sale === true || cat.is_product_sale === "true")
-  );
-
-  // --------------------------------------------------
-  // IMAGE UPLOAD
-  // --------------------------------------------------
 
   const uploadImage = async (file) => {
     const token = getToken();
@@ -417,9 +435,7 @@ const ProductCategory = () => {
     }
   };
 
-  // --------------------------------------------------
-  // ADD PRODUCT CATEGORY
-  // --------------------------------------------------
+ 
 
   const AddProductCategory = async (e) => {
     e.preventDefault();
@@ -524,9 +540,6 @@ const ProductCategory = () => {
     }
   };
 
-  // --------------------------------------------------
-  // EDIT PRODUCT CATEGORY
-  // --------------------------------------------------
 
   const openEditModal = (item) => {
     setEditForm({
@@ -691,9 +704,7 @@ const ProductCategory = () => {
     }
   };
 
-  // --------------------------------------------------
-  // ACTIVATE / DEACTIVATE
-  // --------------------------------------------------
+  
 
   const handleToggle = async (id, currentStatus) => {
     if (isStatusChanging) return;
@@ -744,9 +755,7 @@ const ProductCategory = () => {
     }
   };
 
-  // --------------------------------------------------
-  // COPY CATEGORY ID
-  // --------------------------------------------------
+  
 
   const copyCategoryId = async (id) => {
     try {
@@ -758,10 +767,7 @@ const ProductCategory = () => {
     }
   };
 
-  // --------------------------------------------------
-  // EXCEL EXPORT
-  // --------------------------------------------------
-
+ 
   const exportToExcel = async () => {
     if (!FilteredData.length) {
       toast.warning("No product categories available to export");
@@ -1013,13 +1019,29 @@ const ProductCategory = () => {
             <option value="inactive">Inactive</option>
           </select>
 
-          {(searchTerm || statusFilter !== "all") && (
+          
+<select
+  className="status-filter-select"
+  value={serviceCategoryFilter}
+  onChange={(e) => setServiceCategoryFilter(e.target.value)}
+>
+  <option value="all">All Service Categories</option>
+
+  {availableServiceCategories.map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name} ({cat.code})
+    </option>
+  ))}
+</select>
+
+
+          {(searchTerm || statusFilter !== "all"|| serviceCategoryFilter !== "all") && (
             <button
               type="button"
               className="clear-filters-btn"
               onClick={clearFilters}
             >
-              Clear Filters
+             <FiTrash2/>
             </button>
           )}
         </div>
