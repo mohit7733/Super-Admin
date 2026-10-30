@@ -17,14 +17,18 @@ import {
 } from "react-icons/fa";
 import { BsSearch } from "react-icons/bs";
 const ActiveOrders = () => {
-  const orderStats = {
-    total: 0,
-    pending: 0,
-    processing: 0,
-    delivered: 0,
-    returned: 0,
-    refunded: 0,
-  };
+const [orderStats, setOrderStats] = useState({
+  total: 0,
+  pending: 0,
+  confirmed: 0,
+  processing: 0,
+  packed: 0,
+  dispatched: 0,
+  shipped: 0,
+  delivered: 0,
+  cancelled: 0,
+  returned: 0,
+});
   const [orderSearch, setOrderSearch] = useState("");
 const [orderStatusFilter, setOrderStatusFilter] = useState("All");
 const [paymentTypeFilter, setPaymentTypeFilter] = useState("All");
@@ -51,6 +55,7 @@ const apiPaymentType =
     ? ""
     : paymentTypeFilter;
 
+
 const getOrderList = async (
   page = 1,
   search = "",
@@ -62,7 +67,7 @@ const getOrderList = async (
   const token = sessionStorage.getItem("superadmin_token");
 
   if (!token) {
-    toast.error("Session Expired, Login Again");
+    toast.error("Session expired, please login again");
     navigate("/login");
     return;
   }
@@ -89,6 +94,7 @@ const getOrderList = async (
       }
     );
 
+    // Session expired handling
     if (response.status === 401 || response.status === 403) {
       sessionStorage.removeItem("superadmin_token");
       toast.error("Session expired, please login again");
@@ -102,24 +108,75 @@ const getOrderList = async (
 
     const data = await response.json();
 
-    setOrderData(data?.data?.results || []);
+    if (!data?.success) {
+      throw new Error(data?.message || "Failed to fetch orders");
+    }
 
-    const count = Number(data?.data?.count || 0);
+    const orderResponse = data?.data || {};
+
+    // --------------------------------
+    // 1. DYNAMIC ORDER LIST
+    // --------------------------------
+    const orders = orderResponse?.results || [];
+    setOrderData(orders);
+
+    // --------------------------------
+    // 2. DYNAMIC TOTAL COUNT
+    // --------------------------------
+    const count = Number(orderResponse?.count || 0);
 
     setTotalCount(count);
-    setTotalPages(Math.ceil(count / pageSize));
+    setTotalPages(Math.max(1, Math.ceil(count / pageSize)));
+
+    // --------------------------------
+    // 3. DYNAMIC ORDER STATISTICS
+    // --------------------------------
+    const counts = orderResponse?.total_counts || {};
+
+    setOrderStats({
+      total: Number(counts?.orders || 0),
+      pending: Number(counts?.pending || 0),
+      confirmed: Number(counts?.confirmed || 0),
+      processing: Number(counts?.processing || 0),
+      packed: Number(counts?.packed || 0),
+      dispatched: Number(counts?.dispatched || 0),
+      shipped: Number(counts?.shipped || 0),
+      delivered: Number(counts?.delivered || 0),
+      cancelled: Number(counts?.cancelled || 0),
+      returned: Number(counts?.returned || 0),
+    });
+
   } catch (error) {
     console.error("Order Fetch Error:", error);
 
+    setOrderData([]);
+    setTotalCount(0);
+    setTotalPages(1);
+
+    setOrderStats({
+      total: 0,
+      pending: 0,
+      confirmed: 0,
+      processing: 0,
+      packed: 0,
+      dispatched: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0,
+      returned: 0,
+    });
+
     setOrderError(
-      "Something went wrong while fetching orders"
+      error.message || "Something went wrong while fetching orders"
     );
 
     toast.error("Failed to fetch order data");
+
   } finally {
     setOrderLoading(false);
   }
 };
+
 
 useEffect(() => {
   const timer = setTimeout(() => {
@@ -169,153 +226,31 @@ useEffect(() => {
       </div>
 
       
-      <div className="stats2-grid">
-
-     
-        <div
-          className="stat2-card"
-          style={{ borderTopColor: "#0D614E" }}
-        >
-          <div
-            className="stat2-icon"
-            style={{
-              background: "#0D614E20",
-              color: "#0D614E",
-            }}
-          >
-            <FaShoppingBag size={16} />
-          </div>
-
-          <div className="stat2-info">
-            <h3>Total Orders</h3>
-
-            <div className="stat2-value">
-              {orderStats.total.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
-       
-        <div
-          className="stat2-card"
-         style={{ borderTopColor: "#0D614E" }}
-        >
-          <div
-            className="stat2-icon"
-             style={{
-              background: "#0D614E20",
-              color: "#0D614E",
-            }}
-          >
-            <FaClock size={16} />
-          </div>
-
-          <div className="stat2-info">
-            <h3>Pending Orders</h3>
-
-            <div className="stat2-value">
-              {orderStats.pending.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
       
-        <div
-          className="stat2-card"
-       style={{ borderTopColor: "#0D614E" }}
-        >
-          <div
-            className="stat2-icon"
-           style={{
-              background: "#0D614E20",
-              color: "#0D614E",
-            }}
-          >
-            <FaCog size={16} />
-          </div>
+<div className="order-stats-one-line">
+  {[
+    { label: "Total Orders", value: orderStats.total, icon: <FaShoppingBag /> },
+    { label: "Pending", value: orderStats.pending, icon: <FaClock /> },
+    { label: "Confirmed", value: orderStats.confirmed, icon: <FaCheckCircle /> },
+    { label: "Processing", value: orderStats.processing, icon: <FaCog /> },
+    { label: "Packed", value: orderStats.packed, icon: <FaShoppingBag /> },
+    { label: "Dispatched", value: orderStats.dispatched, icon: <FaTruck /> },
+    { label: "Shipped", value: orderStats.shipped, icon: <FaTruck /> },
+    { label: "Delivered", value: orderStats.delivered, icon: <FaCheckCircle /> },
+    { label: "Cancelled", value: orderStats.cancelled, icon: <FaTimes /> },
+    { label: "Returned", value: orderStats.returned, icon: <FaUndoAlt /> },
+  ].map((item, index) => (
+    <div className="order-stat-card" key={index}>
+      <div className="order-stat-icon">{item.icon}</div>
 
-          <div className="stat2-info">
-            <h3>Processing</h3>
-
-            <div className="stat2-value">
-              {orderStats.processing.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
-      
-        <div
-          className="stat2-card"
-          style={{ borderTopColor: "#0D614E" }}
-        >
-          <div
-            className="stat2-icon"
-            style={{
-              background: "#0D614E20",
-              color: "#0D614E",
-            }}
-          >
-            <FaCheckCircle size={16} />
-          </div>
-
-          <div className="stat2-info">
-            <h3>Delivered</h3>
-
-            <div className="stat2-value">
-              {orderStats.delivered.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
-   
-        <div
-          className="stat2-card"
-        style={{ borderTopColor: "#0D614E" }}
-        >
-          <div
-            className="stat2-icon"
-            style={{
-              background: "#0D614E20",
-              color: "#0D614E",
-            }}
-          >
-            <FaUndoAlt size={16} />
-          </div>
-
-          <div className="stat2-info">
-            <h3>Returned</h3>
-
-            <div className="stat2-value">
-              {orderStats.returned.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
-        {/* Refunded Orders */}
-        <div
-          className="stat2-card"
-        style={{ borderTopColor: "#0D614E" }}
-        >
-          <div
-            className="stat2-icon"
-           style={{
-              background: "#0D614E20",
-              color: "#0D614E",
-            }}
-          >
-            <FaWallet size={16} />
-          </div>
-
-          <div className="stat2-info">
-            <h3>Refunded</h3>
-
-            <div className="stat2-value">
-              {orderStats.refunded.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
+      <div className="order-stat-content">
+        <span>{item.label}</span>
+        <h3>{item.value}</h3>
       </div>
+    </div>
+  ))}
+</div>
+
 
       <div className="controls-section">
 <div className="search-wrapper">

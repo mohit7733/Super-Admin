@@ -105,10 +105,26 @@ const [deleteLoading, setDeleteLoading] = useState(false);
     fetchPackages();
   }, []);
 
-  // =========================================================
-  // CATEGORY OPTIONS
-  // =========================================================
+ const formatOriginalPrice = (price) => {
+  if (
+    price === null ||
+    price === undefined ||
+    price === ""
+  ) {
+    return "₹0.00";
+  }
 
+  const number = Number(price);
+
+  if (Number.isNaN(number)) {
+    return `₹${price}`;
+  }
+
+  return `₹${number.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+};
   const categoryOptions = useMemo(() => {
     const categories = packages
       .map(
@@ -393,10 +409,21 @@ const handleDeletePackage = async () => {
   
 
   const toggleDetails = (id) => {
-    setExpandedId((prev) =>
-      prev === id ? null : id
-    );
-  };
+  const currentScroll = window.scrollY;
+
+  setExpandedId((prev) => {
+    const newId = prev === id ? null : id;
+
+    requestAnimationFrame(() => {
+      window.scrollTo({
+        top: currentScroll,
+        behavior: "instant",
+      });
+    });
+
+    return newId;
+  });
+};
 
  
 
@@ -617,9 +644,9 @@ const handleDeletePackage = async () => {
             <div>
               <span>Original Price</span>
 
-              {/* <strong>
-                {formatAvailability(item)}
-              </strong> */}
+             <strong>
+  {formatOriginalPrice(item?.original_price)}
+</strong>
             </div>
           </div>
         </div>
@@ -650,7 +677,11 @@ const handleDeletePackage = async () => {
           </div>
         </div>
 
-        {/* VIEW DETAILS BUTTON */}
+      
+
+
+
+
         <button
           type="button"
           className={`view-details-button ${
@@ -703,7 +734,7 @@ const handleDeletePackage = async () => {
               </p>
             </div>
 
-            {/* PACKAGE DETAILS */}
+            
             <div className="expanded-block">
               <div className="expanded-heading">
                 <div className="expanded-heading-icon">
@@ -724,10 +755,8 @@ const handleDeletePackage = async () => {
                   <span>Original Price</span>
 
                   <strong>
-                    {formatPrice(
-                      item?.original_price
-                    )}
-                  </strong>
+  {formatOriginalPrice(item?.original_price)}
+</strong>
                 </div>
 
                 <div>
@@ -757,11 +786,13 @@ const handleDeletePackage = async () => {
                 </div>
 
                 <div>
-                  <span>Available To</span>
+                  <span>Billing Mode</span>
 
-                  {/* <strong>
-                    {formatAvailability(item)}
-                  </strong> */}
+                   <strong>
+                {formatBillingMode(
+                  item?.billing_mode
+                )}
+              </strong>
                 </div>
 
                 <div>

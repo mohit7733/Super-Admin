@@ -15,7 +15,7 @@ import ProtectedRoute from './Components/Pages/Auth/ProtectedRoute';
 import Register from './Components/Pages/Auth/Register';
 import Admin from './Components/Pages/Admin/Admin'
 
-
+import ApproveMedicine from './Components/Pages/Mangement/ApproveMedicine';
 import Product from './Components/Pages/Product/Product';
 
 
@@ -290,6 +290,17 @@ function App() {
     </ProtectedRoute>
   }
 />
+ <Route
+  path="/ApprovePrescription/:id"
+  element={
+    <ProtectedRoute >
+      <Layout>
+  <ApproveMedicine />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
+ 
 <Route
   path="/content/bannerEvent"
   element={

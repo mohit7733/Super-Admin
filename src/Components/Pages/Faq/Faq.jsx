@@ -29,7 +29,9 @@ const Faq = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const[searchTerm,setSearchTerm]=useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+const [categoryFilter, setCategoryFilter] = useState("all");
+const [statusFilter, setStatusFilter] = useState("all");
   const initialFaqForm = {
   question: "",
   answer: "",
@@ -57,7 +59,11 @@ const [deleteLoading, setDeleteLoading] = useState(false);
 
 const [editFaqErrors, setEditFaqErrors] = useState({});
 const [editSubmitLoading, setEditSubmitLoading] = useState(false);
-
+const [faqStats, setFaqStats] = useState({
+  total_faqs: 0,
+  active_faqs: 0,
+  inactive_faqs: 0,
+});
 
 const faqCategories = [
   { label: "General", value: "general" },
@@ -73,83 +79,81 @@ const faqCategories = [
 ];
 
 
-  const getFaqs = async () => {
+ const getFaqs = async () => {
+  try {
+    setLoading(true);
+
     const token = sessionStorage.getItem("superadmin_token");
 
-    if (!token) {
+    const response = await fetch(
+      `${BASE_URL}/customers/admin/faqs/`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    const data = await response.json();
 
-    try {
-      const response = await fetch(`${BASE_URL}/customers/admin/faqs/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
+    if (data.success) {
+      // Get FAQ results safely
+      const faqData = Array.isArray(data.data?.results)
+        ? data.data.results
+        : [];
+
+      // Update dynamic FAQ stats
+      setFaqStats({
+        total_faqs: data.data?.total_faqs ?? faqData.length,
+        active_faqs: data.data?.active_faqs ?? 0,
+        inactive_faqs: data.data?.inactive_faqs ?? 0,
       });
 
-     
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-
-        toast.error("Session expired. Please login again");
-
-        navigate("/login");
-
-        return;
-      }
-
-      const data = await response.json();
-
-      console.log("FAQ API Response:", data);
-
-
-      if (data.success) {
-        const faqData = Array.isArray(data.data)
-          ? data.data
-          : [];
-
-       
-        const sortedData = [...faqData].sort(
-          (a, b) =>
-            new Date(b.created_at) -
-            new Date(a.created_at)
-        );
-
-        setFaqs(sortedData);
-      } else {
-        toast.error(
-          data.message || "Failed to get FAQs"
-        );
-
-        setError(
-          data.message || "Failed to fetch FAQs"
-        );
-
-        setFaqs([]);
-      }
-    } catch (error) {
-      console.error("FAQ Fetch Error:", error);
-
-      setError(
-        "Something went wrong while fetching FAQ data."
+      // Sort FAQs by latest created date
+      const sortedData = [...faqData].sort(
+        (a, b) =>
+          new Date(b.created_at || 0) -
+          new Date(a.created_at || 0)
       );
 
-      toast.error("Failed to fetch FAQ data");
-
+      setFaqs(sortedData);
+    } else {
       setFaqs([]);
-    } finally {
-      setLoading(false);
+
+      setFaqStats({
+        total_faqs: 0,
+        active_faqs: 0,
+        inactive_faqs: 0,
+      });
+
+      toast.error(data.message || "Failed to fetch FAQs");
     }
-  };
+  } catch (error) {
+    console.error("Error fetching FAQs:", error);
+
+    setFaqs([]);
+
+    setFaqStats({
+      total_faqs: 0,
+      active_faqs: 0,
+      inactive_faqs: 0,
+    });
+
+    toast.error("Something went wrong while fetching FAQs");
+  } finally {
+    setLoading(false);
+  }
+};
 
   
 
@@ -157,9 +161,23 @@ const faqCategories = [
     getFaqs();
   }, []);
 
-  const filteredFaqs = faqs.filter((faq) =>
-  faq.question?.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  // Search, category and status filters work together on the fetched FAQ list.
+  const filteredFaqs = faqs.filter((faq) => {
+    const searchMatch = (faq.question || "")
+      .toLowerCase()
+      .includes(searchTerm.trim().toLowerCase());
+
+    const categoryMatch =
+      categoryFilter === "all" ||
+      (faq.category || "").toLowerCase() === categoryFilter.toLowerCase();
+
+    const statusMatch =
+      statusFilter === "all" ||
+      (statusFilter === "active" && faq.is_active === true) ||
+      (statusFilter === "inactive" && faq.is_active === false);
+
+    return searchMatch && categoryMatch && statusMatch;
+  });
 
   const handleAddFaq = async (e) => {
   e.preventDefault();
@@ -369,9 +387,6 @@ const handleUpdateFaq = async (e) => {
 
   let newErrors = {};
 
-  // =========================
-  // VALIDATION
-  // =========================
 
   if (!editFaqForm.question.trim()) {
     newErrors.question = "Question is required";
@@ -642,7 +657,9 @@ const handleDeleteFaq = async (id) => {
 
     <div className="stat2-info">
       <h3>Total FAQ</h3>
-      <div className="stat2-value">0</div>
+    <div className="stat2-value">
+  {faqStats.total_faqs}
+</div>
     </div>
   </div>
  
@@ -663,11 +680,13 @@ const handleDeleteFaq = async (id) => {
 
     <div className="stat2-info">
       <h3>Active FAQ</h3>
-      <div className="stat2-value">0</div>
+    <div className="stat2-value">
+  {faqStats.active_faqs}
+</div>
     </div>
   </div>
 
-  {/* Inactive FAQ */}
+  
   <div
     className="stat2-card"
     style={{ borderTopColor: "#0D614E" }}
@@ -684,47 +703,96 @@ const handleDeleteFaq = async (id) => {
 
     <div className="stat2-info">
       <h3>Inactive FAQ</h3>
-      <div className="stat2-value">0</div>
+  <div className="stat2-value">
+  {faqStats.inactive_faqs}
+</div>
     </div>
   </div>
 </div>
 
   <div className="filter-category">
-        <div className="filter-controls">
-          <div className="search-wrapper">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search by question..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-            {searchTerm && (
-              <button className="clear-search" onClick={() => setSearchTerm("")}>
-                <FaTimes />
-              </button>
-            )}
-          </div>
-
-         
+    <div className="filter-controls">
+      {/* Search by question */}
+      <div className="search-wrapper">
+        <FaSearch className="search-icon" />
+        <input
+          type="text"
+          placeholder="Search by question..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+        {searchTerm && (
+          <button
+            type="button"
+            className="clear-search"
+            title="Clear search"
+            onClick={() => setSearchTerm("")}
+          >
+            <FaTimes />
+          </button>
+        )}
+      </div>
 
     
-        </div>
+      <select
+        className="faq-filter-select"
+        value={categoryFilter}
+        onChange={(e) => setCategoryFilter(e.target.value)}
+        aria-label="Filter by category"
+      >
+        <option value="all">All Categories</option>
+        {[...new Set(faqs.map((faq) => faq.category).filter(Boolean))]
+          .sort((a, b) => a.localeCompare(b))
+          .map((category) => (
+            <option key={category} value={category}>
+              {faqCategories.find((item) => item.value === category)?.label ||
+                category.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())}
+            </option>
+          ))}
+      </select>
 
-      <button
-  type="button"
-  className="add-customer-btn"
-  onClick={() => {
-    setFaqForm(initialFaqForm);
-    setFaqErrors({});
-    setShowFaqModal(true);
-  }}
->
-  <BiPlus />
-  Add FAQ
-</button>
-      </div>
+      {/* Active / inactive filter */}
+      <select
+        className="faq-filter-select"
+        value={statusFilter}
+        onChange={(e) => setStatusFilter(e.target.value)}
+        aria-label="Filter by status"
+      >
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+
+      {/* Reset all filters */}
+      {(searchTerm || categoryFilter !== "all" || statusFilter !== "all") && (
+        <button
+          type="button"
+          className="faq-clear-filter"
+          onClick={() => {
+            setSearchTerm("");
+            setCategoryFilter("all");
+            setStatusFilter("all");
+          }}
+        >
+          <FaTimes /> Clear Filters
+        </button>
+      )}
+    </div>
+
+    <button
+      type="button"
+      className="add-customer-btn"
+      onClick={() => {
+        setFaqForm(initialFaqForm);
+        setFaqErrors({});
+        setShowFaqModal(true);
+      }}
+    >
+      <BiPlus />
+      Add FAQ
+    </button>
+  </div>
 
      <div className="faq-table-wrapper">
   <table className="faq-table">
@@ -751,15 +819,15 @@ const handleDeleteFaq = async (id) => {
         </tr>
       )}
 
-     {!loading && !error && filteredFaqs.length === 0 && (
-  <tr>
-    <td colSpan="6" className="faq-empty">
-      {searchTerm
-        ? `No FAQ found for "${searchTerm}"`
-        : "No FAQs found."}
-    </td>
-  </tr>
-)}
+      {!loading && !error && filteredFaqs.length === 0 && (
+        <tr>
+          <td colSpan="6" className="faq-empty">
+            {faqs.length === 0
+              ? "No FAQs found."
+              : "No FAQs found matching your filters."}
+          </td>
+        </tr>
+      )}
 
       {!loading &&
         !error &&

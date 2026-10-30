@@ -828,6 +828,25 @@ const timelineData = buildTimeline();
         {formatDateTime(payment.paid_at)}
       </span>
     </div>
+    {/* FAILURE REASON - ONLY WHEN PAYMENT FAILED */}
+{payment.status?.toLowerCase() === "failed" &&
+  payment.failure_reason && (
+    <div className="ordertracking-kv-row">
+      <span className="ordertracking-kv-label">
+        Failure Reason
+      </span>
+
+      <span
+        className="ordertracking-kv-value"
+        style={{
+          color: "#dc2626",
+          fontWeight: 500,
+        }}
+      >
+        {payment.failure_reason}
+      </span>
+    </div>
+  )}
 
     <div className="ordertracking-kv-row">
       <span className="ordertracking-kv-label">
@@ -835,7 +854,7 @@ const timelineData = buildTimeline();
       </span>
 
       <span className="ordertracking-kv-value ordertracking-mono">
-        {getValue(payment.razorpay_payment_id)}
+        {getValue(payment.gateway_payment_id)}
       </span>
     </div>
 

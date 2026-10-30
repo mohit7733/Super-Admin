@@ -1526,437 +1526,315 @@ const ConsultationRefundRequest = () => {
         </div>
       )}
 
-      {/* =====================================================
-          VIEW DRAWER
-      ===================================================== */}
+{/* =====================================================
+    VIEW REFUND DETAILS - RIGHT DRAWER
+===================================================== */}
 
-      {viewModal && (
-        <div
-          className="refund-drawer-overlay"
-          onClick={() =>
-            setViewModal(null)
-          }
+{viewModal && (
+  <div
+    className="refund-drawer-overlay"
+    onClick={() => setViewModal(null)}
+  >
+    <div
+      className="refund-right-drawer"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      {/* DRAWER HEADER */}
+      <div className="refund-drawer-header">
+        <div>
+          <h2>Refund Details</h2>
+          <p>Complete refund request information</p>
+        </div>
+
+        <button
+          type="button"
+          className="refund-drawer-close"
+          onClick={() => setViewModal(null)}
         >
-
-          <div
-            className="refund-details-drawer"
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-
-            {/* HEADER */}
-
-            <div className="refund-drawer-header">
-
-              <div className="refund-drawer-title-wrap">
-
-                <h2>
-                  {viewModal.id || "-"}
-                </h2>
-
-                <span
-                  className={`refund-status ${getStatusClass(
-                    viewModal.admin_status
-                  )}`}
-                >
-                  {formatReason(
-                    viewModal.admin_status
-                  )}
-                </span>
-
-              </div>
-
-              <button
-                type="button"
-                className="refund-drawer-close"
-                onClick={() =>
-                  setViewModal(null)
-                }
-              >
-                <IoClose size={22} />
-              </button>
-
-            </div>
-
-            {/* META */}
-
-            <div className="refund-drawer-meta">
-
-              <span>
-                {(() => {
-                  const date =
-                    formatDate(
-                      viewModal.created_at
-                    );
-
-                  return date
-                    ? `${date.date} • ${date.time}`
-                    : "-";
-                })()}
-              </span>
-
-              <span className="meta-separator">
-                •
-              </span>
-
-              <span>
-                {formatReason(
-                  viewModal.source_type
-                )}
-              </span>
-
-            </div>
-
-            {/* SUMMARY */}
-
-            <div className="refund-summary-card">
-
-              <div>
-
-                <h3>
-                  Refund Request Summary
-                </h3>
-
-                <p>
-                  Requested by{" "}
-                  <strong>
-                    {formatReason(
-                      viewModal.requested_by
-                    )}
-                  </strong>
-                </p>
-
-              </div>
-
-              <div className="refund-summary-amount">
-                ₹
-                {Number(
-                  viewModal.amount || 0
-                ).toFixed(2)}
-              </div>
-
-            </div>
-
-            {/* CUSTOMER */}
-
-            <div className="refund-drawer-section">
-
-              <h3>
-                Customer Information
-              </h3>
-
-              <div className="refund-info-card">
-
-                <div className="refund-info-row">
-                  <span>
-                    Customer ID
-                  </span>
-
-                  <strong className="drawer-break-text">
-                    {viewModal.customer?.id ||
-                      viewModal.customer_id ||
-                      "N/A"}
-                  </strong>
-                </div>
-
-                <div className="refund-info-row">
-                  <span>
-                    Customer Name
-                  </span>
-
-                  <strong>
-                    {viewModal.customer?.name ||
-                      "N/A"}
-                  </strong>
-                </div>
-
-                <div className="refund-info-row">
-                  <span>
-                    Phone Number
-                  </span>
-
-                  <strong>
-                    {viewModal.customer?.phone ||
-                      "N/A"}
-                  </strong>
-                </div>
-
-                <div className="refund-info-row">
-                  <span>
-                    Appointment ID
-                  </span>
-
-                  <strong className="drawer-break-text">
-                    {viewModal.appointment?.id ||
-                      viewModal.appointment_id ||
-                      "N/A"}
-                  </strong>
-                </div>
-
-              </div>
-            </div>
-
-            {/* PAYMENT */}
-
-            <div className="refund-drawer-section">
-
-              <h3>
-                Payment Information
-              </h3>
-
-              <div className="refund-info-card">
-
-                <div className="refund-info-row">
-
-                  <div className="refund-row-label">
-                    <FaMoneyBillWave />
-
-                    <span>
-                      Payment Method
-                    </span>
-                  </div>
-
-                  <strong>
-                    {formatReason(
-                      viewModal.refund_method
-                    )}
-                  </strong>
-
-                </div>
-
-                <div className="refund-info-row">
-
-                  <div className="refund-row-label">
-                    <FaMoneyBillWave />
-
-                    <span>
-                      Gateway Payment ID
-                    </span>
-                  </div>
-
-                  <strong className="drawer-break-text">
-                    {viewModal.gateway_payment_id ||
-                      "N/A"}
-                  </strong>
-
-                </div>
-
-                <div className="refund-info-row">
-
-                  <div className="refund-row-label">
-                    <FaMoneyBillWave />
-
-                    <span>
-                      Gateway Refund ID
-                    </span>
-                  </div>
-
-                  <strong className="drawer-break-text">
-                    {viewModal.gateway_refund_id ||
-                      "N/A"}
-                  </strong>
-
-                </div>
-
-              </div>
-            </div>
-
-            {/* REFUND STATUS */}
-
-            <div className="refund-drawer-section">
-
-              <h3>
-                Refund Status
-              </h3>
-
-              <div className="refund-info-card">
-
-                <div className="refund-info-row">
-
-                  <span>
-                    Admin Status
-                  </span>
-
-                  <span
-                    className={`refund-status ${getStatusClass(
-                      viewModal.admin_status
-                    )}`}
-                  >
-                    {formatReason(
-                      viewModal.admin_status
-                    )}
-                  </span>
-
-                </div>
-
-                <div className="refund-info-row">
-
-                  <span>
-                    Gateway Status
-                  </span>
-
-                  <span
-                    className={`refund-status ${getGatewayStatusClass(
-                      viewModal.gateway_status
-                    )}`}
-                  >
-                    {formatReason(
-                      viewModal.gateway_status
-                    )}
-                  </span>
-
-                </div>
-
-                <div className="refund-info-row">
-
-                  <span>
-                    Failed Reason
-                  </span>
-
-                  <strong>
-                    {viewModal.failed_reason ||
-                      "N/A"}
-                  </strong>
-
-                </div>
-
-              </div>
-            </div>
-
-            {/* REASON */}
-
-            <div className="refund-drawer-section">
-
-              <h3>
-                Refund Reason
-              </h3>
-
-              <div className="refund-reason-card">
-                {viewModal.reason ||
-                  "No reason provided"}
-              </div>
-
-            </div>
-
-            {/* TIMELINE */}
-
-            <div className="refund-drawer-section">
-
-              <h3>
-                Timeline
-              </h3>
-
-              <div className="refund-info-card">
-
-                <div className="refund-info-row">
-
-                  <span>
-                    Requested At
-                  </span>
-
-                  <strong>
-                    {(() => {
-                      const date =
-                        formatDate(
-                          viewModal.created_at
-                        );
-
-                      return date ? (
-                        <>
-                          {date.date}
-
-                          <small>
-                            {date.time}
-                          </small>
-                        </>
-                      ) : (
-                        "N/A"
-                      );
-                    })()}
-                  </strong>
-
-                </div>
-
-                <div className="refund-info-row">
-
-                  <span>
-                    Processed At
-                  </span>
-
-                  <strong>
-                    {(() => {
-                      const date =
-                        formatDate(
-                          viewModal.processed_at
-                        );
-
-                      return date ? (
-                        <>
-                          {date.date}
-
-                          <small>
-                            {date.time}
-                          </small>
-                        </>
-                      ) : (
-                        "N/A"
-                      );
-                    })()}
-                  </strong>
-
-                </div>
-
-                <div className="refund-info-row">
-
-                  <span>
-                    Updated At
-                  </span>
-
-                  <strong>
-                    {(() => {
-                      const date =
-                        formatDate(
-                          viewModal.updated_at
-                        );
-
-                      return date ? (
-                        <>
-                          {date.date}
-
-                          <small>
-                            {date.time}
-                          </small>
-                        </>
-                      ) : (
-                        "N/A"
-                      );
-                    })()}
-                  </strong>
-
-                </div>
-
-              </div>
-            </div>
-
-            <div className="refund-total-card">
-
-              <span>
-                Total Refund Amount
-              </span>
-
-              <strong>
-                ₹
-                {Number(
-                  viewModal.amount || 0
-                ).toFixed(2)}
+          <IoClose />
+        </button>
+      </div>
+
+      {/* DRAWER BODY */}
+      <div className="refund-drawer-body">
+
+        {/* AMOUNT CARD */}
+        <div className="refund-drawer-amount-card">
+          <div className="refund-amount-icon">
+            <FaMoneyBillWave />
+          </div>
+
+          <div>
+            <span>Refund Amount</span>
+            <h2>
+              ₹{Number(viewModal.amount || 0).toFixed(2)}
+            </h2>
+            <small>{viewModal.currency || "INR"}</small>
+          </div>
+        </div>
+
+        {/* STATUS */}
+        <div className="refund-drawer-status-section">
+          <div className="refund-drawer-section-title">
+            Status Information
+          </div>
+
+          <div className="refund-drawer-status-row">
+            <div>
+              <span>Admin Status</span>
+              <strong className={`refund-status ${getStatusClass(viewModal.admin_status)}`}>
+                {formatReason(viewModal.admin_status)}
               </strong>
+            </div>
 
+            <div>
+              <span>Gateway Status</span>
+              <strong className={`refund-status ${getGatewayStatusClass(viewModal.gateway_status)}`}>
+                {formatReason(viewModal.gateway_status)}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        {/* CUSTOMER DETAILS */}
+        <div className="refund-drawer-section">
+          <h3>
+            <span className="refund-section-icon">
+              <FaEye />
+            </span>
+            Customer Information
+          </h3>
+
+          <div className="refund-detail-grid">
+
+            <div className="refund-detail-item">
+              <label>Customer Name</label>
+              <p>{viewModal.customer?.name || "-"}</p>
+            </div>
+
+            <div className="refund-detail-item">
+              <label>Phone Number</label>
+              <p>{viewModal.customer?.phone || "-"}</p>
+            </div>
+
+            <div className="refund-detail-item full-width">
+              <label>Customer ID</label>
+              <p className="refund-id-text">
+                {viewModal.customer?.id || "-"}
+              </p>
             </div>
 
           </div>
         </div>
-      )}
+
+       
+        <div className="refund-drawer-section">
+          <h3>
+            <span className="refund-section-icon">
+              <FaMoneyBillWave />
+            </span>
+            Refund Information
+          </h3>
+
+          <div className="refund-detail-grid">
+
+            <div className="refund-detail-item">
+              <label>Source Type</label>
+              <p>{formatReason(viewModal.source_type)}</p>
+            </div>
+
+            <div className="refund-detail-item">
+              <label>Refund Method</label>
+              <p>{formatReason(viewModal.refund_method)}</p>
+            </div>
+
+            <div className="refund-detail-item">
+              <label>Requested By</label>
+              <p>{formatReason(viewModal.requested_by)}</p>
+            </div>
+
+            <div className="refund-detail-item">
+              <label>Reason</label>
+              <p>{formatReason(viewModal.reason)}</p>
+            </div>
+
+            <div className="refund-detail-item full-width">
+              <label>Appointment ID</label>
+              <p className="refund-id-text">
+                {viewModal.appointment_id || "-"}
+              </p>
+            </div>
+
+            
+
+
+          </div>
+        </div>
+
+       
+        <div className="refund-drawer-section">
+          <h3>
+            <span className="refund-section-icon">
+              <FaMoneyBillWave />
+            </span>
+            Payment & Gateway Details
+          </h3>
+
+          <div className="refund-detail-grid">
+
+            <div className="refund-detail-item full-width">
+              <label>Gateway Payment ID</label>
+              <p className="refund-id-text">
+                {viewModal.gateway_payment_id || "-"}
+              </p>
+            </div>
+
+            <div className="refund-detail-item full-width">
+              <label>Gateway Refund ID</label>
+              <p className="refund-id-text">
+                {viewModal.gateway_refund_id || "-"}
+              </p>
+            </div>
+
+            <div className="refund-detail-item full-width">
+              <label>Refund Request ID</label>
+              <p className="refund-id-text">
+                {viewModal.id || "-"}
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        {/* BANK DETAILS */}
+        <div className="refund-drawer-section">
+          <h3>
+            <span className="refund-section-icon">
+              <FaMoneyBillWave />
+            </span>
+            Bank Information
+          </h3>
+
+          {viewModal.bank_detail &&
+          Object.keys(viewModal.bank_detail).length > 0 ? (
+            <div className="refund-detail-grid">
+              {Object.entries(viewModal.bank_detail).map(
+                ([key, value]) => (
+                  <div className="refund-detail-item" key={key}>
+                    <label>{formatReason(key)}</label>
+                    <p>{String(value ?? "-")}</p>
+                  </div>
+                )
+              )}
+            </div>
+          ) : (
+            <div className="refund-no-bank">
+              <span>No bank details available</span>
+            </div>
+          )}
+        </div>
+
+        {/* FAILED REASON */}
+        {viewModal.failed_reason && (
+          <div className="refund-failed-reason">
+            <strong>Failed Reason</strong>
+            <p>{viewModal.failed_reason}</p>
+          </div>
+        )}
+
+        {/* DATE INFORMATION */}
+        <div className="refund-drawer-section">
+          <h3>
+            <span className="refund-section-icon">
+              <FaClock />
+            </span>
+            Timeline Information
+          </h3>
+
+          <div className="refund-timeline">
+
+            {[
+              ["Requested At", viewModal.created_at],
+              ["Reviewed At", viewModal.reviewed_at],
+              ["Processed At", viewModal.processed_at],
+              ["Last Updated", viewModal.updated_at],
+            ].map(([label, date], index) => {
+              const dateTime = formatDate(date);
+
+              return (
+                <div className="refund-timeline-item" key={label}>
+                  <div className="refund-timeline-dot"></div>
+
+                  <div className="refund-timeline-content">
+                    <strong>{label}</strong>
+
+                    {dateTime ? (
+                      <p>
+                        {dateTime.date} at {dateTime.time}
+                      </p>
+                    ) : (
+                      <p className="refund-not-available">
+                        Not Available
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* DRAWER FOOTER */}
+      <div className="refund-drawer-footer">
+
+        {viewModal.admin_status === "pending" && (
+          <>
+            <button
+              type="button"
+              className="refund-drawer-reject-btn"
+              onClick={() => {
+                const item = viewModal;
+                setViewModal(null);
+                handleReject(item);
+              }}
+            >
+              <FaCircleXmark />
+              Reject
+            </button>
+
+            <button
+              type="button"
+              className="refund-drawer-approve-btn"
+              onClick={() => {
+                const item = viewModal;
+                setViewModal(null);
+                handleApprove(item);
+              }}
+            >
+              <FaCircleCheck />
+              Approve Refund
+            </button>
+          </>
+        )}
+
+        <button
+          type="button"
+          className="refund-drawer-done-btn"
+          onClick={() => setViewModal(null)}
+        >
+          Close
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+
 
       <ToastContainer
         position="top-center"

@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
-
+import ApproveMedicine from "./ApproveMedicine";
 const DiseaseMangement = () => {
   const navigate = useNavigate();
 
@@ -476,42 +476,9 @@ const DiseaseMangement = () => {
   // OPEN APPROVAL MODAL
   // --------------------------------------------------
 
-  const handleOpenApproveModal = (item) => {
-    setSelectedApprovalRequest(item);
-
-    const initialVariantIds = [];
-    const initialQuantities = {};
-
-    (item?.requested_variants || []).forEach((requestedItem) => {
-      const medicine = requestedItem?.variant;
-      const variantId = getVariantId(medicine);
-
-      if (!variantId) return;
-
-      initialVariantIds.push(variantId);
-
-      // Resolve stock using the same lookup as search results.
-      const stock = getStockForVariant(variantId, medicine);
-      const requestedQuantity = Number(requestedItem?.quantity ?? 1);
-
-      if (stock !== null && stock > 0) {
-        initialQuantities[normalizeId(variantId)] = Math.min(
-          Math.max(1, requestedQuantity),
-          stock
-        );
-      } else {
-        // Keep the item selected, but do not pretend stock is 0.
-        initialQuantities[normalizeId(variantId)] = "";
-      }
-    });
-
-    setSelectedVariantIds(initialVariantIds);
-    setApprovedQuantities(initialQuantities);
-    setAdminNotes("");
-    setMedicineSearch("");
-    setExpandedSearchProducts({});
-    setApproveModal(true);
-  };
+const handleOpenApproveModal = (item) => {
+  navigate(`/ApprovePrescription/${item.id}`);
+};
 
   const closeApproveModal = () => {
     if (isApproving) return;

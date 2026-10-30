@@ -19,14 +19,23 @@ import BASE_URL from "../../../Base";
 const Customerpurchase = () => {
   const navigate = useNavigate();
 
-  const [Loading, setLoading] = useState(true);
-  const [Error, setError] = useState(null);
-  const [Data, setData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+const [Loading, setLoading] = useState(true);
+const [Error, setError] = useState(null);
+const [Data, setData] = useState([]);
 
-  // --------------------------------------------------
-  // Helpers
+const [searchTerm, setSearchTerm] = useState("");
+const [debouncedSearch, setDebouncedSearch] = useState("");
+
+const [statusFilter, setStatusFilter] = useState("all");
+
+const [currentPage, setCurrentPage] = useState(1);
+const pageSize = 10;
+
+const [totalCount, setTotalCount] = useState(0);
+const [nextPage, setNextPage] = useState(null);
+const [previousPage, setPreviousPage] = useState(null);
+
+const totalPages = Math.ceil(totalCount / pageSize);
   // --------------------------------------------------
 
   const formatDate = (date) => {
@@ -121,122 +130,105 @@ const Customerpurchase = () => {
     } catch {
       toast.error(`Unable to copy ${label}`);
     }
-  };
+  }
+ const getPackageBuyers = async (page = 1) => {
+  const token = sessionStorage.getItem("superadmin_token");
 
-  // --------------------------------------------------
-  // Fetch all package purchases, including next pages
-  // --------------------------------------------------
+  if (!token) {
+    toast.error("Session expired. Please login again.");
+    navigate("/login");
+    return;
+  }
 
-  const getPackageBuyers = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
+  setLoading(true);
+  setError(null);
 
-    if (!token) {
-      toast.error("Session expired. Please login again");
+  try {
+    const endpoint = `${BASE_URL.replace(/\/+$/, "")}/packages/admin/purchases/`;
+
+    const params = new URLSearchParams({
+      page: String(page),
+      page_size: String(pageSize),
+    });
+
+    if (debouncedSearch) {
+      params.append("search", debouncedSearch);
+    }
+
+    if (statusFilter !== "all") {
+      params.append("status", statusFilter);
+    }
+
+    const response = await fetch(`${endpoint}?${params.toString()}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "true",
+      },
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again.");
       navigate("/login");
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    const result = await response.json();
 
-    try {
-      let requestUrl = `${BASE_URL}/packages/admin/purchases/`;
-      let allBuyers = [];
-      const visitedUrls = new Set();
-
-      while (requestUrl && !visitedUrls.has(requestUrl)) {
-        visitedUrls.add(requestUrl);
-
-        const response = await fetch(requestUrl, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        });
-
-        if (response.status === 401 || response.status === 403) {
-          sessionStorage.removeItem("superadmin_token");
-          toast.error("Session expired. Please login again");
-          navigate("/login");
-          return;
-        }
-
-        const result = await response.json();
-
-        if (!response.ok || result.success === false) {
-          throw new Error(
-            result.message || "Failed to fetch package buyers"
-          );
-        }
-
-        // API format:
-        // { success: true, data: { count, next, results: [] } }
-        const pageData = result.data;
-
-        const pageResults = Array.isArray(pageData)
-          ? pageData
-          : Array.isArray(pageData?.results)
-          ? pageData.results
-          : [];
-
-        allBuyers = [...allBuyers, ...pageResults];
-
-        const nextPage = Array.isArray(pageData)
-          ? null
-          : pageData?.next;
-
-        if (!nextPage) {
-          requestUrl = null;
-        } else if (/^https?:\/\//i.test(nextPage)) {
-          requestUrl = nextPage;
-        } else {
-          requestUrl = `${BASE_URL}${nextPage.startsWith("/") ? "" : "/"}${nextPage}`;
-        }
-      }
-
-      allBuyers.sort(
-        (a, b) =>
-          new Date(b.created_at || b.paid_at || 0).getTime() -
-          new Date(a.created_at || a.paid_at || 0).getTime()
-      );
-
-      setData(allBuyers);
-    } catch (error) {
-      console.error("Package Buyers Fetch Error:", error);
-      setError(error.message || "Something went wrong while fetching buyers");
-      toast.error(error.message || "Failed to fetch package buyers");
-    } finally {
-      setLoading(false);
+    if (!response.ok || result.success === false) {
+      throw new Error(result.message || "Failed to fetch purchases.");
     }
-  };
 
-  useEffect(() => {
-    getPackageBuyers();
-    // Fetch on page mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const pageData = result.data;
+    const purchases = Array.isArray(pageData)
+      ? pageData
+      : pageData?.results || [];
 
-  // --------------------------------------------------
-  // Stats
-  // --------------------------------------------------
+    setData(purchases);
+    setTotalCount(pageData?.count || 0);
+    setNextPage(pageData?.next || null);
+    setPreviousPage(pageData?.previous || null);
+    setCurrentPage(page);
+  } catch (error) {
+    console.error("Purchase API Error:", error);
+    setError(error.message || "Failed to fetch purchases.");
+    setData([]);
+    setTotalCount(0);
+    setNextPage(null);
+    setPreviousPage(null);
+  } finally {
+    setLoading(false);
+  }
+};
 
+ useEffect(() => {
+  getPackageBuyers(currentPage);
+}, [currentPage, debouncedSearch, statusFilter]);
+
+  
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(searchTerm.trim());
+    setCurrentPage(1);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [searchTerm]);
   const stats = useMemo(() => {
     return {
       total: Data.length,
       active: Data.filter(
         (item) => String(item.status || "").toLowerCase() === "active"
       ).length,
-      shifted: Data.filter(
-        (item) => String(item.shift_status || "").toLowerCase() === "shifted"
+      Expired: Data.filter(
+        (item) => String(item.shift_status || "").toLowerCase() === "expired"
       ).length,
     };
   }, [Data]);
 
-  // --------------------------------------------------
-  // Search and status filter
-  // --------------------------------------------------
+  
 
   const FilteredData = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -490,8 +482,8 @@ const Customerpurchase = () => {
             <FaCalendarAlt size={16} />
           </div>
           <div className="stat2-info">
-            <h3>Shifted Purchases</h3>
-            <div className="stat2-value">{stats.shifted}</div>
+            <h3>Expired Purchases</h3>
+            <div className="stat2-value">{stats.Expired}</div>
           </div>
         </div>
       </div>
@@ -508,6 +500,7 @@ const Customerpurchase = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
             />
+       
 
             {searchTerm && (
               <button
@@ -527,10 +520,11 @@ const Customerpurchase = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">All Status</option>
+              <option value="pending">Pending</option>
             <option value="active">Active</option>
-            <option value="pending">Pending</option>
+          
             <option value="expired">Expired</option>
-            <option value="cancelled">Cancelled</option>
+          
           </select>
 
           {(searchTerm || statusFilter !== "all") && (
@@ -556,15 +550,15 @@ const Customerpurchase = () => {
             Export Excel
           </button>
 
-          <button
-            type="button"
-            className="add-customer-btn"
-            onClick={getPackageBuyers}
-            disabled={Loading}
-          >
-            <FiRefreshCw />
-            {Loading ? "Loading..." : "Refresh"}
-          </button>
+   <button
+  type="button"
+  className="add-customer-btn"
+  onClick={() => getPackageBuyers(currentPage)}
+  disabled={Loading}
+>
+  <FiRefreshCw />
+  {Loading ? "Loading..." : "Refresh"}
+</button>
         </div>
       </div>
 
@@ -785,6 +779,95 @@ const Customerpurchase = () => {
             )}
           </tbody>
         </table>
+        <div className="order-pagination-container">
+  <div className="order-pagination-info">
+    Showing{" "}
+    <strong>
+      {totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1}
+    </strong>{" "}
+    to{" "}
+    <strong>
+      {Math.min(currentPage * pageSize, totalCount)}
+    </strong>{" "}
+    of <strong>{totalCount}</strong> purchases
+  </div>
+
+  <div className="order-pagination-buttons">
+    {/* Previous */}
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={!previousPage || Loading}
+      onClick={() => setCurrentPage((prev) => prev - 1)}
+    >
+      ‹
+    </button>
+
+    {/* First page */}
+    {totalPages > 0 && (
+      <button
+        className={`order-pagination-btn ${
+          currentPage === 1 ? "order-pagination-active" : ""
+        }`}
+        disabled={Loading}
+        onClick={() => setCurrentPage(1)}
+      >
+        1
+      </button>
+    )}
+
+    {currentPage > 3 && (
+      <span className="order-pagination-dots">...</span>
+    )}
+
+    {/* Middle pages */}
+    {Array.from({ length: totalPages }, (_, index) => index + 1)
+      .filter(
+        (page) =>
+          page !== 1 &&
+          page !== totalPages &&
+          page >= currentPage - 1 &&
+          page <= currentPage + 1
+      )
+      .map((page) => (
+        <button
+          key={page}
+          className={`order-pagination-btn ${
+            currentPage === page ? "order-pagination-active" : ""
+          }`}
+          disabled={Loading}
+          onClick={() => setCurrentPage(page)}
+        >
+          {page}
+        </button>
+      ))}
+
+    {currentPage < totalPages - 2 && (
+      <span className="order-pagination-dots">...</span>
+    )}
+
+    {/* Last page */}
+    {totalPages > 1 && (
+      <button
+        className={`order-pagination-btn ${
+          currentPage === totalPages ? "order-pagination-active" : ""
+        }`}
+        disabled={Loading}
+        onClick={() => setCurrentPage(totalPages)}
+      >
+        {totalPages}
+      </button>
+    )}
+
+    {/* Next */}
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={!nextPage || Loading}
+      onClick={() => setCurrentPage((prev) => prev + 1)}
+    >
+      ›
+    </button>
+  </div>
+</div>
       </div>
 
       <ToastContainer position="top-center" autoClose={2000} />

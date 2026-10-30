@@ -102,6 +102,7 @@ const getVendorDetail = async () => {
   }
 };
 
+
 useEffect(() => {
   if (vendorId) {
     getVendorDetail();
@@ -116,25 +117,50 @@ useEffect(() => {
   { key: "Stock", label: "Stock" },
   { key: "Order", label: "Order" },
 ];
+const getVendorStatusDate = () => {
+  const status = vendorData?.approval_status?.toLowerCase();
 
-const handleVendorAction = async ( vendorId,status, reason = "") => {
+  switch (status) {
+    case "approved":
+      return {
+        label: "Verified At",
+        date: vendorData?.approved_at,
+      };
+
+    case "rejected":
+      return {
+        label: "Rejected At",
+        date: vendorData?.rejected_at,
+      };
+
+    case "suspended":
+      return {
+        label: "Suspended At",
+        date: vendorData?.suspended_at,
+      };
+
+    default:
+      return {
+        label: "Status Date",
+        date: null,
+      };
+  }
+};
+
+const handleVendorAction = async (vendorId, status, reason = "") => {
   setVendorLoadingAction(true);
 
   try {
     const token = sessionStorage.getItem("superadmin_token");
 
-    const payload = {
-    
-      status,
-    };
+    const payload = { status };
 
     if (status === "rejected" || status === "suspended") {
       payload.reason = reason;
     }
 
     const res = await fetch(
-        `${BASE_URL}/vendors/admin/vendor/${vendorId}/review-status/`,
-    
+      `${BASE_URL}/vendors/admin/vendor/${vendorId}/review-status/`,
       {
         method: "PUT",
         headers: {
@@ -148,17 +174,31 @@ const handleVendorAction = async ( vendorId,status, reason = "") => {
 
     const data = await res.json();
 
-    if (data.success) {
+    if (res.ok && data.success) {
       toast.success(`Vendor ${status} successfully`);
+
+      // Immediately update status and corresponding date in UI
+      const now = new Date().toISOString();
 
       setVendorData((prev) => ({
         ...prev,
         approval_status: status,
+        ...(status === "approved" && {
+          approved_at: data.data?.approved_at || now,
+        }),
+        ...(status === "rejected" && {
+          rejected_at: data.data?.rejected_at || now,
+        }),
+        ...(status === "suspended" && {
+          suspended_at: data.data?.suspended_at || now,
+        }),
       }));
+
     } else {
       toast.error(data.message || "Failed to update vendor status");
     }
   } catch (err) {
+    console.error("Vendor status update error:", err);
     toast.error("Something went wrong");
   } finally {
     setVendorLoadingAction(false);
@@ -207,8 +247,26 @@ const handleVendorReasonSubmit = async () => {
                                 <div className="vendor-contact">
                                     <span><FaEnvelope />  {vendorData?.business_email || "-"}</span>
                                     <span><FaPhone /> {vendorData?.business_phone || "-"}</span>
-                                <span>
-  <FaCalendarAlt /> Joined: {formatDate(vendorData?.approved_at)}
+               <span>
+  <FaCalendarAlt />
+  {" "}
+  {vendorData?.approval_status === "approved"
+    ? "Joined:"
+    : vendorData?.approval_status === "rejected"
+    ? "Rejected:"
+    : vendorData?.approval_status === "suspended"
+    ? "Suspended :"
+    : "Joined:"}
+  {" "}
+  {formatDate(
+    vendorData?.approval_status === "approved"
+      ? vendorData?.approved_at
+      : vendorData?.approval_status === "rejected"
+      ? vendorData?.rejected_at
+      : vendorData?.approval_status === "suspended"
+      ? vendorData?.suspended_at
+      : null
+  )}
 </span>
                                 </div>
                               <span
@@ -444,29 +502,30 @@ const handleVendorReasonSubmit = async () => {
       </span>
     </div>
 
-    <div className="info-row-vendor">
-      <span className="label">Verified</span>
-      <span className="value">
-        {vendorData?.status ? "Yes" : "No"}
-      </span>
-    </div>
+ <div className="info-row-vendor">
+  <span className="label">Verified</span>
+  <span className="value">
+    {vendorData?.status === "active" ? "Yes" : "No"}
+  </span>
+</div>
+
+<div className="info-row-vendor">
+  <span className="label">Active</span>
+  <span className="value">
+    {vendorData?.status === "active" ? "Yes" : "No"}
+  </span>
+</div>
+
 
     <div className="info-row-vendor">
-      <span className="label">Active</span>
-      <span className="value">
-        {vendorData?.status ? "Yes" : "No"}
-      </span>
-    </div>
+  <span className="label">
+    {getVendorStatusDate().label}
+  </span>
 
-
-    <div className="info-row-vendor">
-      <span className="label">Verified At</span>
-      <span className="value">
-        {vendorData?.approved_at
-          ? new Date(vendorData.approved_at).toLocaleDateString("en-GB")
-          : "-"}
-      </span>
-    </div>
+  <span className="value">
+    {formatDate(getVendorStatusDate().date)}
+  </span>
+</div>
   </div>
 </div>
 
@@ -652,37 +711,57 @@ const handleVendorReasonSubmit = async () => {
         </div>
        <div className="action-buttons-row">
 
- <button
-  className="btn btn-reject-outline"
+<button
+  className={`btn btn-reject-outline ${
+    vendorData?.approval_status?.toLowerCase() === "rejected"
+      ? "status-locked"
+      : ""
+  }`}
+  disabled={vendorLoadingAction}
   onClick={() => {
+    if (vendorData?.approval_status?.toLowerCase() === "rejected") {
+      toast.info("Vendor is already rejected.");
+      return;
+    }
+
     setVendorActionType("rejected");
     setVendorReason("");
   }}
-  disabled={vendorLoadingAction}
 >
   <FiXCircle size={16} /> Reject
 </button>
-<button
-  className="btn btn-suspend-outline"
-  onClick={() => {
-    setVendorActionType("suspended");
-    setVendorReason("");
-  }}
-  disabled={vendorLoadingAction}
->
-  <FiPauseCircle size={16} /> Suspend
-</button>
+  <button
+    className="btn btn-suspend-outline"
+    disabled={vendorLoadingAction}
+    onClick={() => {
+      if (vendorData?.approval_status === "suspended") {
+        toast.info("Vendor is already suspended.");
+        return;
+      }
+
+      if (vendorData?.approval_status === "rejected") {
+        toast.info("Rejected vendor cannot be suspended.");
+        return;
+      }
+
+      setVendorActionType("suspended");
+      setVendorReason("");
+    }}
+  >
+    <FiPauseCircle size={16} /> Suspend
+  </button>
  
 <button
-   className={`btn btn-approve ${
-    vendorData?.approval_status === "approved" ||
-  vendorData?.policies_accepted !== true
-      ? "btn-approve-disabled"
+  className={`btn btn-approve ${
+    vendorData?.approval_status?.toLowerCase() === "approved" ||
+    vendorData?.policies_accepted !== true
+      ? "btn-approve-disabled status-locked"
       : ""
   }`}
-
-   onClick={() => {
-    if (vendorData?.approval_status === "approved") {
+  disabled={vendorLoadingAction}
+  onClick={() => {
+    if (vendorData?.approval_status?.toLowerCase() === "approved") {
+      toast.info("Vendor is already approved.");
       return;
     }
 

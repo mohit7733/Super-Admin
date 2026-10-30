@@ -35,7 +35,68 @@
   border-bottom: 1px solid #e5e8e6;
   white-space: nowrap;
 }
+filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
+.faq-filter-select {
+  min-width: 160px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.faq-filter-select:focus {
+  border-color: #0D614E;
+  box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.1);
+}
+
+.faq-clear-filter {
+  height: 42px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fff;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.faq-clear-filter:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .filter-controls {
+    width: 100%;
+  }
+
+  .faq-filter-select {
+    flex: 1;
+    min-width: 130px;
+  }
+
+  .search-wrapper {
+    width: 100%;
+  }
+}
 /* Column widths */
 
 .faq-table-head th:nth-child(1) {

@@ -40,6 +40,10 @@ const Policy = () => {
   const [RollbackModal, setRollbackModal] = useState(false);
 const [rollbackLoading, setRollbackLoading] = useState(false);
 
+const [policyTypeFilter, setPolicyTypeFilter] = useState("all");
+const [categoryFilter, setCategoryFilter] = useState("all");
+const [statusFilter, setStatusFilter] = useState("all");
+const [versionFilter, setVersionFilter] = useState("all");
   const [selectedPolicy, setSelectedPolicy] = useState(null);
   const [policyModal, setPolicyModal] = useState(false);
 
@@ -322,18 +326,40 @@ const handleRollbackPolicy = async (id) => {
       .replace(/_/g, " ")
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
-  const filteredPolicies = policyData.filter((item) => {
+ const filteredPolicies = policyData.filter((item) => {
   const search = searchTerm.trim().toLowerCase();
 
-  if (!search) return true;
-
-  return (
+  const matchesSearch =
+    !search ||
     (item.name || "").toLowerCase().includes(search) ||
     (item.code || "").toLowerCase().includes(search) ||
     (item.policy_type || "").toLowerCase().includes(search) ||
     (item.category || "").toLowerCase().includes(search) ||
     (item.status || "").toLowerCase().includes(search) ||
-    String(item.version || "").toLowerCase().includes(search)
+    String(item.version || 1).toLowerCase().includes(search);
+
+  const matchesType =
+    policyTypeFilter === "all" ||
+    item.policy_type === policyTypeFilter;
+
+  const matchesCategory =
+    categoryFilter === "all" ||
+    item.category === categoryFilter;
+
+  const matchesStatus =
+    statusFilter === "all" ||
+    item.status === statusFilter;
+
+  const matchesVersion =
+    versionFilter === "all" ||
+    String(item.version || 1) === versionFilter;
+
+  return (
+    matchesSearch &&
+    matchesType &&
+    matchesCategory &&
+    matchesStatus &&
+    matchesVersion
   );
 });
 
@@ -498,7 +524,122 @@ const policyStats = {
 </div>
 
       
-         
+       {/* Search and Filters */}
+<div className="policy-toolbar">
+  <div className="policy-search-box">
+    <FaSearch className="policy-search-icon" />
+
+    <input
+      type="text"
+      placeholder="Search by name, code, type, category..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
+
+    {searchTerm && (
+      <button
+        type="button"
+        className="policy-search-clear"
+        onClick={() => setSearchTerm("")}
+        title="Clear search"
+      >
+        <FaTimes />
+      </button>
+    )}
+  </div>
+
+  <div className="policy-filters">
+    {/* Policy Type */}
+    <select
+      className="policy-filter-select"
+      value={policyTypeFilter}
+      onChange={(e) => setPolicyTypeFilter(e.target.value)}
+    >
+      <option value="all">All Policy Types</option>
+
+      {[...new Set(
+        policyData
+          .map((item) => item.policy_type)
+          .filter(Boolean)
+      )].sort().map((type) => (
+        <option key={type} value={type}>
+          {formatPolicyType(type)}
+        </option>
+      ))}
+    </select>
+
+    {/* Category */}
+    <select
+      className="policy-filter-select"
+      value={categoryFilter}
+      onChange={(e) => setCategoryFilter(e.target.value)}
+    >
+      <option value="all">All Categories</option>
+
+      {[...new Set(
+        policyData
+          .map((item) => item.category)
+          .filter(Boolean)
+      )].sort().map((category) => (
+        <option key={category} value={category}>
+          {category}
+        </option>
+      ))}
+    </select>
+
+  
+    <select
+      className="policy-filter-select"
+      value={statusFilter}
+      onChange={(e) => setStatusFilter(e.target.value)}
+    >
+      <option value="all">All Statuses</option>
+      <option value="published">Published</option>
+      <option value="draft">Draft</option>
+      <option value="archived">Archived</option>
+    </select>
+
+  
+    <select
+      className="policy-filter-select"
+      value={versionFilter}
+      onChange={(e) => setVersionFilter(e.target.value)}
+    >
+      <option value="all">All Versions</option>
+
+      {[...new Set(
+        policyData.map((item) => String(item.version || 1))
+      )].sort((a, b) => Number(b) - Number(a)).map((version) => (
+        <option key={version} value={version}>
+          Version {version}
+        </option>
+      ))}
+    </select>
+
+    {/* Reset Filters */}
+    <button
+      type="button"
+      className="policy-reset-filters"
+      onClick={() => {
+        setSearchTerm("");
+        setPolicyTypeFilter("all");
+        setCategoryFilter("all");
+        setStatusFilter("all");
+        setVersionFilter("all");
+      }}
+    >
+      <FaUndo />
+      Reset
+    </button>
+  </div>
+</div>
+
+<div className="policy-results-info">
+  <span>
+    Showing <strong>{filteredPolicies.length}</strong> of{" "}
+    <strong>{policyData.length}</strong> policies
+  </span>
+</div>  
 
   
       <div className="table-wrapper policy-table-wrapper">

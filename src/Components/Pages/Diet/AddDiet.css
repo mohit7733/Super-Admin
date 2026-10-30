@@ -249,7 +249,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: #0d614e;
-  box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.08);
+  /* box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.08); */
 }
 
 input:disabled {
@@ -259,9 +259,6 @@ input:disabled {
 }
 
 
-/* =========================================================
-   RADIO
-========================================================= */
 
 fieldset {
   min-width: 0;

@@ -705,4 +705,25 @@
         }
 
         
-        
+        .status-locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+}
+
+.btn-reject-outline.status-locked,
+.btn-suspend-outline.status-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+  box-shadow: none;
+}
+
+
+.btn-reject-outline.status-locked:hover,
+.btn-suspend-outline.status-locked:hover {
+  opacity: 0.45;
+  filter: grayscale(0.4);
+  transform: none;
+  box-shadow: none;
+}
