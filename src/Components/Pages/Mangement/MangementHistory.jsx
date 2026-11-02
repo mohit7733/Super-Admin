@@ -23,7 +23,8 @@ const ManagementHistory = () => {
   const [appointmentSearch, setAppointmentSearch] = useState("");
 
   const [appointmentData, setAppointmentData] = useState([]);
-  const [appointmentLoading, setAppointmentLoading] = useState(false);
+  const [appointmentLoading, setAppointmentLoading] = useState(false)
+  ;
   const [appointmentError, setAppointmentError] = useState(null);
 
   const [consultationCounts, setConsultationCounts] = useState({

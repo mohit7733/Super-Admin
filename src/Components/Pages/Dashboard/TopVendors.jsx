@@ -12,6 +12,7 @@ const TopVendors = ({ vendors = [] }) => {
       currency: "INR",
       maximumFractionDigits: 2,
     }).format(Number(value) || 0);
+    
 
   const getVendorName = (vendor) =>
     vendor.vendor_name ||

@@ -1587,7 +1587,7 @@ const Packagescategory = () => {
                           <FaEdit />
                         </button>
 
-                        <button
+                        {/* <button
                           className="action-btn delete"
                           title="Delete"
                           onClick={() => {
@@ -1601,7 +1601,7 @@ const Packagescategory = () => {
                           }}
                         >
                           <FiTrash2 />
-                        </button>
+                        </button> */}
 
                       </div>
 
