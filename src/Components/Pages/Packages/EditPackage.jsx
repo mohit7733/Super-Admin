@@ -11,6 +11,7 @@ import {
   FaQuestionCircle,
   FaCreditCard,
   FaSyncAlt,
+  FaCheck,
 } from "react-icons/fa";
 
 import BASE_URL from "../../../Base";
@@ -48,7 +49,7 @@ const EditPackage = () => {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
+const [selectedBenefitType, setSelectedBenefitType] = useState("all");
   const [benefitDropdownOpen, setBenefitDropdownOpen] =
     useState(false);
 
@@ -79,6 +80,22 @@ const EditPackage = () => {
     can_be_purchased: true,
     configuration: [],
   });
+  // BENEFIT TYPE FILTER
+const getBenefitType = (benefit) => {
+  const mode = benefit?.fulfillment_mode?.toLowerCase();
+
+  if (mode === "flag") return "flag";
+  if (mode === "consumable") return "consumable";
+  if (mode === "chat") return "chat";
+
+  return "other";
+};
+
+const filteredBenefits = benefits.filter((benefit) => {
+  if (selectedBenefitType === "all") return true;
+
+  return getBenefitType(benefit) === selectedBenefitType;
+});
 
   // HEADERS
   const getHeaders = () => {
@@ -1265,123 +1282,128 @@ const EditPackage = () => {
             </div>
           </div>
 
-          {/* BENEFIT MULTISELECT */}
-          <div className="add-form-group full-width">
-            <label>Select Benefits</label>
+        {/* BENEFIT MULTISELECT */}
 
-            <div className="benefit-multiselect">
-              <button
-                type="button"
-                className="benefit-select-button"
-                onClick={() =>
-                  setBenefitDropdownOpen((prev) => !prev)
-                }
+{/* BENEFIT MULTISELECT */}
+<div className="add-form-group full-width">
+  <label>Select Benefits</label>
+
+  <div className="benefit-multiselect-wrapper">
+    <button
+      type="button"
+      className="benefit-multiselect-trigger"
+      onClick={() => setBenefitDropdownOpen((prev) => !prev)}
+    >
+      <div className="selected-benefit-values">
+        {form.configuration.length === 0 ? (
+          <span className="benefit-placeholder">
+            {benefitLoading ? "Loading benefits..." : "Select benefits"}
+          </span>
+        ) : (
+          form.configuration.map((config, index) => (
+            <span
+              key={`${config.benefit_id || config.name}-${index}`}
+              className="selected-benefit-chip"
+            >
+              {config.benefit_name || config.label || "Benefit"}
+
+              <span
+                className="selected-benefit-chip-remove"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeConfiguration(index);
+                }}
               >
-                <div className="selected-benefits-display">
-                  {form.configuration.length === 0 ? (
-                    <span className="benefit-placeholder">
-                      Select Benefits
-                    </span>
-                  ) : (
-                    form.configuration.map((config, index) => (
-                      <span
-                        className="selected-benefit-chip"
-                        key={`${
-                          config.benefit_id || config.name
-                        }-${index}`}
-                      >
-                        <span className="selected-benefit-name">
-                          {config.benefit_name ||
-                            config.label ||
-                            "Benefit"}
-                        </span>
+                <FaTimes />
+              </span>
+            </span>
+          ))
+        )}
+      </div>
 
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          className="selected-benefit-remove"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeConfiguration(index);
-                          }}
-                          onKeyDown={(e) => {
-                            if (
-                              e.key === "Enter" ||
-                              e.key === " "
-                            ) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              removeConfiguration(index);
-                            }
-                          }}
-                          aria-label="Remove benefit"
-                        >
-                          ×
-                        </span>
-                      </span>
-                    ))
-                  )}
-                </div>
+      <FaChevronDown />
+    </button>
 
-                <FaChevronDown
-                  className={
-                    benefitDropdownOpen ? "rotate-chevron" : ""
-                  }
-                />
-              </button>
-
-              {benefitDropdownOpen && (
-                <div className="benefit-dropdown-menu">
-                  {benefitLoading ? (
-                    <div className="benefit-dropdown-loading">
-                      Loading Benefits...
-                    </div>
-                  ) : benefits.length === 0 ? (
-                    <div className="benefit-dropdown-empty">
-                      No Benefits Found
-                    </div>
-                  ) : (
-                    benefits.map((benefit) => {
-                      const isSelected =
-                        form.configuration.some(
-                          (config) =>
-                            String(
-                              config.benefit_id || config.name
-                            ) === String(benefit.id)
-                        );
-
-                      return (
-                        <label
-                          key={benefit.id}
-                          className={`benefit-option ${
-                            isSelected ? "selected" : ""
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() =>
-                              toggleBenefit(benefit, isSelected)
-                            }
-                          />
-
-                          <span className="benefit-option-text">
-                            {benefit.name}
-                          </span>
-                        </label>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="benefit-field-help">
-              <small>
-                Select multiple benefits from the Benefit master.
-              </small>
-            </div>
+    {benefitDropdownOpen && (
+      <div className="benefit-multiselect-dropdown">
+        {benefitLoading ? (
+          <div className="benefit-dropdown-loading">
+            Loading benefits...
           </div>
+        ) : benefits.length === 0 ? (
+          <div className="benefit-dropdown-empty">
+            No benefits available.
+          </div>
+        ) : (
+          <div className="benefit-dropdown-list">
+            <div className="benefit-type-tabs">
+              {[
+                { label: "All", value: "all" },
+                { label: "Flag", value: "flag" },
+                { label: "Consumable", value: "consumable" },
+                { label: "Chat", value: "chat" },
+              ].map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  className={
+                    selectedBenefitType === tab.value ? "active" : ""
+                  }
+                  onClick={() => setSelectedBenefitType(tab.value)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {filteredBenefits.length === 0 ? (
+              <div className="benefit-dropdown-empty">
+                No {selectedBenefitType} benefits available.
+              </div>
+            ) : (
+              filteredBenefits.map((benefit) => {
+                const isSelected = form.configuration.some(
+                  (config) =>
+                    String(config.benefit_id || config.name) ===
+                    String(benefit.id)
+                );
+
+                return (
+                  <button
+                    type="button"
+                    key={benefit.id}
+                    className={`benefit-dropdown-option ${
+                      isSelected ? "benefit-option-selected" : ""
+                    }`}
+                    onClick={() => toggleBenefit(benefit, isSelected)}
+                  >
+                    <span
+                      className={`benefit-checkbox ${
+                        isSelected ? "checked" : ""
+                      }`}
+                    >
+                      {isSelected && <FaCheck />}
+                    </span>
+
+                    <span className="benefit-option-text">
+                      <strong>{benefit.name}</strong>
+
+                      {benefit.label &&
+                        benefit.label !== benefit.name && (
+                          <small>{benefit.label}</small>
+                        )}
+                    </span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+</div>
+
 
           {/* CONFIGURATION LIST */}
           {form.configuration.length === 0 ? (
@@ -1590,7 +1612,7 @@ const EditPackage = () => {
                   </div>
 
                   {/* MATCH RULES */}
-                  <div className="match-rules-box">
+                  {/* <div className="match-rules-box">
                     <div className="match-rules-header">
                       <div>
                         <h4>Match Rules</h4>
@@ -1646,7 +1668,7 @@ const EditPackage = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               ))}
             </div>

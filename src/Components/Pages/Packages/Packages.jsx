@@ -21,10 +21,12 @@ import {
   FaCheck,
   FaExclamationTriangle,
 } from "react-icons/fa";
+import "./PackageDetails"
+
 import { useNavigate } from "react-router-dom";
 
 import BASE_URL from "../../../Base";
-import "./packages.css";
+import PackageDetails from "./PackageDetails";
 
 const Package = () => {
   const [packages, setPackages] = useState([]);
@@ -534,18 +536,16 @@ const handleDeletePackage = async () => {
             </span>
           </div>
 
-          {/* ACTIONS */}
+       
           <div className="package-card-actions">
-            <button
-              type="button"
-              className="card-action view-action"
-              title="View Details"
-              onClick={() =>
-                toggleDetails(item.id)
-              }
-            >
-              <FaEye />
-            </button>
+           <button
+  className="view-details-btn"
+  onClick={() =>
+    navigate(`/PackageDetails/${item.id}`)
+  }
+>
+  <FaEye /> View Details
+</button>
 
           <button 
   type="button" 
@@ -652,30 +652,7 @@ const handleDeletePackage = async () => {
         </div>
 
         {/* TAGS */}
-        <div className="package-tags-section">
-          <div className="tags-title">
-            <FaTag />
-            <span>Tags</span>
-          </div>
-
-          <div className="package-tags">
-            {Array.isArray(item?.tags) &&
-            item.tags.length > 0 ? (
-              item.tags.map((tag, index) => (
-                <span
-                  className="package-tag"
-                  key={`${tag}-${index}`}
-                >
-                  {tag}
-                </span>
-              ))
-            ) : (
-              <span className="no-tags">
-                No tags
-              </span>
-            )}
-          </div>
-        </div>
+       
 
       
 
@@ -719,21 +696,45 @@ const handleDeletePackage = async () => {
                   <FaBoxOpen />
                 </div>
 
-                <div>
+                {/* <div>
                   <h4>Description</h4>
 
                   <span>
                     Package information
                   </span>
-                </div>
+                </div> */}
               </div>
 
-              <p className="package-description">
-                {item?.description ||
-                  "No description available."}
-              </p>
+           <p className="package-description">
+  {item?.description
+    ? `${item.description.slice(0,0)}${item.description.length > 30 ? "..." : ""}`
+    : "No description available."}
+</p>
             </div>
+ <div className="package-tags-section">
+          <div className="tags-title">
+            <FaTag />
+            <span>Tags</span>
+          </div>
 
+          <div className="package-tags">
+            {Array.isArray(item?.tags) &&
+            item.tags.length > 0 ? (
+              item.tags.map((tag, index) => (
+                <span
+                  className="package-tag"
+                  key={`${tag}-${index}`}
+                >
+                  {tag}
+                </span>
+              ))
+            ) : (
+              <span className="no-tags">
+                No tags
+              </span>
+            )}
+          </div>
+        </div>
             
             <div className="expanded-block">
               <div className="expanded-heading">
@@ -769,7 +770,7 @@ const handleDeletePackage = async () => {
                   </strong>
                 </div>
 
-                <div>
+                {/* <div>
                   <span>Button Action</span>
 
                   <strong>
@@ -783,9 +784,9 @@ const handleDeletePackage = async () => {
                           )
                       : "-"}
                   </strong>
-                </div>
+                </div> */}
 
-                <div>
+                {/* <div>
                   <span>Billing Mode</span>
 
                    <strong>
@@ -793,7 +794,7 @@ const handleDeletePackage = async () => {
                   item?.billing_mode
                 )}
               </strong>
-                </div>
+                </div> */}
 
                 <div>
                   <span>Sequence</span>
@@ -1117,22 +1118,48 @@ const handleDeletePackage = async () => {
         </div>
 
         <div className="package-summary-right">
-          <div className="summary-status active-status">
-            <FaCheckCircle />
+          <button
+  type="button"
+  className={`summary-status active-status ${
+    statusFilter === "active" ? "summary-selected" : ""
+  }`}
+  onClick={() => {
+    setStatusFilter(
+      statusFilter === "active" ? "all" : "active"
+    );
+    setCurrentPage(1);
+  }}
+>
+  <FaCheckCircle />
+  <strong>Active {activeCount}</strong>
+</button>
 
-            <strong>
-              Active {activeCount}
-            </strong>
-          </div>
+         <button
+  type="button"
+  className={`summary-status inactive-status ${
+    statusFilter === "inactive" ? "summary-selected" : ""
+  }`}
+  onClick={() => {
+    setStatusFilter(
+      statusFilter === "inactive" ? "all" : "inactive"
+    );
+    setCurrentPage(1);
+  }}
+>
+  <FaTimesCircle />
+  <strong>Inactive {inactiveCount}</strong>
+</button>
 
-          <div className="summary-status inactive-status">
-            <FaTimesCircle />
-
-            <strong>
-              Inactive {inactiveCount}
-            </strong>
-          </div>
-
+{statusFilter !== "all" && (
+  <button
+    type="button"
+    className="package-clear-status"
+    title="Clear Status Filter"
+    onClick={() => setStatusFilter("all")}
+  >
+    <FaTrash />
+  </button>
+)}
           <div className="summary-divider" />
 
           <div className="package-per-page">
@@ -1170,9 +1197,7 @@ const handleDeletePackage = async () => {
           </button>
         </div>
       </div>
-{/* =========================================================
-    DELETE CONFIRMATION MODAL
-========================================================= */}
+
 
 
      

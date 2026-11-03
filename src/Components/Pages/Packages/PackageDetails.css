@@ -1,0 +1,309 @@
+
+
+.cpd-page {
+  padding: 22px;
+  background: #f6f8f7;
+  min-height: 100vh;
+  color: #263b35;
+  font-family: inherit;
+}
+
+.cpd-header {
+  margin-bottom: 20px;
+}
+
+.cpd-back {
+  border: 0;
+  background: transparent;
+  color: #0d614e;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 18px;
+}
+
+.cpd-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.cpd-header-content h2 {
+  font-size: 22px;
+  margin: 0 0 5px;
+  color: #183e33;
+}
+
+.cpd-header-content p {
+  font-size: 13px;
+  color: #788780;
+  margin: 0;
+}
+
+.cpd-summary {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 15px;
+  background: white;
+  padding: 22px;
+  border-radius: 10px;
+  border: 1px solid #e7eeea;
+  margin-bottom: 18px;
+}
+
+.cpd-summary span,
+.cpd-info span {
+  display: block;
+  font-size: 12px;
+  color: #82918a;
+  margin-bottom: 7px;
+}
+
+.cpd-summary h3 {
+  font-size: 17px;
+  margin: 0 0 7px;
+  color: #0d614e;
+}
+
+.cpd-summary h2 {
+  font-size: 23px;
+  margin: 0;
+  color: #0d614e;
+}
+
+.cpd-summary small {
+  font-size: 11px;
+  color: #84918b;
+}
+
+.cpd-section {
+  background: white;
+  border: 1px solid #e8eeea;
+  border-radius: 10px;
+  padding: 19px;
+  margin-bottom: 17px;
+}
+
+.cpd-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #edf1ee;
+  padding-bottom: 13px;
+  margin-bottom: 17px;
+}
+
+.cpd-section-heading h3 {
+  font-size: 15px;
+  margin: 0;
+  color: #24483c;
+}
+
+.cpd-section-icon {
+  background: #e9f4ef;
+  color: #0d614e;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.cpd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px 25px;
+}
+
+.cpd-info {
+  min-width: 0;
+}
+
+.cpd-info strong {
+  display: block;
+  font-size: 13px;
+  color: #30473e;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cpd-subheading {
+  font-size: 13px;
+  color: #0d614e;
+  font-weight: 700;
+  margin: 18px 0 15px;
+}
+
+.cpd-subheading:first-of-type {
+  margin-top: 0;
+}
+
+.cpd-status {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.cpd-success {
+  color: #16804a;
+  background: #e6f5eb;
+}
+
+.cpd-danger {
+  color: #c53b3b;
+  background: #ffebeb;
+}
+
+.cpd-pending {
+  color: #b87813;
+  background: #fff3dc;
+}
+
+.cpd-neutral {
+  color: #68746e;
+  background: #edf0ee;
+}
+
+.cpd-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.cpd-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.cpd-table th {
+  text-align: left;
+  background: #f4f8f5;
+  color: #65766c;
+  padding: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cpd-table td {
+  padding: 13px 12px;
+  font-size: 12px;
+  border-bottom: 1px solid #edf1ee;
+  color: #3b4c44;
+  vertical-align: middle;
+}
+
+.cpd-table td small {
+  display: block;
+  color: #8a9890;
+  margin-top: 4px;
+  font-size: 10px;
+}
+
+.cpd-table td strong {
+  font-weight: 600;
+}
+
+.cpd-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.cpd-stats div {
+  background: #f3f8f5;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.cpd-stats span {
+  display: block;
+  color: #788780;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.cpd-stats strong {
+  color: #0d614e;
+  font-size: 21px;
+}
+
+.cpd-no-data {
+  padding: 25px;
+  text-align: center;
+  color: #8a9690;
+  background: #fafcfb;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.cpd-loader {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #0d614e;
+  gap: 12px;
+}
+
+.cpd-spin {
+  animation: cpd-rotate 1s linear infinite;
+  font-size: 25px;
+}
+
+@keyframes cpd-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cpd-empty {
+  padding: 50px;
+  text-align: center;
+}
+
+.cpd-empty button {
+  background: #0d614e;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .cpd-page {
+    padding: 12px;
+  }
+
+  .cpd-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .cpd-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cpd-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .cpd-header-content {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .cpd-grid {
+    grid-template-columns: 1fr;
+  }
+}

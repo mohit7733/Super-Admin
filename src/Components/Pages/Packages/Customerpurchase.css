@@ -1,6 +1,4 @@
-/* =========================================================
-   UPDATED JSX COMPONENT STYLES
-   ========================================================= */
+
 
 .purchase-page {
   width: 100%;
@@ -472,31 +470,8 @@
   text-transform: uppercase;
 }
 
-/* Shift badges */
 
-.purchase-shift-badge.shifted {
-  color: #08765e;
-  background: #e1f4eb;
-  border-color: #c8e9da;
-}
 
-.purchase-shift-badge.not-shifted {
-  color: #526174;
-  background: #eef2f6;
-  border-color: #e0e6ed;
-}
-
-.purchase-shift-badge.pending {
-  color: #a16207;
-  background: #fff6df;
-  border-color: #f3e4b3;
-}
-
-.purchase-shift-badge.default {
-  color: #526174;
-  background: #eef2f6;
-  border-color: #e0e6ed;
-}
 
 .purchase-shift-count {
   color: #64748b;
@@ -677,4 +652,70 @@
   .purchase-skeleton {
     animation: none;
   }
+}
+
+  .category-code-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 3px 9px !important;
+  min-width: 55px;
+  border-radius: 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: capitalize;
+}
+
+
+.category-code-badge.active {
+  color: #08765e !important;
+  background-color: #e1f4eb !important;
+  border: 1px solid #a7dfc5 !important;
+}
+
+
+ .category-code-badge.expired {
+  color: #dc2626 !important;
+  background-color: #fee2e2 !important;
+  border: 1px solid #fecaca !important;
+}
+
+ .category-code-badge.pending {
+  color: #c2410c !important;
+  background-color: #ffedd5 !important;
+  border: 1px solid #fed7aa !important;
+}
+
+
+ .category-code-badge.inactive {
+  color: #b42332 !important;
+  background-color: #fff0f0 !important;
+  border: 1px solid #f7d6d9 !important;
+}
+
+ .category-code-badge.default {
+  color: #526174 !important;
+  background-color: #eef2f6 !important;
+  border: 1px solid #e0e6ed !important;
+}
+.view-purchase-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 13px;
+  background: #0D614E;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.view-purchase-btn:hover {
+  background: #094b3d;
+  transform: translateY(-1px);
 }
