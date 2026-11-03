@@ -9,12 +9,14 @@ import {
   FaTimes,
   FaCopy,
   FaFileExcel,
+  FaEye,
 } from "react-icons/fa";
 import { FiRefreshCw } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ExcelJS from "exceljs";
 import BASE_URL from "../../../Base";
+import "./Customerpurchase.css";
 
 const Customerpurchase = () => {
   const navigate = useNavigate();
@@ -34,7 +36,16 @@ const pageSize = 10;
 const [totalCount, setTotalCount] = useState(0);
 const [nextPage, setNextPage] = useState(null);
 const [previousPage, setPreviousPage] = useState(null);
-
+const [stats, setStats] = useState({
+  total_purchases: 0,
+  active_purchases: 0,
+  expired_purchases: 0,
+  pending_purchases: 0,
+  cancelled_purchases: 0,
+  refunded_purchases: 0,
+  failed_purchases: 0,
+  paid_purchases: 0,
+});
 const totalPages = Math.ceil(totalCount / pageSize);
   // --------------------------------------------------
 
@@ -106,18 +117,22 @@ const totalPages = Math.ceil(totalCount / pageSize);
     "N/A";
 
   const getStatusClass = (status) => {
-    const normalized = String(status || "").toLowerCase();
+  const normalized = String(status || "").trim().toLowerCase();
 
-    if (normalized === "active") return "active";
-    if (normalized === "expired") return "inactive";
-    if (normalized === "cancelled" || normalized === "canceled") {
+  switch (normalized) {
+    case "active":
+      return "active";
+    case "expired":
+      return "expired";
+    case "pending":
+      return "pending";
+    case "cancelled":
+    case "canceled":
       return "inactive";
-    }
-    if (normalized === "pending") return "pending";
-
-    return "default";
-  };
-
+    default:
+      return "default";
+  }
+};
   const copyText = async (value, label) => {
     if (!value) {
       toast.error(`${label} not available`);
@@ -131,7 +146,7 @@ const totalPages = Math.ceil(totalCount / pageSize);
       toast.error(`Unable to copy ${label}`);
     }
   }
- const getPackageBuyers = async (page = 1) => {
+const getPackageBuyers = async (page = 1) => {
   const token = sessionStorage.getItem("superadmin_token");
 
   if (!token) {
@@ -181,16 +196,33 @@ const totalPages = Math.ceil(totalCount / pageSize);
       throw new Error(result.message || "Failed to fetch purchases.");
     }
 
-    const pageData = result.data;
+    const pageData = result.data || {};
+
+    // Purchase records
     const purchases = Array.isArray(pageData)
       ? pageData
-      : pageData?.results || [];
+      : pageData.results || [];
 
     setData(purchases);
-    setTotalCount(pageData?.count || 0);
-    setNextPage(pageData?.next || null);
-    setPreviousPage(pageData?.previous || null);
+
+    // Pagination
+    setTotalCount(pageData.count || 0);
+    setNextPage(pageData.next || null);
+    setPreviousPage(pageData.previous || null);
     setCurrentPage(page);
+
+    // Dynamic stats directly from API
+    setStats({
+      total_purchases: pageData.stats?.total_purchases ?? 0,
+      active_purchases: pageData.stats?.active_purchases ?? 0,
+      expired_purchases: pageData.stats?.expired_purchases ?? 0,
+      pending_purchases: pageData.stats?.pending_purchases ?? 0,
+      cancelled_purchases: pageData.stats?.cancelled_purchases ?? 0,
+      refunded_purchases: pageData.stats?.refunded_purchases ?? 0,
+      failed_purchases: pageData.stats?.failed_purchases ?? 0,
+      paid_purchases: pageData.stats?.paid_purchases ?? 0,
+    });
+
   } catch (error) {
     console.error("Purchase API Error:", error);
     setError(error.message || "Failed to fetch purchases.");
@@ -202,7 +234,6 @@ const totalPages = Math.ceil(totalCount / pageSize);
     setLoading(false);
   }
 };
-
  useEffect(() => {
   getPackageBuyers(currentPage);
 }, [currentPage, debouncedSearch, statusFilter]);
@@ -216,17 +247,7 @@ useEffect(() => {
 
   return () => clearTimeout(timer);
 }, [searchTerm]);
-  const stats = useMemo(() => {
-    return {
-      total: Data.length,
-      active: Data.filter(
-        (item) => String(item.status || "").toLowerCase() === "active"
-      ).length,
-      Expired: Data.filter(
-        (item) => String(item.shift_status || "").toLowerCase() === "expired"
-      ).length,
-    };
-  }, [Data]);
+ 
 
   
 
@@ -457,7 +478,7 @@ useEffect(() => {
           </div>
           <div className="stat2-info">
             <h3>Total Purchases</h3>
-            <div className="stat2-value">{stats.total}</div>
+          <div className="stat2-value">{stats.total_purchases}</div>
           </div>
         </div>
 
@@ -470,7 +491,7 @@ useEffect(() => {
           </div>
           <div className="stat2-info">
             <h3>Active Purchases</h3>
-            <div className="stat2-value">{stats.active}</div>
+          <div className="stat2-value">{stats.active_purchases}</div>
           </div>
         </div>
 
@@ -483,7 +504,7 @@ useEffect(() => {
           </div>
           <div className="stat2-info">
             <h3>Expired Purchases</h3>
-            <div className="stat2-value">{stats.Expired}</div>
+        <div className="stat2-value">{stats.expired_purchases}</div>
           </div>
         </div>
       </div>
@@ -572,9 +593,9 @@ useEffect(() => {
               <th>Paid Price</th>
               <th>Purchase Status</th>
               <th>Billing</th>
-              <th>Purchase Date</th>
-             
+              <th>Purchase Date</th>     
               <th>Payment Details</th>
+<th>Action</th>
             </tr>
           </thead>
 
@@ -665,14 +686,14 @@ useEffect(() => {
                       
                     </td>
 
-                    <td>
-                      <span
-                        className={`category-code-badge ${getStatusClass(
-                          item.status
-                        )}`}
-                      >
-                        {item.status || "N/A"}
-                      </span>
+                    
+                      <td>
+  <span
+    className={`category-code-badge ${getStatusClass(item.status)}`}
+  >
+    {item.status || "N/A"}
+  </span>
+
                     </td>
 
                     <td>
@@ -744,6 +765,17 @@ useEffect(() => {
                         )}
                       </div>
                     </td>
+                    <td>
+  <button
+    type="button"
+    className="view-purchase-btn"
+    title="View Purchase Details"
+    onClick={() => navigate(`/PackageBuyerDetail/${item.id}`)}
+  >
+    <FaEye />
+    View
+  </button>
+</td>
                   </tr>
                 );
               })

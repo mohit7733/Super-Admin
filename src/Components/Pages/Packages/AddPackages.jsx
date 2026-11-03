@@ -48,6 +48,7 @@ const AddPackage = () => {
   const [showBenefitDropdown, setShowBenefitDropdown] = useState(false);
   const [showBillingModeDropdown, setShowBillingModeDropdown] =
     useState(false);
+    const [selectedBenefitType, setSelectedBenefitType] = useState("all");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -110,11 +111,21 @@ const AddPackage = () => {
     clearFieldError(field);
     setError("");
   };
+ const getBenefitType = (benefit) => {
+  const mode = benefit?.fulfillment_mode?.toLowerCase();
 
-  // =====================================================
-  // COMMON API HEADERS
-  // =====================================================
+  if (mode === "flag") return "flag";
+  if (mode === "consumable") return "consumable";
+  if (mode === "chat") return "chat";
 
+  return "other";
+};
+
+  const filteredBenefits = benefits.filter((benefit) => {
+  if (selectedBenefitType === "all") return true;
+
+  return getBenefitType(benefit) === selectedBenefitType;
+});
   const getHeaders = () => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -125,60 +136,64 @@ const AddPackage = () => {
     };
   };
 
-  // =====================================================
-  // FETCH CATEGORIES
-  // =====================================================
+ 
 
-  const fetchCategories = async () => {
-    try {
-      setCategoryLoading(true);
+const fetchCategories = async () => {
+  try {
+    setCategoryLoading(true);
 
-      const response = await fetch(
-        `${BASE_URL}/packages/admin/category/`,
-        {
-          method: "GET",
-          headers: getHeaders(),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result?.message ||
-            result?.detail ||
-            "Failed to load package categories."
-        );
+    const response = await fetch(
+      `${BASE_URL}/packages/admin/category/`,
+      {
+        method: "GET",
+        headers: getHeaders(),
       }
+    );
 
-      const categoryData =
-        result?.data?.results ??
-        result?.data ??
-        result?.results ??
-        [];
+    const result = await response.json();
 
-      const normalized = Array.isArray(categoryData)
-        ? categoryData
-            .map((item) => ({
-              id: item?.id || item?.category_id || item?.value,
-              name:
-                item?.name ||
-                item?.category_name ||
-                item?.label ||
-                "",
-            }))
-            .filter((item) => item.id && item.name)
-        : [];
-
-      setCategories(normalized);
-    } catch (err) {
-      console.error("Category Error:", err);
-      setCategories([]);
-      setError(err.message || "Failed to load categories.");
-    } finally {
-      setCategoryLoading(false);
+    if (!response.ok) {
+      throw new Error(
+        result?.message ||
+          result?.detail ||
+          "Failed to load package categories."
+      );
     }
-  };
+
+    const categoryData =
+      result?.data?.results ??
+      result?.data ??
+      result?.results ??
+      [];
+
+    const normalized = Array.isArray(categoryData)
+      ? categoryData
+          .filter((item) => item?.is_active === true)
+          .map((item) => ({
+            id:
+              item?.id ||
+              item?.category_id ||
+              item?.value,
+            name:
+              item?.name ||
+              item?.category_name ||
+              item?.label ||
+              "",
+          }))
+          .filter((item) => item.id && item.name)
+      : [];
+
+    setCategories(normalized);
+
+    console.log("ACTIVE CATEGORIES:", normalized);
+  } catch (err) {
+    console.error("Category Error:", err);
+    setCategories([]);
+    setError(err.message || "Failed to load categories.");
+  } finally {
+    setCategoryLoading(false);
+  }
+};
 
   // =====================================================
   // FETCH BENEFITS
@@ -1233,68 +1248,96 @@ const AddPackage = () => {
                 <FaChevronDown />
               </button>
 
-              {showBenefitDropdown && (
-                <div className="benefit-multiselect-dropdown">
-                  {benefitLoading ? (
-                    <div className="benefit-dropdown-loading">
-                      Loading benefits...
-                    </div>
-                  ) : benefits.length === 0 ? (
-                    <div className="benefit-dropdown-empty">
-                      No benefits available.
-                    </div>
-                  ) : (
-                    benefits.map((benefit) => {
-                      const isSelected =
-                        form.configuration.some(
-                          (item) => item.benefit_id === benefit.id
-                        );
+           {showBenefitDropdown && (
+  <div className="benefit-multiselect-dropdown">
+    {benefitLoading ? (
+      <div className="benefit-dropdown-loading">
+        Loading benefits...
+      </div>
+    ) : benefits.length === 0 ? (
+      <div className="benefit-dropdown-empty">
+        No benefits available.
+      </div>
+    ) : (
+      <div className="benefit-dropdown-list">
 
-                      return (
-                        <button
-                          type="button"
-                          key={benefit.id}
-                          className={`benefit-dropdown-option ${
-                            isSelected ? "benefit-option-selected" : ""
-                          }`}
-                          onClick={() => {
-                            if (isSelected) {
-                              const index =
-                                form.configuration.findIndex(
-                                  (item) =>
-                                    item.benefit_id === benefit.id
-                                );
+        {/* Benefit Type Filter Tabs */}
+        <div className="benefit-type-tabs">
+          {[
+            { label: "All", value: "all" },
+            { label: "Flag", value: "flag" },
+            { label: "Consumable", value: "consumable" },
+            { label: "Chat", value: "chat" },
+          ].map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              className={
+                selectedBenefitType === tab.value ? "active" : ""
+              }
+              onClick={() => setSelectedBenefitType(tab.value)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-                              if (index !== -1) {
-                                removeConfiguration(index);
-                              }
-                            } else {
-                              addConfiguration(benefit);
-                            }
-                          }}
-                        >
-                          <span
-                            className={`benefit-checkbox ${
-                              isSelected ? "checked" : ""
-                            }`}
-                          >
-                            {isSelected && <FaCheck />}
-                          </span>
+        {/* Filtered Benefits */}
+        {filteredBenefits.length === 0 ? (
+          <div className="benefit-dropdown-empty">
+            No {selectedBenefitType} benefits available.
+          </div>
+        ) : (
+          filteredBenefits.map((benefit) => {
+            const isSelected = form.configuration.some(
+              (item) => item.benefit_id === benefit.id
+            );
 
-                          <span className="benefit-option-text">
-                            <strong>{benefit.name}</strong>
+            return (
+              <button
+                type="button"
+                key={benefit.id}
+                className={`benefit-dropdown-option ${
+                  isSelected ? "benefit-option-selected" : ""
+                }`}
+                onClick={() => {
+                  if (isSelected) {
+                    const index = form.configuration.findIndex(
+                      (item) => item.benefit_id === benefit.id
+                    );
 
-                            {benefit.label &&
-                              benefit.label !== benefit.name && (
-                                <small>{benefit.label}</small>
-                              )}
-                          </span>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              )}
+                    if (index !== -1) {
+                      removeConfiguration(index);
+                    }
+                  } else {
+                    addConfiguration(benefit);
+                  }
+                }}
+              >
+                <span
+                  className={`benefit-checkbox ${
+                    isSelected ? "checked" : ""
+                  }`}
+                >
+                  {isSelected && <FaCheck />}
+                </span>
+
+                <span className="benefit-option-text">
+                  <strong>{benefit.name}</strong>
+
+                  {benefit.label &&
+                    benefit.label !== benefit.name && (
+                      <small>{benefit.label}</small>
+                    )}
+                </span>
+              </button>
+            );
+          })
+        )}
+      </div>
+    )}
+  </div>
+)}
             </div>
 
             {renderFieldError("configuration")}
@@ -1501,7 +1544,7 @@ const AddPackage = () => {
                     </div>
                   )}
 
-                  {config.match_rules &&
+                  {/* {config.match_rules &&
                     Object.keys(config.match_rules).length > 0 && (
                       <div className="match-rules-box">
                         <div className="match-rules-header">
@@ -1548,7 +1591,7 @@ const AddPackage = () => {
                           )}
                         </div>
                       </div>
-                    )}
+                    )} */}
                 </div>
               ))}
             </div>

@@ -33,7 +33,7 @@ import MangementHistory from './Components/Pages/Mangement/MangementHistory';
 import Patient from './Components/Pages/Patient/Patient';
 
 
-
+import PackageDetails from './Components/Pages/Packages/PackageDetails'
 
 import History from './Components/Pages/History/History';
 import Items from './Components/Pages/History/Items';
@@ -296,6 +296,16 @@ function App() {
     <ProtectedRoute >
       <Layout>
   <ApproveMedicine />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
+ <Route
+  path="/PackageDetails/:id"
+  element={
+    <ProtectedRoute >
+      <Layout>
+  <PackageDetails />
       </Layout>
     </ProtectedRoute>
   }

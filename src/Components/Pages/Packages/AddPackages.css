@@ -3066,3 +3066,28 @@
     font-size: 12px;
   }
 }
+.benefit-type-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.benefit-type-tabs button {
+  padding: 7px 14px;
+  border: 1px solid #dce5e1;
+  border-radius: 20px;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.benefit-type-tabs button.active {
+  background: #0D614E;
+  border-color: #0D614E;
+  color: #fff;
+}
