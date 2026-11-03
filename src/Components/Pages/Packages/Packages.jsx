@@ -21,12 +21,11 @@ import {
   FaCheck,
   FaExclamationTriangle,
 } from "react-icons/fa";
-import "./PackageDetails"
 
 import { useNavigate } from "react-router-dom";
 
 import BASE_URL from "../../../Base";
-import PackageDetails from "./PackageDetails";
+import "./packages.css";
 
 const Package = () => {
   const [packages, setPackages] = useState([]);
@@ -496,6 +495,7 @@ const handleDeletePackage = async () => {
       <article
         className={`package-card ${
           isExpanded
+          
             ? "package-card-expanded"
             : ""
         }`}
@@ -536,16 +536,18 @@ const handleDeletePackage = async () => {
             </span>
           </div>
 
-       
+          {/* ACTIONS */}
           <div className="package-card-actions">
-           <button
-  className="view-details-btn"
-  onClick={() =>
-    navigate(`/PackageDetails/${item.id}`)
-  }
->
-  <FaEye /> View Details
-</button>
+            <button
+              type="button"
+              className="card-action view-action"
+              title="View Details"
+              onClick={() =>
+                toggleDetails(item.id)
+              }
+            >
+              <FaEye />
+            </button>
 
           <button 
   type="button" 

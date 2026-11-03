@@ -1,27 +1,36 @@
 
 
-.cpd-page {
-  padding: 22px;
-  background: #f6f8f7;
-  min-height: 100vh;
-  color: #263b35;
-  font-family: inherit;
+
+.cpd-page * {
+  box-sizing: border-box;
 }
 
+
+
 .cpd-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .cpd-back {
-  border: 0;
-  background: transparent;
+  border: 1px solid #dce9e2;
+  background: #ffffff;
   color: #0d614e;
   font-weight: 600;
-  display: flex;
+  font-size: 13px;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+  padding: 9px 15px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.cpd-back:hover {
+  background: #eaf4ef;
+  border-color: #0d614e;
+  transform: translateX(-2px);
 }
 
 .cpd-header-content {
@@ -29,47 +38,64 @@
   justify-content: space-between;
   align-items: center;
   gap: 15px;
+  flex-wrap: wrap;
 }
 
 .cpd-header-content h2 {
-  font-size: 22px;
-  margin: 0 0 5px;
-  color: #183e33;
+  font-size: 23px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: #173d32;
+  letter-spacing: -0.4px;
 }
 
 .cpd-header-content p {
   font-size: 13px;
-  color: #788780;
+  color: #7b8982;
   margin: 0;
+  line-height: 1.6;
 }
+
+/* =========================================
+   SUMMARY CARDS
+========================================= */
 
 .cpd-summary {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  gap: 15px;
-  background: white;
-  padding: 22px;
-  border-radius: 10px;
-  border: 1px solid #e7eeea;
-  margin-bottom: 18px;
+  gap: 16px;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 13px;
+  border: 1px solid #e5ede8;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(25, 65, 48, 0.035);
+}
+
+.cpd-summary > div {
+  min-width: 0;
 }
 
 .cpd-summary span,
 .cpd-info span {
   display: block;
   font-size: 12px;
-  color: #82918a;
-  margin-bottom: 7px;
+  color: #7c8b83;
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .cpd-summary h3 {
-  font-size: 17px;
+  font-size: 18px;
+  font-weight: 700;
   margin: 0 0 7px;
   color: #0d614e;
+  line-height: 1.5;
 }
 
 .cpd-summary h2 {
-  font-size: 23px;
+  font-size: 25px;
+  font-weight: 700;
   margin: 0;
   color: #0d614e;
 }
@@ -79,171 +105,297 @@
   color: #84918b;
 }
 
+/* =========================================
+   COMMON SECTION CARD
+========================================= */
+
 .cpd-section {
-  background: white;
-  border: 1px solid #e8eeea;
-  border-radius: 10px;
-  padding: 19px;
-  margin-bottom: 17px;
+  background: #ffffff;
+  border: 1px solid #e5ede8;
+  border-radius: 13px;
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(25, 65, 48, 0.035);
+  transition: box-shadow 0.2s ease;
+  min-width: 0;
 }
+
+.cpd-section:hover {
+  box-shadow: 0 5px 18px rgba(25, 65, 48, 0.055);
+}
+
+/* =========================================
+   SECTION HEADING
+========================================= */
 
 .cpd-section-heading {
   display: flex;
   align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid #edf1ee;
-  padding-bottom: 13px;
-  margin-bottom: 17px;
+  gap: 12px;
+  border-bottom: 1px solid #edf2ee;
+  padding-bottom: 15px;
+  margin-bottom: 22px;
 }
 
 .cpd-section-heading h3 {
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 700;
   margin: 0;
-  color: #24483c;
+  color: #204638;
+  letter-spacing: -0.2px;
 }
 
 .cpd-section-icon {
   background: #e9f4ef;
   color: #0d614e;
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
+  font-size: 16px;
 }
+
+/* =========================================
+   INFORMATION GRID
+========================================= */
 
 .cpd-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px 25px;
+  gap: 24px 30px;
 }
 
 .cpd-info {
   min-width: 0;
+  padding: 2px 0;
+}
+
+.cpd-info span {
+  font-size: 12px;
+  color: #84928b;
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
 .cpd-info strong {
   display: block;
   font-size: 13px;
   color: #30473e;
-  font-weight: 600;
+  font-weight: 650;
+  line-height: 1.6;
   overflow-wrap: anywhere;
 }
 
+.cpd-info-icon {
+  display: inline-flex !important;
+  color: #0d614e !important;
+  margin-right: 5px;
+  margin-bottom: 0 !important;
+}
+
+/* =========================================
+   SUB HEADINGS
+========================================= */
+
 .cpd-subheading {
-  font-size: 13px;
+  font-size: 14px;
   color: #0d614e;
   font-weight: 700;
-  margin: 18px 0 15px;
+  margin: 24px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .cpd-subheading:first-of-type {
   margin-top: 0;
 }
 
+/* =========================================
+   STATUS BADGES
+========================================= */
+
 .cpd-status {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 20px;
-  padding: 5px 10px;
+  padding: 5px 12px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: capitalize;
+  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .cpd-success {
   color: #16804a;
-  background: #e6f5eb;
+  background: #e7f6ec;
+  border: 1px solid #d1edda;
 }
 
 .cpd-danger {
   color: #c53b3b;
-  background: #ffebeb;
+  background: #ffeded;
+  border: 1px solid #f8dada;
 }
 
 .cpd-pending {
-  color: #b87813;
-  background: #fff3dc;
+  color: #a96c0b;
+  background: #fff5df;
+  border: 1px solid #f5e6c4;
 }
 
 .cpd-neutral {
   color: #68746e;
-  background: #edf0ee;
+  background: #f0f3f1;
+  border: 1px solid #e3e9e5;
 }
+
+/* =========================================
+   TABLE
+========================================= */
 
 .cpd-table-wrap {
   width: 100%;
   overflow-x: auto;
+  border: 1px solid #e9efeb;
+  border-radius: 9px;
+  scrollbar-width: thin;
+  scrollbar-color: #c7d8ce transparent;
 }
 
 .cpd-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   min-width: 720px;
+  background: #ffffff;
 }
 
 .cpd-table th {
   text-align: left;
-  background: #f4f8f5;
-  color: #65766c;
-  padding: 12px;
+  background: #f3f8f5;
+  color: #536b5e;
+  padding: 14px 15px;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
+  border-bottom: 1px solid #e4ede7;
 }
 
 .cpd-table td {
-  padding: 13px 12px;
+  padding: 14px 15px;
   font-size: 12px;
   border-bottom: 1px solid #edf1ee;
-  color: #3b4c44;
+  color: #40534a;
   vertical-align: middle;
+  line-height: 1.5;
+}
+
+.cpd-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cpd-table tbody tr:hover {
+  background: #f9fcfa;
 }
 
 .cpd-table td small {
   display: block;
   color: #8a9890;
-  margin-top: 4px;
+  margin-top: 5px;
   font-size: 10px;
 }
 
 .cpd-table td strong {
-  font-weight: 600;
+  font-weight: 650;
+  color: #30473e;
 }
+
+/* =========================================
+   STATISTICS CARDS
+========================================= */
 
 .cpd-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-.cpd-stats div {
-  background: #f3f8f5;
-  padding: 15px;
-  border-radius: 8px;
+.cpd-stats > div {
+  background: linear-gradient(135deg, #f2f8f4, #ffffff);
+  padding: 18px;
+  border-radius: 11px;
+  border: 1px solid #e4eee7;
+  transition: all 0.2s ease;
+}
+
+.cpd-stats > div:hover {
+  border-color: #b9d8c7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 97, 78, 0.06);
 }
 
 .cpd-stats span {
   display: block;
   color: #788780;
   font-size: 11px;
-  margin-bottom: 8px;
+  font-weight: 500;
+  margin-bottom: 9px;
 }
 
 .cpd-stats strong {
   color: #0d614e;
-  font-size: 21px;
+  font-size: 23px;
+  font-weight: 700;
 }
 
+/* =========================================
+   EMPTY STATES
+========================================= */
+
 .cpd-no-data {
-  padding: 25px;
+  padding: 32px 20px;
   text-align: center;
   color: #8a9690;
   background: #fafcfb;
-  border-radius: 7px;
+  border: 1px dashed #dce8e0;
+  border-radius: 9px;
   font-size: 12px;
 }
+
+.cpd-empty {
+  padding: 55px 20px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e8eeea;
+  border-radius: 12px;
+}
+
+.cpd-empty button {
+  background: #0d614e;
+  color: #ffffff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.cpd-empty button:hover {
+  background: #094b3d;
+}
+
+/* =========================================
+   LOADER
+========================================= */
 
 .cpd-loader {
   min-height: 60vh;
@@ -252,12 +404,14 @@
   justify-content: center;
   flex-direction: column;
   color: #0d614e;
-  gap: 12px;
+  gap: 13px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .cpd-spin {
   animation: cpd-rotate 1s linear infinite;
-  font-size: 25px;
+  font-size: 28px;
 }
 
 @keyframes cpd-rotate {
@@ -266,44 +420,203 @@
   }
 }
 
-.cpd-empty {
-  padding: 50px;
-  text-align: center;
+/* =========================================
+   INCLUDED BENEFITS
+   Apply these classes to the benefit wrapper
+   and individual benefit items if available.
+========================================= */
+
+.cpd-benefits,
+.cpd-benefit-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
 }
 
-.cpd-empty button {
-  background: #0d614e;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
+.cpd-benefit,
+.cpd-benefit-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #f0f7f3;
+  border: 1px solid #dcece2;
+  color: #285a45;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
-@media (max-width: 768px) {
+/* =========================================
+   RESPONSIVE - TABLET
+========================================= */
+
+@media (max-width: 1024px) {
   .cpd-page {
-    padding: 12px;
+    padding: 18px;
+  }
+
+  .cpd-grid {
+    gap: 22px;
   }
 
   .cpd-summary {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr;
+  }
+}
+
+/* =========================================
+   RESPONSIVE - MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+  .cpd-page {
+    padding: 13px;
+  }
+
+  .cpd-header-content {
+    align-items: flex-start;
+  }
+
+  .cpd-header-content h2 {
+    font-size: 20px;
+  }
+
+  .cpd-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    padding: 18px;
   }
 
   .cpd-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 16px;
+  }
+
+  .cpd-section {
+    padding: 17px;
+    margin-bottom: 15px;
+  }
+
+  .cpd-section-heading {
+    margin-bottom: 18px;
+  }
+
+  .cpd-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================
+   RESPONSIVE - SMALL MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+  .cpd-page {
+    padding: 10px;
+  }
+
+  .cpd-summary {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .cpd-grid {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+
+  .cpd-section {
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .cpd-section-heading h3 {
+    font-size: 14px;
+  }
+
+  .cpd-section-icon {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
   }
 
   .cpd-stats {
     grid-template-columns: 1fr;
   }
 
-  .cpd-header-content {
-    align-items: flex-start;
+  .cpd-header-content h2 {
+    font-size: 18px;
+  }
+
+  .cpd-info strong {
+    font-size: 12px;
   }
 }
 
-@media (max-width: 480px) {
-  .cpd-grid {
+/* Included Benefits */
+
+.cpd-benefits-section {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #edf2ee;
+}
+
+.cpd-benefits-section .cpd-subheading {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0d614e;
+}
+
+.cpd-benefits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.cpd-benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 13px 15px;
+  background: #f6faf7;
+  border: 1px solid #e2eee6;
+  border-radius: 9px;
+  color: #30473e;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  transition: all 0.2s ease;
+}
+
+.cpd-benefit-item:hover {
+  background: #edf6f0;
+  border-color: #b9d9c6;
+  transform: translateY(-2px);
+}
+
+.cpd-benefit-check {
+  flex-shrink: 0;
+  color: #0d614e;
+  font-size: 16px;
+}
+
+.cpd-benefit-item span {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .cpd-benefits {
     grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .cpd-benefit-item {
+    padding: 11px 12px;
   }
 }

@@ -10,16 +10,17 @@ import {
   FaStethoscope,
   FaHistory,
   FaCalendarAlt,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaClock,
+  FaSyncAlt,
   FaPhone,
   FaEnvelope,
   FaIdCard,
   FaRupeeSign,
-  FaSyncAlt,
+  FaCheckCircle,
+  FaClock,
+  FaTimesCircle,
 } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
+
 import BASE_URL from "../../../Base";
 import "react-toastify/dist/ReactToastify.css";
 import "./PackageDetails.css";
@@ -31,13 +32,113 @@ const PackageDetails = () => {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const token = sessionStorage.getItem("superadmin_token");
+  
+
+  const display = (value, fallback = "—") => {
+    if (value === null || value === undefined || value === "") {
+      return fallback;
+    }
+
+    if (typeof value === "object") {
+      if (Array.isArray(value)) {
+        return value.length
+          ? value.map((item) => display(item, "")).join(", ")
+          : fallback;
+      }
+
+      return (
+        value.full_name ||
+        value.name ||
+        value.label ||
+        value.title ||
+        value.code ||
+        value.id ||
+        fallback
+      );
+    }
+
+    return String(value);
+  };
+
+  const money = (value, currency = "INR") => {
+    if (value === null || value === undefined || value === "") {
+      return "—";
+    }
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+      return display(value);
+    }
+
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(number);
+  };
+
+  const formatDate = (value) => {
+    if (!value) return "—";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return display(value);
+    }
+
+    return date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const quantity = (value) => {
+    if (value === null || value === undefined || value === "") {
+      return "Unlimited";
+    }
+
+    return display(value);
+  };
+
+  const getStatusClass = (value) => {
+    const status = display(value, "").toLowerCase();
+
+    if (
+      ["active", "paid", "approved", "completed", "available", "success"].includes(status)
+    ) {
+      return "cpd-success";
+    }
+
+    if (
+      ["rejected", "failed", "cancelled", "expired", "inactive", "refunded"].includes(status)
+    ) {
+      return "cpd-danger";
+    }
+
+    if (
+      ["pending", "processing", "reserved"].includes(status)
+    ) {
+      return "cpd-pending";
+    }
+
+    return "cpd-neutral";
+  };
+
+  // =====================================================
+  // API
+  // =====================================================
 
   const fetchDetails = async () => {
     try {
       setLoading(true);
 
-      // Replace this URL with your actual package purchase detail endpoint.
+      const token = sessionStorage.getItem("superadmin_token");
+
       const response = await fetch(
         `${BASE_URL}/packages/admin/purchases/?id=${id}`,
         {
@@ -60,24 +161,14 @@ const PackageDetails = () => {
       const result = await response.json();
 
       if (!response.ok || result.success === false) {
-        throw new Error(result.message || "Unable to fetch purchase details");
+        throw new Error(
+          result.message || "Unable to fetch purchase details"
+        );
       }
 
-      const data = result.data;
-
-      // Supports either a direct object or a paginated results response.
-      const purchase = Array.isArray(data?.results)
-        ? data.results.find((item) => String(item.id) === String(id)) ||
-          data.results[0]
-        : data;
-
-      if (!purchase) {
-        throw new Error("Purchase details not found");
-      }
-
-      setDetails(purchase);
+      setDetails(result.data || null);
     } catch (error) {
-      console.error("Purchase details error:", error);
+      console.error("Package details error:", error);
       toast.error(error.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -88,73 +179,79 @@ const PackageDetails = () => {
     if (id) fetchDetails();
   }, [id]);
 
-  const get = (obj, ...keys) => {
-    for (const key of keys) {
-      const value = obj?.[key];
-      if (value !== undefined && value !== null && value !== "") {
-        return value;
-      }
-    }
-    return "—";
-  };
-
-  const formatDate = (value) => {
-    if (!value || value === "—") return "—";
-    const date = new Date(value);
-    return isNaN(date.getTime())
-      ? value
-      : date.toLocaleString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-  };
-
-  const formatMoney = (value) => {
-    if (value === undefined || value === null || value === "") return "—";
-    return `₹${Number(value).toLocaleString("en-IN")}`;
-  };
-
-  const statusClass = (status) => {
-    const value = String(status || "").toLowerCase();
-
-    if (["success", "completed", "active", "approved", "paid"].includes(value))
-      return "cpd-success";
-
-    if (["failed", "cancelled", "rejected", "refunded", "expired"].includes(value))
-      return "cpd-danger";
-
-    if (["pending", "processing"].includes(value))
-      return "cpd-pending";
-
-    return "cpd-neutral";
-  };
+  // =====================================================
+  // REUSABLE UI
+  // =====================================================
 
   const Status = ({ value }) => (
-    <span className={`cpd-status ${statusClass(value)}`}>
-      {value || "—"}
+    <span className={`cpd-status ${getStatusClass(value)}`}>
+      {display(value)}
     </span>
   );
 
+  const Info = ({ label, value, icon }) => (
+  <div className="cpd-info">
+    <span>
+      {icon && <span className="cpd-info-icon">{icon}</span>}
+      {label}
+    </span>
+
+    <strong>
+      {React.isValidElement(value) ? value : display(value)}
+    </strong>
+  </div>
+);
+
   const Section = ({ title, icon, children }) => (
-    <div className="cpd-section">
+    <section className="cpd-section">
       <div className="cpd-section-heading">
         <span className="cpd-section-icon">{icon}</span>
         <h3>{title}</h3>
       </div>
       {children}
+    </section>
+  );
+
+  const Empty = ({ text = "No records available." }) => (
+    <div className="cpd-no-data">
+      <FaHistory />
+      <span>{text}</span>
     </div>
   );
 
-  const Info = ({ label, value }) => (
-    <div className="cpd-info">
-      <span>{label}</span>
-      <strong>{value === undefined || value === null || value === "" ? "—" : value}</strong>
+  const DataTable = ({ columns, rows, emptyText }) => (
+    <div className="cpd-table-wrap">
+      {rows.length > 0 ? (
+        <table className="cpd-table">
+          <thead>
+            <tr>
+              {columns.map((column) => (
+                <th key={column.key}>{column.label}</th>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={row.id || row.entitlement_id || row.purchase_id || index}>
+                {columns.map((column) => (
+                  <td key={column.key}>
+                    {column.render
+                      ? column.render(row)
+                      : display(row[column.key])}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <Empty text={emptyText} />
+      )}
     </div>
   );
 
+ 
   if (loading) {
     return (
       <div className="cpd-loader">
@@ -173,47 +270,75 @@ const PackageDetails = () => {
     );
   }
 
-  // Adapt these property names to your API response.
-  const packageData = details.package_details || details.package_info || details.package || {};
-  const payment = details.payment_details || details.payment || {};
-  const customer = details.customer_details || details.customer || {};
-  const patient = details.patient_details || details.patient || {};
-  const benefits = details.benefits || details.fulfillments || details.package_benefits || [];
-  const consultations = details.consultations || details.doctor_consultations || [];
-  const usageHistory = details.usage_history || details.benefit_usage_history || [];
-  const purchaseHistory = details.purchase_history || details.previous_purchases || [];
+ 
+
+  const packageData = details.package_details || {};
+  const packageSnapshot = details.package_snapshot || {};
+  const payment = details.payment_details || {};
+
+  const customerPatient = details.customer_patient_details || {};
+  const customer = customerPatient.customer || details.customer || {};
+  const patient = customerPatient.patient || details.patient || {};
+
+  const allocation = details.benefit_allocation || {};
+  const allocationSummary = allocation.summary || {};
+  const benefits = Array.isArray(allocation.benefits)
+    ? allocation.benefits
+    : [];
+
+  const usageData = details.benefit_usage || {};
+  const usageHistory = Array.isArray(usageData.usage_history)
+    ? usageData.usage_history
+    : [];
+
+  const shiftedData = usageData.shifted_benefits || {};
+  const shiftedIn = Array.isArray(shiftedData.shifted_in)
+    ? shiftedData.shifted_in
+    : [];
+  const shiftedOut = Array.isArray(shiftedData.shifted_out)
+    ? shiftedData.shifted_out
+    : [];
+
+  const consultationData = details.consultation_history || {};
+  const consultationSummary = consultationData.summary || {};
+  const consultations = Array.isArray(consultationData.consultations)
+    ? consultationData.consultations
+    : [];
+
+  const purchaseData = details.purchase_history || {};
+  const purchaseEvents = Array.isArray(purchaseData.events)
+    ? purchaseData.events
+    : [];
+  const customerPurchases = Array.isArray(purchaseData.customer_purchases)
+    ? purchaseData.customer_purchases
+    : [];
+
+  const currency = details.currency || payment.currency || "INR";
 
   const packageName =
-    typeof packageData === "string"
-      ? packageData
-      : get(packageData, "name", "package_name");
-
-  const patientName =
-    typeof patient === "string"
-      ? patient
-      : get(patient, "name", "patient_name");
+    packageData.package_name ||
+    details.package_name_snapshot ||
+    packageSnapshot.name;
 
   const customerName =
-    typeof customer === "string"
-      ? customer
-      : get(customer, "name", "customer_name", "full_name");
+    customer.full_name ||
+    [customer.first_name, customer.last_name].filter(Boolean).join(" ");
 
-  const doctorUsed = consultations.filter(
-    (item) => String(item.status).toLowerCase() === "completed"
-  ).length;
+  const patientName =
+    patient.full_name ||
+    details.patient_name ||
+    [patient.first_name, patient.last_name].filter(Boolean).join(" ");
 
-  const totalConsultations = benefits.reduce(
-    (total, item) =>
-      total +
-      (Number(item.quantity_allocated ?? item.total_quantity ?? 0)),
-    0
-  );
+  // =====================================================
+  // MAIN UI
+  // =====================================================
 
   return (
     <div className="cpd-page">
       <ToastContainer position="top-right" />
 
-      {/* Header */}
+      {/* HEADER */}
+
       <div className="cpd-header">
         <button className="cpd-back" onClick={() => navigate(-1)}>
           <FaArrowLeft /> Back
@@ -224,268 +349,342 @@ const PackageDetails = () => {
             <h2>Package Purchase Details</h2>
             <p>Complete package, payment and fulfillment information</p>
           </div>
-          <Status value={get(details, "status", "purchase_status")} />
+
+          <Status value={details.status} />
         </div>
       </div>
 
-      {/* Summary */}
+      {/* SUMMARY CARDS */}
+
       <div className="cpd-summary">
-        <div>
+        <div className="cpd-summary-card">
           <span>Package Name</span>
-          <h3>{packageName}</h3>
-          <small>Purchase ID: {get(details, "id", "purchase_id")}</small>
+          <h3>{display(packageName)}</h3>
+          <small>Purchase ID: {display(details.id)}</small>
         </div>
 
-        <div>
+        <div className="cpd-summary-card">
           <span>Paid Amount</span>
-          <h2>{formatMoney(get(payment, "paid_amount", "amount_paid", "amount") === "—"
-            ? get(details, "paid_amount", "amount_paid", "price")
-            : get(payment, "paid_amount", "amount_paid", "amount"))}</h2>
+          <h2>{money(details.paid_price, currency)}</h2>
+          <small>Original: {money(details.original_price, currency)}</small>
         </div>
 
-        <div>
-          <span>Package Status</span>
-          <Status value={get(details, "status", "purchase_status")} />
+        <div className="cpd-summary-card">
+          <span>Purchase Status</span>
+          <Status value={details.status} />
+          <small>Billing: {display(details.billing_mode)}</small>
+        </div>
+
+        <div className="cpd-summary-card">
+          <span>Total Benefits</span>
+          <h2>{display(allocationSummary.benefit_count, "0")}</h2>
+          <small>Allocated benefits</small>
         </div>
       </div>
 
-      {/* Package Details */}
+      {/* PACKAGE DETAILS */}
+
       <Section title="Package Details" icon={<FaBox />}>
         <div className="cpd-grid">
           <Info label="Package Name" value={packageName} />
-          <Info label="Package ID" value={get(packageData, "id", "package_id")} />
-          <Info label="Category" value={get(packageData, "category_name", "category")} />
-          <Info label="Description" value={get(packageData, "description")} />
-          <Info label="Purchase Type" value={get(packageData, "purchase_type", "type")} />
-          <Info label="Billing Mode" value={get(packageData, "billing_mode", "billing_type")} />
-          <Info label="Original Price" value={formatMoney(get(packageData, "original_price", "mrp", "price"))} />
-          <Info label="Selling Price" value={formatMoney(get(packageData, "selling_price", "discounted_price", "price"))} />
-          <Info label="Validity" value={get(packageData, "validity", "validity_days", "duration")} />
-          <Info label="Start Date" value={formatDate(get(details, "start_date", "activation_date"))} />
-          <Info label="Expiry Date" value={formatDate(get(details, "expiry_date", "expires_at"))} />
-          <Info label="Activation Date" value={formatDate(get(details, "activation_date", "activated_at"))} />
+          <Info label="Package ID" value={packageData.package_id || details.package} />
+          <Info
+            label="Category"
+            value={packageData.category?.name || packageSnapshot.category_name}
+          />
+          <Info
+            label="Category Code"
+            value={packageData.category?.code || packageSnapshot.category}
+          />
+       <Info
+  label="Description"
+  value={
+    packageData.description
+      ? packageData.description.split(" ").slice(0,10).join(" ") +
+        (packageData.description.split(" ").length > 10 ? "..." : "")
+      : "-"
+  }
+/>
+          <Info label="Purchase Type" value={packageData.purchase_type} />
+          <Info label="Validity" value={packageData.validity_days ? `${packageData.validity_days} days` : "Not specified"} />
+          <Info label="Original Price" value={money(details.original_price, currency)} />
+          <Info label="Selling Price" value={money(packageSnapshot.selling_price, currency)} />
+          <Info label="Paid Price" value={money(details.paid_price, currency)} />
+          <Info label="Package Active" value={packageData.is_package_active ? "Yes" : "No"} />
+          <Info label="Purchased At" value={formatDate(packageData.purchased_at || details.created_at)} />
+        
+          <Info label="Start Date" value={formatDate(details.starts_at)} />
+          <Info label="Expiry Date" value={formatDate(details.expires_at)} />
+          <Info label="Days Remaining" value={packageData.days_remaining} />
+       
         </div>
+
+        
+        <div className="cpd-benefits-section">
+  <h4 className="cpd-subheading">Included Benefits</h4>
+
+ <div className="cpd-benefits">
+  {(
+    Array.isArray(packageData.included_benefits)
+      ? packageData.included_benefits
+      : Array.isArray(packageSnapshot.fulfillment)
+      ? packageSnapshot.fulfillment
+      : []
+  ).length > 0 ? (
+    (
+      Array.isArray(packageData.included_benefits)
+        ? packageData.included_benefits
+        : packageSnapshot.fulfillment || []
+    ).map((benefit, index) => (
+      <div className="cpd-benefit-item" key={index}>
+        <FaCheckCircle className="cpd-benefit-check" />
+        <span>
+          {typeof benefit === "object"
+            ? display(benefit.label || benefit.name || benefit.benefit_name)
+            : display(benefit)}
+        </span>
+      </div>
+    ))
+  ) : (
+    <Empty text="No included benefits available." />
+  )}
+</div>
+</div>
       </Section>
 
-      {/* Payment */}
+      {/* PAYMENT DETAILS */}
+
       <Section title="Payment Details" icon={<FaCreditCard />}>
         <div className="cpd-grid">
-          <Info label="Original Amount" value={formatMoney(get(payment, "original_amount", "original_price", "amount"))} />
-          <Info label="Discount" value={formatMoney(get(payment, "discount_amount", "discount"))} />
-          <Info label="Paid Amount" value={formatMoney(get(payment, "paid_amount", "amount_paid", "amount"))} />
-          <Info label="Payment Status" value={<Status value={get(payment, "status", "payment_status")} />} />
-          <Info label="Payment Method" value={get(payment, "payment_method", "method")} />
-          <Info label="Razorpay Order ID" value={get(payment, "razorpay_order_id", "order_id")} />
-          <Info label="Razorpay Payment ID" value={get(payment, "razorpay_payment_id", "payment_id")} />
-          <Info label="Payment Date" value={formatDate(get(payment, "payment_date", "paid_at", "created_at"))} />
-          <Info label="Transaction ID" value={get(payment, "transaction_id")} />
-          <Info label="Refund Status" value={<Status value={get(payment, "refund_status")} />} />
-          <Info label="Refunded Amount" value={formatMoney(get(payment, "refunded_amount", "refund_amount"))} />
+          <Info label="Payment Status" value={<Status value={payment.payment_status} />} />
+         
+          <Info label="Original Price" value={money(payment.original_price, currency)} />
+          <Info label="Discount Amount" value={money(payment.discount_amount, currency)} />
+          <Info label="Total Paid Amount" value={money(payment.total_paid_amount || details.paid_price, currency)} />
+          <Info label="Payment Gateway" value={payment.payment_gateway} />
+          <Info label="Billing Mode" value={payment.billing_mode} />
+          <Info label="Paid At" value={formatDate(payment.paid_at || details.paid_at)} />
+          <Info label="Razorpay Order ID" value={payment.razorpay_order_id || details.razorpay_order_id} />
+          <Info label="Razorpay Payment ID" value={payment.razorpay_payment_id || details.razorpay_payment_id} />
+       
+          <Info label="Failure Reason" value={payment.failure_reason} />
+          <Info label="Autopay Status" value={payment.autopay_status || details.autopay_status} />
         </div>
+
+     
+
+     
+
+        {Array.isArray(payment.refund?.refunds) && payment.refund.refunds.length > 0 && (
+          <DataTable
+            columns={[
+              { key: "id", label: "Refund ID" },
+              { key: "amount", label: "Amount", render: (row) => money(row.amount, currency) },
+              { key: "status", label: "Status", render: (row) => <Status value={row.status} /> },
+              { key: "created_at", label: "Date", render: (row) => formatDate(row.created_at) },
+            ]}
+            rows={payment.refund.refunds}
+          />
+        )}
       </Section>
 
-      {/* Customer */}
+      {/* CUSTOMER & PATIENT */}
+
       <Section title="Customer & Patient Details" icon={<FaUser />}>
         <div className="cpd-subheading">Customer Information</div>
+
         <div className="cpd-grid">
           <Info label="Customer Name" value={customerName} />
-          <Info label="Customer ID" value={get(customer, "id", "customer_id")} />
-          <Info label="Phone Number" value={get(customer, "phone", "phone_number", "mobile")} />
-          <Info label="Email" value={get(customer, "email", "email_address")} />
+          <Info label="Customer ID" value={customer.id} />
+          <Info label="Phone Number" value={customer.phone_number}  />
+          <Info label="Gender" value={customer.gender} />
+          <Info label="Date of Birth" value={formatDate(customer.date_of_birth)} />
+          <Info label="Joined At" value={formatDate(customer.joined_at)} />
         </div>
+{/* 
+        {customer.profile_picture && (
+          <div className="cpd-profile">
+            <img src={customer.profile_picture} alt="Customer profile" />
+            <span>Customer Profile</span>
+          </div>
+        )} */}
 
         <div className="cpd-subheading">Patient Information</div>
+
         <div className="cpd-grid">
           <Info label="Patient Name" value={patientName} />
-          <Info label="Patient ID" value={get(patient, "id", "patient_id")} />
-          <Info label="Relationship" value={get(patient, "relationship", "relation")} />
+          <Info label="Patient ID" value={patient.id || details.patient_id} />
+          <Info label="Relationship" value={patient.relation} />
+          <Info label="Gender" value={patient.gender} />
+          <Info label="Date of Birth" value={formatDate(patient.dob)} />
+        
+          <Info label="Phone Number" value={patient.phone_number} />
+         
+         
         </div>
       </Section>
 
-      {/* Benefits */}
-      <Section title="Benefit Usage & Fulfillment" icon={<FaGift />}>
-        {benefits.length ? (
-          <div className="cpd-table-wrap">
-            <table className="cpd-table">
-              <thead>
-                <tr>
-                  <th>Benefit</th>
-                  <th>Total Allocated</th>
-                  <th>Used</th>
-                  <th>Remaining</th>
-                  <th>Validity</th>
-                  <th>Expiry Date</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {benefits.map((benefit, index) => (
-                  <tr key={benefit.id || index}>
-                    <td>
-                      <strong>{get(benefit, "benefit_name", "name", "title")}</strong>
-                      <small>{get(benefit, "benefit_id", "id")}</small>
-                    </td>
-                    <td>{get(benefit, "quantity_allocated", "total_quantity", "quantity")}</td>
-                    <td>{get(benefit, "quantity_used", "used_quantity")}</td>
-                    <td>{get(benefit, "remaining_quantity", "quantity_remaining")}</td>
-                    <td>{get(benefit, "validity", "validity_days")}</td>
-                    <td>{formatDate(get(benefit, "expiry_date", "expires_at"))}</td>
-                    <td><Status value={get(benefit, "status")} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : <div className="cpd-no-data">No benefit details available from API.</div>}
+      {/* BENEFIT SUMMARY */}
+
+      <Section title="Benefit Allocation Summary" icon={<FaGift />}>
+   
+
+        <DataTable
+          columns={[
+            {
+              key: "benefit_name",
+              label: "Benefit",
+              render: (row) => (
+                <div className="cpd-benefit-name">
+                  <strong>{display(row.label || row.benefit_name)}</strong>
+                  <small>{display(row.fulfillment_mode)} · {display(row.unit)}</small>
+                </div>
+              ),
+            },
+            { key: "role", label: "Role" },
+            { key: "status", label: "Status", render: (row) => <Status value={row.status} /> },
+            { key: "allocated_quantity", label: "Allocated", render: (row) => quantity(row.allocated_quantity) },
+            { key: "used_quantity", label: "Used", render: (row) => quantity(row.used_quantity) },
+            { key: "remaining_quantity", label: "Remaining", render: (row) => quantity(row.remaining_quantity) },
+            { key: "reserved_quantity", label: "Reserved", render: (row) => quantity(row.reserved_quantity) },
+            { key: "usable_quantity", label: "Usable", render: (row) => quantity(row.usable_quantity) },
+            { key: "usage_count", label: "Usage Count" },
+            { key: "valid_from", label: "Valid From", render: (row) => formatDate(row.valid_from) },
+            { key: "valid_until", label: "Valid Until", render: (row) => formatDate(row.valid_until) },
+            { key: "last_used_at", label: "Last Used", render: (row) => formatDate(row.last_used_at) },
+          ]}
+          rows={benefits}
+          emptyText="No benefit allocation records found."
+        />
       </Section>
 
-      
+      {/* BENEFIT USAGE */}
+{/* 
       <Section title="Benefit Usage History" icon={<FaHistory />}>
-        {usageHistory.length ? (
-          <div className="cpd-table-wrap">
-            <table className="cpd-table">
-              <thead>
-                <tr>
-                  <th>Benefit</th>
-                  <th>Usage ID</th>
-                  <th>Quantity Used</th>
-                  <th>Date</th>
-                  <th>Reference</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usageHistory.map((item, index) => (
-                  <tr key={item.id || index}>
-                    <td>{get(item, "benefit_name", "benefit")}</td>
-                    <td>{get(item, "id", "usage_id")}</td>
-                    <td>{get(item, "quantity", "quantity_used")}</td>
-                    <td>{formatDate(get(item, "used_at", "created_at", "date"))}</td>
-                    <td>{get(item, "reference_id", "appointment_id")}</td>
-                    <td><Status value={get(item, "status")} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : <div className="cpd-no-data">No usage history available.</div>}
-      </Section>
+        <DataTable
+          columns={[
+            { key: "id", label: "Usage ID" },
+            {
+              key: "benefit_name",
+              label: "Benefit",
+              render: (row) => display(row.benefit_name || row.label || row.benefit),
+            },
+            { key: "quantity", label: "Quantity", render: (row) => quantity(row.quantity ?? row.quantity_used) },
+            { key: "status", label: "Status", render: (row) => <Status value={row.status} /> },
+            { key: "used_at", label: "Used At", render: (row) => formatDate(row.used_at || row.created_at) },
+            { key: "reference_id", label: "Reference", render: (row) => display(row.reference_id || row.appointment_id) },
+          ]}
+          rows={usageHistory}
+          emptyText="No benefit usage history available."
+        />
+      </Section> */}
 
-      {/* Shifted Benefits */}
-      <Section title="Shifted Benefits" icon={<FaSyncAlt />}>
-        {Array.isArray(details.shifted_benefits) && details.shifted_benefits.length ? (
-          <div className="cpd-table-wrap">
-            <table className="cpd-table">
-              <thead>
-                <tr>
-                  <th>Benefit</th>
-                  <th>Previous Package</th>
-                  <th>New Package</th>
-                  <th>Quantity</th>
-                  <th>Shift Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {details.shifted_benefits.map((item, index) => (
-                  <tr key={item.id || index}>
-                    <td>{get(item, "benefit_name")}</td>
-                    <td>{get(item, "previous_package_name")}</td>
-                    <td>{get(item, "new_package_name")}</td>
-                    <td>{get(item, "quantity")}</td>
-                    <td>{formatDate(get(item, "shifted_at", "created_at"))}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : <div className="cpd-no-data">No shifted benefits available.</div>}
-      </Section>
+      {/* SHIFTED BENEFITS */}
 
-      {/* Doctor Consultations */}
+      {/* <Section title="Shifted Benefits" icon={<FaSyncAlt />}>
+        <div className="cpd-subheading">Shift Information</div>
+
+        <div className="cpd-grid">
+          <Info label="Shift Status" value={details.shift_status} />
+          <Info label="Consumables Shifted To" value={details.consumables_shifted_to} />
+          <Info label="Shifted Consumables" value={details.shifted_consumables?.length ?? 0} />
+        </div>
+
+        <div className="cpd-subheading">Shifted In</div>
+
+        <DataTable
+          columns={[
+            { key: "benefit_name", label: "Benefit", render: (row) => display(row.benefit_name || row.label || row.benefit) },
+            { key: "quantity", label: "Quantity", render: (row) => quantity(row.quantity || row.shifted_in_quantity) },
+            { key: "status", label: "Status", render: (row) => <Status value={row.status} /> },
+            { key: "created_at", label: "Date", render: (row) => formatDate(row.created_at || row.shifted_at) },
+          ]}
+          rows={shiftedIn}
+          emptyText="No shifted-in benefits."
+        />
+
+        <div className="cpd-subheading">Shifted Out</div>
+
+        <DataTable
+          columns={[
+            { key: "benefit_name", label: "Benefit", render: (row) => display(row.benefit_name || row.label || row.benefit) },
+            { key: "quantity", label: "Quantity", render: (row) => quantity(row.quantity || row.shifted_out_quantity) },
+            { key: "status", label: "Status", render: (row) => <Status value={row.status} /> },
+            { key: "created_at", label: "Date", render: (row) => formatDate(row.created_at || row.shifted_at) },
+          ]}
+          rows={shiftedOut}
+          emptyText="No shifted-out benefits."
+        />
+      </Section> */}
+
+      {/* DOCTOR CONSULTATIONS */}
+
       <Section title="Doctor Consultation History" icon={<FaStethoscope />}>
         <div className="cpd-stats">
           <div>
-            <span>Total Allocated Consultations</span>
-            <strong>{totalConsultations || "—"}</strong>
+            <span>Total Consultations</span>
+            <strong>{display(consultationSummary.total, "0")}</strong>
           </div>
           <div>
-            <span>Completed Consultations</span>
-            <strong>{doctorUsed}</strong>
+            <span>Completed</span>
+            <strong>{display(consultationSummary.completed, "0")}</strong>
           </div>
           <div>
-            <span>Remaining Consultations</span>
-            <strong>{Math.max(0, totalConsultations - doctorUsed)}</strong>
+            <span>Remaining</span>
+            <strong>
+              {Math.max(
+                0,
+                Number(consultationSummary.total || 0) -
+                Number(consultationSummary.completed || 0)
+              )}
+            </strong>
           </div>
         </div>
 
-        {consultations.length ? (
-          <div className="cpd-table-wrap">
-            <table className="cpd-table">
-              <thead>
-                <tr>
-                  <th>Doctor Name</th>
-                  <th>Doctor ID</th>
-                  <th>Appointment ID</th>
-                  <th>Consultation Date</th>
-                  <th>Time</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {consultations.map((item, index) => (
-                  <tr key={item.id || index}>
-                    <td>{get(item, "doctor_name", "doctor")}</td>
-                    <td>{get(item, "doctor_id")}</td>
-                    <td>{get(item, "appointment_id", "id")}</td>
-                    <td>{formatDate(get(item, "consultation_date", "appointment_date"))}</td>
-                    <td>{get(item, "consultation_time", "appointment_time")}</td>
-                    <td><Status value={get(item, "status", "appointment_status")} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : <div className="cpd-no-data">No consultation history available.</div>}
+        <DataTable
+          columns={[
+            { key: "doctor_name", label: "Doctor", render: (row) => display(row.doctor_name || row.doctor) },
+            { key: "doctor_id", label: "Doctor ID" },
+            { key: "appointment_id", label: "Appointment ID" },
+            {
+              key: "consultation_date",
+              label: "Consultation Date",
+              render: (row) => formatDate(row.consultation_date || row.appointment_date),
+            },
+            { key: "consultation_time", label: "Time" },
+            { key: "status", label: "Status", render: (row) => <Status value={row.status} /> },
+          ]}
+          rows={consultations}
+          emptyText="No doctor consultations available."
+        />
       </Section>
 
-      {/* Purchase History */}
-      <Section title="Package Purchase History" icon={<FaCalendarAlt />}>
-        <div className="cpd-grid">
-          <Info label="Purchase Date" value={formatDate(get(details, "purchase_date", "created_at"))} />
-          <Info label="Activation Date" value={formatDate(get(details, "activation_date", "activated_at"))} />
-          <Info label="Start Date" value={formatDate(get(details, "start_date"))} />
-          <Info label="Expiry Date" value={formatDate(get(details, "expiry_date"))} />
-          <Info label="Purchase Status" value={<Status value={get(details, "status", "purchase_status")} />} />
+    
+
+      {/* CUSTOMER PURCHASE HISTORY */}
+
+      <Section title="Customer Package Purchase History" icon={<FaHistory />}>
+        <div className="cpd-subheading">
+          Same Package Purchase Count: {display(purchaseData.same_package_purchase_count, "0")}
         </div>
 
-        {purchaseHistory.length ? (
-          <div className="cpd-table-wrap">
-            <table className="cpd-table">
-              <thead>
-                <tr>
-                  <th>Package Name</th>
-                  <th>Purchase ID</th>
-                  <th>Purchase Date</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {purchaseHistory.map((item, index) => (
-                  <tr key={item.id || index}>
-                    <td>{get(item, "package_name", "package")}</td>
-                    <td>{get(item, "id", "purchase_id")}</td>
-                    <td>{formatDate(get(item, "purchase_date", "created_at"))}</td>
-                    <td>{formatMoney(get(item, "paid_amount", "amount"))}</td>
-                    <td><Status value={get(item, "status")} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : <div className="cpd-no-data">No previous purchase history available.</div>}
+        <DataTable
+          columns={[
+            { key: "package_name", label: "Package Name" },
+            { key: "purchase_id", label: "Purchase ID" },
+            { key: "package_id", label: "Package ID" },
+            { key: "paid_price", label: "Paid Price", render: (row) => money(row.paid_price, row.currency || currency) },
+            { key: "status", label: "Status", render: (row) => <Status value={row.status} /> },
+            { key: "starts_at", label: "Start Date", render: (row) => formatDate(row.starts_at) },
+            { key: "expires_at", label: "Expiry Date", render: (row) => formatDate(row.expires_at) },
+            { key: "paid_at", label: "Paid At", render: (row) => formatDate(row.paid_at) },
+            { key: "created_at", label: "Created At", render: (row) => formatDate(row.created_at) },
+         
+          ]}
+          rows={customerPurchases}
+          emptyText="No customer purchase history available."
+        />
       </Section>
-
     </div>
   );
 };
