@@ -770,7 +770,7 @@ useEffect(() => {
     type="button"
     className="view-purchase-btn"
     title="View Purchase Details"
-    onClick={() => navigate(`/PackageBuyerDetail/${item.id}`)}
+    onClick={() => navigate(`/PackageDetails/${item.id}`)}
   >
     <FaEye />
     View
