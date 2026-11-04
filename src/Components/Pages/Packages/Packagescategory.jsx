@@ -498,7 +498,7 @@ const Packagescategory = () => {
     }
   };
 
-  // ================= OPEN ADD MODAL =================
+ 
 
   const openAddModal = () => {
     setCategoryName("");
@@ -518,7 +518,7 @@ const Packagescategory = () => {
     setErrors({});
   };
 
-  // ================= OPEN EDIT MODAL =================
+ 
 
   const openEditModal = (item) => {
     setEditCategoryId(item.id);
@@ -554,14 +554,14 @@ const Packagescategory = () => {
     setSelectedCategory(null);
   };
 
-  // ================= CLEAR FILTERS =================
+ 
 
   const clearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
   };
 
-  // ================= EXCEL EXPORT =================
+  
 
   const exportToExcel = async () => {
     if (!filteredData.length) {
@@ -656,12 +656,11 @@ const Packagescategory = () => {
     }
   };
 
-  // ================= JSX =================
+  
 
   return (
     <>
-      {/* HEADER */}
-
+     
       <div className="page-header">
         <h1>Package Category Management</h1>
         <p className="page-paragraph">
@@ -703,7 +702,7 @@ const Packagescategory = () => {
         </div>
       </div>
 
-      {/* FILTERS */}
+     
 
       <div className="filter-category">
         <div className="filter-controls">
@@ -844,7 +843,7 @@ const Packagescategory = () => {
 
                   <td>{item.sequence ?? "-"}</td>
 
-                  {/* STATUS TOGGLE - FIXED */}
+              
 
                   <td>
                     <label className="switch">
@@ -856,10 +855,10 @@ const Packagescategory = () => {
                           const currentlyActive = isCategoryActive(item);
 
                           if (currentlyActive) {
-                            // ALWAYS OPEN CONFIRMATION MODAL
+                           
                             openStatusModal(item);
                           } else {
-                            // DIRECT ACTIVATION
+                           
                             updateCategoryStatus(item.id, false);
                           }
                         }}
@@ -1240,21 +1239,21 @@ const Packagescategory = () => {
                 </p>
 
                 <div className="category-deactivate-warning">
-                  <strong>⚠️ Important Warning!</strong>
+  <strong>⚠️ Important Warning!</strong>
 
-                  <p>
-                    {selectedCategory.active_packages !== undefined &&
-                    selectedCategory.active_packages !== null
-                      ? `This category contains ${selectedCategory.active_packages} active packages.`
-                      : "The active package count is not available."}
-                  </p>
+  <p>
+    {selectedCategory.active_packages !== undefined &&
+    selectedCategory.active_packages !== null
+      ? `This category contains ${selectedCategory.active_packages} active packages.`
+      : "The active package count is not available."}
+  </p>
 
-                  <p>
-                    Deactivating this category may also deactivate its active packages.
-                  </p>
+  <p>
+    Deactivating this category may also deactivate its active packages.
+  </p>
 
-                  <p>Do you want to continue?</p>
-                </div>
+  <p>Do you want to continue?</p>
+</div>
               </div>
             </div>
 

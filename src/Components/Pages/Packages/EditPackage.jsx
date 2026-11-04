@@ -1,6 +1,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import {
   FaArrowLeft,
@@ -761,99 +764,276 @@ const EditPackage = () => {
       return cleanConfig;
     });
   };
+// SUBMIT UPDATE
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  // SUBMIT UPDATE
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  setError("");
+  setSuccess("");
 
-    setError("");
-    setSuccess("");
+  if (loading) return;
 
-    try {
-      setLoading(true);
+  // ==============================
+  // FRONTEND VALIDATION
+  // ==============================
 
-      const configuration = buildConfiguration();
+  if (!form.name.trim()) {
+    toast.error("Package name is required.");
+    return;
+  }
 
-      const payload = {
-        name: form.name.trim(),
-        description: form.description.trim(),
-        category: form.category,
+  if (!form.category) {
+    toast.error("Please select a category.");
+    return;
+  }
 
-        original_price: Number(form.original_price),
-        selling_price: Number(form.selling_price),
+  if (
+    form.original_price === "" ||
+    !Number.isFinite(Number(form.original_price)) ||
+    Number(form.original_price) < 0
+  ) {
+    toast.error("Please enter a valid original price.");
+    return;
+  }
 
-        purchase_type: form.purchase_type,
-        button_action: form.button_action,
-        billing_mode: form.billing_mode,
+  if (
+    form.selling_price === "" ||
+    !Number.isFinite(Number(form.selling_price)) ||
+    Number(form.selling_price) < 0
+  ) {
+    toast.error("Please enter a valid selling price.");
+    return;
+  }
 
-        billing_period:
-          form.billing_mode === "autopay"
-            ? form.billing_period
-            : null,
+  if (
+    form.sequence === "" ||
+    !Number.isInteger(Number(form.sequence)) ||
+    Number(form.sequence) < 1
+  ) {
+    toast.error("Sequence must be at least 1.");
+    return;
+  }
 
-        billing_interval:
-          form.billing_mode === "autopay"
-            ? Number(form.billing_interval)
-            : null,
+  if (
+    form.billing_mode === "autopay" &&
+    form.purchase_type === "prepaid_package"
+  ) {
+    if (!form.billing_period) {
+      toast.error("Please select billing period.");
+      return;
+    }
 
-        billing_cycle_count:
-          form.billing_mode === "autopay"
-            ? Number(form.billing_cycle_count)
-            : null,
+    if (
+      !Number.isInteger(Number(form.billing_interval)) ||
+      Number(form.billing_interval) < 1
+    ) {
+      toast.error("Billing interval must be at least 1.");
+      return;
+    }
 
-        validity_days:
-          form.validity_days === ""
-            ? null
-            : Number(form.validity_days),
+    if (
+      !Number.isInteger(Number(form.billing_cycle_count)) ||
+      Number(form.billing_cycle_count) < 1
+    ) {
+      toast.error("Billing cycle count must be at least 1.");
+      return;
+    }
+  }
 
-        tags: form.tags,
-        sequence: Number(form.sequence),
-        is_active: form.is_active,
+  if (
+    form.validity_days !== "" &&
+    (
+      !Number.isInteger(Number(form.validity_days)) ||
+      Number(form.validity_days) < 1
+    )
+  ) {
+    toast.error("Validity days must be at least 1.");
+    return;
+  }
 
-        available_to_all_users: form.available_to_all_users,
-        can_be_purchased: form.can_be_purchased,
+  if (form.configuration.length === 0) {
+    toast.error("Please select at least one benefit.");
+    return;
+  }
 
-        configuration,
-      };
+  // Validate selected benefits
+  for (let index = 0; index < form.configuration.length; index++) {
+    const config = form.configuration[index];
 
-      console.log(
-        "UPDATE PACKAGE PAYLOAD:",
-        JSON.stringify(payload, null, 2)
-      );
+    if (!config.label?.trim()) {
+      toast.error(`Benefit ${index + 1}: Customer label is required.`);
+      return;
+    }
 
-      const response = await fetch(
-        `${BASE_URL}/packages/admin/?id=${id}`,
-        {
-          method: "PUT",
-          headers: getHeaders(),
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          getErrorMessage(result, "Failed to update package.")
-        );
+    if (isCountBenefit(config.type)) {
+      if (
+        config.count === "" ||
+        !Number.isInteger(Number(config.count)) ||
+        Number(config.count) < 1
+      ) {
+        toast.error(`Benefit ${index + 1}: Usage count must be at least 1.`);
+        return;
       }
 
-      setSuccess(
-        result?.message || "Package updated successfully."
-      );
-
-      setTimeout(() => {
-        navigate("/packages");
-      }, 800);
-    } catch (err) {
-      console.error("Update Package Error:", err);
-      setError(
-        err?.message || "Something went wrong while updating package."
-      );
-    } finally {
-      setLoading(false);
+      if (
+        config.eligible_after_days !== "" &&
+        (
+          !Number.isInteger(Number(config.eligible_after_days)) ||
+          Number(config.eligible_after_days) < 0
+        )
+      ) {
+        toast.error(`Benefit ${index + 1}: Eligible after days must be zero or greater.`);
+        return;
+      }
     }
-  };
+  }
+
+  try {
+    setLoading(true);
+
+    const configuration = buildConfiguration();
+
+    const isAutopay =
+      form.purchase_type === "prepaid_package" &&
+      form.billing_mode === "autopay";
+
+    const payload = {
+      name: form.name.trim(),
+      description: form.description.trim(),
+      category: form.category,
+
+      original_price: Number(form.original_price),
+      selling_price: Number(form.selling_price),
+
+      purchase_type: form.purchase_type,
+      button_action: form.button_action,
+
+      billing_mode: isAutopay ? "autopay" : "one_time",
+
+      billing_period: isAutopay
+        ? form.billing_period
+        : null,
+
+      billing_interval: isAutopay
+        ? Number(form.billing_interval)
+        : null,
+
+      billing_cycle_count: isAutopay
+        ? Number(form.billing_cycle_count)
+        : null,
+
+      validity_days:
+        form.validity_days === ""
+          ? null
+          : Number(form.validity_days),
+
+      tags: form.tags,
+      sequence: Number(form.sequence),
+      is_active: form.is_active,
+
+      available_to_all_users: form.available_to_all_users,
+
+      can_be_purchased:
+        form.purchase_type === "open_plan"
+          ? false
+          : form.can_be_purchased,
+
+      configuration,
+    };
+
+    console.log(
+      "UPDATE PACKAGE PAYLOAD:",
+      JSON.stringify(payload, null, 2)
+    );
+
+    const response = await fetch(
+      `${BASE_URL}/packages/admin/?id=${id}`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const result = await response.json();
+
+    console.log("UPDATE PACKAGE RESPONSE:", result);
+
+    // ==============================
+    // API ERROR HANDLING
+    // ==============================
+
+    if (!response.ok || result?.success === false) {
+      const apiError = result?.error;
+      const details = apiError?.details;
+
+      let errorMessage =
+        apiError?.message ||
+        result?.message ||
+        result?.detail ||
+        "Failed to update package.";
+
+      if (details && typeof details === "object") {
+        const firstError = Object.values(details)[0];
+
+        if (typeof firstError === "string") {
+          errorMessage = firstError;
+        } else if (Array.isArray(firstError)) {
+          errorMessage = firstError.join(", ");
+        } else if (firstError && typeof firstError === "object") {
+          errorMessage = Object.values(firstError)
+            .flat()
+            .join(", ");
+        }
+      }
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 4000,
+        theme: "colored",
+      });
+
+      return;
+    }
+
+    // ==============================
+    // SUCCESS
+    // ==============================
+
+    toast.success(
+      result?.message || "Package updated successfully.",
+      {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+      }
+    );
+
+    setSuccess(
+      result?.message || "Package updated successfully."
+    );
+
+    setTimeout(() => {
+      navigate("/packages");
+    }, 1000);
+
+  } catch (err) {
+    console.error("Update Package Error:", err);
+
+    toast.error(
+      err?.message ||
+        "Something went wrong while updating package.",
+      {
+        position: "top-right",
+        autoClose: 4000,
+        theme: "colored",
+      }
+    );
+
+  } finally {
+    setLoading(false);
+  }
+};
 
   // LOADING SCREEN
   if (fetchingPackage) {
@@ -875,6 +1055,7 @@ const EditPackage = () => {
   }
 
   return (
+    <>
     <div className="package-page add-package-page">
       {/* HEADER */}
       <div className="package-page-header">
@@ -1269,7 +1450,7 @@ const EditPackage = () => {
           </div>
         </section>
 
-        {/* PACKAGE CONFIGURATION */}
+       
         <section className="add-package-section">
           <div className="add-section-header configuration-header">
             <div>
@@ -1564,7 +1745,7 @@ const EditPackage = () => {
                     )}
                   </div>
 
-                  {/* ELIGIBILITY: ONLY CONSUMABLE AND CHAT_POOL */}
+                
                   {isCountBenefit(config.type) && (
                     <div className="add-form-grid">
                       <div className="add-form-group">
@@ -1680,6 +1861,17 @@ const EditPackage = () => {
         </div>
       </form>
     </div>
+    <ToastContainer
+  position="top-center"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  pauseOnHover
+  draggable
+  theme="colored"
+/>
+    </>
   );
 };
 

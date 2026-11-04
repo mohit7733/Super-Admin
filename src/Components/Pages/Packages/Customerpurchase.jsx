@@ -47,8 +47,7 @@ const [stats, setStats] = useState({
   paid_purchases: 0,
 });
 const totalPages = Math.ceil(totalCount / pageSize);
-  // --------------------------------------------------
-
+ 
   const formatDate = (date) => {
     if (!date) return "N/A";
 

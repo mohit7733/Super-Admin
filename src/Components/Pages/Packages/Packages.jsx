@@ -232,9 +232,7 @@ const [deleteLoading, setDeleteLoading] = useState(false);
     perPage,
   ]);
 
- // =========================================================
-// DELETE PACKAGE
-// =========================================================
+
 
 const openDeleteModal = (item) => {
   setDeleteModal({
@@ -500,10 +498,10 @@ const handleDeletePackage = async () => {
             : ""
         }`}
       >
-        {/* GREEN TOP LINE */}
+      
         <div className="package-card-accent" />
 
-        {/* HEADER */}
+      
         <div className="package-card-header">
           <div className="package-icon">
             <FaBoxOpen />
@@ -569,7 +567,7 @@ const handleDeletePackage = async () => {
           </div>
         </div>
 
-        {/* PRICE */}
+     
         <div className="package-price-section">
           <div>
             <span className="price-label">
@@ -588,7 +586,7 @@ const handleDeletePackage = async () => {
           </span>
         </div>
 
-        {/* BASIC INFORMATION */}
+      
         <div className="package-info-grid">
           <div className="package-info-box">
             <div className="package-info-icon">
@@ -653,12 +651,6 @@ const handleDeletePackage = async () => {
           </div>
         </div>
 
-        {/* TAGS */}
-       
-
-      
-
-
 
 
         <button
@@ -704,39 +696,21 @@ const handleDeletePackage = async () => {
                   <span>
                     Package information
                   </span>
+
+
+
+
+
                 </div> */}
               </div>
 
            <p className="package-description">
   {item?.description
-    ? `${item.description.slice(0,0)}${item.description.length > 30 ? "..." : ""}`
+    ? `${item.description.slice(0,160)}${item.description.length > 160 ? "..." : ""}`
     : "No description available."}
 </p>
             </div>
- <div className="package-tags-section">
-          <div className="tags-title">
-            <FaTag />
-            <span>Tags</span>
-          </div>
-
-          <div className="package-tags">
-            {Array.isArray(item?.tags) &&
-            item.tags.length > 0 ? (
-              item.tags.map((tag, index) => (
-                <span
-                  className="package-tag"
-                  key={`${tag}-${index}`}
-                >
-                  {tag}
-                </span>
-              ))
-            ) : (
-              <span className="no-tags">
-                No tags
-              </span>
-            )}
-          </div>
-        </div>
+ 
             
             <div className="expanded-block">
               <div className="expanded-heading">
@@ -754,15 +728,15 @@ const handleDeletePackage = async () => {
               </div>
 
               <div className="detail-grid">
-                <div>
+                {/* <div>
                   <span>Original Price</span>
 
                   <strong>
   {formatOriginalPrice(item?.original_price)}
 </strong>
-                </div>
+                </div> */}
 
-                <div>
+                {/* <div>
                   <span>Selling Price</span>
 
                   <strong>
@@ -770,7 +744,7 @@ const handleDeletePackage = async () => {
                       item?.selling_price
                     )}
                   </strong>
-                </div>
+                </div> */}
 
                 {/* <div>
                   <span>Button Action</span>
