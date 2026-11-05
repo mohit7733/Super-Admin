@@ -4276,7 +4276,7 @@ const handleEditCouponChange = (e) => {
         </div>
 
 
-        {/* DISCOUNT TYPE */}
+       
 
         <div className="coupon-form-group visibility-form-group">
 
@@ -4339,7 +4339,7 @@ const handleEditCouponChange = (e) => {
         </div>
 
 
-        {/* DISCOUNT VALUE */}
+        
 
         <div className="coupon-form-group discount-help-group">
 
