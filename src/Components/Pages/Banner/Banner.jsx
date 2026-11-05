@@ -127,9 +127,7 @@ const Banner = () => {
     yogas: { base: "YogaScreen", detail: "YogaSession" },
   };
 
-  // =========================================================
-  // HELPERS
-  // =========================================================
+  
 
   const getCategoryName = (categoryId) => {
     const category = CategoryData.find(

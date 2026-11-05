@@ -5307,67 +5307,35 @@
 }
 
 .benefit-dropdown-menu::-webkit-scrollbar {
-
   width: 7px;
-
 }
 
 
 
 .benefit-dropdown-menu::-webkit-scrollbar-track {
-
   background: #f5f5f5;
-
   border-radius: 10px;
-
 }
 
 
-
 .benefit-dropdown-menu::-webkit-scrollbar-thumb {
-
   background: #0d614e;
-
   border-radius: 10px;
-
 
 }
 
 
 .benefit-option {
-
   width: 100%;
-
   min-height: 52px;
-
-
-
   display: flex !important;
-
   flex-direction: row !important;
-
   align-items: center !important;
-
-
-
   gap: 12px;
-
-
-
-  padding: 10px 14px;
-
-
-
+ padding: 10px 14px;
   box-sizing: border-box;
-
-
-
   border-radius: 8px;
-
   cursor: pointer;
-
-
-
   transition: background 0.15s ease;
 
 }
@@ -5375,15 +5343,12 @@
 
 
 .benefit-option:hover {
-
   background: #f4f8f7;
-
 }
 
 
 
 .benefit-option.selected {
-
   background: #eef7f4;
 
 }
@@ -5394,31 +5359,14 @@
 .benefit-option input[type="checkbox"] {
 
   width: 22px !important;
-
   height: 22px !important;
-
-
-
   min-width: 22px !important;
 
   max-width: 22px !important;
-
-
-
   flex: 0 0 22px !important;
-
-
-
   margin: 0 !important;
-
   padding: 0 !important;
-
-
-
   accent-color: #0d614e;
-
-
-
   cursor: pointer;
 
 }
@@ -5443,17 +5391,9 @@
   margin: 0 !important;
 
   padding: 0 !important;
-
-
-
   color: #172020;
-
   font-size: 16px;
-
   font-weight: 600;
-
-
-
   line-height: 22px;
 
 

@@ -43,6 +43,7 @@ import { FaTicketAlt } from "react-icons/fa";
 import "./Coupons.css";
 
 
+
 const Coupon = () => {
 
   const navigate = useNavigate();
@@ -54,6 +55,12 @@ const [couponErrors, setCouponErrors] = useState({});
 
   const [error, setError] = useState(null);
    const [deleteModal, setDeleteModal] = useState(false);
+
+  // Coupon activation/deactivation confirmation modal
+  const [statusModal, setStatusModal] = useState(false);
+  const [statusCoupon, setStatusCoupon] = useState(null);
+  const [newCouponStatus, setNewCouponStatus] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -1337,6 +1344,91 @@ const handleEditCouponChange = (e) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
+  // Open the confirmation modal when the status switch is clicked.
+  const handleStatusToggle = (coupon) => {
+    if (statusLoading) return;
+    setStatusCoupon(coupon);
+    setNewCouponStatus(!Boolean(coupon.is_active));
+    setStatusModal(true);
+  };
+
+  // Update coupon status using the same PUT endpoint and complete coupon
+  // payload structure used by the existing edit-coupon functionality.
+  const confirmCouponStatusChange = async () => {
+    if (!statusCoupon || statusLoading) return;
+
+    const token = sessionStorage.getItem("superadmin_token");
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    setStatusLoading(true);
+
+    const payload = {
+      code: statusCoupon.code || "",
+      visibility: statusCoupon.visibility || "",
+      source: statusCoupon.source || "",
+      applies_to: statusCoupon.applies_to || "",
+      service_category_id: statusCoupon.service_category_id || "",
+      discount_type: statusCoupon.discount_type || "",
+      discount_value: Number(statusCoupon.discount_value || 0),
+      min_amount: statusCoupon.min_amount ?? null,
+      max_discount_amount: statusCoupon.max_discount_amount ?? null,
+      starts_at: statusCoupon.starts_at || null,
+      expires_at: statusCoupon.expires_at || null,
+      max_total_uses: statusCoupon.max_total_uses ?? null,
+      max_uses_per_customer: statusCoupon.max_uses_per_customer ?? null,
+      is_active: newCouponStatus,
+      image_url: statusCoupon.image_url || "",
+      description: statusCoupon.description || "",
+    };
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/promotions/admin/coupons/?id=${statusCoupon.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+      if (!response.ok || data?.success === false) {
+        toast.error(data?.message || "Failed to update coupon status");
+        return;
+      }
+
+      toast.success(
+        newCouponStatus
+          ? "Coupon activated successfully!"
+          : "Coupon deactivated successfully!"
+      );
+      setStatusModal(false);
+      setStatusCoupon(null);
+      await getCoupons();
+    } catch (err) {
+      console.error("Coupon Status Update Error:", err);
+      toast.error("Something went wrong while updating coupon status");
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
   return (
 
     <>
@@ -1937,10 +2029,9 @@ const handleEditCouponChange = (e) => {
 
                         <input
                           type="checkbox"
-                          checked={
-                            coupon.is_active
-                          }
-                          readOnly
+                          checked={Boolean(coupon.is_active)}
+                          onChange={() => handleStatusToggle(coupon)}
+                          disabled={statusLoading}
                         />
 
                         <span className="slider round"></span>
@@ -4838,6 +4929,94 @@ const handleEditCouponChange = (e) => {
   </div>
 )}
      
+      {statusModal && statusCoupon && (
+        <div
+          className="coupon-status-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !statusLoading) {
+              setStatusModal(false);
+              setStatusCoupon(null);
+            }
+          }}
+        >
+          <div
+            className="coupon-status-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="coupon-status-title"
+          >
+            <button
+              type="button"
+              className="coupon-status-close"
+              aria-label="Close"
+              disabled={statusLoading}
+              onClick={() => {
+                setStatusModal(false);
+                setStatusCoupon(null);
+              }}
+            >
+              ×
+            </button>
+
+            <div className={`coupon-status-icon ${newCouponStatus ? "activate-icon" : "deactivate-icon"}`}>
+              {newCouponStatus ? "✓" : "!"}
+            </div>
+
+            <h2 id="coupon-status-title">
+              {newCouponStatus ? "Activate Coupon?" : "Deactivate Coupon?"}
+            </h2>
+
+            <p className="coupon-status-description">
+              Are you sure you want to mark this coupon as{" "}
+              <strong>{newCouponStatus ? "active" : "inactive"}?</strong>{" "}
+              {newCouponStatus
+                ? "It will be visible and available to eligible customers immediately."
+                : "Customers will no longer be able to use this coupon."}
+            </p>
+
+            <div className="coupon-status-details">
+              <div className="coupon-detail-item">
+                <span>Coupon Code</span>
+                <strong>{statusCoupon.code || "N/A"}</strong>
+              </div>
+              <div className="coupon-detail-item">
+                <span>Discount</span>
+                <strong>
+                  {statusCoupon.discount_value ?? "N/A"}
+                  {statusCoupon.discount_type === "percentage" ? "%" : statusCoupon.discount_type === "flat" ? " ₹" : ""}
+                </strong>
+              </div>
+            </div>
+
+            <div className="coupon-status-actions">
+              <button
+                type="button"
+                className="coupon-status-cancel"
+                disabled={statusLoading}
+                onClick={() => {
+                  setStatusModal(false);
+                  setStatusCoupon(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={`coupon-status-confirm ${newCouponStatus ? "confirm-activate" : "confirm-deactivate"}`}
+                disabled={statusLoading}
+                onClick={confirmCouponStatusChange}
+              >
+                {statusLoading
+                  ? "Please wait..."
+                  : newCouponStatus
+                  ? "Yes, Activate"
+                  : "Yes, Deactivate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {deleteModal && (
   <div className="modal">
     <div className="modal-content">

@@ -292,9 +292,6 @@ useEffect(() => {
     setStatusFilter("all");
   };
 
-  // --------------------------------------------------
-  // Excel export
-  // --------------------------------------------------
 
   const exportToExcel = async () => {
     if (!FilteredData.length) {
