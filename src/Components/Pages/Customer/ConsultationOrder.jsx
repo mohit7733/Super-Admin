@@ -21,14 +21,13 @@ const ConsultationOrder = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const[Error,setError]=useState(null);
-   const [totalCount, setTotalCount] = useState(0);
-   const pagesize = 5;
-    const totalPages = Math.ceil(totalCount / pagesize);
-    const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  
-    const [currentpage, setCurrentPage] = useState(1);
-      const [Nextpage, setNextpage] = useState(null);
-       const [previousPage, setPreviousPage] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
+   const pageSize = 10;
+const totalPages = Math.ceil(totalCount / pageSize);
+
+const [currentpage, setCurrentPage] = useState(1);
+const [Nextpage, setNextpage] = useState(null);
+const [previousPage, setPreviousPage] = useState(null);
     
     const [AppointmentStats, setAppointmentStats] = useState({
      "total": 0,
@@ -88,47 +87,50 @@ const ConsultationOrder = () => {
 };
 
 
-  const fetchConsultationOrders = async (page = 1) => {
-    try {
-      setLoading(true);
+const fetchConsultationOrders = async (page = 1) => {
+  try {
+    setLoading(true);
 
-      const token = sessionStorage.getItem("superadmin_token");
+    const token = sessionStorage.getItem("superadmin_token");
 
-      const response = await fetch(
-        `${BASE_URL}/customers/admin/customers/?id=${customerId}&type=consultation&page=${page}`,
-        {
-          method: "GET",
-          headers: {
-           Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
+    const response = await fetch(
+      `${BASE_URL}/customers/admin/customers/?id=${customerId}&type=consultation&page=${page}&page_size=${pageSize}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const consultationData = data?.data?.consultation_orders;
+
+      setOrders(consultationData?.results || []);
+
+      setAppointmentStats(
+        data?.data?.stats?.consultation_status || {}
       );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setOrders(data?.data?.consultation_orders?.results || []);
-        setAppointmentStats(
-  data?.data?.stats?.consultation_status || {}
-);
-setTotalCount(data?.data?.consultation_orders?.count || 0);
-setNextpage(data?.data?.consultation_orders?.next);
-setPreviousPage(data?.data?.consultation_orders?.previous);
-setCurrentPage(data?.data?.consultation_orders?.page);
-      } else {
-        toast.error(data.message || "Failed to fetch consultation orders");
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    } finally {
-      setLoading(false);
+      setTotalCount(consultationData?.count || 0);
+      setNextpage(consultationData?.next);
+      setPreviousPage(consultationData?.previous);
+      setCurrentPage(page);
+    } else {
+      toast.error(data.message || "Failed to fetch consultation orders");
     }
-  };
-
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(()=>{
     fetchConsultationOrders();
   },[])
@@ -313,43 +315,100 @@ setCurrentPage(data?.data?.consultation_orders?.page);
 </table>
     
                 </div>
-                 {totalPages > 1 && (
-          <div className="pagination">
+          <div className="order-pagination-container">
 
+  <div className="order-pagination-info">
+    Showing{" "}
+    <strong>
+      {totalCount === 0 ? 0 : (currentpage - 1) * pageSize + 1}
+    </strong>{" "}
+    to{" "}
+    <strong>
+      {Math.min(currentpage * pageSize, totalCount)}
+    </strong>{" "}
+    of <strong>{totalCount}</strong> consultations
+  </div>
 
-            <button
-             onClick={() =>fetchConsultationOrders(currentpage - 1)}
-              disabled={!previousPage}
-            >
-              Prev
-            </button>
+  <div className="order-pagination-buttons">
 
+    {/* Previous */}
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={currentpage === 1 || loading}
+      onClick={() => fetchConsultationOrders(currentpage - 1)}
+    >
+      ‹
+    </button>
 
-            {pages.map((page) => (
-              <button
-                key={page}
-                onClick={() => fetchConsultationOrders(page)}
-                style={{
+    {/* First Page */}
+    {totalPages > 0 && (
+      <button
+        className={`order-pagination-btn ${
+          currentpage === 1 ? "order-pagination-active" : ""
+        }`}
+        disabled={loading}
+        onClick={() => fetchConsultationOrders(1)}
+      >
+        1
+      </button>
+    )}
 
-                  fontWeight: currentpage === page ? "bold" : "normal",
-                  background: currentpage === page ? "#0D614E" : "#fff",
-                  color: currentpage === page ? "#fff" : "#0D614E",
-                }}
-              >
-                {page}
-              </button>
-            ))}
+    {/* Left Dots */}
+    {currentpage > 3 && (
+      <span className="order-pagination-dots">...</span>
+    )}
 
+    {/* Middle Pages */}
+    {Array.from({ length: totalPages }, (_, index) => index + 1)
+      .filter(
+        (page) =>
+          page !== 1 &&
+          page !== totalPages &&
+          page >= currentpage - 1 &&
+          page <= currentpage + 1
+      )
+      .map((page) => (
+        <button
+          key={page}
+          className={`order-pagination-btn ${
+            currentpage === page ? "order-pagination-active" : ""
+          }`}
+          disabled={loading}
+          onClick={() => fetchConsultationOrders(page)}
+        >
+          {page}
+        </button>
+      ))}
 
-            <button
-              onClick={() =>fetchConsultationOrders(currentpage + 1)}
-              disabled={!Nextpage}
-            >
-              Next
-            </button>
+    {/* Right Dots */}
+    {currentpage < totalPages - 2 && (
+      <span className="order-pagination-dots">...</span>
+    )}
 
-          </div>
-        )}
+    {/* Last Page */}
+    {totalPages > 1 && (
+      <button
+        className={`order-pagination-btn ${
+          currentpage === totalPages ? "order-pagination-active" : ""
+        }`}
+        disabled={loading}
+        onClick={() => fetchConsultationOrders(totalPages)}
+      >
+        {totalPages}
+      </button>
+    )}
+
+   
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={currentpage === totalPages || loading}
+      onClick={() => fetchConsultationOrders(currentpage + 1)}
+    >
+      ›
+    </button>
+
+  </div>
+</div>
 
                 </div>
    

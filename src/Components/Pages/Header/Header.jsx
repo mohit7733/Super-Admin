@@ -267,15 +267,17 @@ const Header = ({ sidebarCollapsed, setSidebarCollapsed }) => {
 
 
               <div className="notification-footer">
-                <button
-                  type="button"
-                  className="view-all"
-                  onClick={fetchNotifications}
-                  disabled={loadingNotifications}
-                >
-                  Refresh notifications ↻
-                </button>
-              </div>
+  <button
+    type="button"
+    className="view-all"
+    onClick={() => {
+      setShowNotifications(false);
+      navigate("/all-notifications");
+    }}
+  >
+    All Notifications →
+  </button>
+</div>
             </div>
           )}
         </div>

@@ -72,20 +72,20 @@ const ConsultationRefundRequest = () => {
     try {
       const params = new URLSearchParams();
 
-      // Consultation page only
+      
       params.append("source_type", "consultation");
 
-      // Admin status filter
+      
       if (adminStatusFilter) {
         params.append("admin_status", adminStatusFilter);
       }
 
-      // Gateway status filter
+      
       if (gatewayStatusFilter) {
         params.append("gateway_status", gatewayStatusFilter);
       }
 
-      // Pagination
+ 
       params.append("page", page);
       params.append("page_size", pageSize);
 
@@ -159,26 +159,20 @@ const ConsultationRefundRequest = () => {
     }
   };
 
-  /* =========================================================
-     FILTER CHANGE
-  ========================================================= */
+ 
 
   useEffect(() => {
     getRefundRequests(1);
   }, [adminStatusFilter, gatewayStatusFilter]);
 
-  /* =========================================================
-     VIEW
-  ========================================================= */
+ 
 
   const handleView = (item) => {
     setOpenActionId(null);
     setViewModal(item);
   };
 
-  /* =========================================================
-     APPROVE
-  ========================================================= */
+ 
 
   const handleApprove = (item) => {
     setOpenActionId(null);

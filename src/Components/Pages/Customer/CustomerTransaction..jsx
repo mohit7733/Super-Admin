@@ -322,7 +322,7 @@ const getTransactionlist = async (page = 1) => {
 </td>
 
 <td>
-  {transaction.payment_method || "N/A"}
+  {transaction?.payment_method || "N/A"}
 </td>
 
 <td>

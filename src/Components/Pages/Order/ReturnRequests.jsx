@@ -27,9 +27,7 @@ const PAGE_SIZE = 5;
 const ReturnRequests = () => {
   const navigate = useNavigate();
 
-  // ==========================================
-  // STATES
-  // ==========================================
+ 
 
   const [returnRequests, setReturnRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,9 +54,6 @@ const ReturnRequests = () => {
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-  // ==========================================
-  // AUTHENTICATION
-  // ==========================================
 
   const getToken = () =>
     sessionStorage.getItem("superadmin_token");
@@ -76,10 +71,7 @@ const ReturnRequests = () => {
     navigate("/login");
   };
 
-  // ==========================================
-  // FETCH RETURN REQUESTS
-  // GET /order/admin/returns/
-  // ==========================================
+  
 
   const fetchReturnRequests = async (requestedPage = page) => {
     const token = getToken();
