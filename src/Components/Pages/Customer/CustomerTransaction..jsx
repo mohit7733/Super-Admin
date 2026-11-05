@@ -210,7 +210,7 @@ const getTransactionlist = async (page = 1) => {
         </div>
       </div>
     
-      {/* Total Revenue */}
+    
       <div className="stat2-card">
         <div
           className="stat2-icon"
@@ -227,7 +227,7 @@ const getTransactionlist = async (page = 1) => {
     
     </div>
     
-        {/* Filters */}
+     
     
       
         
