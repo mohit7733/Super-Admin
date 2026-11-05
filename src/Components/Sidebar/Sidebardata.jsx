@@ -540,6 +540,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
       permission: "view_orders",
       icon: <FaClipboardList size={18} />
     },
+     {
+  title: "Order Refund Requests",
+  path: "/Order/OrderRefundRequest",
+  permission: "view_order_refund",
+  icon: <FaMoneyBillWave size={18} />
+},
     {
       title: "Consultation Refund Requests",
       path: "/Order/ConsultationRefundRequests",
@@ -552,6 +558,7 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
       permission: "view_return_request",
       icon: <FaMoneyBillWave size={18} />
     },
+    
   ],
 },
 

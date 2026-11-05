@@ -129,10 +129,7 @@ const PackageDetails = () => {
     return "cpd-neutral";
   };
 
-  // =====================================================
-  // API
-  // =====================================================
-
+  
   const fetchDetails = async () => {
     try {
       setLoading(true);
@@ -686,6 +683,7 @@ const PackageDetails = () => {
         />
       </Section>
     </div>
+    
   );
 };
 

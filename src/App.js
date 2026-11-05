@@ -18,7 +18,7 @@ import Admin from './Components/Pages/Admin/Admin'
 import ApproveMedicine from './Components/Pages/Mangement/ApproveMedicine';
 import Product from './Components/Pages/Product/Product';
 
-
+import OrderRefundRequest from './Components/Pages/Order/OrderRefundRequest';
 import Customer from './Components/Pages/Customer/Customer'
 import CustomerDetailPage from './Components/Pages/Customer/CustomerDetailPage';
 
@@ -239,6 +239,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+      <Route
+  path="/Order/OrderRefundRequest"
+  element={
+    <ProtectedRoute permission="view_order_refund">
+      <Layout>
+        <OrderRefundRequest />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
         <Route
           path="/LegalPolicies"
           element={

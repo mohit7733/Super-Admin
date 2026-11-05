@@ -338,7 +338,7 @@
   }
 }
 
-/* Scrollbar Styling */
+
 .notification-list::-webkit-scrollbar {
   width: 6px;
 }

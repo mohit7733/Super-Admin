@@ -1,6 +1,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   FaArrowLeft,
   FaTrash,
@@ -352,10 +355,7 @@ const fetchCategories = async () => {
     setError("");
   };
 
-  // =====================================================
-  // PACKAGE TAGS
-  // =====================================================
-
+ 
   const addPackageTag = () => {
     const tag = form.tagInput.trim();
 
@@ -391,9 +391,7 @@ const fetchCategories = async () => {
     }
   };
 
-  // =====================================================
-  // ADD BENEFIT CONFIGURATION
-  // =====================================================
+
 
   const addConfiguration = (benefit) => {
     if (!benefit?.id) return;
@@ -628,158 +626,205 @@ const fetchCategories = async () => {
     return errors;
   };
 
-  // =====================================================
-  // SUBMIT PACKAGE
-  // =====================================================
+ 
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+  setError("");
+  setSuccess("");
 
-    const validationErrors = validateForm();
-    setFieldErrors(validationErrors);
+  // ==============================
+  // FORM VALIDATION
+  // ==============================
 
-    if (Object.keys(validationErrors).length > 0) {
-      const firstField = Object.keys(validationErrors)[0];
+  const validationErrors = validateForm();
+  setFieldErrors(validationErrors);
 
-      const element = document.querySelector(
-        `[name="${firstField}"]`
-      );
+  if (Object.keys(validationErrors).length > 0) {
+    const firstField = Object.keys(validationErrors)[0];
 
-      if (element) {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+    toast.error(validationErrors[firstField]);
+
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    // ==============================
+    // CONFIGURATION
+    // ==============================
+
+    const configuration = form.configuration.map((config) => {
+      const cleanConfig = {
+        name: String(config.benefit_id).trim(),
+        label: String(config.label).trim(),
+      };
+
+      if (
+        config.type === "consumable" ||
+        config.type === "chat_pool"
+      ) {
+        cleanConfig.count = Number(config.count);
       }
+
+      if (
+        config.eligible_after_days !== "" &&
+        config.eligible_after_days !== null &&
+        config.eligible_after_days !== undefined
+      ) {
+        cleanConfig.eligible_after_days = Number(
+          config.eligible_after_days
+        );
+      }
+
+      if (
+        config.requires_completed_capability &&
+        String(config.requires_completed_capability).trim()
+      ) {
+        cleanConfig.requires_completed_capability = String(
+          config.requires_completed_capability
+        ).trim();
+      }
+
+      return cleanConfig;
+    });
+
+    // ==============================
+    // BILLING
+    // ==============================
+
+    const isAutopay =
+      form.purchase_type === "prepaid_package" &&
+      form.billing_mode === "autopay";
+
+    // ==============================
+    // API PAYLOAD
+    // ==============================
+
+    const payload = {
+      name: form.name.trim(),
+      description: form.description.trim(),
+      category: form.category,
+
+      purchase_type: form.purchase_type,
+      button_action: form.button_action,
+
+      billing_mode: isAutopay ? "autopay" : "one_time",
+
+      billing_period: isAutopay
+        ? form.billing_period
+        : null,
+
+      billing_interval: isAutopay
+        ? Number(form.billing_interval)
+        : null,
+
+      billing_cycle_count: isAutopay
+        ? Number(form.billing_cycle_count)
+        : null,
+
+      original_price: Number(form.original_price),
+      selling_price: Number(form.selling_price),
+
+      validity_days:
+        form.validity_days === ""
+          ? null
+          : Number(form.validity_days),
+
+      sequence: Number(form.sequence),
+
+      tags: form.tags,
+
+      is_active: form.is_active,
+
+      can_be_purchased:
+        form.purchase_type === "open_plan"
+          ? false
+          : form.can_be_purchased,
+
+      available_to_all_users: form.available_to_all_users,
+
+      configuration,
+    };
+
+    console.log(
+      "CREATE PACKAGE PAYLOAD:",
+      JSON.stringify(payload, null, 2)
+    );
+
+    // ==============================
+    // CREATE PACKAGE API
+    // ==============================
+
+    const response = await fetch(`${BASE_URL}/packages/admin/`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+
+    console.log("CREATE PACKAGE RESPONSE:", result);
+
+    // ==============================
+    // API ERROR HANDLING
+    // ==============================
+
+    if (!response.ok || result?.success === false) {
+      const apiError = result?.error;
+      const details = apiError?.details;
+
+      let errorMessage =
+        apiError?.message ||
+        result?.message ||
+        result?.detail ||
+        "Failed to create package.";
+
+      // Show actual field error from backend
+      if (details && typeof details === "object") {
+        const firstError = Object.values(details)[0];
+
+        if (typeof firstError === "string") {
+          errorMessage = firstError;
+        } else if (Array.isArray(firstError)) {
+          errorMessage = firstError.join(", ");
+        }
+      }
+
+      toast.error(errorMessage);
 
       return;
     }
 
-    try {
-      setLoading(true);
+    // ==============================
+    // SUCCESS
+    // ==============================
 
-      const configuration = form.configuration.map((config) => {
-        const cleanConfig = {
-          name: String(config.benefit_id).trim(),
-          label: String(config.label).trim(),
-        };
+    toast.success(
+      result?.message || "Package created successfully."
+    );
 
-        if (
-          config.type === "consumable" ||
-          config.type === "chat_pool"
-        ) {
-          cleanConfig.count = Number(config.count);
-        }
+    setTimeout(() => {
+      navigate("/packages");
+    }, 1000);
 
-        if (
-          config.eligible_after_days !== "" &&
-          config.eligible_after_days !== null &&
-          config.eligible_after_days !== undefined
-        ) {
-          cleanConfig.eligible_after_days = Number(
-            config.eligible_after_days
-          );
-        }
+  } catch (err) {
+    console.error("Create Package Error:", err);
 
-        if (
-          config.requires_completed_capability &&
-          String(config.requires_completed_capability).trim()
-        ) {
-          cleanConfig.requires_completed_capability = String(
-            config.requires_completed_capability
-          ).trim();
-        }
+    toast.error(
+      err?.message ||
+        "Something went wrong while creating package."
+    );
 
-        return cleanConfig;
-      });
-
-      const isAutopay =
-        form.purchase_type === "prepaid_package" &&
-        form.billing_mode === "autopay";
-
-      const payload = {
-        name: form.name.trim(),
-        description: form.description.trim(),
-        category: form.category,
-        purchase_type: form.purchase_type,
-        button_action: form.button_action,
-        billing_mode: isAutopay ? "autopay" : "one_time",
-        billing_period: isAutopay ? form.billing_period : null,
-        billing_interval: isAutopay
-          ? Number(form.billing_interval)
-          : null,
-        billing_cycle_count: isAutopay
-          ? Number(form.billing_cycle_count)
-          : null,
-        original_price: Number(form.original_price),
-        selling_price: Number(form.selling_price),
-        validity_days:
-          form.validity_days === ""
-            ? null
-            : Number(form.validity_days),
-        sequence: Number(form.sequence),
-        tags: form.tags,
-        is_active: form.is_active,
-        can_be_purchased:
-          form.purchase_type === "open_plan"
-            ? false
-            : form.can_be_purchased,
-        available_to_all_users: form.available_to_all_users,
-        configuration,
-      };
-
-      console.log(
-        "CREATE PACKAGE PAYLOAD:",
-        JSON.stringify(payload, null, 2)
-      );
-
-      const response = await fetch(`${BASE_URL}/packages/admin/`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        const errorMessage =
-          result?.message ||
-          result?.detail ||
-          (typeof result === "string" ? result : "") ||
-          (result && typeof result === "object"
-            ? JSON.stringify(result)
-            : "") ||
-          "Failed to create package.";
-
-        throw new Error(errorMessage);
-      }
-
-      setSuccess("Package created successfully.");
-
-      setTimeout(() => {
-        navigate("/packages");
-      }, 800);
-    } catch (err) {
-      console.error("Create Package Error:", err);
-      setError(
-        err?.message ||
-          "Something went wrong while creating package."
-      );
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // =====================================================
-  // RENDER
-  // =====================================================
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
+<>
+ 
     <div className="package-page add-package-page">
       <div className="package-page-header">
         <div className="package-heading">
@@ -828,7 +873,7 @@ const fetchCategories = async () => {
           </div>
 
           <div className="add-form-grid basic-details-grid">
-            <div className="add-form-group full-width-field">
+            <div className="add-form-group package-name-field">
               <label>
                 Package Name <span>*</span>
               </label>
@@ -839,28 +884,13 @@ const fetchCategories = async () => {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Enter package name"
+                autoComplete="off"
               />
 
               {renderFieldError("name")}
             </div>
 
-            <div className="add-form-group full-width-field">
-              <label>Description</label>
-
-              <textarea
-                rows="4"
-                value={form.description}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                placeholder="Enter package description"
-              />
-            </div>
-
-            <div className="add-form-group">
+            <div className="add-form-group category-field">
               <label>
                 Category <span>*</span>
               </label>
@@ -873,8 +903,8 @@ const fetchCategories = async () => {
               >
                 <option value="">
                   {categoryLoading
-                    ? "Loading..."
-                    : "Select Category"}
+                    ? "Loading categories..."
+                    : "Select category"}
                 </option>
 
                 {categories.map((category) => (
@@ -887,7 +917,24 @@ const fetchCategories = async () => {
               {renderFieldError("category")}
             </div>
 
-            <div className="add-form-group">
+            <div className="add-form-group description-field">
+              <label>Description</label>
+
+              <textarea
+                rows="4"
+                value={form.description}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder="Describe what this package includes..."
+              />
+              <small className="field-helper">Give customers a short overview of this package.</small>
+            </div>
+
+            <div className="add-form-group sequence-field">
               <label>
                 Sequence <span>*</span>
               </label>
@@ -902,6 +949,7 @@ const fetchCategories = async () => {
               />
 
               {renderFieldError("sequence")}
+              <small className="field-helper">Controls the display order of packages.</small>
             </div>
           </div>
         </section>
@@ -1175,15 +1223,15 @@ const fetchCategories = async () => {
               placeholder="Type tag and press Enter"
             />
 
-            <button type="button" onClick={addPackageTag}>
+            <button type="button" className="add-tag-button" onClick={addPackageTag}>
               Add Tag
             </button>
           </div>
         </section>
 
-        {/* PACKAGE CONFIGURATION */}
-
         <section className="add-package-section">
+
+
           <div className="add-section-header configuration-header">
             <div>
               <h2>Package Configuration</h2>
@@ -1224,6 +1272,9 @@ const fetchCategories = async () => {
 
                         <span
                           className="selected-benefit-chip-remove"
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`Remove ${config.Service_name}`}
                           onClick={(e) => {
                             e.stopPropagation();
 
@@ -1371,6 +1422,7 @@ const fetchCategories = async () => {
                     <button
                       type="button"
                       className="remove-benefit-button"
+                      aria-label={`Remove ${config.Service_name}`}
                       onClick={() => removeConfiguration(index)}
                     >
                       <FaTrash />
@@ -1603,6 +1655,7 @@ const fetchCategories = async () => {
         <section className="add-package-section">
           <div className="add-section-header">
             <h2>Status & Availability</h2>
+            <p>Control whether customers can see and purchase this package.</p>
           </div>
 
           <div className="status-checkbox-row">
@@ -1646,6 +1699,18 @@ const fetchCategories = async () => {
         </div>
       </form>
     </div>
+        <ToastContainer
+      position="top-center"
+      autoClose={3000}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick
+      pauseOnHover
+      draggable
+      theme="colored"
+    />
+    
+  </>  
   );
 };
 
