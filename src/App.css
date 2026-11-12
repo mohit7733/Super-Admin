@@ -12014,3 +12014,183 @@ flex-direction:column;
   outline: 2px solid #0D614E;
   outline-offset: 3px;
 }
+
+/* =====================================
+   TRANSACTION PAGINATION
+===================================== */
+
+.transaction-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 25px;
+  margin-top: 0;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  border-radius: 0 0 18px 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Showing Records Text */
+
+.pagination-info {
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.pagination-info strong {
+  color: #334155;
+  font-weight: 600;
+}
+
+/* Pagination Buttons Wrapper */
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Page Number Buttons */
+
+.pagination-number {
+  min-width: 42px;
+  height: 46px;
+  padding: 0 12px;
+  border: 1px solid #d1d9e3;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #263b53;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.pagination-number:hover:not(:disabled) {
+  background: #eaf3f0;
+  border-color: #0D614E;
+  color: #0D614E;
+}
+
+/* Active Page */
+
+.pagination-number.active {
+  background: #0D614E;
+  color: #ffffff;
+  border-color: #0D614E;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(13, 97, 78, 0.18);
+}
+
+/* Previous / Next Circular Buttons */
+
+.pagination-arrow {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border: 1px solid #e1e8ed;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #0D614E;
+  font-size: 27px;
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.pagination-arrow:hover:not(:disabled) {
+  background: #0D614E;
+  border-color: #0D614E;
+  color: #ffffff;
+}
+
+
+
+.pagination-arrow:disabled,
+.pagination-number:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+
+.pagination-dots {
+  color: #475569;
+  font-size: 18px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+@media (max-width: 768px) {
+  .transaction-pagination {
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 12px;
+    gap: 16px;
+  }
+
+  .pagination-info {
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .pagination-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .pagination-number {
+    min-width: 36px;
+    height: 38px;
+    font-size: 14px;
+    padding: 0 8px;
+  }
+
+  .pagination-arrow {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    font-size: 23px;
+  }
+}
+
+@media (max-width: 400px) {
+  .pagination-controls {
+    gap: 4px;
+  }
+
+  .pagination-number {
+    min-width: 32px;
+    height: 35px;
+    padding: 0 6px;
+  }
+
+  .pagination-arrow {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+  }
+}
+.order-status-badge.refunded {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}

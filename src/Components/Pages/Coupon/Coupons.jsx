@@ -1534,7 +1534,8 @@ const handleEditCouponChange = (e) => {
         </div>
 
 
-        {/* INACTIVE */}
+    
+    
 
         <div
           className="stat2-card"
@@ -2003,7 +2004,7 @@ const handleEditCouponChange = (e) => {
                     </td>
 
 
-                    {/* STATUS */}
+                  
 
                     <td>
 

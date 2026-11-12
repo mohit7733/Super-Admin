@@ -318,9 +318,7 @@ const OrderRefundRequest = () => {
     }
   };
 
-  /* =========================================================
-     STATUS CLASSES
-  ========================================================= */
+  
 
   const getStatusClass = (status) => {
     switch (status?.toLowerCase()) {
@@ -420,9 +418,7 @@ const OrderRefundRequest = () => {
     );
   });
 
-  /* =========================================================
-     STATS
-  ========================================================= */
+
 
   const totalRefunds = refundRequests.length;
 
@@ -438,9 +434,7 @@ const OrderRefundRequest = () => {
     (item) => item.admin_status === "pending"
   ).length;
 
-  /* =========================================================
-     CLEAR FILTERS
-  ========================================================= */
+  
 
   const hasActiveFilters =
     searchTerm || adminStatusFilter || gatewayStatusFilter;
@@ -452,9 +446,7 @@ const OrderRefundRequest = () => {
     setCurrentPage(1);
   };
 
-  /* =========================================================
-     PAGINATION
-  ========================================================= */
+  
 
   const handlePageChange = (page) => {
     if (
@@ -469,13 +461,10 @@ const OrderRefundRequest = () => {
     getRefundRequests(page);
   };
 
-  /* =========================================================
-     JSX
-  ========================================================= */
 
   return (
     <>
-      {/* PAGE HEADER */}
+   
 
       <div className="page-header">
         <div>
@@ -484,7 +473,7 @@ const OrderRefundRequest = () => {
         </div>
       </div>
 
-      {/* STATS */}
+      
 
       <div className="stats2-grid">
         <div
@@ -871,7 +860,7 @@ const OrderRefundRequest = () => {
           </tbody>
         </table>
 
-        {/* PAGINATION */}
+      
 
         <div className="refund-pagination-container">
           <div className="refund-pagination-info">
@@ -981,9 +970,7 @@ const OrderRefundRequest = () => {
         </div>
       </div>
 
-      {/* =====================================================
-          APPROVE MODAL
-      ===================================================== */}
+   
 
       {approveModal && (
         <div className="confirm-overlay">

@@ -83,13 +83,12 @@ const Producthistory = () => {
 const [selectedOrder, setSelectedOrder] = useState(null);
 
 
-      const pagesize = 5;
-        const totalPages = Math.ceil(totalCount / pagesize);
-        const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-      
-        const [currentpage, setCurrentPage] = useState(1);
-          const [Nextpage, setNextpage] = useState(null);
-           const [previousPage, setPreviousPage] = useState(null);
+    const pageSize = 10;
+const totalPages = Math.ceil(totalCount / pageSize);
+
+const [currentpage, setCurrentPage] = useState(1);
+const [Nextpage, setNextpage] = useState(null);
+const [previousPage, setPreviousPage] = useState(null);
    const fetchProductOrders = async (page = 1) => {
     try {
       setOrderLoading(true);
@@ -97,7 +96,7 @@ const [selectedOrder, setSelectedOrder] = useState(null);
       const token = sessionStorage.getItem("superadmin_token");
 
       const response = await fetch(
-        `${BASE_URL}/customers/admin/customers/?id=${customerId}&type=product&page=${page}`,
+       `${BASE_URL}/customers/admin/customers/?id=${customerId}&type=product&page=${page}&page_size=${pageSize}`,
         {
           method: "GET",
           headers: {
@@ -119,7 +118,7 @@ setOrderStats(data?.data?.stats || {});
 setTotalCount(data?.data?.product_orders?.count || 0);
 setNextpage(data?.data?.product_orders?.next);
 setPreviousPage(data?.data?.product_orders?.previous);
-setCurrentPage(data?.data?.product_orders?.page || 1);
+setCurrentPage(page);
       } else {
         toast.error(data.message || "Failed to fetch Product orders");
       }
@@ -368,6 +367,111 @@ setCurrentPage(data?.data?.product_orders?.page || 1);
       )}
     </tbody>
   </table>
+
+<div className="order-pagination-container">
+
+  <div className="order-pagination-info">
+    Showing{" "}
+    <strong>
+      {totalCount === 0 ? 0 : (currentpage - 1) * pageSize + 1}
+    </strong>{" "}
+    to{" "}
+    <strong>
+      {Math.min(currentpage * pageSize, totalCount)}
+    </strong>{" "}
+    of <strong>{totalCount}</strong> orders
+  </div>
+
+  <div className="order-pagination-buttons">
+
+    {/* Previous */}
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={currentpage === 1 || OrderLoading}
+      onClick={() => fetchProductOrders(currentpage - 1)}
+    >
+      ‹
+    </button>
+
+    {/* First Page */}
+    {currentpage > 2 && (
+      <>
+        <button
+          className="order-pagination-btn"
+          disabled={OrderLoading}
+          onClick={() => fetchProductOrders(1)}
+        >
+          1
+        </button>
+
+        {currentpage > 3 && (
+          <span className="order-pagination-dots">...</span>
+        )}
+      </>
+    )}
+
+    {/* Previous Page */}
+    {currentpage > 1 && (
+      <button
+        className="order-pagination-btn"
+        disabled={OrderLoading}
+        onClick={() => fetchProductOrders(currentpage - 1)}
+      >
+        {currentpage - 1}
+      </button>
+    )}
+
+    {/* Current Page */}
+    {totalPages > 0 && (
+      <button className="order-pagination-btn order-pagination-active" disabled>
+        {currentpage}
+      </button>
+    )}
+
+    {/* Next Page */}
+    {currentpage < totalPages && (
+      <button
+        className="order-pagination-btn"
+        disabled={OrderLoading}
+        onClick={() => fetchProductOrders(currentpage + 1)}
+      >
+        {currentpage + 1}
+      </button>
+    )}
+
+    {/* Last Page */}
+    {currentpage < totalPages - 1 && (
+      <>
+        {currentpage < totalPages - 2 && (
+          <span className="order-pagination-dots">...</span>
+        )}
+
+        <button
+          className="order-pagination-btn"
+          disabled={OrderLoading}
+          onClick={() => fetchProductOrders(totalPages)}
+        >
+          {totalPages}
+        </button>
+      </>
+    )}
+
+    {/* Next Arrow */}
+    <button
+      className="order-pagination-btn order-pagination-arrow"
+      disabled={
+        currentpage === totalPages ||
+        totalPages === 0 ||
+        OrderLoading
+      }
+      onClick={() => fetchProductOrders(currentpage + 1)}
+    >
+      ›
+    </button>
+
+  </div>
+</div>
+
 </div>
                
 

@@ -147,10 +147,6 @@
   border-bottom: none;
 }
 
-/* =========================================================
-   CUSTOMER
-   ========================================================= */
-
 .refund-customer {
   display: flex;
   flex-direction: column;
