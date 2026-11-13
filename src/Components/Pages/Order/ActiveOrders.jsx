@@ -28,6 +28,7 @@ const [orderStats, setOrderStats] = useState({
   delivered: 0,
   cancelled: 0,
   returned: 0,
+  refunded: 0 ,
 });
   const [orderSearch, setOrderSearch] = useState("");
 const [orderStatusFilter, setOrderStatusFilter] = useState("All");
@@ -50,11 +51,20 @@ const apiStatus =
     ? ""
     : orderStatusFilter;
 
+    
 const apiPaymentType =
   paymentTypeFilter === "All"
     ? ""
     : paymentTypeFilter;
 
+
+    const getOrderStatus = (order) => {
+  if (order?.refund?.is_refunded === true) {
+    return "refunded";
+  }
+
+  return order?.status || "pending";
+};
 
 const getOrderList = async (
   page = 1,
@@ -94,7 +104,6 @@ const getOrderList = async (
       }
     );
 
-    // Session expired handling
     if (response.status === 401 || response.status === 403) {
       sessionStorage.removeItem("superadmin_token");
       toast.error("Session expired, please login again");
@@ -114,23 +123,15 @@ const getOrderList = async (
 
     const orderResponse = data?.data || {};
 
-    // --------------------------------
-    // 1. DYNAMIC ORDER LIST
-    // --------------------------------
     const orders = orderResponse?.results || [];
     setOrderData(orders);
-
-    // --------------------------------
-    // 2. DYNAMIC TOTAL COUNT
-    // --------------------------------
     const count = Number(orderResponse?.count || 0);
 
     setTotalCount(count);
     setTotalPages(Math.max(1, Math.ceil(count / pageSize)));
 
-    // --------------------------------
-    // 3. DYNAMIC ORDER STATISTICS
-    // --------------------------------
+  
+    
     const counts = orderResponse?.total_counts || {};
 
     setOrderStats({
@@ -144,6 +145,7 @@ const getOrderList = async (
       delivered: Number(counts?.delivered || 0),
       cancelled: Number(counts?.cancelled || 0),
       returned: Number(counts?.returned || 0),
+        refunded: Number(counts?.refunded || 0),
     });
 
   } catch (error) {
@@ -164,6 +166,7 @@ const getOrderList = async (
       delivered: 0,
       cancelled: 0,
       returned: 0,
+       refunded: 0,
     });
 
     setOrderError(
@@ -234,11 +237,12 @@ useEffect(() => {
     { label: "Confirmed", value: orderStats.confirmed, icon: <FaCheckCircle /> },
     { label: "Processing", value: orderStats.processing, icon: <FaCog /> },
     { label: "Packed", value: orderStats.packed, icon: <FaShoppingBag /> },
-    { label: "Dispatched", value: orderStats.dispatched, icon: <FaTruck /> },
+  
     { label: "Shipped", value: orderStats.shipped, icon: <FaTruck /> },
     { label: "Delivered", value: orderStats.delivered, icon: <FaCheckCircle /> },
     { label: "Cancelled", value: orderStats.cancelled, icon: <FaTimes /> },
     { label: "Returned", value: orderStats.returned, icon: <FaUndoAlt /> },
+      { label: "Refunded", value: orderStats.refunded, icon: <FaWallet /> },
   ].map((item, index) => (
     <div className="order-stat-card" key={index}>
       <div className="order-stat-icon">{item.icon}</div>
@@ -385,7 +389,7 @@ useEffect(() => {
             })
           : "";
 
-        const status = order?.status || "pending";
+       const status = getOrderStatus(order);
 
         return (
           <tr key={order?.order_id}>
@@ -502,7 +506,7 @@ useEffect(() => {
                 </span>
               </div>
             </td>
-   {/* AMOUNT */}
+  
             <td>
               <span className="order-amount">
                 ₹
@@ -512,11 +516,7 @@ useEffect(() => {
               </span>
             </td>
 
-            {/* STATUS */}
-          
-
-            {/* ACTION */}
-           {/* ACTION */}
+        
 <td className="order-action-cell">
   <div className="faqorder">
      <button
@@ -565,7 +565,7 @@ useEffect(() => {
 
 <div className="order-pagination-container">
 
-  {/* LEFT - SHOWING INFO */}
+ 
   <div className="order-pagination-info">
     Showing{" "}
     <strong>

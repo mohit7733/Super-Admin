@@ -186,7 +186,7 @@ export default function OrderTracking() {
 const buildTimeline = () => {
   const timeline = [];
 
-  
+  // Order Placed
   if (order.created_at) {
     timeline.push({
       id: "order-placed",
@@ -197,7 +197,7 @@ const buildTimeline = () => {
     });
   }
 
-  
+  // Status History
   statusHistory.forEach((history, index) => {
     if (!history?.created_at) return;
 
@@ -210,7 +210,22 @@ const buildTimeline = () => {
     });
   });
 
- 
+  // Refunded Event
+  if (
+    order.refund?.is_refunded &&
+    order.refund?.processed_at
+  ) {
+    timeline.push({
+      id: "refund-event",
+      status: "refunded",
+      source: "payment",
+      note: `Refund of ${formatAmount(
+        order.refund.amount
+      )} has been successfully processed.`,
+      created_at: order.refund.processed_at,
+    });
+  }
+
   timeline.sort(
     (a, b) =>
       new Date(a.created_at).getTime() -
@@ -219,6 +234,7 @@ const buildTimeline = () => {
 
   return timeline;
 };
+
 const timelineData = buildTimeline();
 
   const totalUnits = items.reduce(

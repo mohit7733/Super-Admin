@@ -3,7 +3,7 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-
+import AllNotification from './Components/Pages/Header/AllNotification';
 
 import Sidebar from './Components/Sidebar/Sidebar';
 
@@ -185,6 +185,16 @@ function App() {
           }
         />
 
+<Route
+  path="/all-notifications"
+  element={
+    <ProtectedRoute permission="view_notifications">
+      <Layout>
+        <AllNotification />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
         
         <Route
           path="/get buyers detail"

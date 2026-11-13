@@ -436,7 +436,6 @@ const Category = () => {
               apiErrors[fieldName] = message;
             }
 
-            // Always display every backend validation error in the toast.
             toast.error(`${key}: ${message}`);
           });
 

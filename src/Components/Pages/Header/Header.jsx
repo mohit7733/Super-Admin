@@ -13,11 +13,12 @@ const Header = ({ sidebarCollapsed, setSidebarCollapsed }) => {
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [notificationError, setNotificationError] = useState("");
-
+const [unreadCount, setUnreadCount] = useState(0);
   const notificationRef = useRef(null);
 
   const token = sessionStorage.getItem("superadmin_token");
-
+const UNREAD_COUNT_API =
+  "/notifications/superadmin/unread-count";
 
   const getHeaders = () => ({
     Accept: "application/json",
@@ -31,7 +32,35 @@ const Header = ({ sidebarCollapsed, setSidebarCollapsed }) => {
     sessionStorage.removeItem("superadmin_token");
     navigate("/login");
   };
+const fetchUnreadCount = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}${UNREAD_COUNT_API}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
+    );
 
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      navigate("/login");
+      return;
+    }
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      setUnreadCount(result.data.unread_count || 0);
+    }
+  } catch (error) {
+    console.error("Unread notification error:", error);
+  }
+};
   
   const fetchNotifications = async () => {
     if (!token) {
@@ -73,6 +102,7 @@ const Header = ({ sidebarCollapsed, setSidebarCollapsed }) => {
  
   useEffect(() => {
     fetchNotifications();
+      fetchUnreadCount();
   }, []);
 
  
@@ -116,9 +146,6 @@ const Header = ({ sidebarCollapsed, setSidebarCollapsed }) => {
     );
   };
 
-  const unreadCount = notifications.filter(
-    (notification) => !notification.is_read
-  ).length;
 
   const formatNotificationTime = (date) => {
     if (!date) return "";
