@@ -356,9 +356,7 @@ const OrderRefundRequest = () => {
     }
   };
 
-  /* =========================================================
-     FORMAT DATE
-  ========================================================= */
+  
 
   const formatDate = (date) => {
     if (!date) return null;
@@ -384,9 +382,7 @@ const OrderRefundRequest = () => {
     };
   };
 
-  /* =========================================================
-     FORMAT REASON
-  ========================================================= */
+  
 
   const formatReason = (reason) => {
     if (!reason) return "-";

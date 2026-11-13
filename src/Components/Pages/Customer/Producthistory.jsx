@@ -68,16 +68,16 @@ const Producthistory = () => {
   }
 };
    
-   const [OrderStats, setOrderStats] = useState({
-       "total": 0,
-                "pending": 0,
-                "confirmed": 0,
-                "completed": 0,
-                "cancelled": 0,
-                "rescheduled": 0,
-                "cancellation_requested": 0,
-                "missed":0
-    });
+ const [OrderStats, setOrderStats] = useState({
+  total_orders: 0,
+  pending: 0,
+  confirmed: 0,
+  processing: 0,
+  shipped: 0,
+  delivered: 0,
+  cancelled: 0,
+  returned: 0,
+});
       const { customerId } = useParams();
       const [showOrderModal, setShowOrderModal] = useState(false);
 const [selectedOrder, setSelectedOrder] = useState(null);
