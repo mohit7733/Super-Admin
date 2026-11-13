@@ -68,9 +68,6 @@ const AddPackage = () => {
 
   const packageFileRef = useRef(null);
 
-  // =====================================
-  // ERROR HANDLERS
-  // =====================================
 
   const clearFieldError = (field) => {
     setFieldErrors((prev) => {
@@ -114,9 +111,7 @@ const AddPackage = () => {
     setError("");
   };
 
-  // =====================================
-  // API HEADERS
-  // =====================================
+
 
   const getHeaders = () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -128,9 +123,7 @@ const AddPackage = () => {
     };
   };
 
-  // =====================================
-  // FETCH CATEGORIES
-  // =====================================
+
 
   const fetchCategories = async () => {
     try {
@@ -633,9 +626,9 @@ const AddPackage = () => {
       errors.name = "Package name is required.";
     }
 
-    if (!packageImage) {
-      errors.image_url = "Package image is required.";
-    }
+    // if (!packageImage) {
+    //   errors.image_url = "Package image is required.";
+    // }
 
     if (!form.category) {
       errors.category = "Please select a category.";
@@ -819,12 +812,15 @@ const AddPackage = () => {
     try {
       setLoading(true);
 
-      // Upload image first.
-      const imageUrl = await uploadPackageImage(packageImage);
+      // Upload image only if user has selected one.
+let imageUrl = null;
 
-      if (!imageUrl) return;
+if (packageImage) {
+  imageUrl = await uploadPackageImage(packageImage);
 
-      // Prepare configuration.
+  // If image was selected but upload failed, stop submission.
+  if (!imageUrl) return;
+}
       const configuration = form.configuration.map((config) => {
         const cleanConfig = {
           name: String(config.benefit_id).trim(),
@@ -900,8 +896,7 @@ const AddPackage = () => {
 
         sequence: Number(form.sequence),
 
-        image_url: imageUrl,
-
+     ...(imageUrl ? { image_url: imageUrl } : {}),
         tags: form.tags,
 
         // NEW FIELDS
@@ -1033,7 +1028,7 @@ const AddPackage = () => {
           noValidate
         >
 
-          {/* BASIC DETAILS */}
+        
 
           <section className="add-package-section">
             <div className="add-section-header">
@@ -1098,10 +1093,10 @@ const AddPackage = () => {
                 </small>
               </div>
 
-              {/* IMAGE UPLOAD */}
+             
 
               <div className="add-form-group package-image-field">
-                <label>Package Image <span>*</span></label>
+                <label>Package Image </label>
 
                 <input
                   ref={packageFileRef}
@@ -1152,7 +1147,7 @@ const AddPackage = () => {
                   )}
                 </div>
 
-                {renderFieldError("image_url")}
+                {/* {renderFieldError("image_url")} */}
               </div>
 
               <div className="add-form-group sequence-field">

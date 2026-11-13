@@ -340,7 +340,7 @@ const EditPackage = () => {
     });
   };
 
-  // FETCH PACKAGE
+  
   const fetchPackage = async (benefitList = []) => {
     try {
       setError("");
@@ -848,10 +848,10 @@ const EditPackage = () => {
       return;
     }
 
-    if (!form.image_url && !imageFile) {
-      toast.error("Please upload a package image.");
-      return;
-    }
+    // if (!form.image_url && !imageFile) {
+    //   toast.error("Please upload a package image.");
+    //   return;
+    // }
 
     if (
       form.original_price === "" ||

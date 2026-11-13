@@ -14,10 +14,6 @@ import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
 import { FiUpload } from 'react-icons/fi';
 
-
-
-
-
 const YogaCategory = () => {
     const[YogaCategoryData,setYogaCategoryData]=useState([]);
     const[Loading,setLoading]=useState(false);
@@ -41,11 +37,7 @@ const YogaCategory = () => {
 
    const[deleteModal,setDeleteModal]=useState(null);
    const [isFilterApplied, setIsFilterApplied] = useState(false);
-   
-  
-    
-   
-    
+       
       const [YogaCategoryForm, setYogaCategoryForm] = useState({
         name: "",
         description: "",
@@ -557,7 +549,7 @@ if (!code) {
                     <div className="vendors-stats stats2-grid">
                               <div className="stat2-card">
                                 <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                                  <FaThLarge  size={24} />
+                                  <FaThLarge  size={12} />
                                 </div>
                                 <div className="stat2-info">
                                   <h3>Total Category</h3>
@@ -567,7 +559,7 @@ if (!code) {
                       
                               <div className="stat2-card">
                                 <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                                  <FaCheckCircle size={24} />
+                                  <FaCheckCircle size={12} />
                                 </div>
                                 <div className="stat2-info">
                                   <h3>Active Category</h3>
@@ -577,7 +569,7 @@ if (!code) {
                       
                               <div className="stat2-card">
                                 <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                                <FaTimesCircle size={24} />
+                                <FaTimesCircle size={12} />
                                 </div>
                                 <div className="stat2-info">
                                   <h3>Inactive Category</h3>
