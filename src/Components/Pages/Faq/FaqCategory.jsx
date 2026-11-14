@@ -341,9 +341,7 @@ const FaqCategory = () => {
       newErrors.categoryName = "Category name is required";
     }
 
-    if (!editCategoryImage && !existingImage) {
-      newErrors.categoryImage = "Category image is required";
-    }
+  
 
     setEditErrors(newErrors);
 
@@ -471,7 +469,7 @@ const FaqCategory = () => {
 
     try {
       const response = await fetch(`${API_URL}?id=${id}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -1220,11 +1218,7 @@ const FaqCategory = () => {
                   )}
                 </div>
 
-                {editErrors.categoryImage && (
-                  <p className="error-text">
-                    {editErrors.categoryImage}
-                  </p>
-                )}
+              
               </div>
 
               <div className="form-group">

@@ -333,4 +333,74 @@ filter-controls {
   color: #929995;
   font-size: 12px;
   font-weight: 500;
+}/* FAQ Status Toggle */
+
+.faq-toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.faq-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.faq-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background-color: #ccc;
+  border-radius: 30px;
+  transition: 0.3s;
+}
+
+.faq-toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.faq-toggle input:checked + .faq-toggle-slider {
+  background-color: #0D614E;
+}
+
+.faq-toggle input:checked + .faq-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.faq-toggle input:disabled + .faq-toggle-slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+}.active-text {
+  color: #0d614e;
+  font-weight: 600;
+}
+
+.activate-btn {
+  background: #0d614e !important;
+  color: #fff !important;
+  border: 1px solid #0d614e !important;
+}
+
+.activate-btn:hover {
+  background: #094c3d !important;
+}
+
+.deactivate-btn {
+  background: #dc3545 !important;
+  color: #fff !important;
+  border: 1px solid #dc3545 !important;
+}
+
+.deactivate-btn:hover {
+  background: #bb2d3b !important;
 }

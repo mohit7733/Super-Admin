@@ -41,7 +41,7 @@ const initialEditFaqForm = {
   is_active: false,
 };
 
-// Safely get category value from API data
+
 const getCategoryValue = (category) => {
   if (category === null || category === undefined) return "";
 
@@ -117,6 +117,9 @@ const Faq = () => {
     active_faqs: 0,
     inactive_faqs: 0,
   });
+  const [statusModal, setStatusModal] = useState(false);
+const [selectedStatusFaq, setSelectedStatusFaq] = useState(null);
+const [statusLoading, setStatusLoading] = useState(false);
 
   // Common headers
   const getHeaders = () => {
@@ -307,9 +310,60 @@ const Faq = () => {
     return searchMatch && categoryMatch && statusMatch;
   });
 
-  // ==========================================
-  // ADD FAQ
-  // ==========================================
+const handleStatusToggle = async () => {
+  if (!selectedStatusFaq) return;
+
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    handleSessionExpired();
+    return;
+  }
+
+  try {
+    setStatusLoading(true);
+
+    const newStatus = !selectedStatusFaq.is_active;
+
+    const response = await fetch(
+      `${BASE_URL}/customers/admin/faqs/?id=${selectedStatusFaq.id}`,
+      {
+        method: "PATCH",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          is_active: newStatus,
+        }),
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      handleSessionExpired();
+      return;
+    }
+
+    const data = await response.json();
+
+    if (response.ok && data.success !== false) {
+      toast.success(
+        newStatus
+          ? "FAQ activated successfully"
+          : "FAQ deactivated successfully"
+      );
+
+      setStatusModal(false);
+      setSelectedStatusFaq(null);
+
+      getFaqs();
+    } else {
+      toast.error(data.message || "Failed to update FAQ status");
+    }
+  } catch (error) {
+    console.error("FAQ Status Error:", error);
+    toast.error("Something went wrong while updating status");
+  } finally {
+    setStatusLoading(false);
+  }
+};
 
   const handleAddFaq = async (e) => {
     e.preventDefault();
@@ -416,9 +470,7 @@ const Faq = () => {
     }
   };
 
-  // ==========================================
-  // OPEN EDIT FAQ MODAL
-  // ==========================================
+  
 
   const handleEditFaq = (faq) => {
     setEditFaqForm({
@@ -547,9 +599,6 @@ const Faq = () => {
     }
   };
 
-  // ==========================================
-  // DELETE FAQ
-  // ==========================================
 
   const handleDeleteFaq = async (id) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -598,12 +647,12 @@ const Faq = () => {
     }
   };
 
-  // ==========================================
-  // DYNAMIC CATEGORY OPTIONS
-  // ==========================================
+  
 
   const renderCategoryOptions = () => {
-    return faqCategories.map((category, index) => {
+  return faqCategories
+    .filter((category) => category.is_active === true)
+    .map((category, index) => {
       const value = getCategoryValue(category);
       const label = getCategoryName(category);
 
@@ -615,11 +664,8 @@ const Faq = () => {
         </option>
       );
     });
-  };
-
-  // ==========================================
-  // JSX
-  // ==========================================
+};
+  
 
   return (
     <>
@@ -832,17 +878,20 @@ const Faq = () => {
                     {faq.display_order ?? index + 1}
                   </td>
 
-                  <td>
-                    <span
-                      className={`faq-status ${
-                        faq.is_active
-                          ? "faq-status-active"
-                          : "faq-status-inactive"
-                      }`}
-                    >
-                      {faq.is_active ? "Active" : "Inactive"}
-                    </span>
-                  </td>
+       <td>
+  <label className="switch">
+    <input
+      type="checkbox"
+      checked={faq.is_active === true}
+      onChange={() => {
+        setSelectedStatusFaq(faq);
+        setStatusModal(true);
+      }}
+    />
+
+    <span className="slider round"></span>
+  </label>
+</td>
 
                   <td>
                     <div className="faq-actions">
@@ -874,9 +923,6 @@ const Faq = () => {
         </table>
       </div>
 
-      {/* ================================= */}
-      {/* ADD FAQ MODAL */}
-      {/* ================================= */}
 
       {showFaqModal && (
         <div
@@ -1316,9 +1362,7 @@ const Faq = () => {
         </div>
       )}
 
-      {/* ================================= */}
-      {/* DELETE FAQ MODAL */}
-      {/* ================================= */}
+     
 
       {deleteModal && selectedFaq && (
         <div
@@ -1396,6 +1440,99 @@ const Faq = () => {
           </div>
         </div>
       )}
+ {statusModal && selectedStatusFaq && (
+  <div
+    className="activeModal-overlay"
+    onClick={() => {
+      if (!statusLoading) {
+        setStatusModal(false);
+        setSelectedStatusFaq(null);
+      }
+    }}
+  >
+    <div
+      className="activeModal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        className="activeModal-close"
+        disabled={statusLoading}
+        onClick={() => {
+          setStatusModal(false);
+          setSelectedStatusFaq(null);
+        }}
+      >
+        ×
+      </button>
+
+      <div className="activeModal-icon">
+        {selectedStatusFaq.is_active ? "⚠️" : "⚠️"}
+      </div>
+
+      <h2 className="activeModal-title">
+        {selectedStatusFaq.is_active
+          ? "Deactivate FAQ"
+          : "Activate FAQ"}
+      </h2>
+
+      <p className="activeModal-text">
+        Are you sure you want to{" "}
+        <span
+          className={
+            selectedStatusFaq.is_active
+              ? "inactive-text"
+              : "active-text"
+          }
+        >
+          {selectedStatusFaq.is_active
+            ? "deactivate"
+            : "activate"}
+        </span>{" "}
+        this FAQ?
+      </p>
+
+      <div className="activeModal-card">
+        <h4>{selectedStatusFaq.question || "FAQ"}</h4>
+
+        <p>
+          {getCategoryName(selectedStatusFaq.category)}
+        </p>
+      </div>
+
+      <div className="activeModal-footer">
+        <button
+          type="button"
+          className="activeModal-cancel"
+          disabled={statusLoading}
+          onClick={() => {
+            setStatusModal(false);
+            setSelectedStatusFaq(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className={`activeModal-confirm ${
+            selectedStatusFaq.is_active
+              ? "deactivate-btn"
+              : "activate-btn"
+          }`}
+          disabled={statusLoading}
+          onClick={handleStatusToggle}
+        >
+          {statusLoading
+            ? "Please wait..."
+            : selectedStatusFaq.is_active
+            ? "Yes, Deactivate"
+            : "Yes, Activate"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       <ToastContainer position="top-center" autoClose={2000} />
     </>
