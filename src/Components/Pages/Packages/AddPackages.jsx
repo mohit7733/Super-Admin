@@ -16,6 +16,7 @@ import {
 
 import BASE_URL from "../../../Base";
 import "./AddPackages.css";
+import { FiTrash2,FiEye } from "react-icons/fi";
 
 const createEmptyForm = () => ({
   name: "",
@@ -448,9 +449,6 @@ const AddPackage = () => {
     }));
   };
 
-  // =====================================
-  // DISCLAIMER
-  // =====================================
 
   const handleDisclaimerChange = (index, value) => {
     setForm((prev) => ({
@@ -477,9 +475,7 @@ const AddPackage = () => {
     }));
   };
 
-  // =====================================
-  // BENEFIT CONFIGURATION
-  // =====================================
+
 
   const addConfiguration = (benefit) => {
     if (!benefit?.id) return;
@@ -903,6 +899,7 @@ if (packageImage) {
         not_included: form.not_included
           .map((item) => item.trim())
           .filter(Boolean),
+          
 
         disclaimer: form.disclaimer
           .map((item) => item.trim())
@@ -1095,60 +1092,71 @@ if (packageImage) {
 
              
 
-              <div className="add-form-group package-image-field">
-                <label>Package Image </label>
+           
+<div className="add-form-group full-width-field">
+  <label>
+    Package Image
+  </label>
 
-                <input
-                  ref={packageFileRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/jpg,image/webp"
-                  style={{ display: "none" }}
-                  onChange={handleImageChange}
-                />
+  <div className="upload-box1">
+    <input
+      ref={packageFileRef}
+      type="file"
+      accept="image/png,image/jpeg,image/jpg,image/webp"
+      id="packageImageUpload"
+      style={{ display: "none" }}
+      onChange={handleImageChange}
+    />
 
-                <div className="package-image-upload">
-                  {imagePreview ? (
-                    <div className="package-image-preview">
-                      <img
-                        src={imagePreview}
-                        alt="Package preview"
-                      />
+    {imagePreview ? (
+      <div className="banner-preview-wrapper">
+        <div className="banner-preview-left">
+          <img
+            src={imagePreview}
+            alt="Package preview"
+            className="banner-preview-image"
+          />
+        </div>
 
-                      <div className="package-image-actions">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            packageFileRef.current?.click()
-                          }
-                        >
-                          Change Image
-                        </button>
+        <div className="banner-preview-actions">
+          <button
+            type="button"
+            className="preview-btn"
+            onClick={() =>
+              window.open(imagePreview, "_blank")
+            }
+          >
+            <FiEye />
+          </button>
 
-                        <button
-                          type="button"
-                          onClick={removePackageImage}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      className="package-upload-button"
-                      onClick={() =>
-                        packageFileRef.current?.click()
-                      }
-                    >
-                      <span className="package-upload-icon">⬆</span>
-                      <strong>Click to upload package image</strong>
-                      <small>PNG, JPG, JPEG or WEBP (Max 5 MB)</small>
-                    </button>
-                  )}
-                </div>
+          <button
+            type="button"
+            className="delete-btn-preview"
+            onClick={removePackageImage}
+          >
+            <FiTrash2 />
+          </button>
+        </div>
+      </div>
+    ) : (
+      <label
+        htmlFor="packageImageUpload"
+        className="upload-label"
+      >
+        <div className="upload-content">
+          <span className="upload-icon">⬆</span>
+          <p>Click to upload package image</p>
+          <span className="upload-hint">
+            PNG, JPG, JPEG, WEBP (Max 5 MB)
+          </span>
+        </div>
+      </label>
+    )}
+  </div>
 
-                {/* {renderFieldError("image_url")} */}
-              </div>
+  {renderFieldError("image_url")}
+</div>
+
 
               <div className="add-form-group sequence-field">
                 <label>Sequence <span>*</span></label>

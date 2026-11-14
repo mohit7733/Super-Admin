@@ -6393,7 +6393,7 @@
 .package-upload-button {
   width: 100%;
   min-height: 160px;
-  border: 2px dashed #0d614e;
+  /* border: 2px dashed #0d614e; */
   border-radius: 10px;
   background: #f5faf8;
   color: #0d614e;
@@ -6406,9 +6406,9 @@
   transition: 0.2s ease;
 }
 
-.package-upload-button:hover {
+/* .package-upload-button:hover {
   background: #eaf5f0;
-}
+} */
 
 .package-upload-icon {
   font-size: 28px;
@@ -6691,10 +6691,11 @@
 /* Main Upload Box */
 .package-image-upload {
   position: relative;
+  border:none;
   width: 100%;
   /* max-width: 320px; */
   min-height: 190px;
-  border: 2px dashed #d5d5d5;
+  /* border: 2px dashed #d5d5d5; */
   border-radius: 12px;
   background: #fafafa;
   display: flex;
@@ -6704,10 +6705,10 @@
   transition: all 0.3s ease;
 }
 
-.package-image-upload:hover {
+/* .package-image-upload:hover {
   border-color: #4b9b68;
   background: #f5faf6;
-}
+} */
 
 .package-image-upload.has-image {
   border: 1px solid #e0e0e0;
@@ -6803,38 +6804,15 @@
   flex-shrink: 0;
 }
 
-/* View Button */
-.package-action-view {
-  background: #e8f1ff;
-  color: #2563eb;
-}
 
-.package-action-view:hover {
-  background: #2563eb;
-  color: #ffffff;
-}
-
-/* Change Button */
-.package-action-change {
-  background: #e8f7ed;
-  color: #248348;
-}
 
 .package-action-change:hover {
   background: #248348;
   color: #ffffff;
 }
 
-/* Remove Button */
-.package-action-remove {
-  background: #ffecec;
-  color: #e53935;
-}
 
-.package-action-remove:hover {
-  background: #e53935;
-  color: #ffffff;
-}
+
 
 /* Focus */
 .package-image-actions button:focus-visible,

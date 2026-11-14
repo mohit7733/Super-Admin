@@ -553,7 +553,7 @@ const OrderRefundRequest = () => {
         </div>
       </div>
 
-      {/* SEARCH + FILTER */}
+      
 
       <div className="refund-filter-bar">
         <div className="refund-search-wrapper">
@@ -1380,7 +1380,7 @@ const OrderRefundRequest = () => {
                 </div>
               </div>
 
-              {/* BANK DETAILS */}
+
 
               <div className="refund-drawer-section">
                 <h3>

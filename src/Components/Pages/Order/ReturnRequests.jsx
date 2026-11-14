@@ -157,9 +157,18 @@ const ReturnRequests = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
-  // ==========================================
-  // FIELD HELPERS
-  // ==========================================
+ const getPaymentTypeClass = (type) => {
+  switch (String(type || "").toLowerCase()) {
+    case "cod":
+      return "payment-type-cod";
+
+    case "prepaid":
+      return "payment-type-prepaid";
+
+    default:
+      return "refund-status-default";
+  }
+};
 
   const getReturnId = (item) =>
     item?.return_id ??
@@ -420,11 +429,7 @@ const ReturnRequests = () => {
     setSelectedApproveReturn(null);
   };
 
-  // ==========================================
-  // APPROVE RETURN REQUEST
-  //
-  // Confirm the exact endpoint with your backend.
-  // ==========================================
+  
 
   const handleApproveReturn = async () => {
     const returnItem = selectedApproveReturn;
@@ -483,9 +488,6 @@ const ReturnRequests = () => {
     }
   };
 
-  // ==========================================
-  // OPEN REJECT MODAL
-  // ==========================================
 
   const openRejectModal = (item) => {
     setOpenActionId(null);
@@ -594,7 +596,7 @@ const ReturnRequests = () => {
  
   return (
     <>
-      {/* PAGE HEADER */}
+      
 
       <div className="page-header">
         <div>
@@ -603,7 +605,6 @@ const ReturnRequests = () => {
         </div>
       </div>
 
-      {/* STATISTICS */}
 
       <div className="stats2-grid">
         <div
@@ -764,6 +765,7 @@ const ReturnRequests = () => {
               <th>Requested At</th>
               <th>Status</th>
             <th>Gateway Status</th>
+            <th>Payment Type</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -874,6 +876,15 @@ const ReturnRequests = () => {
     {formatLabel(
       item?.refund_request?.gateway_status || "—"
     )}
+  </span>
+</td>
+<td>
+  <span
+    className={`refund-status ${getPaymentTypeClass(
+      item?.payment_type
+    )}`}
+  >
+    {formatLabel(item?.payment_type || "—")}
   </span>
 </td>
 
@@ -1212,7 +1223,7 @@ const ReturnRequests = () => {
           )}
         </div>
 
-        {/* REFUND DETAILS */}
+  
 
         {selectedReturn?.refund_request && (
           <div className="return-view-card">
@@ -1296,6 +1307,19 @@ const ReturnRequests = () => {
                         {refund.gateway_payment_id || "—"}
                       </span>
                     </div>
+                    <div className="return-view-detail-row">
+  <span className="return-view-detail-label">
+    Payment Type
+  </span>
+
+  <span
+    className={`refund-status ${getPaymentTypeClass(
+      selectedReturn?.payment_type
+    )}`}
+  >
+    {formatLabel(selectedReturn?.payment_type || "—")}
+  </span>
+</div>
 
                     <div className="return-view-detail-row">
                       <span className="return-view-detail-label">
