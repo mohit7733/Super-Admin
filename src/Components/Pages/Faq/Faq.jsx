@@ -477,7 +477,8 @@ const handleStatusToggle = async () => {
       id: faq.id || "",
       question: faq.question || "",
       answer: faq.answer || "",
-      category: getCategoryValue(faq.category),
+         category: getCategoryValue(faq.category),
+
       display_order:
         faq.display_order !== null &&
         faq.display_order !== undefined
@@ -1240,46 +1241,32 @@ const handleStatusToggle = async () => {
                 )}
               </div>
 
-              {/* DYNAMIC CATEGORY */}
-              <div className="form-group">
-                <label>
-                  Category <span className="required">*</span>
-                </label>
+              <select
+  value={editFaqForm.category}
+  onChange={(e) =>
+    setEditFaqForm({
+      ...editFaqForm,
+      category: e.target.value,
+    })
+  }
+>
+  <option value="">Select Category</option>
 
-                <select
-                  value={editFaqForm.category}
-                  onChange={(e) => {
-                    setEditFaqForm({
-                      ...editFaqForm,
-                      category: e.target.value,
-                    });
+  {renderCategoryOptions()}
 
-                    if (editFaqErrors.category) {
-                      setEditFaqErrors({
-                        ...editFaqErrors,
-                        category: "",
-                      });
-                    }
-                  }}
-                  className={
-                    editFaqErrors.category ? "error-input" : ""
-                  }
-                >
-                  <option value="">
-                    {categoryLoading
-                      ? "Loading Categories..."
-                      : "Select Category"}
-                  </option>
-
-                  {renderCategoryOptions()}
-                </select>
-
-                {editFaqErrors.category && (
-                  <span className="error-text">
-                    {editFaqErrors.category}
-                  </span>
-                )}
-              </div>
+  {editFaqForm.category &&
+    !faqCategories.some(
+      (category) =>
+        category.is_active === true &&
+        getCategoryValue(category) === editFaqForm.category
+    ) && (
+      <option value={editFaqForm.category}>
+        {getCategoryName(
+          faqs.find((faq) => faq.id === editFaqForm.id)?.category
+        )} (Inactive)
+      </option>
+    )}
+</select>
 
               {/* DISPLAY ORDER */}
               <div className="form-group">
