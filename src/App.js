@@ -107,6 +107,8 @@ import Customerpurchase from './Components/Pages/Packages/Customerpurchase';
 import AppReview from './Components/Pages/Review/AppReview';
 import StockManagement from './Components/Pages/Product/StockManagement';
 import AllActivities from './Components/Pages/AllActivities/AllActivities'
+import FaqCategory from './Components/Pages/Faq/FaqCategory';
+
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -249,6 +251,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/FAQ/Category"
+  element={
+    <ProtectedRoute permission="view_faq_category">
+      <Layout>
+        <FaqCategory />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
       <Route
   path="/Order/OrderRefundRequest"
   element={

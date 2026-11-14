@@ -4233,8 +4233,10 @@ font-size: 14px;
   font-size: 14px;
   font-weight: 600;
   background: none;
- 
- 
+ height:25px;
+ width:25px;
+ padding: 2;
+ text-align: center;
 }
 
 .preview-btn {

@@ -2095,3 +2095,14 @@
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+.payment-type-cod {
+  background: #fff3e0;
+  color: #e67e00;
+  border: 1px solid #ffcc80;
+}
+
+.payment-type-prepaid {
+  background: #e8f5e9;
+  color: #0d614e;
+  border: 1px solid #a5d6a7;
+}

@@ -16,7 +16,7 @@ import {FaMoneyBillWave} from 'react-icons/fa';
 import { MdInventory2,MdInventory } from "react-icons/md";
 import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
 import { Activity } from "lucide-react";
-
+import { FaLayerGroup } from "react-icons/fa";
 import {
  
   MdRateReview,
@@ -189,6 +189,12 @@ export const SidebarData = () => [
       path: "/FAQ/Management",
       permission: "view_faq",
       icon: <FaCircleQuestion size={18} />,
+    },
+    {
+      title: "FAQ Category",
+      path: "/FAQ/Category",
+      permission: "view_faq_category",
+      icon: <FaLayerGroup size={18} />,
     },
   ],
 },
