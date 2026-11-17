@@ -28,16 +28,9 @@ const Medical = () => {
   const [Editform, setEditform] = useState(initalAddForm);
   const fetchOnce = useRef();
   const [AddError, setAddError] = useState({});
+  const [SearchQuestion, setSearchQuestion] = useState("");
+  const [AnswerTypeFilter, setAnswerTypeFilter] = useState("");
   const Navigate = useNavigate();
-  const pagesize = 5;
-  const [totalCount, setTotalCount] = useState(0);
-  const totalPages = Math.ceil(totalCount / pagesize);
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-
-  const [currentpage, setCurrentPage] = useState(1);
-  const [Nextpage, setNextpage] = useState(null);
-
-  const [previousPage, setPreviousPage] = useState(null);
 
 
  const getAllMedicalQuestion = async () => {
@@ -406,6 +399,16 @@ const Medical = () => {
     }
   };
 
+  const filteredQuestions = Data.filter((question) => {
+    const questionText = (question.question || "").toLowerCase();
+    const searchText = SearchQuestion.trim().toLowerCase();
+    const matchesQuestion = questionText.includes(searchText);
+    const matchesAnswerType =
+      !AnswerTypeFilter || question.answer_type === AnswerTypeFilter;
+
+    return matchesQuestion && matchesAnswerType;
+  });
+
   const uploadImage = async (file) => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -442,6 +445,51 @@ const Medical = () => {
 
   return (
     <>
+      {/*
+        Search and answer-type filter styles
+      */}
+      <style>{`
+        .medical-question-filters {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .medical-question-filters .search-question-box {
+          display: flex;
+          align-items: center;
+          position: relative;
+        }
+        .medical-question-filters .search-question-box input {
+          min-width: 240px;
+          padding: 10px 36px 10px 12px;
+        }
+        .medical-question-filters .search-question-box button {
+          position: absolute;
+          right: 8px;
+          border: 0;
+          background: transparent;
+          cursor: pointer;
+          font-size: 20px;
+          line-height: 1;
+        }
+        .medical-question-filters .answer-type-filter {
+          min-width: 170px;
+          padding: 10px 12px;
+          border: 1px solid #d5d5d5;
+          border-radius: 6px;
+          background: #fff;
+        }
+        @media (max-width: 600px) {
+          .medical-question-filters { width: 100%; }
+          .medical-question-filters .search-question-box,
+          .medical-question-filters .search-question-box input,
+          .medical-question-filters .answer-type-filter {
+            width: 100%;
+            min-width: 0;
+          }
+        }
+      `}</style>
 
       <div className="page-header">
         <h1> Medical Questions</h1>
@@ -450,22 +498,70 @@ const Medical = () => {
       <div>
 
       </div>
-      <div className="Question-controls">
+  <div className="Question-controls">
+  <div className="filter-question">
+    <div className="medical-question-filters">
 
+      {/* Search Question */}
+      <div className="search-question-box">
+        <input
+          type="text"
+          placeholder="Search by question..."
+          value={SearchQuestion}
+          onChange={(e) => setSearchQuestion(e.target.value)}
+        />
 
-        <div className="filter-question">
+        {SearchQuestion && (
           <button
-            className="add-customer-btn"
-            onClick={() => {
-              setAddformModal(true);
-              setAddform(initalAddForm);
-            }}
+            type="button"
+            onClick={() => setSearchQuestion("")}
+            title="Clear search"
+            aria-label="Clear search"
           >
-            + Add Question
+            ×
           </button>
-
-        </div>
+        )}
       </div>
+
+      {/* Answer Type Filter */}
+      <select
+        value={AnswerTypeFilter}
+        onChange={(e) => setAnswerTypeFilter(e.target.value)}
+        aria-label="Filter by answer type"
+        className="answer-type-filter"
+      >
+        <option value="">All Answer Types</option>
+        <option value="choice">Single Choice</option>
+        <option value="multi_choice">Multiple Choice</option>
+        <option value="text">Text</option>
+      </select>
+
+    {(SearchQuestion || AnswerTypeFilter) && (
+  <button
+    type="button"
+    className="clear-medical-filters"
+    onClick={() => {
+      setSearchQuestion("");
+      setAnswerTypeFilter("");
+    }}
+  >
+    Clear Filters
+  </button>
+)}
+
+    </div>
+
+    <button
+      className="add-customer-btn"
+      onClick={() => {
+        setAddformModal(true);
+        setAddform(initalAddForm);
+      }}
+    >
+      + Add Question
+    </button>
+  </div>
+</div>
 
       <div className="table-wrapper">
         <table className="data-table" >
@@ -492,8 +588,8 @@ const Medical = () => {
                   {Error}
                 </td>
               </tr>
-            ) : Data?.length > 0 ? (
-              Data?.map((question, index) =>
+            ) : filteredQuestions.length > 0 ? (
+              filteredQuestions.map((question, index) =>
               (
                 <tr key={question.id}>
 
@@ -611,43 +707,7 @@ const Medical = () => {
           </tbody>
         </table>
 
-        {totalPages > 1 && (
-          <div className="pagination">
 
-
-            <button
-              onClick={() => getAllMedicalQuestion(currentpage - 1)}
-              disabled={!previousPage}
-            >
-              Prev
-            </button>
-
-
-            {pages.map((page) => (
-              <button
-                key={page}
-                onClick={() => getAllMedicalQuestion(page)}
-                style={{
-
-                  fontWeight: currentpage === page ? "bold" : "normal",
-                  background: currentpage === page ? "#0D614E" : "#fff",
-                  color: currentpage === page ? "#fff" : "#0D614E",
-                }}
-              >
-                {page}
-              </button>
-            ))}
-
-
-            <button
-              onClick={() => getAllMedicalQuestion(currentpage + 1)}
-              disabled={!Nextpage}
-            >
-              Next
-            </button>
-
-          </div>
-        )}
 
 
 

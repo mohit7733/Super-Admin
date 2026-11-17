@@ -81,37 +81,32 @@ const getCategoryName = (category) => {
 const Faq = () => {
   const navigate = useNavigate();
 
-  // FAQ states
+  
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Dynamic FAQ categories
+  
   const [faqCategories, setFaqCategories] = useState([]);
   const [categoryLoading, setCategoryLoading] = useState(false);
 
-  // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Add FAQ
+ 
   const [faqForm, setFaqForm] = useState(initialFaqForm);
   const [faqErrors, setFaqErrors] = useState({});
   const [showFaqModal, setShowFaqModal] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
-
-  // Edit FAQ
   const [showEditFaqModal, setShowEditFaqModal] = useState(false);
   const [editFaqForm, setEditFaqForm] = useState(initialEditFaqForm);
   const [editFaqErrors, setEditFaqErrors] = useState({});
   const [editSubmitLoading, setEditSubmitLoading] = useState(false);
 
-  // Delete FAQ
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedFaq, setSelectedFaq] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // FAQ Stats
   const [faqStats, setFaqStats] = useState({
     total_faqs: 0,
     active_faqs: 0,
@@ -132,16 +127,13 @@ const [statusLoading, setStatusLoading] = useState(false);
     };
   };
 
-  // Session handling
   const handleSessionExpired = () => {
     sessionStorage.removeItem("superadmin_token");
     toast.error("Session expired. Please login again");
     navigate("/login");
   };
 
-  // ==========================================
-  // GET ALL FAQ CATEGORIES
-  // ==========================================
+ 
 
   const getFaqCategories = async () => {
     try {
@@ -195,9 +187,7 @@ const [statusLoading, setStatusLoading] = useState(false);
     }
   };
 
-  // ==========================================
-  // GET ALL FAQS
-  // ==========================================
+  
 
   const getFaqs = async () => {
     try {
@@ -237,7 +227,7 @@ const [statusLoading, setStatusLoading] = useState(false);
             faqData.filter((faq) => faq.is_active === false).length,
         });
 
-        // Sort by latest created date
+       
         const sortedData = [...faqData].sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime();
           const dateB = new Date(b.created_at || 0).getTime();
@@ -274,18 +264,11 @@ const [statusLoading, setStatusLoading] = useState(false);
     }
   };
 
-  // ==========================================
-  // INITIAL API CALLS
-  // ==========================================
 
   useEffect(() => {
     getFaqs();
     getFaqCategories();
   }, []);
-
-  // ==========================================
-  // FILTER FAQS
-  // ==========================================
 
   const filteredFaqs = faqs.filter((faq) => {
     const question = String(faq.question || "").toLowerCase();
@@ -491,9 +474,7 @@ const handleStatusToggle = async () => {
     setShowEditFaqModal(true);
   };
 
-  // ==========================================
-  // UPDATE FAQ
-  // ==========================================
+
 
   const handleUpdateFaq = async (e) => {
     e.preventDefault();

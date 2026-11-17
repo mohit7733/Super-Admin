@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from "react";
 import BASE_URL from "../../Base";
 import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
-import { toast } from 'react-toastify'
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-
 
 const Prakiritianalysis = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -13,205 +13,244 @@ const Prakiritianalysis = () => {
 
   const [editId, setEditId] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
-const [deleteId, setDeleteId] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
+
+  // Search State
+  const [SearchPrakriti, setSearchPrakriti] = useState("");
 
   const [formData, setFormData] = useState({
     prakriti_type: "",
     core_essence: "",
     dos: [""],
     donts: [""],
-
   });
+
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
   const [totalCount, setTotalCount] = useState(0);
   const totalPages = Math.ceil(totalCount / pageSize);
   const [nextPage, setNextPage] = useState(null);
   const [previousPage, setPreviousPage] = useState(null);
+
   const navigate = useNavigate();
- const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  
 
- const getPrakritiData = async (page = 1) => {
-  const token = sessionStorage.getItem("superadmin_token");
+  const pages = Array.from(
+    { length: totalPages },
+    (_, i) => i + 1
+  );
 
-  if (!token) {
-    toast.error("Session expired. Please login again");
-    navigate("/login");
-    return;
-  }
+  // GET PRAKRITI DATA
+  const getPrakritiData = async (page = 1) => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-  try {
-    setLoading(true);
-
-    const response = await fetch(
-      `${BASE_URL}/customers/prakriti/admin/analysis-contents/`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
-    );
-
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
+    if (!token) {
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
     }
 
-    const data = await response.json();
+    try {
+      setLoading(true);
 
-    console.log("Prakriti API Response:", data);
+      const response = await fetch(
+        `${BASE_URL}/customers/prakriti/admin/analysis-contents/`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
 
-    if (data.success) {
-      setData(data.data);
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
 
-     
-     
-    } else {
-      toast.error(data.message || "Failed to fetch data");
+      const data = await response.json();
+
+      console.log("Prakriti API Response:", data);
+
+      if (data.success) {
+        setData(Array.isArray(data.data) ? data.data : []);
+      } else {
+        toast.error(data.message || "Failed to fetch data");
+      }
+    } catch (error) {
+      console.log("GET ERROR:", error);
+      toast.error("Something went wrong while fetching data");
+    } finally {
+      setLoading(false);
     }
-
-  } catch (error) {
-    console.log("GET ERROR:", error);
-    toast.error("Something went wrong while fetching data");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     getPrakritiData();
   }, []);
 
-const handleDeleteClick = (id) => {
-  setDeleteId(id);
-  setDeleteModal(true);
-};
+  // SEARCH ONLY BY PRAKRITI TYPE
+  const filteredPrakritiData = Data.filter((item) => {
+    const prakritiType = (item.prakriti_type || "").toLowerCase();
+    const searchText = SearchPrakriti.trim().toLowerCase();
 
-const removeDosField = (index) => {
-  const updatedDos = formData.dos.filter(
-    (_, i) => i !== index
-  );
+    return prakritiType.includes(searchText);
+  });
 
-  setFormData((prev) => ({
-    ...prev,
-    dos: updatedDos,
-  }));
-};
-
-const removeDontsField = (index) => {
-  const updatedDonts = formData.donts.filter(
-    (_, i) => i !== index
-  );
-
-  setFormData((prev) => ({
-    ...prev,
-    donts: updatedDonts,
-  }));
-};
-
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  // DELETE MODAL
+  const handleDeleteClick = (id) => {
+    setDeleteId(id);
+    setDeleteModal(true);
   };
 
+  // REMOVE DO'S FIELD
+  const removeDosField = (index) => {
+    const updatedDos = formData.dos.filter(
+      (_, i) => i !== index
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      dos: updatedDos,
+    }));
+  };
+
+  // REMOVE DON'TS FIELD
+  const removeDontsField = (index) => {
+    const updatedDonts = formData.donts.filter(
+      (_, i) => i !== index
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      donts: updatedDonts,
+    }));
+  };
+
+  // HANDLE INPUT CHANGE
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  // HANDLE DO'S CHANGE
   const handleDosChange = (index, value) => {
     const updatedDos = [...formData.dos];
     updatedDos[index] = value;
 
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       dos: updatedDos,
-    });
+    }));
   };
 
+  // HANDLE DON'TS CHANGE
   const handleDontsChange = (index, value) => {
     const updatedDonts = [...formData.donts];
     updatedDonts[index] = value;
 
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       donts: updatedDonts,
-    });
+    }));
   };
 
-
-
+  // ADD DO'S FIELD
   const addDosField = () => {
-    setFormData({
-      ...formData,
-      dos: [...formData.dos, ""],
-    });
+    setFormData((prev) => ({
+      ...prev,
+      dos: [...prev.dos, ""],
+    }));
   };
 
+  // ADD DON'TS FIELD
   const addDontsField = () => {
-    setFormData({
-      ...formData,
-      donts: [...formData.donts, ""],
-    });
+    setFormData((prev) => ({
+      ...prev,
+      donts: [...prev.donts, ""],
+    }));
   };
 
+  // DELETE PRAKRITI
+  const handleDelete = async (id) => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-const handleDelete = async (id) => {
-  try {
-   const token = sessionStorage.getItem("superadmin_token");
-   const response = await fetch(
-      `${BASE_URL}/customers/prakriti/admin/analysis-contents/?id=${deleteId}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/customers/prakriti/admin/analysis-contents/?id=${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
       }
-    );
 
-    if (!response) return;
+      if (!response.ok) {
+        toast.error("Failed to delete Prakriti");
+        return;
+      }
 
-    toast.success("Prakriti deleted successfully", {
-      position: "top-center",
-      autoClose: 2000,
-    });
+      setData((prev) =>
+        prev.filter((item) => item.id !== id)
+      );
 
-    setData((prev) => prev.filter((item) => item.id !== id));
+      toast.success("Prakriti deleted successfully", {
+        position: "top-center",
+        autoClose: 2000,
+      });
 
-    setDeleteModal(false);
+      setDeleteModal(false);
+      setDeleteId(null);
+    } catch (err) {
+      console.error("Delete Error:", err);
 
-  } catch (err) {
+      toast.error("Failed to delete Prakriti", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+    }
+  };
 
-    console.error("Delete Error:", err);
-
-    toast.error("Failed to delete prakriti", {
-      position: "top-center",
-      autoClose: 2000,
-    });
-  }
-};
-
-
+  // EDIT PRAKRITI
   const handleEdit = (item) => {
     setEditId(item.id);
 
     setFormData({
       prakriti_type: item.prakriti_type || "",
       core_essence: item.content?.core_essence || "",
-      dos: item.content?.lifestyle?.["do's"] || [""],
-      donts: item.content?.lifestyle?.["don'ts"] || [""],
+      dos: item.content?.lifestyle?.["do's"]?.length
+        ? item.content.lifestyle["do's"]
+        : [""],
+      donts: item.content?.lifestyle?.["don'ts"]?.length
+        ? item.content.lifestyle["don'ts"]
+        : [""],
     });
 
     setOpenModal(true);
   };
 
-
+  // RESET FORM
   const resetForm = () => {
     setFormData({
       prakriti_type: "",
@@ -223,86 +262,207 @@ const handleDelete = async (id) => {
     setEditId(null);
   };
 
-
-
+  // ADD / UPDATE PRAKRITI
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const token = sessionStorage.getItem("superadmin_token");
+    const token = sessionStorage.getItem("superadmin_token");
 
-  const payload = {
-    prakriti_type: formData.prakriti_type,
-    content: {
-      core_essence: formData.core_essence,
-      lifestyle: {
-        "do's": formData.dos,
-        "don'ts": formData.donts,
-      },
-    },
-  };
-
-  try {
-    let response;
-
-    if (editId) {
-      response = await fetch(
-        `${BASE_URL}/customers/prakriti/admin/analysis-contents/?id=${editId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-    } else {
-      response = await fetch(
-        `${BASE_URL}/customers/prakriti/admin/analysis-contents/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-    }
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      toast.error(result.message || "Something went wrong");
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
       return;
     }
 
-    toast.success(
-      editId
-        ? "Prakriti Updated Successfully"
-        : "Prakriti Added Successfully"
-    );
+    const payload = {
+      prakriti_type: formData.prakriti_type,
+      content: {
+        core_essence: formData.core_essence,
+        lifestyle: {
+          "do's": formData.dos,
+          "don'ts": formData.donts,
+        },
+      },
+    };
 
-    resetForm();
-    setOpenModal(false);
-    getPrakritiData();
+    try {
+      let response;
 
-  } catch (error) {
-    console.error("Error:", error);
+      if (editId) {
+        response = await fetch(
+          `${BASE_URL}/customers/prakriti/admin/analysis-contents/?id=${editId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+      } else {
+        response = await fetch(
+          `${BASE_URL}/customers/prakriti/admin/analysis-contents/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+      }
 
-    toast.error(error.message || "Failed to submit form");
-  }
-};
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        toast.error(result.message || "Something went wrong");
+        return;
+      }
+
+      toast.success(
+        editId
+          ? "Prakriti Updated Successfully"
+          : "Prakriti Added Successfully"
+      );
+
+      resetForm();
+      setOpenModal(false);
+      getPrakritiData();
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error(error.message || "Failed to submit form");
+    }
+  };
 
   return (
     <>
+      {/* SEARCH CSS */}
+      <style>{`
+        .prakriti-search-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .prakriti-search-box {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .prakriti-search-box input {
+          width: 280px;
+          padding: 11px 38px 11px 14px;
+          border: 1px solid #d5d5d5;
+          border-radius: 6px;
+          outline: none;
+          font-size: 14px;
+          background: #fff;
+        }
+
+        .prakriti-search-box input:focus {
+          border-color: #0D614E;
+          box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.08);
+        }
+
+        .prakriti-search-box .search-clear-icon {
+          position: absolute;
+          right: 10px;
+          border: none;
+          background: transparent;
+          font-size: 21px;
+          cursor: pointer;
+          color: #666;
+          line-height: 1;
+        }
+
+        .prakriti-clear-filter {
+          padding: 11px 16px;
+          border: 1px solid #0D614E;
+          background: #fff;
+          color: #0D614E;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: 0.2s ease;
+        }
+
+        .prakriti-clear-filter:hover {
+          background: #0D614E;
+          color: #fff;
+        }
+
+        @media (max-width: 600px) {
+          .prakriti-search-wrapper {
+            width: 100%;
+          }
+
+          .prakriti-search-box,
+          .prakriti-search-box input {
+            width: 100%;
+          }
+        }
+      `}</style>
+
+      {/* PAGE HEADER */}
       <div className="page-header">
         <h1>Prakirti Management</h1>
         <p className="page-paragraph">Manage Prakirti</p>
       </div>
 
+      {/* SEARCH AND ADD BUTTON */}
       <div className="Question-controls">
         <div className="filter-question">
+
+          <div className="prakriti-search-wrapper">
+
+            <div className="prakriti-search-box">
+              <input
+                type="text"
+                placeholder="Search by Prakriti Type..."
+                value={SearchPrakriti}
+                onChange={(e) =>
+                  setSearchPrakriti(e.target.value)
+                }
+              />
+
+              {SearchPrakriti && (
+                <button
+                  type="button"
+                  className="search-clear-icon"
+                  onClick={() => setSearchPrakriti("")}
+                  title="Clear search"
+                  aria-label="Clear search"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+
+            {/* CLEAR FILTER BUTTON */}
+            {SearchPrakriti && (
+              <button
+                type="button"
+                className="prakriti-clear-filter"
+                onClick={() => setSearchPrakriti("")}
+              >
+                Clear Filters
+              </button>
+            )}
+
+          </div>
+
           <button
             className="add-customer-btn"
             onClick={() => {
@@ -310,11 +470,12 @@ const handleDelete = async (id) => {
               setOpenModal(true);
             }}
           >
-            + Add Prakirti
+            + Add Prakriti
           </button>
         </div>
       </div>
 
+      {/* PRAKRITI TABLE */}
       <div className="table-wrapper">
         <table className="data-table">
           <thead>
@@ -339,8 +500,8 @@ const handleDelete = async (id) => {
                     </td>
                   </tr>
                 ))
-            ) : Data?.length > 0 ? (
-              Data?.map((item, index) => (
+            ) : filteredPrakritiData.length > 0 ? (
+              filteredPrakritiData.map((item, index) => (
                 <tr key={item.id}>
                   <td>{index + 1}</td>
 
@@ -376,25 +537,29 @@ const handleDelete = async (id) => {
                       <FaEdit />
                     </button>
 
-<button
-  className="action-btn delete"
-  onClick={() => handleDeleteClick(item.id)}
->
-  <FiTrash2 />
-</button>
+                    <button
+                      className="action-btn delete"
+                      onClick={() => handleDeleteClick(item.id)}
+                    >
+                      <FiTrash2 />
+                    </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td colSpan="6" style={{ textAlign: "center" }}>
-                  No Data Found
+                  {SearchPrakriti
+                    ? "No Prakriti Found"
+                    : "No Data Found"}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-         {totalPages > 1 && (
+
+        {/* PAGINATION - EXISTING STRUCTURE */}
+        {totalPages > 1 && (
           <div className="pagination">
             <button
               onClick={() => getPrakritiData(currentPage - 1)}
@@ -402,33 +567,35 @@ const handleDelete = async (id) => {
             >
               Prev
             </button>
+
             {pages.map((page) => (
               <button
                 key={page}
                 onClick={() => getPrakritiData(page)}
                 style={{
-
-                  fontWeight: currentPage === page ? "bold" : "normal",
-                  background: currentPage === page ? "#0D614E" : "#fff",
-                  color: currentPage === page ? "#fff" : "#0D614E",
+                  fontWeight:
+                    currentPage === page ? "bold" : "normal",
+                  background:
+                    currentPage === page ? "#0D614E" : "#fff",
+                  color:
+                    currentPage === page ? "#fff" : "#0D614E",
                 }}
               >
                 {page}
               </button>
             ))}
+
             <button
               onClick={() => getPrakritiData(currentPage + 1)}
               disabled={!nextPage}
             >
               Next
             </button>
-
           </div>
         )}
-        
       </div>
 
-
+      {/* ADD / EDIT MODAL */}
       {openModal && (
         <div className="prakriti-modal-overlay">
           <div className="prakriti-modal">
@@ -460,6 +627,8 @@ const handleDelete = async (id) => {
               onSubmit={handleSubmit}
               className="prakriti-form"
             >
+
+              {/* PRAKRITI TYPE */}
               <div className="form-group">
                 <label>Prakriti Type</label>
 
@@ -473,6 +642,7 @@ const handleDelete = async (id) => {
                 />
               </div>
 
+              {/* CORE ESSENCE */}
               <div className="form-group">
                 <label>Core Essence</label>
 
@@ -486,111 +656,107 @@ const handleDelete = async (id) => {
                 />
               </div>
 
+              {/* DO'S SECTION */}
+              <div className="dynamic-section">
+                <div className="section-header">
+                  <h3>Do's</h3>
 
+                  <button
+                    type="button"
+                    onClick={addDosField}
+                    className="add-btn"
+                  >
+                    + Add
+                  </button>
+                </div>
 
-<div className="dynamic-section">
-  <div className="section-header">
-    <h3>Do's</h3>
+                <div className="dynamic-list">
+                  {formData.dos.map((item, index) => (
+                    <div
+                      className="dynamic-input"
+                      key={index}
+                    >
+                      <span>{index + 1}</span>
 
-    <button
-      type="button"
-      onClick={addDosField}
-      className="add-btn"
-    >
-      + Add
-    </button>
-  </div>
+                      <div className="input-wrapper">
+                        <input
+                          type="text"
+                          placeholder={`Enter do ${index + 1}`}
+                          value={item}
+                          onChange={(e) =>
+                            handleDosChange(
+                              index,
+                              e.target.value
+                            )
+                          }
+                        />
 
-  <div className="dynamic-list">
-    {formData.dos.map((item, index) => (
-      <div
-        className="dynamic-input"
-        key={index}
-      >
-        <span>{index + 1}</span>
+                        <button
+                          type="button"
+                          className="delete-icon-btn"
+                          onClick={() =>
+                            removeDosField(index)
+                          }
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-        <div className="input-wrapper">
-          <input
-            type="text"
-            placeholder={`Enter do ${index + 1}`}
-            value={item}
-            onChange={(e) =>
-              handleDosChange(
-                index,
-                e.target.value
-              )
-            }
-          />
+              {/* DON'TS SECTION */}
+              <div className="dynamic-section">
+                <div className="section-header">
+                  <h3>Don'ts</h3>
 
-          <button
-            type="button"
-            className="delete-icon-btn"
-            onClick={() =>
-              removeDosField(index)
-            }
-          >
-            <FiTrash2 />
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
+                  <button
+                    type="button"
+                    onClick={addDontsField}
+                    className="add-btn danger"
+                  >
+                    + Add
+                  </button>
+                </div>
 
+                <div className="dynamic-list">
+                  {formData.donts.map((item, index) => (
+                    <div
+                      className="dynamic-input"
+                      key={index}
+                    >
+                      <span>{index + 1}</span>
 
+                      <div className="input-wrapper">
+                        <input
+                          type="text"
+                          placeholder={`Enter don't ${index + 1}`}
+                          value={item}
+                          onChange={(e) =>
+                            handleDontsChange(
+                              index,
+                              e.target.value
+                            )
+                          }
+                        />
 
-<div className="dynamic-section">
-  <div className="section-header">
-    <h3>Don'ts</h3>
+                        <button
+                          type="button"
+                          className="delete-icon-btn"
+                          onClick={() =>
+                            removeDontsField(index)
+                          }
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-    <button
-      type="button"
-      onClick={addDontsField}
-      className="add-btn danger"
-    >
-      + Add
-    </button>
-  </div>
-
-  <div className="dynamic-list">
-    {formData.donts.map((item, index) => (
-      <div
-        className="dynamic-input"
-        key={index}
-      >
-        <span>{index + 1}</span>
-
-        <div className="input-wrapper">
-          <input
-            type="text"
-            placeholder={`Enter don't ${index + 1}`}
-            value={item}
-            onChange={(e) =>
-              handleDontsChange(
-                index,
-                e.target.value
-              )
-            }
-          />
-
-          <button
-            type="button"
-            className="delete-icon-btn"
-            onClick={() =>
-              removeDontsField(index)
-            }
-          >
-            <FiTrash2 />
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
-
-
-
-
+              {/* MODAL FOOTER */}
               <div className="modal-footer">
                 <button
                   type="button"
@@ -603,7 +769,10 @@ const handleDelete = async (id) => {
                   Cancel
                 </button>
 
-                <button type="submit" className="save-btn">
+                <button
+                  type="submit"
+                  className="save-btn"
+                >
                   {editId
                     ? "Update Prakriti"
                     : "Save Prakriti"}
@@ -614,39 +783,37 @@ const handleDelete = async (id) => {
         </div>
       )}
 
-     {deleteModal && (
-  <div className="modal">
-    <div className="modal-content">
+      {/* DELETE CONFIRMATION MODAL */}
+      {deleteModal && (
+        <div className="modal">
+          <div className="modal-content">
 
-      <h3>
-        Are you sure you want to delete this Prakriti?
-      </h3>
+            <h3>
+              Are you sure you want to delete this Prakriti?
+            </h3>
 
-      <div className="form-buttons">
+            <div className="form-buttons">
 
-        <button
-          className="otp-btn verify-btn"
-          onClick={() => {
-            handleDelete(deleteId);
-            setDeleteModal(false);
-          }}
-        >
-          Yes
-        </button>
+              <button
+                className="otp-btn verify-btn"
+                onClick={() => handleDelete(deleteId)}
+              >
+                Yes
+              </button>
 
-        <button
-          onClick={() => {
-            setDeleteModal(false);
-            setDeleteId(null);
-          }}
-        >
-          No
-        </button>
+              <button
+                onClick={() => {
+                  setDeleteModal(false);
+                  setDeleteId(null);
+                }}
+              >
+                No
+              </button>
 
-      </div>
-    </div>
-  </div>
-)}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

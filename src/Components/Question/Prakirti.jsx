@@ -46,19 +46,6 @@ const Prakriti = () => {
   const[IsDeleting,setIsDeleting]=useState(false);
   const [previewImage, setPreviewImage] = useState(null);
 
-
-const pagesize = 5;
-  const [totalCount, setTotalCount] = useState(0);
-  const totalPages = Math.ceil(totalCount / pagesize);
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-
-  const [currentpage, setCurrentPage] = useState(1);
-  const [Nextpage, setNextpage] = useState(null);
-
-  const [previousPage, setPreviousPage] = useState(null);
-
-
-
   const fetchedOnce = useRef();
 
   const navigate = useNavigate()
@@ -359,7 +346,11 @@ if (Object.keys(errors).length > 0) {
 
 };
 
-
+const filteredQuestions = QuestionData.filter((question) =>
+  question.question
+    ?.toLowerCase()
+    .includes(SearchQuestion.trim().toLowerCase())
+);
 const handleAddChoiceChange = (
   index,
   field,
@@ -753,25 +744,42 @@ const handleAddSubmit = async (e) => {
       <div>
 
       </div>
-      <div className="Question-controls">
+    <div className="Question-controls">
+  <div className="filter-question">
 
-        <div className="filter-question">
-          <button
-            className="add-customer-btn"
-            onClick={() => {
-              setAddForm(initialAddForm);
-              setAddQuestinModal(true);
-              setAddError({});
-            }}
-          >
-            + Add Question
-          </button>
+    {/* SEARCH BY QUESTION */}
+    <div className="search-question-box">
+      <input
+        type="text"
+        placeholder="Search by question..."
+        value={SearchQuestion}
+        onChange={(e) => setSearchQuestion(e.target.value)}
+      />
 
-          {/* <button className="btn-secondary" onClick={handleDownload}>
-            Export Details
-          </button> */}
-        </div>
-      </div>
+      {SearchQuestion && (
+        <button
+          type="button"
+          onClick={() => setSearchQuestion("")}
+          title="Clear Search"
+        >
+          <FaTimes />
+        </button>
+      )}
+    </div>
+
+    <button
+      className="add-customer-btn"
+      onClick={() => {
+        setAddForm(initialAddForm);
+        setAddQuestinModal(true);
+        setAddError({});
+      }}
+    >
+      + Add Question
+    </button>
+
+  </div>
+</div>
 
       <div className="table-wrapper">
         <table className="data-table" ref={bulktableRef} >
@@ -798,8 +806,8 @@ const handleAddSubmit = async (e) => {
                   {error}
                 </td>
               </tr>
-            ) : QuestionData?.length > 0 ? (
-              QuestionData?.map((question, index) =>
+            ) : filteredQuestions?.length > 0 ? (
+               filteredQuestions?.map((question, index) =>
               (
                 <tr key={question.id}>
                   <td>{index + 1}</td>
@@ -927,39 +935,6 @@ const handleAddSubmit = async (e) => {
             )}
           </tbody>
         </table>
-{totalPages > 1 && (
-  <div className="pagination">
-
-    <button
-      onClick={() => getQuestionData(currentpage - 1)}
-      disabled={!previousPage}
-    >
-      Prev
-    </button>
-
-    {pages.map((page) => (
-      <button
-        key={page}
-        onClick={() => getQuestionData(page)}
-        style={{
-          fontWeight: currentpage === page ? "bold" : "normal",
-          background: currentpage === page ? "#0D614E" : "#fff",
-          color: currentpage === page ? "#fff" : "#0D614E",
-        }}
-      >
-        {page}
-      </button>
-    ))}
-
-    <button
-      onClick={() => getQuestionData(currentpage + 1)}
-      disabled={!Nextpage}
-    >
-      Next
-    </button>
-
-  </div>
-)}
         
 
       </div>
