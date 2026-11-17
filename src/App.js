@@ -108,6 +108,7 @@ import AppReview from './Components/Pages/Review/AppReview';
 import StockManagement from './Components/Pages/Product/StockManagement';
 import AllActivities from './Components/Pages/AllActivities/AllActivities'
 import FaqCategory from './Components/Pages/Faq/FaqCategory';
+import DietPlanPurchase from './Components/Pages/Diet/DietPlanPurchase';
 
 
 const Layout = ({ children }) => {
@@ -439,6 +440,18 @@ function App() {
             </ProtectedRoute>
           }
         />
+        import DietPurchase from "./Components/Pages/Diet/DietPurchase";
+
+<Route
+  path="/diet/purchases"
+  element={
+    <ProtectedRoute permission="view_diet_purchases">
+      <Layout>
+        <DietPlanPurchase />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
     <Route
           path="/package-category"
           element={

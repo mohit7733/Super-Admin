@@ -12196,3 +12196,123 @@ flex-direction:column;
   color: #15803d;
   border: 1px solid #86efac;
 }
+
+.Question-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-question {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 15px;
+}
+
+.search-question-box {
+  display: flex;
+  align-items: center;
+  width: 320px;
+  height: 42px;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.search-question-box:focus-within {
+  border-color: #0D614E;
+  box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.08);
+}
+
+.search-question-box input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.search-question-box button {
+  border: none;
+  background: transparent;
+  color: #777;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+@media (max-width: 600px) {
+  .filter-question {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-question-box {
+    width: 100%;
+  }
+}
+.medical-question-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.medical-question-filters .search-question-box {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.medical-question-filters .search-question-box input {
+  min-width: 240px;
+  padding: 10px 36px 10px 12px;
+}
+
+.medical-question-filters .answer-type-filter {
+  min-width: 170px;
+  padding: 10px 12px;
+  border: 1px solid #d5d5d5;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.clear-medical-filters {
+  padding: 10px 16px;
+  border: 1px solid #0D614E;
+  background: #fff;
+  color: #0D614E;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-medical-filters:hover:not(:disabled) {
+  background: #0D614E;
+  color: #fff;
+}
+
+.clear-medical-filters:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .medical-question-filters,
+  .medical-question-filters .search-question-box,
+  .medical-question-filters .search-question-box input,
+  .medical-question-filters .answer-type-filter {
+    width: 100%;
+    min-width: 0;
+  }
+}

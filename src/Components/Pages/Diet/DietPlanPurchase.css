@@ -1,0 +1,886 @@
+
+.dietpurchase-page-header {
+  margin-bottom: 26px;
+}
+
+.dietpurchase-page-header h1 {
+  font-size: 21px;
+  font-weight: 700;
+  color: #17233c;
+  margin: 0 0 8px;
+}
+
+.dietpurchase-page-header p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Stats */
+
+.dietpurchase-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.dietpurchase-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  padding: 17px 14px;
+  border-radius: 14px;
+  border-top: 3px solid #0d614e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+  min-height: 76px;
+  min-width: 0;
+}
+
+.dietpurchase-stat-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 11px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0d614e20;
+  color: #0d614e;
+  font-size: 17px;
+}
+
+.dietpurchase-stat-icon.success {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.dietpurchase-stat-icon.pending {
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.dietpurchase-stat-icon.failed {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.dietpurchase-stat-card h3 {
+  font-size: 11px;
+  font-weight: 600;
+  color: #777;
+  text-transform: uppercase;
+  margin: 0 0 7px;
+  letter-spacing: 0.4px;
+}
+
+.dietpurchase-stat-card strong {
+  font-size: 20px;
+  color: #17233c;
+  font-weight: 700;
+}
+
+/* Toolbar */
+
+.dietpurchase-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.dietpurchase-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.dietpurchase-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 47px;
+  width: min(420px, 100%);
+  border: 1px solid #dce3e3;
+  border-radius: 10px;
+  padding: 0 13px;
+  background: #fff;
+  color: #8b9997;
+  box-sizing: border-box;
+}
+
+.dietpurchase-search:focus-within {
+  border-color: #0d614e;
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.08);
+}
+
+.dietpurchase-search input {
+  width: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #17233c;
+  background: transparent;
+}
+
+.dietpurchase-search input::placeholder {
+  color: #94a3a0;
+}
+
+.dietpurchase-search button {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.dietpurchase-select {
+  height: 43px;
+  min-width: 150px;
+  max-width: 100%;
+  padding: 0 12px;
+  border: 1px solid #dce3e3;
+  border-radius: 9px;
+  background: #fff;
+  outline: none;
+  color: #17233c;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dietpurchase-select:focus {
+  border-color: #0d614e;
+}
+
+.dietpurchase-export-btn {
+  height: 41px;
+  padding: 0 17px;
+  border: none;
+  border-radius: 7px;
+  background: #0d614e;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+
+.dietpurchase-export-btn:hover {
+  background: #094c3d;
+}
+
+.dietpurchase-export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dietpurchase-reset-btn {
+  height: 40px;
+  width: 40px;
+  border: 1px solid #dce3e3;
+  border-radius: 8px;
+  color: #0d614e;
+  background: #fff;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Table - Horizontal Scroll Removed */
+
+.dietpurchase-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden !important;
+  overflow-y: hidden;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.dietpurchase-table {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0 !important;
+  table-layout: fixed;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.dietpurchase-table thead {
+  background: #f7f8fa;
+}
+
+.dietpurchase-table th {
+  padding: 15px 5px;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  border-bottom: 1px solid #e2e8f0;
+  line-height: 1.4;
+}
+
+.dietpurchase-table td {
+  padding: 12px 5px;
+  border-bottom: 1px solid #e8ecef;
+  font-size: 12px;
+  color: #17233c;
+  vertical-align: middle;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.dietpurchase-table tbody tr:hover {
+  background: #f9fcfb;
+}
+
+.dietpurchase-plan-name {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.dietpurchase-id {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.dietpurchase-id button {
+  flex-shrink: 0;
+  border: none;
+  color: #0d614e;
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.dietpurchase-subtext {
+  margin-top: 5px;
+  font-size: 10px;
+  color: #87939c;
+  overflow-wrap: anywhere;
+}
+
+.dietpurchase-paid-price {
+  color: #0d614e;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dietpurchase-gateway {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  text-transform: capitalize;
+  color: #475569;
+  font-size: 11px;
+}
+
+/* Status */
+
+.dietpurchase-status,
+.dietpurchase-assignment {
+  display: inline-block;
+  padding: 6px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 650;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.dietpurchase-status.success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.dietpurchase-status.pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.dietpurchase-status.failed {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.dietpurchase-status.cancelled {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.dietpurchase-status.refunded {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.dietpurchase-assignment.active {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.dietpurchase-assignment.inactive {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Actions */
+
+.dietpurchase-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.dietpurchase-actions button {
+  width: 29px;
+  height: 29px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 7px;
+  background: #e1eeeb;
+  color: #0d614e;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.dietpurchase-actions button:hover {
+  background: #0d614e;
+  color: #fff;
+}
+
+/* Empty state */
+
+.dietpurchase-empty {
+  text-align: center;
+  padding: 45px 20px;
+}
+
+.dietpurchase-empty-icon {
+  width: 55px;
+  height: 55px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5f1ed;
+  color: #0d614e;
+  font-size: 23px;
+}
+
+.dietpurchase-empty h3 {
+  font-size: 17px;
+  color: #17233c;
+  margin: 0 0 8px;
+}
+
+.dietpurchase-empty p {
+  color: #89939f;
+  font-size: 13px;
+  margin-bottom: 15px;
+}
+
+.dietpurchase-empty button,
+.dietpurchase-retry-btn {
+  padding: 9px 15px;
+  border: none;
+  border-radius: 7px;
+  background: #0d614e;
+  color: #fff;
+  cursor: pointer;
+}
+
+.dietpurchase-empty button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.dietpurchase-error {
+  padding: 30px !important;
+  color: #dc2626 !important;
+}
+
+.dietpurchase-skeleton {
+  height: 38px;
+  width: 100%;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e5e7eb 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: dietpurchase-loading 1.5s infinite;
+}
+
+@keyframes dietpurchase-loading {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Pagination */
+
+.dietpurchase-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 5px;
+  color: #64748b;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.dietpurchase-pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dietpurchase-pagination-buttons span {
+  color: #17233c;
+  font-weight: 600;
+}
+
+.dietpurchase-pagination-buttons button {
+  padding: 9px 15px;
+  border: 1px solid #dce3e3;
+  border-radius: 7px;
+  background: #fff;
+  color: #0d614e;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dietpurchase-pagination-buttons button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+
+/* =====================================
+   DIET PURCHASE - RIGHT SIDE DRAWER
+===================================== */
+
+.dietpurchase-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+
+  padding: 0;
+}
+
+/* Right Drawer */
+
+.dietpurchase-modal {
+  position: relative;
+  width: 520px;
+  max-width: 90%;
+  height: 100vh;
+  max-height: 100vh;
+
+  margin: 0;
+  border-radius: 0;
+  background: #fff;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.15);
+
+  animation: dietpurchase-drawer-open 0.3s ease forwards;
+}
+
+/* Drawer Animation */
+
+@keyframes dietpurchase-drawer-open {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Drawer Header */
+
+.dietpurchase-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+
+  background: #fff;
+  padding: 20px 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.dietpurchase-modal-header h2 {
+  font-size: 19px;
+  font-weight: 700;
+  color: #17233c;
+  margin: 0 0 5px;
+}
+
+.dietpurchase-modal-header p {
+  font-size: 12px;
+  color: #84909b;
+  margin: 0;
+}
+
+.dietpurchase-modal-close {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Drawer Body */
+
+.dietpurchase-modal-body {
+  padding: 20px 22px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Detail Sections */
+
+.dietpurchase-detail-section {
+  margin-bottom: 22px;
+}
+
+.dietpurchase-detail-section h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0d614e;
+  padding-bottom: 11px;
+  border-bottom: 1px solid #e5e7eb;
+  margin: 0 0 15px;
+}
+
+/* Detail Grid */
+
+.dietpurchase-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px 18px;
+}
+
+.dietpurchase-detail-grid > div {
+  min-width: 0;
+}
+
+.dietpurchase-detail-grid label {
+  display: block;
+  color: #8a96a3;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.dietpurchase-detail-grid strong {
+  display: block;
+  color: #253348;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Copy Details */
+
+.dietpurchase-detail-copy {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #253348;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.dietpurchase-detail-copy button {
+  flex-shrink: 0;
+  border: none;
+  color: #0d614e;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Payment Summary */
+
+.dietpurchase-fee-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px 5px;
+  border-bottom: 1px solid #edf0f2;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.dietpurchase-fee-row strong {
+  color: #17233c;
+}
+
+.dietpurchase-fee-row.total {
+  background: #edf7f3;
+  color: #0d614e;
+  padding: 14px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+.dietpurchase-fee-row.total strong {
+  color: #0d614e;
+}
+
+.dietpurchase-fee-row.paid {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.dietpurchase-fee-row.paid strong {
+  color: #15803d;
+}
+
+/* Drawer Footer */
+
+.dietpurchase-modal-footer {
+  padding: 15px 22px;
+  border-top: 1px solid #e5e7eb;
+
+  display: flex;
+  justify-content: flex-end;
+
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.dietpurchase-modal-footer button {
+  padding: 10px 24px;
+  background: #0d614e;
+  border: none;
+  border-radius: 7px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Scrollbar inside drawer */
+
+.dietpurchase-modal::-webkit-scrollbar,
+.dietpurchase-modal-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dietpurchase-modal::-webkit-scrollbar-thumb,
+.dietpurchase-modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5d1;
+  border-radius: 10px;
+}
+
+/* Responsive */
+
+@media (max-width: 600px) {
+  .dietpurchase-modal {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .dietpurchase-modal-header,
+  .dietpurchase-modal-body,
+  .dietpurchase-modal-footer {
+    padding: 15px;
+  }
+
+  .dietpurchase-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Responsive */
+
+@media (max-width: 1200px) {
+  .dietpurchase-stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dietpurchase-table th {
+    font-size: 11px;
+    padding: 12px 4px;
+  }
+
+  .dietpurchase-table td {
+    font-size: 11px;
+    padding: 10px 4px;
+  }
+}
+
+@media (max-width: 900px) {
+  .dietpurchase-table th,
+  .dietpurchase-table td {
+    padding: 9px 3px;
+    font-size: 10px;
+  }
+
+  .dietpurchase-status,
+  .dietpurchase-assignment {
+    padding: 5px 6px;
+    font-size: 9px;
+  }
+
+  .dietpurchase-stat-card {
+    gap: 9px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dietpurchase-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .dietpurchase-stat-card {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .dietpurchase-stat-card h3 {
+    font-size: 10px;
+  }
+
+  .dietpurchase-stat-card strong {
+    font-size: 17px;
+  }
+
+  .dietpurchase-toolbar {
+    align-items: stretch;
+  }
+
+  .dietpurchase-filters {
+    width: 100%;
+  }
+
+  .dietpurchase-search {
+    width: 100%;
+  }
+
+  .dietpurchase-select {
+    flex: 1;
+    min-width: 130px;
+  }
+
+  .dietpurchase-export-btn {
+    width: fit-content;
+  }
+
+  .dietpurchase-table th,
+  .dietpurchase-table td {
+    font-size: 9px;
+    padding: 8px 2px;
+  }
+
+  .dietpurchase-actions {
+    gap: 2px;
+  }
+
+  .dietpurchase-actions button {
+    width: 25px;
+    height: 25px;
+    font-size: 11px;
+  }
+
+  .dietpurchase-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dietpurchase-modal-body {
+    padding: 15px;
+  }
+
+  .dietpurchase-modal-header {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dietpurchase-stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dietpurchase-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dietpurchase-pagination-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dietpurchase-table th,
+  .dietpurchase-table td {
+    font-size: 8px;
+    padding: 7px 2px;
+  }
+}

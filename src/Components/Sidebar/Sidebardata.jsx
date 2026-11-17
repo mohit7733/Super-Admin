@@ -17,6 +17,7 @@ import { MdInventory2,MdInventory } from "react-icons/md";
 import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
 import { Activity } from "lucide-react";
 import { FaLayerGroup } from "react-icons/fa";
+import { FaShoppingBag } from "react-icons/fa";
 import {
  
   MdRateReview,
@@ -506,7 +507,7 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
   },
 
 
-  {
+{
   title: "Diet Management",
   icon: <GiMeal size={20} />,
   path: "#",
@@ -524,12 +525,12 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
       permission: "add_diet_plan",
       icon: <BiPlusCircle size={18} />
     },
-    // {
-    //   title: "Diet Categories",
-    //   path: "/diet/categories",
-    //   permission: "view_diet_categories",
-    //   icon: <MdOutlineRestaurantMenu size={18} />
-    // }
+    {
+      title: "Diet Plan Purchases",
+      path: "/diet/purchases",
+      permission: "view_diet_purchases",
+      icon: <FaShoppingBag size={18} />
+    }
   ]
 },
 
