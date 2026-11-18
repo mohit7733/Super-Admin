@@ -27,8 +27,6 @@ const PAGE_SIZE = 5;
 const ReturnRequests = () => {
   const navigate = useNavigate();
 
- 
-
   const [returnRequests, setReturnRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -54,7 +52,12 @@ const ReturnRequests = () => {
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-
+const [returnStats, setReturnStats] = useState({
+  total_requests: 0,
+  approved: 0,
+  rejected: 0,
+  pending: 0,
+});
   const getToken = () =>
     sessionStorage.getItem("superadmin_token");
 
@@ -71,9 +74,16 @@ const ReturnRequests = () => {
     navigate("/login");
   };
 
-  
+  // ==========================================
+  // FETCH RETURN REQUESTS
+  // BACKEND SEARCH + STATUS + PAGINATION
+  // ==========================================
 
-  const fetchReturnRequests = async (requestedPage = page) => {
+  const fetchReturnRequests = async (
+    requestedPage = 1,
+    search = searchTerm,
+    status = statusFilter
+  ) => {
     const token = getToken();
 
     if (!token) {
@@ -89,9 +99,10 @@ const ReturnRequests = () => {
 
       params.set("page", String(requestedPage));
       params.set("page_size", String(PAGE_SIZE));
+      params.set("search", search.trim());
 
-      if (statusFilter) {
-        params.set("status", statusFilter);
+      if (status) {
+        params.set("status", status);
       }
 
       const response = await fetch(
@@ -116,6 +127,15 @@ const ReturnRequests = () => {
       }
 
       const payload = result?.data ?? result;
+     
+if (payload?.stats) {
+  setReturnStats({
+    total_requests: Number(payload.stats.total_requests || 0),
+    approved: Number(payload.stats.approved || 0),
+    rejected: Number(payload.stats.rejected || 0),
+    pending: Number(payload.stats.pending || 0),
+  });
+}
 
       const list = Array.isArray(payload)
         ? payload
@@ -129,17 +149,28 @@ const ReturnRequests = () => {
 
       const count = Number(
         payload?.count ??
-          payload?.total_count ??
-          result?.count ??
-          list.length
+        payload?.total_count ??
+        result?.count ??
+        list.length
       );
 
       setReturnRequests(list);
       setTotalCount(count);
       setPage(requestedPage);
+      setOpenActionId(null);
 
-      if (list.length === 0 && requestedPage > 1 && count > 0) {
-        await fetchReturnRequests(requestedPage - 1);
+      // If current page becomes empty after an action,
+      // move to previous available page.
+      if (
+        list.length === 0 &&
+        requestedPage > 1 &&
+        count > 0
+      ) {
+        await fetchReturnRequests(
+          requestedPage - 1,
+          search,
+          status
+        );
         return;
       }
     } catch (err) {
@@ -152,23 +183,36 @@ const ReturnRequests = () => {
     }
   };
 
+  // ==========================================
+  // DEBOUNCED BACKEND SEARCH
+  // ==========================================
+
   useEffect(() => {
-    fetchReturnRequests(1);
+    const timer = setTimeout(() => {
+      fetchReturnRequests(1, searchTerm, statusFilter);
+    }, 500);
+
+    return () => clearTimeout(timer);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [searchTerm, statusFilter]);
 
- const getPaymentTypeClass = (type) => {
-  switch (String(type || "").toLowerCase()) {
-    case "cod":
-      return "payment-type-cod";
+  // ==========================================
+  // HELPERS
+  // ==========================================
 
-    case "prepaid":
-      return "payment-type-prepaid";
+  const getPaymentTypeClass = (type) => {
+    switch (String(type || "").toLowerCase()) {
+      case "cod":
+        return "payment-type-cod";
 
-    default:
-      return "refund-status-default";
-  }
-};
+      case "prepaid":
+        return "payment-type-prepaid";
+
+      default:
+        return "refund-status-default";
+    }
+  };
 
   const getReturnId = (item) =>
     item?.return_id ??
@@ -232,7 +276,11 @@ const ReturnRequests = () => {
     );
 
   const formatLabel = (value) => {
-    if (value === null || value === undefined || value === "") {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
       return "—";
     }
 
@@ -278,7 +326,8 @@ const ReturnRequests = () => {
       "—"
     );
   };
-   const getGatewayStatusClass = (status) => {
+
+  const getGatewayStatusClass = (status) => {
     switch (status?.toLowerCase()) {
       case "processed":
         return "refund-status-approved";
@@ -335,7 +384,6 @@ const ReturnRequests = () => {
     });
   };
 
- 
   const formatReason = (reason) => {
     if (!reason) return "-";
 
@@ -344,29 +392,8 @@ const ReturnRequests = () => {
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const filteredRequests = returnRequests.filter((item) => {
-    const search = searchTerm.trim().toLowerCase();
-
-    if (!search) return true;
-
-    const searchableFields = [
-      getReturnId(item),
-      getOrderId(item),
-      getCustomerName(item),
-      getCustomerPhone(item),
-      getCustomerEmail(item),
-      getReason(item),
-      item?.status,
-      item?.id,
-      ...getReturnItems(item).map(
-        (product) => product?.product_name
-      ),
-    ];
-
-    return searchableFields.some((value) =>
-      String(value ?? "").toLowerCase().includes(search)
-    );
-  });
+  // Backend already filters records.
+  const filteredRequests = returnRequests;
 
   const pendingCount = returnRequests.filter(
     (item) => getStatus(item) === "pending"
@@ -380,7 +407,9 @@ const ReturnRequests = () => {
     ["rejected", "cancelled"].includes(getStatus(item))
   ).length;
 
-  const hasActiveFilters = Boolean(searchTerm || statusFilter);
+  const hasActiveFilters = Boolean(
+    searchTerm || statusFilter
+  );
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -403,7 +432,7 @@ const ReturnRequests = () => {
   };
 
   // ==========================================
-  // OPEN APPROVE MODAL
+  // APPROVE RETURN
   // ==========================================
 
   const openApproveModal = (item) => {
@@ -428,8 +457,6 @@ const ReturnRequests = () => {
     setShowApproveModal(false);
     setSelectedApproveReturn(null);
   };
-
-  
 
   const handleApproveReturn = async () => {
     const returnItem = selectedApproveReturn;
@@ -488,6 +515,9 @@ const ReturnRequests = () => {
     }
   };
 
+  // ==========================================
+  // REJECT RETURN
+  // ==========================================
 
   const openRejectModal = (item) => {
     setOpenActionId(null);
@@ -513,8 +543,6 @@ const ReturnRequests = () => {
     setSelectedReturnId(null);
     setRejectNote("");
   };
-
-  
 
   const handleRejectReturn = async () => {
     if (!selectedReturnId) {
@@ -579,6 +607,9 @@ const ReturnRequests = () => {
     }
   };
 
+  // ==========================================
+  // PAGINATION
+  // ==========================================
 
   const handlePageChange = (nextPage) => {
     if (
@@ -590,14 +621,15 @@ const ReturnRequests = () => {
       return;
     }
 
-    fetchReturnRequests(nextPage);
+    fetchReturnRequests(nextPage, searchTerm, statusFilter);
   };
 
- 
+  // ==========================================
+  // RENDER
+  // ==========================================
+
   return (
     <>
-      
-
       <div className="page-header">
         <div>
           <h1>Return Requests</h1>
@@ -605,6 +637,7 @@ const ReturnRequests = () => {
         </div>
       </div>
 
+      {/* STATS */}
 
       <div className="stats2-grid">
         <div
@@ -623,7 +656,9 @@ const ReturnRequests = () => {
 
           <div className="stat2-info">
             <h3>Total Requests</h3>
-            <div className="stat2-value">{totalCount}</div>
+          <div className="stat2-value">
+  {returnStats.total_requests}
+</div>
           </div>
         </div>
 
@@ -643,7 +678,9 @@ const ReturnRequests = () => {
 
           <div className="stat2-info">
             <h3>Approved</h3>
-            <div className="stat2-value">{approvedCount}</div>
+          <div className="stat2-value">
+  {returnStats.approved}
+</div>
           </div>
         </div>
 
@@ -663,7 +700,9 @@ const ReturnRequests = () => {
 
           <div className="stat2-info">
             <h3>Rejected</h3>
-            <div className="stat2-value">{rejectedCount}</div>
+         <div className="stat2-value">
+  {returnStats.rejected}
+</div>
           </div>
         </div>
 
@@ -683,12 +722,15 @@ const ReturnRequests = () => {
 
           <div className="stat2-info">
             <h3>Pending</h3>
-            <div className="stat2-value">{pendingCount}</div>
+         <div className="stat2-value">
+  {returnStats.pending}
+</div>
           </div>
         </div>
       </div>
 
-   
+      {/* SEARCH AND FILTER */}
+
       <div className="refund-filter-bar">
         <div className="refund-search-wrapper">
           <FaSearch className="refund-search-icon" />
@@ -726,7 +768,6 @@ const ReturnRequests = () => {
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
-         
           </select>
 
           {hasActiveFilters && (
@@ -745,7 +786,9 @@ const ReturnRequests = () => {
             className="refund-clear-filter-btn"
             title="Refresh"
             disabled={loading}
-            onClick={() => fetchReturnRequests(page)}
+            onClick={() =>
+              fetchReturnRequests(page, searchTerm, statusFilter)
+            }
           >
             <span style={{ fontSize: 18 }}>↻</span>
           </button>
@@ -764,8 +807,8 @@ const ReturnRequests = () => {
               <th>Reason</th>
               <th>Requested At</th>
               <th>Status</th>
-            <th>Gateway Status</th>
-            <th>Payment Type</th>
+              <th>Gateway Status</th>
+              <th>Payment Type</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -773,7 +816,7 @@ const ReturnRequests = () => {
           <tbody className="refund-table-body">
             {loading && (
               <tr>
-                <td colSpan="7" className="refund-loading">
+                <td colSpan="9" className="refund-loading">
                   Loading return requests...
                 </td>
               </tr>
@@ -781,13 +824,15 @@ const ReturnRequests = () => {
 
             {!loading && error && (
               <tr>
-                <td colSpan="7" className="refund-empty">
+                <td colSpan="9" className="refund-empty">
                   {error}
 
                   <button
                     type="button"
                     className="refund-menu-item"
-                    onClick={() => fetchReturnRequests(page)}
+                    onClick={() =>
+                      fetchReturnRequests(page, searchTerm, statusFilter)
+                    }
                   >
                     Try Again
                   </button>
@@ -795,15 +840,17 @@ const ReturnRequests = () => {
               </tr>
             )}
 
-            {!loading && !error && filteredRequests.length === 0 && (
-              <tr>
-                <td colSpan="7" className="refund-empty">
-                  {searchTerm
-                    ? `No return requests found for "${searchTerm}"`
-                    : "No return requests found."}
-                </td>
-              </tr>
-            )}
+            {!loading &&
+              !error &&
+              filteredRequests.length === 0 && (
+                <tr>
+                  <td colSpan="9" className="refund-empty">
+                    {searchTerm
+                      ? `No return requests found for "${searchTerm}"`
+                      : "No return requests found."}
+                  </td>
+                </tr>
+              )}
 
             {!loading &&
               !error &&
@@ -854,11 +901,10 @@ const ReturnRequests = () => {
                     <td>
                       {formatDateTime(
                         item?.created_at ??
-                          item?.requested_at ??
-                          item?.created
+                        item?.requested_at ??
+                        item?.created
                       )}
                     </td>
-
 
                     <td>
                       <span
@@ -867,26 +913,28 @@ const ReturnRequests = () => {
                         {formatLabel(status)}
                       </span>
                     </td>
-                  <td>
-  <span
-    className={`refund-status ${getGatewayStatusClass(
-      item?.refund_request?.gateway_status
-    )}`}
-  >
-    {formatLabel(
-      item?.refund_request?.gateway_status || "—"
-    )}
-  </span>
-</td>
-<td>
-  <span
-    className={`refund-status ${getPaymentTypeClass(
-      item?.payment_type
-    )}`}
-  >
-    {formatLabel(item?.payment_type || "—")}
-  </span>
-</td>
+
+                    <td>
+                      <span
+                        className={`refund-status ${getGatewayStatusClass(
+                          item?.refund_request?.gateway_status
+                        )}`}
+                      >
+                        {formatLabel(
+                          item?.refund_request?.gateway_status || "—"
+                        )}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span
+                        className={`refund-status ${getPaymentTypeClass(
+                          item?.payment_type
+                        )}`}
+                      >
+                        {formatLabel(item?.payment_type || "—")}
+                      </span>
+                    </td>
 
                     <td>
                       <div className="refund-actions">
@@ -1035,606 +1083,388 @@ const ReturnRequests = () => {
         </div>
       </div>
 
-      
+      {/* ==========================================
+          VIEW RETURN DRAWER
+      ========================================== */}
 
-     
-{showViewModal && selectedReturn && (
-  <div
-    className="return-view-overlay"
-    onClick={closeViewModal}
-  >
-    <div
-      className="return-view-drawer"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* HEADER */}
-
-      <div className="return-view-header">
-        <div className="return-view-header-info">
-          <h2>{String(getReturnId(selectedReturn))}</h2>
-
-          <p>
-            Requested on:{" "}
-            {formatFullDate(
-              selectedReturn?.created_at ??
-              selectedReturn?.requested_at
-            )}
-          </p>
-
-          <span
-            className={`refund-status ${getStatusClass(
-              getStatus(selectedReturn)
-            )}`}
-          >
-            {formatLabel(getStatus(selectedReturn))}
-          </span>
-        </div>
-
-        <button
-          type="button"
-          className="return-view-close"
-          aria-label="Close return details"
+      {showViewModal && selectedReturn && (
+        <div
+          className="return-view-overlay"
           onClick={closeViewModal}
         >
-          <IoClose />
-        </button>
-      </div>
+          <div
+            className="return-view-drawer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="return-view-header">
+              <div className="return-view-header-info">
+                <h2>{String(getReturnId(selectedReturn))}</h2>
 
-      {/* DRAWER CONTENT */}
+                <p>
+                  Requested on:{" "}
+                  {formatFullDate(
+                    selectedReturn?.created_at ??
+                    selectedReturn?.requested_at
+                  )}
+                </p>
 
-      <div className="return-view-content">
+                <span
+                  className={`refund-status ${getStatusClass(
+                    getStatus(selectedReturn)
+                  )}`}
+                >
+                  {formatLabel(getStatus(selectedReturn))}
+                </span>
+              </div>
 
-        {/* RETURN SUMMARY */}
-
-        <div className="return-view-card">
-          <h3 className="return-view-card-title">
-            Return Request Summary
-          </h3>
-
-          <p className="return-view-card-subtitle">
-            Review the customer's return request details.
-          </p>
-
-          <div className="return-view-details">
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">Return ID</span>
-              <span className="return-view-detail-value">
-                {String(getReturnId(selectedReturn))}
-              </span>
+              <button
+                type="button"
+                className="return-view-close"
+                aria-label="Close return details"
+                onClick={closeViewModal}
+              >
+                <IoClose />
+              </button>
             </div>
 
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">Order ID</span>
-              <span className="return-view-detail-value">
-                {String(getOrderId(selectedReturn))}
-              </span>
-            </div>
+            <div className="return-view-content">
+              {/* RETURN SUMMARY */}
 
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">Customer</span>
-              <span className="return-view-detail-value">
-                {getCustomerName(selectedReturn)}
-              </span>
-            </div>
+              <div className="return-view-card">
+                <h3 className="return-view-card-title">
+                  Return Request Summary
+                </h3>
 
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">Phone Number</span>
-              <span className="return-view-detail-value">
-                {getCustomerPhone(selectedReturn)}
-              </span>
-            </div>
+                <p className="return-view-card-subtitle">
+                  Review the customer's return request details.
+                </p>
 
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">Email</span>
-              <span className="return-view-detail-value">
-                {getCustomerEmail(selectedReturn)}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">Status</span>
-              <span className="return-view-detail-value">
-                {formatLabel(getStatus(selectedReturn))}
-              </span>
-            </div>
-
-          </div>
-        </div>
-
-        {/* RETURN REASON */}
-
-        <div className="return-view-card">
-          <h3 className="return-view-card-title">
-            Return Reason
-          </h3>
-
-          <div className="return-view-reason">
-            {getReason(selectedReturn) ||
-              "No return reason provided."}
-          </div>
-        </div>
-
-        {/* RETURN PRODUCTS */}
-
-        <div className="return-view-card">
-          <h3 className="return-view-card-title">
-            Return Products
-          </h3>
-
-          {getReturnItems(selectedReturn).length > 0 ? (
-            <div className="return-approve-product-list">
-
-              {getReturnItems(selectedReturn).map(
-                (product, index) => (
-                  <div
-                    className="return-approve-product"
-                    key={product.id || product.order_item_id || index}
-                  >
-                    <div className="return-approve-product-image">
-                      {getProductImage(product) ? (
-                        <img
-                          src={getProductImage(product)}
-                          alt={product.product_name || "Return product"}
-                        />
-                      ) : (
-                        <FaMoneyBillWave />
-                      )}
+                <div className="return-view-details">
+                  {[
+                    ["Return ID", String(getReturnId(selectedReturn))],
+                    ["Order ID", String(getOrderId(selectedReturn))],
+                    ["Customer", getCustomerName(selectedReturn)],
+                    ["Phone Number", getCustomerPhone(selectedReturn)],
+                    ["Email", getCustomerEmail(selectedReturn)],
+                    ["Status", formatLabel(getStatus(selectedReturn))],
+                  ].map(([label, value]) => (
+                    <div className="return-view-detail-row" key={label}>
+                      <span className="return-view-detail-label">
+                        {label}
+                      </span>
+                      <span className="return-view-detail-value">
+                        {value}
+                      </span>
                     </div>
+                  ))}
+                </div>
+              </div>
 
-                    <div className="return-approve-product-details">
-                      <h4>
-                        {product.product_name || "Unnamed Product"}
-                      </h4>
+              {/* RETURN REASON */}
 
-                      <p>
-                        {product.variant_name || "—"}
-                      </p>
+              <div className="return-view-card">
+                <h3 className="return-view-card-title">
+                  Return Reason
+                </h3>
 
-                      <div className="return-approve-product-meta">
-                        <span>
-                          SKU: {product.sku_code || "—"}
-                        </span>
+                <div className="return-view-reason">
+                  {getReason(selectedReturn) ||
+                    "No return reason provided."}
+                </div>
+              </div>
 
-                        <span>
-                          Qty: {Number(product.quantity || 0)}
-                        </span>
-                      </div>
+              {/* RETURN PRODUCTS */}
 
-                      <div className="return-approve-product-price">
-                        ₹{Number(product.total_price || 0).toFixed(2)}
-                      </div>
+              <div className="return-view-card">
+                <h3 className="return-view-card-title">
+                  Return Products
+                </h3>
+
+                {getReturnItems(selectedReturn).length > 0 ? (
+                  <div className="return-approve-product-list">
+                    {getReturnItems(selectedReturn).map(
+                      (product, index) => (
+                        <div
+                          className="return-approve-product"
+                          key={product.id || product.order_item_id || index}
+                        >
+                          <div className="return-approve-product-image">
+                            {getProductImage(product) ? (
+                              <img
+                                src={getProductImage(product)}
+                                alt={product.product_name || "Return product"}
+                              />
+                            ) : (
+                              <FaMoneyBillWave />
+                            )}
+                          </div>
+
+                          <div className="return-approve-product-details">
+                            <h4>
+                              {product.product_name || "Unnamed Product"}
+                            </h4>
+
+                            <p>{product.variant_name || "—"}</p>
+
+                            <div className="return-approve-product-meta">
+                              <span>
+                                SKU: {product.sku_code || "—"}
+                              </span>
+
+                              <span>
+                                Qty: {Number(product.quantity || 0)}
+                              </span>
+                            </div>
+
+                            <div className="return-approve-product-price">
+                              ₹{Number(product.total_price || 0).toFixed(2)}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    )}
+
+                    <div className="return-approve-total">
+                      <span>Total Product Amount</span>
+                      <strong>
+                        ₹{getReturnAmount(selectedReturn).toFixed(2)}
+                      </strong>
                     </div>
                   </div>
-                )
+                ) : (
+                  <p>No product details available.</p>
+                )}
+              </div>
+
+              {/* REFUND DETAILS */}
+
+              {selectedReturn?.refund_request && (
+                <div className="return-view-card">
+                  <h3 className="return-view-card-title">
+                    Refund Details
+                  </h3>
+
+                  <p className="return-view-card-subtitle">
+                    Refund transaction and payment information.
+                  </p>
+
+                  {(() => {
+                    const refund = selectedReturn.refund_request;
+                    const bank = refund.bank_detail || {};
+                    const payout = refund.payout || {};
+
+                    const refundDetails = [
+                      ["Refund ID", refund.id],
+                      [
+                        "Refund Amount",
+                        `₹${Number(refund.amount || 0).toFixed(2)}`,
+                      ],
+                      ["Currency", refund.currency || "INR"],
+                      ["Refund Method", formatLabel(refund.refund_method)],
+                      ["Admin Status", formatLabel(refund.admin_status)],
+                      ["Gateway Status", formatLabel(refund.gateway_status)],
+                      ["Payment ID", refund.gateway_payment_id],
+                      [
+                        "Payment Type",
+                        formatLabel(selectedReturn?.payment_type),
+                      ],
+                      ["Gateway Refund ID", refund.gateway_refund_id],
+                      [
+                        "Gateway Payout ID",
+                        refund.gateway_payout_id || payout.transfer_id,
+                      ],
+                      ["Payout Status", formatLabel(payout.status)],
+                      ["Refund Requested Date", formatFullDate(refund.created_at)],
+                      ["Reviewed Date", formatFullDate(refund.reviewed_at)],
+                      ["Processed Date", formatFullDate(refund.processed_at)],
+                    ];
+
+                    const bankDetails = [
+                      ["Account Holder", bank.account_holder_name],
+                      ["Account Number", bank.account_number],
+                      ["IFSC Code", bank.ifsc_code],
+                      ["Bank Name", bank.bank_name],
+                      ["UPI ID", bank.upi_id],
+                    ];
+
+                    return (
+                      <>
+                        <div className="return-view-details">
+                          {refundDetails.map(([label, value]) => (
+                            <div
+                              className="return-view-detail-row"
+                              key={label}
+                            >
+                              <span className="return-view-detail-label">
+                                {label}
+                              </span>
+
+                              <span className="return-view-detail-value">
+                                {value || "—"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <h4 className="return-refund-subheading">
+                          Refund Bank / UPI Details
+                        </h4>
+
+                        <div className="return-view-details">
+                          {bankDetails.map(([label, value]) => (
+                            <div
+                              className="return-view-detail-row"
+                              key={label}
+                            >
+                              <span className="return-view-detail-label">
+                                {label}
+                              </span>
+
+                              <span className="return-view-detail-value">
+                                {value || "—"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {(refund.failed_reason || payout.failed_reason) && (
+                          <div className="return-refund-error">
+                            <strong>Refund Failure Reason</strong>
+                            <p>
+                              {refund.failed_reason || payout.failed_reason}
+                            </p>
+                          </div>
+                        )}
+
+                        {refund.reason && (
+                          <div className="return-refund-note">
+                            <strong>Refund Description</strong>
+                            <p>{refund.reason}</p>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
               )}
 
-              <div className="return-approve-total">
-                <span>Total Product Amount</span>
+              {/* RETURN EVIDENCE */}
 
-                <strong>
-                  ₹{getReturnAmount(selectedReturn).toFixed(2)}
-                </strong>
-              </div>
+              {Array.isArray(selectedReturn?.media) &&
+                selectedReturn.media.length > 0 && (
+                  <div className="return-view-card">
+                    <h3 className="return-view-card-title">
+                      Return Photos / Evidence
+                    </h3>
 
-            </div>
-          ) : (
-            <p>No product details available.</p>
-          )}
-        </div>
-
-  
-
-        {selectedReturn?.refund_request && (
-          <div className="return-view-card">
-
-            <h3 className="return-view-card-title">
-              Refund Details
-            </h3>
-
-            <p className="return-view-card-subtitle">
-              Refund transaction and payment information.
-            </p>
-
-            {(() => {
-              const refund = selectedReturn.refund_request;
-              const bank = refund.bank_detail || {};
-              const payout = refund.payout || {};
-
-              return (
-                <>
-                  <div className="return-view-details">
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Refund ID
-                      </span>
-                      <span className="return-view-detail-value">
-                        {refund.id || "—"}
-                      </span>
+                    <div className="return-approve-media-list">
+                      {selectedReturn.media.map((media, index) => (
+                        <a
+                          key={media.id || index}
+                          href={media.media_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="return-approve-media-item"
+                        >
+                          {media.media_type === "image" ? (
+                            <img
+                              src={media.media_url}
+                              alt={`Return evidence ${index + 1}`}
+                            />
+                          ) : (
+                            <span>
+                              View attachment {index + 1}
+                            </span>
+                          )}
+                        </a>
+                      ))}
                     </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Refund Amount
-                      </span>
-                      <span className="return-view-detail-value">
-                        ₹{Number(refund.amount || 0).toFixed(2)}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Currency
-                      </span>
-                      <span className="return-view-detail-value">
-                        {refund.currency || "INR"}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Refund Method
-                      </span>
-                      <span className="return-view-detail-value">
-                        {formatLabel(refund.refund_method)}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Admin Status
-                      </span>
-                      <span className="return-view-detail-value">
-                        {formatLabel(refund.admin_status)}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Gateway Status
-                      </span>
-                      <span className="return-view-detail-value">
-                        {formatLabel(refund.gateway_status)}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Payment ID
-                      </span>
-                      <span className="return-view-detail-value">
-                        {refund.gateway_payment_id || "—"}
-                      </span>
-                    </div>
-                    <div className="return-view-detail-row">
-  <span className="return-view-detail-label">
-    Payment Type
-  </span>
-
-  <span
-    className={`refund-status ${getPaymentTypeClass(
-      selectedReturn?.payment_type
-    )}`}
-  >
-    {formatLabel(selectedReturn?.payment_type || "—")}
-  </span>
-</div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Gateway Refund ID
-                      </span>
-                      <span className="return-view-detail-value">
-                        {refund.gateway_refund_id || "—"}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Gateway Payout ID
-                      </span>
-                      <span className="return-view-detail-value">
-                        {refund.gateway_payout_id ||
-                          payout.transfer_id || "—"}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Payout Status
-                      </span>
-                      <span className="return-view-detail-value">
-                        {payout.status
-                          ? formatLabel(payout.status)
-                          : "—"}
-                      </span>
-                    </div>
-
-                    {/* <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Requested By
-                      </span>
-                      <span className="return-view-detail-value">
-                        {formatLabel(refund.requested_by || "—")}
-                      </span>
-                    </div> */}
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Refund Requested Date
-                      </span>
-                      <span className="return-view-detail-value">
-                        {refund.created_at
-                          ? formatFullDate(refund.created_at)
-                          : "—"}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Reviewed Date
-                      </span>
-                      <span className="return-view-detail-value">
-                        {refund.reviewed_at
-                          ? formatFullDate(refund.reviewed_at)
-                          : "—"}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Processed Date
-                      </span>
-                      <span className="return-view-detail-value">
-                        {refund.processed_at
-                          ? formatFullDate(refund.processed_at)
-                          : "—"}
-                      </span>
-                    </div>
-
                   </div>
-
-                  {/* BANK DETAILS */}
-
-                  <h4 className="return-refund-subheading">
-                    Refund Bank / UPI Details
-                  </h4>
-
-                  <div className="return-view-details">
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Account Holder
-                      </span>
-                      <span className="return-view-detail-value">
-                        {bank.account_holder_name || "—"}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Account Number
-                      </span>
-                      <span className="return-view-detail-value">
-                        {bank.account_number || "—"}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        IFSC Code
-                      </span>
-                      <span className="return-view-detail-value">
-                        {bank.ifsc_code || "—"}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        Bank Name
-                      </span>
-                      <span className="return-view-detail-value">
-                        {bank.bank_name || "—"}
-                      </span>
-                    </div>
-
-                    <div className="return-view-detail-row">
-                      <span className="return-view-detail-label">
-                        UPI ID
-                      </span>
-                      <span className="return-view-detail-value">
-                        {bank.upi_id || "—"}
-                      </span>
-                    </div>
-
-                  </div>
-
-                  {/* FAILURE REASON */}
-
-                  {(refund.failed_reason || payout.failed_reason) && (
-                    <div className="return-refund-error">
-                      <strong>Refund Failure Reason</strong>
-                      <p>
-                        {refund.failed_reason ||
-                          payout.failed_reason}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* REFUND REASON */}
-
-                  {refund.reason && (
-                    <div className="return-refund-note">
-                      <strong>Refund Description</strong>
-                      <p>{refund.reason}</p>
-                    </div>
-                  )}
-                </>
-              );
-            })()}
-
-          </div>
-        )}
-
-        {/* RETURN EVIDENCE */}
-
-        {Array.isArray(selectedReturn?.media) &&
-          selectedReturn.media.length > 0 && (
-            <div className="return-view-card">
-              <h3 className="return-view-card-title">
-                Return Photos / Evidence
-              </h3>
-
-              <div className="return-approve-media-list">
-                {selectedReturn.media.map((media, index) => (
-                  <a
-                    key={media.id || index}
-                    href={media.media_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="return-approve-media-item"
-                  >
-                    {media.media_type === "image" ? (
-                      <img
-                        src={media.media_url}
-                        alt={`Return evidence ${index + 1}`}
-                      />
-                    ) : (
-                      <span>
-                        View attachment {index + 1}
-                      </span>
-                    )}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-        {/* ADDITIONAL DETAILS */}
-
-        <div className="return-view-card">
-          <h3 className="return-view-card-title">
-            Additional Details
-          </h3>
-
-          <div className="return-view-details">
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Requested Date
-              </span>
-              <span className="return-view-detail-value">
-                {formatFullDate(selectedReturn?.created_at)}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Updated Date
-              </span>
-              <span className="return-view-detail-value">
-                {formatFullDate(selectedReturn?.updated_at)}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Review Note
-              </span>
-              <span className="return-view-detail-value">
-                {selectedReturn?.review_note || "—"}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Reverse Pickup Code
-              </span>
-              <span className="return-view-detail-value">
-                {selectedReturn?.unicommerce_reverse_pickup_code || "—"}
-              </span>
-            </div>
-
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Sync Status
-              </span>
-              <span className="return-view-detail-value">
-                {formatLabel(
-                  selectedReturn?.unicommerce_sync_status || "—"
                 )}
-              </span>
-            </div>
 
-            <div className="return-view-detail-row">
-              <span className="return-view-detail-label">
-                Sync Date
-              </span>
-              <span className="return-view-detail-value">
-                {selectedReturn?.unicommerce_synced_at
-                  ? formatFullDate(selectedReturn.unicommerce_synced_at)
-                  : "—"}
-              </span>
-            </div>
+              {/* ADDITIONAL DETAILS */}
 
-            {selectedReturn?.unicommerce_sync_error && (
-              <div className="return-view-detail-row">
-                <span className="return-view-detail-label">
-                  Sync Error
-                </span>
-                <span className="return-view-detail-value">
-                  {selectedReturn.unicommerce_sync_error}
-                </span>
+              <div className="return-view-card">
+                <h3 className="return-view-card-title">
+                  Additional Details
+                </h3>
+
+                <div className="return-view-details">
+                  {[
+                    ["Requested Date", formatFullDate(selectedReturn?.created_at)],
+                    ["Updated Date", formatFullDate(selectedReturn?.updated_at)],
+                    ["Review Note", selectedReturn?.review_note],
+                    [
+                      "Reverse Pickup Code",
+                      selectedReturn?.unicommerce_reverse_pickup_code,
+                    ],
+                    [
+                      "Sync Status",
+                      formatLabel(selectedReturn?.unicommerce_sync_status),
+                    ],
+                    [
+                      "Sync Date",
+                      formatFullDate(selectedReturn?.unicommerce_synced_at),
+                    ],
+                    ["Sync Error", selectedReturn?.unicommerce_sync_error],
+                  ].map(([label, value]) => (
+                    <div
+                      className="return-view-detail-row"
+                      key={label}
+                    >
+                      <span className="return-view-detail-label">
+                        {label}
+                      </span>
+
+                      <span className="return-view-detail-value">
+                        {value || "—"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
+            </div>
 
+            {/* DRAWER FOOTER */}
+
+            <div className="return-view-footer">
+              <button
+                type="button"
+                className="return-view-cancel"
+                onClick={closeViewModal}
+              >
+                Close
+              </button>
+
+              {getStatus(selectedReturn) === "pending" && (
+                <>
+                  <button
+                    type="button"
+                    className="return-view-primary"
+                    onClick={() => openRejectModal(selectedReturn)}
+                  >
+                    <FaCircleXmark />
+                    Reject Return
+                  </button>
+
+                  <button
+                    type="button"
+                    className="return-approve-confirm-btn"
+                    onClick={() => openApproveModal(selectedReturn)}
+                  >
+                    <FaCircleCheck />
+                    Approve Return
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
+      )}
 
-      </div>
-
-      {/* DRAWER FOOTER */}
-
-      <div className="return-view-footer">
-
-        <button
-          type="button"
-          className="return-view-cancel"
-          onClick={closeViewModal}
-        >
-          Close
-        </button>
-
-        {getStatus(selectedReturn) === "pending" && (
-          <>
-            <button
-              type="button"
-              className="return-view-primary"
-              onClick={() => openRejectModal(selectedReturn)}
-            >
-              <FaCircleXmark />
-              Reject Return
-            </button>
-
-            <button
-              type="button"
-              className="return-approve-confirm-btn"
-              onClick={() => openApproveModal(selectedReturn)}
-            >
-              <FaCircleCheck />
-              Approve Return
-            </button>
-          </>
-        )}
-
-      </div>
-    </div>
-  </div>
-)}
-
-
-    
+      {/* ==========================================
+          APPROVE RETURN MODAL
+      ========================================== */}
 
       {showApproveModal && selectedApproveReturn && (
         <div
@@ -1645,8 +1475,6 @@ const ReturnRequests = () => {
             className="return-approve-modal"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* MODAL HEADER */}
-
             <div className="return-approve-header">
               <button
                 type="button"
@@ -1671,58 +1499,24 @@ const ReturnRequests = () => {
               </p>
             </div>
 
-            {/* MODAL CONTENT */}
-
             <div className="return-approve-content">
-              {/* CUSTOMER DETAILS */}
-
               <div className="return-approve-info-card">
                 <h3>Customer &amp; Order Details</h3>
 
-                <div className="return-approve-info-row">
-                  <span>Return ID</span>
-                  <strong>
-                    {String(getReturnId(selectedApproveReturn))}
-                  </strong>
-                </div>
-
-                <div className="return-approve-info-row">
-                  <span>Order ID</span>
-                  <strong>
-                    {String(getOrderId(selectedApproveReturn))}
-                  </strong>
-                </div>
-
-                <div className="return-approve-info-row">
-                  <span>Customer Name</span>
-                  <strong>
-                    {getCustomerName(selectedApproveReturn)}
-                  </strong>
-                </div>
-
-                <div className="return-approve-info-row">
-                  <span>Phone Number</span>
-                  <strong>
-                    {getCustomerPhone(selectedApproveReturn)}
-                  </strong>
-                </div>
-
-                <div className="return-approve-info-row">
-                  <span>Email</span>
-                  <strong>
-                    {getCustomerEmail(selectedApproveReturn)}
-                  </strong>
-                </div>
-
-                <div className="return-approve-info-row">
-                  <span>Return Reason</span>
-                  <strong>
-                    {formatLabel(getReason(selectedApproveReturn))}
-                  </strong>
-                </div>
+                {[
+                  ["Return ID", String(getReturnId(selectedApproveReturn))],
+                  ["Order ID", String(getOrderId(selectedApproveReturn))],
+                  ["Customer Name", getCustomerName(selectedApproveReturn)],
+                  ["Phone Number", getCustomerPhone(selectedApproveReturn)],
+                  ["Email", getCustomerEmail(selectedApproveReturn)],
+                  ["Return Reason", formatLabel(getReason(selectedApproveReturn))],
+                ].map(([label, value]) => (
+                  <div className="return-approve-info-row" key={label}>
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
               </div>
-
-              {/* RETURN PRODUCTS */}
 
               <div className="return-approve-products-card">
                 <div className="return-approve-section-heading">
@@ -1747,20 +1541,13 @@ const ReturnRequests = () => {
                       (product, index) => (
                         <div
                           className="return-approve-product"
-                          key={
-                            product.id ||
-                            product.order_item_id ||
-                            index
-                          }
+                          key={product.id || product.order_item_id || index}
                         >
                           <div className="return-approve-product-image">
                             {getProductImage(product) ? (
                               <img
                                 src={getProductImage(product)}
-                                alt={
-                                  product.product_name ||
-                                  "Return product"
-                                }
+                                alt={product.product_name || "Return product"}
                               />
                             ) : (
                               <span>
@@ -1771,8 +1558,7 @@ const ReturnRequests = () => {
 
                           <div className="return-approve-product-details">
                             <h4>
-                              {product.product_name ||
-                                "Unnamed Product"}
+                              {product.product_name || "Unnamed Product"}
                             </h4>
 
                             <p>
@@ -1790,10 +1576,7 @@ const ReturnRequests = () => {
                             </div>
 
                             <div className="return-approve-product-price">
-                              ₹
-                              {Number(
-                                product.total_price || 0
-                              ).toFixed(2)}
+                              ₹{Number(product.total_price || 0).toFixed(2)}
                             </div>
                           </div>
                         </div>
@@ -1802,12 +1585,8 @@ const ReturnRequests = () => {
 
                     <div className="return-approve-total">
                       <span>Total Product Amount</span>
-
                       <strong>
-                        ₹
-                        {getReturnAmount(
-                          selectedApproveReturn
-                        ).toFixed(2)}
+                        ₹{getReturnAmount(selectedApproveReturn).toFixed(2)}
                       </strong>
                     </div>
                   </div>
@@ -1817,8 +1596,6 @@ const ReturnRequests = () => {
                   </div>
                 )}
               </div>
-
-              {/* RETURN PHOTOS */}
 
               {Array.isArray(selectedApproveReturn?.media) &&
                 selectedApproveReturn.media.length > 0 && (
@@ -1852,8 +1629,6 @@ const ReturnRequests = () => {
                   </div>
                 )}
 
-              {/* INFORMATION NOTICE */}
-
               <div className="return-approve-notice">
                 <span className="return-approve-notice-icon">
                   ℹ
@@ -1867,8 +1642,6 @@ const ReturnRequests = () => {
                 </p>
               </div>
             </div>
-
-            {/* MODAL FOOTER */}
 
             <div className="return-approve-footer">
               <button

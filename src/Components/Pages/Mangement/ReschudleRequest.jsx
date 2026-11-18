@@ -415,7 +415,7 @@ const ReschudleRequest = () => {
               color: "#0D614E",
             }}
           >
-            <FaClock size={24} />
+            <FaClock size={12} />
           </div>
 
           <div className="stat2-info">
@@ -437,7 +437,7 @@ const ReschudleRequest = () => {
               color: "#0D614E",
             }}
           >
-            <FaCheckCircle size={24} />
+            <FaCheckCircle size={12} />
           </div>
 
           <div className="stat2-info">
@@ -459,7 +459,7 @@ const ReschudleRequest = () => {
               color: "#0D614E",
             }}
           >
-            <FaTimesCircle size={24} />
+            <FaTimesCircle size={12} />
           </div>
 
           <div className="stat2-info">
@@ -576,13 +576,12 @@ const ReschudleRequest = () => {
                       {item.patient_number || "-"}
                     </td>
 
-                    {/* DOCTOR */}
-
+                
                     <td>
                       {item.doctor_name || "-"}
                     </td>
 
-                    {/* BOOKING DATE */}
+                   
 
                     <td>
                       {slot?.date

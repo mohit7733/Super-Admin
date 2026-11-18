@@ -45,6 +45,7 @@ const OrderRefundRequest = () => {
   const pageSize = 5;
 
   const [totalCount, setTotalCount] = useState(0);
+  const [refundStats, setRefundStats] = useState({ total: 0, approved: 0, rejected: 0, pending: 0 });
   const [nextPage, setNextPage] = useState(null);
   const [previousPage, setPreviousPage] = useState(null);
 
@@ -53,11 +54,20 @@ const OrderRefundRequest = () => {
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
- 
+ const [stats, setStats] = useState({
+  total_requests: 0,
+  approved: 0,
+  rejected: 0,
+  pending: 0,
+});
 
-  const getRefundRequests = async (page = 1) => {
+  const getRefundRequests = async (
+    page = 1,
+    search = searchTerm,
+    adminStatus = adminStatusFilter,
+    gatewayStatus = gatewayStatusFilter
+  ) => {
     const token = sessionStorage.getItem("superadmin_token");
-
     if (!token) {
       toast.error("Session expired. Please login again");
       navigate("/login");
@@ -69,33 +79,20 @@ const OrderRefundRequest = () => {
 
     try {
       const params = new URLSearchParams();
-
-      
       params.append("source_type", "order");
-
-    
-      if (adminStatusFilter) {
-        params.append("admin_status", adminStatusFilter);
-      }
-
-     
-      if (gatewayStatusFilter) {
-        params.append("gateway_status", gatewayStatusFilter);
-      }
-
-     
-      params.append("page", page);
-      params.append("page_size", pageSize);
+      params.append("page", String(page));
+      params.append("page_size", String(pageSize));
+      if (search.trim()) params.append("search", search.trim());
+      if (adminStatus) params.append("admin_status", adminStatus);
+      if (gatewayStatus) params.append("gateway_status", gatewayStatus);
 
       const apiUrl = `${BASE_URL}/payments/admin/refund-requests/?${params.toString()}`;
-
       console.log("Order Refund Request API:", apiUrl);
 
       const response = await fetch(apiUrl, {
         method: "GET",
         headers: {
           Accept: "application/json",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "true",
         },
@@ -109,44 +106,44 @@ const OrderRefundRequest = () => {
       }
 
       const data = await response.json();
-
       console.log("Order Refund API Response:", data);
 
-      if (data.success) {
-        const refundData = Array.isArray(data?.data?.results)
-          ? data.data.results
-          : [];
+      if (response.ok && data.success) {
+  const refundData = Array.isArray(data?.data?.results)
+    ? data.data.results
+    : [];
 
-        setRefundRequests(refundData);
-        setTotalCount(data?.data?.count || 0);
-        setNextPage(data?.data?.next || null);
-        setPreviousPage(data?.data?.previous || null);
-        setCurrentPage(page);
-      } else {
-        toast.error(
-          data.message || "Failed to get order refund requests"
-        );
+  setRefundRequests(refundData);
 
-        setError(
-          data.message || "Failed to fetch order refund requests"
-        );
+  setTotalCount(data?.data?.count || 0);
+  setNextPage(data?.data?.next || null);
+  setPreviousPage(data?.data?.previous || null);
 
+  // Dynamic statistics from backend
+  setStats({
+    total_requests: data?.data?.stats?.total_requests ?? data?.data?.count ?? 0,
+    approved: data?.data?.stats?.approved ?? 0,
+    rejected: data?.data?.stats?.rejected ?? 0,
+    pending: data?.data?.stats?.pending ?? 0,
+  });
+
+  setCurrentPage(page);
+} else {
+        toast.error(data.message || "Failed to get order refund requests");
+        setError(data.message || "Failed to fetch order refund requests");
         setRefundRequests([]);
         setTotalCount(0);
+        setRefundStats({ total: 0, approved: 0, rejected: 0, pending: 0 });
         setNextPage(null);
         setPreviousPage(null);
       }
     } catch (error) {
       console.error("Order Refund Fetch Error:", error);
-
-      setError(
-        "Something went wrong while fetching order refund requests."
-      );
-
+      setError("Something went wrong while fetching order refund requests.");
       toast.error("Failed to fetch order refund requests");
-
       setRefundRequests([]);
       setTotalCount(0);
+      setRefundStats({ total: 0, approved: 0, rejected: 0, pending: 0 });
       setNextPage(null);
       setPreviousPage(null);
     } finally {
@@ -154,14 +151,12 @@ const OrderRefundRequest = () => {
     }
   };
 
-  
-
   useEffect(() => {
-    getRefundRequests(1);
-  }, [adminStatusFilter, gatewayStatusFilter]);
-
- 
-  const handleView = (item) => {
+    const timer = setTimeout(() => {
+      getRefundRequests(1, searchTerm, adminStatusFilter, gatewayStatusFilter);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, adminStatusFilter, gatewayStatusFilter]);  const handleView = (item) => {
     setOpenActionId(null);
     setViewModal(item);
   };
@@ -392,45 +387,10 @@ const OrderRefundRequest = () => {
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  /* =========================================================
-     FRONTEND SEARCH
-  ========================================================= */
-
-  const filteredRefundRequests = refundRequests.filter((item) => {
-    const search = searchTerm.trim().toLowerCase();
-
-    if (!search) return true;
-
-    return (
-      item.appointment_id?.toLowerCase().includes(search) ||
-      item.order_id?.toLowerCase().includes(search) ||
-      item.customer_id?.toLowerCase().includes(search) ||
-      item.gateway_payment_id?.toLowerCase().includes(search) ||
-      item.gateway_refund_id?.toLowerCase().includes(search) ||
-      item.reason?.toLowerCase().includes(search) ||
-      item.admin_status?.toLowerCase().includes(search) ||
-      item.customer?.name?.toLowerCase().includes(search) ||
-      item.customer?.phone?.toLowerCase().includes(search)
-    );
-  });
-
-
-
-  const totalRefunds = refundRequests.length;
-
-  const approvedRefunds = refundRequests.filter(
-    (item) => item.admin_status === "approved"
-  ).length;
-
-  const rejectedRefunds = refundRequests.filter(
-    (item) => item.admin_status === "rejected"
-  ).length;
-
-  const pendingRefunds = refundRequests.filter(
-    (item) => item.admin_status === "pending"
-  ).length;
-
-  
+  const totalRefunds = refundStats.total;
+  const approvedRefunds = refundStats.approved;
+  const rejectedRefunds = refundStats.rejected;
+  const pendingRefunds = refundStats.pending;
 
   const hasActiveFilters =
     searchTerm || adminStatusFilter || gatewayStatusFilter;
@@ -488,7 +448,7 @@ const OrderRefundRequest = () => {
 
           <div className="stat2-info">
             <h3>Total Requests</h3>
-            <div className="stat2-value">{totalRefunds}</div>
+         <div className="stat2-value">{stats.total_requests||"0"}</div>
           </div>
         </div>
 
@@ -508,7 +468,7 @@ const OrderRefundRequest = () => {
 
           <div className="stat2-info">
             <h3>Approved</h3>
-            <div className="stat2-value">{approvedRefunds}</div>
+         <div className="stat2-value">{stats.approved||"0"}</div>
           </div>
         </div>
 
@@ -528,7 +488,7 @@ const OrderRefundRequest = () => {
 
           <div className="stat2-info">
             <h3>Rejected</h3>
-            <div className="stat2-value">{rejectedRefunds}</div>
+       <div className="stat2-value">{stats.rejected ||"0"}</div>
           </div>
         </div>
 
@@ -548,7 +508,7 @@ const OrderRefundRequest = () => {
 
           <div className="stat2-info">
             <h3>Pending</h3>
-            <div className="stat2-value">{pendingRefunds}</div>
+      <div className="stat2-value">{stats.pending|| "0"}</div>
           </div>
         </div>
       </div>
@@ -661,7 +621,7 @@ const OrderRefundRequest = () => {
 
             {!loading &&
               !error &&
-              filteredRefundRequests.length === 0 && (
+              refundRequests.length === 0 && (
                 <tr>
                   <td colSpan="10" className="refund-empty">
                     {searchTerm
@@ -673,7 +633,7 @@ const OrderRefundRequest = () => {
 
             {!loading &&
               !error &&
-              filteredRefundRequests.map((item, index) => (
+              refundRequests.map((item, index) => (
                 <tr key={item.id || index}>
                   {/* CUSTOMER */}
 

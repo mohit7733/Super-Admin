@@ -343,7 +343,6 @@ const totalPages = Math.ceil(totalCount / pageSize);
       </span>
     )}
 
-    {/* LAST PAGE */}
     {totalPages > 1 && (
       <button
         className={`order-pagination-btn ${
@@ -440,7 +439,7 @@ const totalPages = Math.ceil(totalCount / pageSize);
               color: "#0D614E",
             }}
           >
-            <FaClipboardList size={24} />
+            <FaClipboardList size={12} />
           </div>
 
           <div className="stat2-info">
@@ -461,7 +460,7 @@ const totalPages = Math.ceil(totalCount / pageSize);
               color: "#0D614E",
             }}
           >
-            <FaClock size={24} />
+            <FaClock size={12} />
           </div>
 
           <div className="stat2-info">
@@ -473,7 +472,6 @@ const totalPages = Math.ceil(totalCount / pageSize);
           </div>
         </div>
 
-        {/* Rescheduled */}
         <div className="stat2-card">
           <div
             className="stat2-icon"
@@ -482,7 +480,7 @@ const totalPages = Math.ceil(totalCount / pageSize);
               color: "#0D614E",
             }}
           >
-            <MdEventRepeat size={25} />
+            <MdEventRepeat size={12} />
           </div>
 
           <div className="stat2-info">
@@ -503,7 +501,7 @@ const totalPages = Math.ceil(totalCount / pageSize);
               color: "#0D614E",
             }}
           >
-            <FaTimesCircle size={24} />
+            <FaTimesCircle size={12} />
           </div>
 
           <div className="stat2-info">

@@ -261,7 +261,7 @@ const handleAppointmentAction = async (action) => {
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaClipboardList size={24} />
+      <FaClipboardList size={12} />
     </div>
     <div className="stat2-info">
       <h3>Total Requests</h3>
@@ -275,7 +275,7 @@ const handleAppointmentAction = async (action) => {
       className="stat2-icon"
     style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaClock size={24} />
+      <FaClock size={12} />
     </div>
     <div className="stat2-info">
       <h3>Pending Requests</h3>
@@ -290,7 +290,7 @@ const handleAppointmentAction = async (action) => {
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCheckCircle size={24} />
+      <FaCheckCircle size={12} />
     </div>
     <div className="stat2-info">
     
