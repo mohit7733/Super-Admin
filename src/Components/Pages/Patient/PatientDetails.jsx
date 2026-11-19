@@ -20,7 +20,7 @@ import {
  import Documents from "../Vendor/Documents"
 
  import PackageDetail from "./Packagedetail"
-
+import CustomerDietPlanPurchase from "./CustomerDietPlanPurchase";
 import {
   FiCheckCircle,
   FiXCircle,
@@ -41,6 +41,7 @@ import {
 } from "react-icons/fi";
 import { MdTimerOff } from "react-icons/md";
 import "./PatientDetails.css";
+
 
 const PatientDetails = () => {
  
@@ -722,6 +723,13 @@ useEffect(() => {
         Package Detail
           </button>
 
+          <button
+  className={activeTab === "DietPlanPurchase" ? "active-tab" : ""}
+  onClick={() => setActiveTab("DietPlanPurchase")}
+>
+  Diet Plan Purchase
+</button>
+
           
         </div>
      
@@ -757,7 +765,7 @@ useEffect(() => {
                   className="stat2-icon"
                   style={{ background: "#0D614E20", color: "#0D614E" }}
                 >
-                  <FaCalendarCheck size={24} />
+                  <FaCalendarCheck size={12} />
                 </div>
                 <div className="stat2-info">
                   <h3>Appointment</h3>
@@ -771,7 +779,7 @@ useEffect(() => {
                   className="stat2-icon"
                  style={{ background: "#0D614E20", color: "#0D614E" }}
                 >
-                  <FaCheckCircle size={24} />
+                  <FaCheckCircle size={12} />
                 </div>
                 <div className="stat2-info">
                   <h3>Confirmed</h3>
@@ -824,7 +832,7 @@ useEffect(() => {
                   className="stat2-icon"
                  style={{ background: "#0D614E20", color: "#0D614E" }}
                 >
-                  <FaTimesCircle size={24} />
+                  <FaTimesCircle size={12} />
                 </div>
                 <div className="stat2-info">
                   <h3>Cancelled</h3>
@@ -977,6 +985,11 @@ useEffect(() => {
 {activeTab === "PackagesPurchase" && (
   <PackageDetail patientId={PatientId} />
 )}
+
+{activeTab === "DietPlanPurchase" && (
+  <CustomerDietPlanPurchase patientId={PatientId} />
+)}
+
 {activeTab === "documents" && (
   <div className="documents-tab">
     {DocumentLoading ? (
@@ -1006,14 +1019,13 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Transaction Stats */}
       <div className="vendors-stats stats2-grid">
         <div className="stat2-card">
           <div
             className="stat2-icon"
             style={{ background: "#0D614E20", color: "#0D614E" }}
           >
-            <FaClock size={24} />
+            <FaClock size={12} />
           </div>
           <div className="stat2-info">
             <h3>Pending</h3>
@@ -1026,7 +1038,7 @@ useEffect(() => {
             className="stat2-icon"
             style={{ background: "#0D614E20", color: "#0D614E" }}
           >
-            <MdTimerOff size={16} />
+            <MdTimerOff size={12} />
           </div>
           <div className="stat2-info">
             <h3>Expired</h3>
@@ -1039,7 +1051,7 @@ useEffect(() => {
             className="stat2-icon"
             style={{ background: "#0D614E20", color: "#0D614E" }}
           >
-            <FaCheckCircle size={16} />
+            <FaCheckCircle size={12} />
           </div>
           <div className="stat2-info">
             <h3>Success</h3>
@@ -1052,7 +1064,7 @@ useEffect(() => {
             className="stat2-icon"
             style={{ background: "#0D614E20", color: "#0D614E" }}
           >
-            <FaTimesCircle size={16} />
+            <FaTimesCircle size={12} />
           </div>
           <div className="stat2-info">
             <h3>Failed</h3>
@@ -1065,7 +1077,7 @@ useEffect(() => {
             className="stat2-icon"
             style={{ background: "#0D614E20", color: "#0D614E" }}
           >
-            <FaUndoAlt size={24} />
+            <FaUndoAlt size={12} />
           </div>
           <div className="stat2-info">
             <h3>Refunded</h3>

@@ -115,6 +115,7 @@ const PrescriptionHistory = () => {
 
     setPrescriptionLoading(true);
     setPrescriptionError(null);
+    
 
     try {
       const url = `${BASE_URL}/customers/admin/prescriptions/?patient_id=${encodeURIComponent(

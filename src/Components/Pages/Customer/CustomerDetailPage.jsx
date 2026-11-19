@@ -372,7 +372,7 @@ if (Error) {
     onClick={() => setActiveTab("Prescription")}
   >
     Prescription
-  </button> */}
+  </button> */}/
 
 </div>
 

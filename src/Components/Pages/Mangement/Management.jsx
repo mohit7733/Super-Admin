@@ -37,7 +37,7 @@ const[AvailableslotError,setAvailableslotError]=useState(null);
 const [rescheduleReason, setRescheduleReason] = useState("");
 
 
-    const navigate = useNavigate();
+const navigate = useNavigate();
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString("en-GB", {
@@ -269,7 +269,7 @@ const handleAppointmentAction = async (action) => {
     </div>
   </div>
 
-  {/* Pending Requests */}
+
   <div className="stat2-card">
     <div
       className="stat2-icon"
