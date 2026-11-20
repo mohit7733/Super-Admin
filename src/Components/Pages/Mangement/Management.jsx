@@ -156,10 +156,21 @@ const token = sessionStorage.getItem("superadmin_token");
 
     const data = await response.json();
 
-   
-if (data.success) {
-  setAvailableslotData(data.data.availability);
-} else {
+ if (data.success) {
+  const activeAvailableSlots = (data.data.availability || [])
+    .map((availability) => ({
+      ...availability,
+      slots: (availability.slots || []).filter(
+        (slot) =>
+          slot.is_active === true &&
+          slot.status === "available" &&
+          slot.status !== "booked"
+      ),
+    }))
+    .filter((availability) => availability.slots.length > 0);
+
+  setAvailableslotData(activeAvailableSlots);
+}else {
       toast.error(data.message || "Failed to get all cancellation request");
     }
 

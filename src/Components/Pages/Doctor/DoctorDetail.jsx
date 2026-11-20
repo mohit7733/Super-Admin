@@ -1121,49 +1121,40 @@ const getAvailability = async () => {
 
 
 
-                 <div className="info-card">
+              <div className="info-card">
+  <h3 className="card-title">
+    <MdOutlineMedicalServices className="title-icon" />
+    Professional Information
+  </h3>
 
-                <h3 className="card-title">
-                  <MdOutlineMedicalServices className="title-icon" />
-                  Professional Information
-                </h3>
+  <div className="info-row">
+    <span>Experience</span>
+    <p>{doctorData?.experience_years || "N/A"} Years</p>
+  </div>
 
+  <div className="info-row">
+    <span>Registration Number</span>
+    <p>{doctorData?.registration_number || "N/A"}</p>
+  </div>
 
-                <div className="info-row">
-                  <span>Experience</span>
-                  <p>
-                    {doctorData?.experience_years||"N/A"} Years
-                  </p>
-                </div>
+  <div className="info-row">
+    <span>Registration Council</span>
+    <p>{doctorData?.registration_council || "N/A"}</p>
+  </div>
 
-                <div className="info-row">
-                  <span>Registration Number</span>
-                  <p>
-                    {doctorData?.registration_number||"N/A"}
-                  </p>
-                </div>
+  <div className="info-row">
+    <span>Registration Year</span>
+    <p>{doctorData?.registration_year || "N/A"}</p>
+  </div>
 
-                <div className="info-row">
-                  <span>Registration Council</span>
-                  <p>
-                    {doctorData?.registration_council||"N/A"}
-                  </p>
-                </div>
+  <div className="info-row">
+    <span>Qualification</span>
+    <p>{doctorData?.qualification || "N/A"}</p>
+  </div>
 
-                <div className="info-row">
-                  <span>Registration Year</span>
-                  <p>
-                    {doctorData?.registration_year||"N/A"}
-                  </p>
-                </div>
-                
-                <div className="info-row">
-                  <span>Qualification</span>
-                  <p>{doctorData?.qualification||"N/A"}</p>
-                </div>
-
-              </div>
-
+  
+  
+</div>
 
 
             </div>

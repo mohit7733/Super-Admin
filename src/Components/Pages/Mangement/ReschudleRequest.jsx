@@ -221,15 +221,21 @@ const ReschudleRequest = () => {
 
       const data = await response.json();
 
-      if (data.success) {
-        const availability = Array.isArray(
-          data?.data?.availability
-        )
-          ? data.data.availability
-          : [];
+   if (data.success) {
+  const activeAvailableSlots = (data.data.availability || [])
+    .map((availability) => ({
+      ...availability,
+      slots: (availability.slots || []).filter(
+        (slot) =>
+          slot.is_active === true &&
+          slot.status === "available" &&
+          slot.status !== "booked"
+      ),
+    }))
+    .filter((availability) => availability.slots.length > 0);
 
-        setAvailableslotData(availability);
-      } else {
+  setAvailableslotData(activeAvailableSlots);
+} else {
         toast.error(
           data.message || "Failed to get available slots"
         );

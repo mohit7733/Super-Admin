@@ -111,7 +111,10 @@ const searchDebounceRef = useRef(null);
     { value: "registration_certificate", label: "Ayush Registration Certificate" },
     { value: "other_certificate", label: "Government ID Proof" },
   ];
-
+const [sequenceModal, setSequenceModal] = useState(false);
+const [selectedSequenceDoctor, setSelectedSequenceDoctor] = useState(null);
+const [newSequence, setNewSequence] = useState("");
+const [isUpdatingSequence, setIsUpdatingSequence] = useState(false);
 
   console.log(Doctorform, "form------>");
   console.log("selecteddoctor", selectedDoctor);
@@ -238,6 +241,11 @@ const searchDebounceRef = useRef(null);
     setOtpErrors({})
     setDoctorFormErrors({})
   }
+  const handleSequenceClick = (doctor) => {
+  setSelectedSequenceDoctor(doctor);
+  setNewSequence(doctor.sequence ?? "");
+  setSequenceModal(true);
+};
 
 
 
@@ -429,6 +437,73 @@ const submitRejection = async (e) => {
     toast.error(
       error.message || "Something went wrong while updating Dietician"
     );
+  }
+};
+const handleUpdateSequence = async () => {
+  if (newSequence === "" || Number(newSequence) < 0) {
+    toast.error("Please enter a valid sequence");
+    return;
+  }
+
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    navigate("/login");
+    return;
+  }
+
+  setIsUpdatingSequence(true);
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/doctors/admin/doctor/?id=${selectedSequenceDoctor.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({
+          sequence: Number(newSequence),
+        }),
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data?.message || "Failed to update sequence");
+    }
+
+    setDoctorData((prev) =>
+      prev.map((doctor) =>
+        doctor.id === selectedSequenceDoctor.id
+          ? { ...doctor, sequence: Number(newSequence) }
+          : doctor
+      )
+    );
+
+    toast.success("Doctor sequence updated successfully");
+
+    setSequenceModal(false);
+    setSelectedSequenceDoctor(null);
+    setNewSequence("");
+
+  } catch (error) {
+    console.error("Update sequence error:", error);
+    toast.error(error.message || "Failed to update sequence");
+  } finally {
+    setIsUpdatingSequence(false);
   }
 };
 
@@ -661,10 +736,11 @@ const filterDoctors = () => {
               <th>Status</th>
               <th> Fees </th>
             
-              <th>Ayush.No</th>
+           
               <th>Qualification </th>
               <th>Specialization</th>
               <th>Experience</th>
+              <th> Sequence</th>
               {/* <th>Documents </th> */}
               <th>Actions</th>
 
@@ -753,7 +829,7 @@ const filterDoctors = () => {
 
 
 
-  <td>{item.ayurvedic_council_id || "NA"}</td>
+ 
 
  
   <td>{item.qualification || "NA"}</td>
@@ -771,7 +847,7 @@ const filterDoctors = () => {
  
   <td>{item.experience_years || 0} years</td>
 
- 
+ <td>{item.sequence|| 0}</td>
 
 
 
@@ -836,6 +912,19 @@ const filterDoctors = () => {
           : "Add as Dietician"}
       </span>
     </button>
+    <button
+  className="action-btn1"
+  title="Update Sequence"
+  onClick={() => {
+    setOpenthreedotId(null);
+    handleSequenceClick(item);
+  }}
+>
+  <span className="icon">
+    <FaEdit />
+  </span>
+  <span>Update Sequence</span>
+</button>
 
   </div>
 )}
@@ -1190,6 +1279,78 @@ const filterDoctors = () => {
 >
   {selectedStatus === "rejected" ? "Reject" : "Suspend"}
 </button>
+      </div>
+    </div>
+  </div>
+)}
+{sequenceModal && (
+  <div
+    className="confirm-overlay"
+    onClick={() => setSequenceModal(false)}
+  >
+    <div
+      className="confirm-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        className="closes-modal"
+        onClick={() => setSequenceModal(false)}
+      >
+        <IoClose />
+      </button>
+
+    <div className="sequence-icon-wrapper">
+  <FaEdit className="sequence-modal-icon" />
+</div>
+      <h2 className="confirm-title">
+        Update Doctor Sequence
+      </h2>
+
+      <p className="confirm-description">
+        Update the display sequence of this doctor.
+      </p>
+
+      <div className="vendor-info-card">
+        <div className="vendor-row">
+          <span className="label">Doctor Name</span>
+          <span className="value">
+            {selectedSequenceDoctor?.first_name}{" "}
+            {selectedSequenceDoctor?.last_name}
+          </span>
+        </div>
+      </div>
+
+      <div className="reason-field">
+        <label>
+          Sequence <span>*</span>
+        </label>
+
+       <input
+  type="number"
+  min="0"
+  className="sequence-input"
+  value={newSequence}
+  onChange={(e) => setNewSequence(e.target.value)}
+  placeholder="Enter sequence"
+/>
+      </div>
+
+      <div className="confirm-buttons">
+        <button
+          className="cancels-btn"
+          onClick={() => setSequenceModal(false)}
+          disabled={isUpdatingSequence}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="approve-btn"
+          onClick={handleUpdateSequence}
+          disabled={isUpdatingSequence}
+        >
+          {isUpdatingSequence ? "Updating..." : "Update Sequence"}
+        </button>
       </div>
     </div>
   </div>

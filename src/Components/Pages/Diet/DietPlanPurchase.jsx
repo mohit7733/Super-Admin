@@ -668,8 +668,7 @@ const DietPlanPurchase = () => {
                   <button
                     onClick={() => {
                       setPage((prev) => prev);
-                      // The current page can also be refreshed by changing
-                      // a filter or using the browser's retry action.
+                 
                       const controller = new AbortController();
                       getPurchases(page, controller.signal);
                     }}

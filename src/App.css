@@ -12316,3 +12316,35 @@ flex-direction:column;
     min-width: 0;
   }
 }
+.sequence-input {
+  width: 100%;
+  height: 45px;
+  padding: 10px 15px;
+  border: 1px solid #0D614E;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.sequence-input:focus {
+  border-color: #0D614E;
+  box-shadow: 0 0 0 2px rgba(13, 97, 78, 0.1);
+}
+.sequence-icon-wrapper {
+  width: 55px;
+  height: 55px;
+  min-width: 55px;
+  border-radius: 50%;
+  background: #E8F7F2;
+  border: 2px dashed #A8DFD0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+}
+
+.sequence-modal-icon {
+  font-size: 24px;
+  color: #0D614E;
+}
