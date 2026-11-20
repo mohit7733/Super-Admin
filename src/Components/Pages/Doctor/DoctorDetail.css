@@ -1447,29 +1447,3 @@ font-size: 17px;
   align-items: center;
 }
 
-.specialized-bio-row {
-  align-items: flex-start;
-}
-
-.specialized-bio-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-
-.specialized-bio-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: #444;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.specialized-bio-icon {
-  color: #0D614E;
-  font-size: 16px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}

@@ -13,7 +13,7 @@ import {
   FaPlay,
   FaStop,
 } from "react-icons/fa";
-
+import { createPortal } from "react-dom";
 import { FiRefreshCw, FiSearch } from "react-icons/fi";
 
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -33,7 +33,7 @@ import BASE_URL from "../../../Base";
 import { useNavigate } from "react-router-dom";
 
 
-
+import "./Banner.css";
 const SERVICE_CATEGORY_MAP = {
   doctors: "consult",
   doctor: "consultation",
@@ -161,7 +161,46 @@ const BannerEvent = () => {
 
   const [previewImage, setPreviewImage] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
- 
+const [menuPosition, setMenuPosition] = useState({
+  top: 0,
+  left: 0,
+});
+
+const menuRef = useRef(null);
+
+const handleActionMenu = (e, itemId) => {
+  e.stopPropagation();
+
+  if (openMenuId === itemId) {
+    setOpenMenuId(null);
+    return;
+  }
+
+  const rect = e.currentTarget.getBoundingClientRect();
+
+  const menuWidth = 180;
+  const menuHeight = 130;
+
+  const spaceBelow = window.innerHeight - rect.bottom;
+
+  const top =
+    spaceBelow < menuHeight
+      ? rect.top - menuHeight - 5
+      : rect.bottom + 5;
+
+  setMenuPosition({
+    top: Math.max(8, top),
+    left: Math.max(
+      8,
+      Math.min(
+        rect.right - menuWidth,
+        window.innerWidth - menuWidth - 8
+      )
+    ),
+  });
+
+  setOpenMenuId(itemId);
+};
 
 const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 const [deleteItem, setDeleteItem] = useState(null);
@@ -274,6 +313,30 @@ const formatEnqueueDateTime = (dateTime) => {
     hour12: true,
   });
 };
+useEffect(() => {
+  const handleOutsideClick = (e) => {
+    if (
+      menuRef.current &&
+      !menuRef.current.contains(e.target)
+    ) {
+      setOpenMenuId(null);
+    }
+  };
+
+  const handleEscape = (e) => {
+    if (e.key === "Escape") {
+      setOpenMenuId(null);
+    }
+  };
+
+  document.addEventListener("mousedown", handleOutsideClick);
+  document.addEventListener("keydown", handleEscape);
+
+  return () => {
+    document.removeEventListener("mousedown", handleOutsideClick);
+    document.removeEventListener("keydown", handleEscape);
+  };
+}, []);
 
 const closeGoLiveModal = () => {
   if (goLiveLoading) return;
@@ -1413,9 +1476,6 @@ const deleteBanner = async () => {
     }
   };
 
-  // ===================================================
-  // REDIRECT TYPE CHANGE
-  // ===================================================
 
   const handleTypeChange = (
     index,
@@ -1432,9 +1492,7 @@ const deleteBanner = async () => {
     });
   };
 
-  // ===================================================
-  // BRAND CHANGE
-  // ===================================================
+  
 
   const handleBrandChange = (
     index,
@@ -2809,120 +2867,120 @@ const handleCancelQueue = async () => {
                       </td>
 
                       <td
-                        className={
-                          index ===
-                          FilteredData.length -
-                            1
-                            ? "action-td action-td-up"
-                            : "action-td"
-                        }
-                        onClick={(e) =>
-                          e.stopPropagation()
-                        }
-                      >
-                        <button
-                          className="action-menu-toggle"
-                          onClick={() =>
-                            setOpenMenuId(
-                              openMenuId ===
-                                item.id
-                                ? null
-                                : item.id
-                            )
-                          }
-                        >
-                          <BsThreeDotsVertical />
-                        </button>
-
-                        {openMenuId ===
-                          item.id && (
-                          <div className="action-buttons-modal">
-                            {/* EDIT */}
-                            <button
-                              className="action-btn1"
-                              onClick={() =>
-                                openEdit(
-                                  item
-                                )
-                              }
-                              disabled={
-                                editLoading
-                              }
-                            >
-                              <FaEdit />
-
-                              <span>
-                                {editLoading
-                                  ? "Loading..."
-                                  : "Edit"}
-                              </span>
-                            </button>
-
-                         {/* DELETE */}
-<button
-  className="action-btn1"
-  onClick={() => openDeleteModal(item)}
-  disabled={deleting}
+  className="action-td"
+  onClick={(e) => e.stopPropagation()}
 >
-  <FaTrash />
-
-  <span>
-    Delete
-  </span>
-</button>
-
-                          <button
-  type="button"
-  className="action-btn1"
-  onClick={() => openGoLiveModal(item)}
-  disabled={item.status === "live"}
->
-  <FaPlay />
-  <span>
-    {item.status === "live" ? "Live Now" : "Go Live"}
-  </span>
-</button>
-{item.status === "queued" && (
   <button
     type="button"
-    className="action-btn1"
-    onClick={() => {
-      console.log("CANCEL QUEUE CLICKED", item);
-
-      setCancelQueueItem(item);
-      setCancelQueueModalOpen(true);
-    }}
+    className="action-menu-toggle"
+    onClick={(e) => handleActionMenu(e, item.id)}
   >
-    <FaStop />
-    <span>Cancel Queue</span>
+    <BsThreeDotsVertical />
   </button>
-)}
 
-                        {item.status === "live" && (
-  <button
-    type="button"
-    className="action-btn1"
-    onClick={() => openEndLiveModal(item)}
-  >
-    <FaStop />
-    <span>End Live</span>
-  </button>
-)}
-{item.status !== "live" &&
-  item.status !== "queued" && (
-    <button
-      type="button"
-      className="action-btn1"
-      onClick={() => openEnqueueModal(item)}
-    >
-      <FaPlay />
-      <span>Enqueue</span>
-    </button>
-  )}
-  
-                          </div>
-                        )}
-                      </td>
+  {openMenuId === item.id &&
+    createPortal(
+      <div
+        ref={menuRef}
+        className="action-buttons-modal action-portal-menu"
+        style={{
+          top: `${menuPosition.top}px`,
+          left: `${menuPosition.left}px`,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* EDIT */}
+        <button
+          className="action-btn1"
+          onClick={() => {
+            setOpenMenuId(null);
+            openEdit(item);
+          }}
+          disabled={editLoading}
+        >
+          <FaEdit />
+          <span>{editLoading ? "Loading..." : "Edit"}</span>
+        </button>
+
+        {/* DELETE */}
+        <button
+          className="action-btn1"
+          onClick={() => {
+            setOpenMenuId(null);
+            openDeleteModal(item);
+          }}
+          disabled={deleting}
+        >
+          <FaTrash />
+          <span>Delete</span>
+        </button>
+
+        {/* GO LIVE */}
+        <button
+          type="button"
+          className="action-btn1"
+          onClick={() => {
+            setOpenMenuId(null);
+            openGoLiveModal(item);
+          }}
+          disabled={item.status === "live"}
+        >
+          <FaPlay />
+          <span>
+            {item.status === "live" ? "Live Now" : "Go Live"}
+          </span>
+        </button>
+
+        {/* CANCEL QUEUE */}
+        {item.status === "queued" && (
+          <button
+            type="button"
+            className="action-btn1"
+            onClick={() => {
+              setOpenMenuId(null);
+              setCancelQueueItem(item);
+              setCancelQueueModalOpen(true);
+            }}
+          >
+            <FaStop />
+            <span>Cancel Queue</span>
+          </button>
+        )}
+
+        {/* END LIVE */}
+        {item.status === "live" && (
+          <button
+            type="button"
+            className="action-btn1"
+            onClick={() => {
+              setOpenMenuId(null);
+              openEndLiveModal(item);
+            }}
+          >
+            <FaStop />
+            <span>End Live</span>
+          </button>
+        )}
+
+        {/* ENQUEUE */}
+        {item.status !== "live" &&
+          item.status !== "queued" && (
+            <button
+              type="button"
+              className="action-btn1"
+              onClick={() => {
+                setOpenMenuId(null);
+                openEnqueueModal(item);
+              }}
+            >
+              <FaPlay />
+              <span>Enqueue</span>
+            </button>
+          )}
+      </div>,
+      document.body
+    )}
+</td>
                     </tr>
                   );
                 }

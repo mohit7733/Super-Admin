@@ -557,7 +557,7 @@ const filterDoctors = () => {
     );
   }
 
-  // Specialization Filter
+
   if (specializationfilter !== "All") {
     filtered = filtered.filter((doctor) =>
       doctor.specializations?.some(
