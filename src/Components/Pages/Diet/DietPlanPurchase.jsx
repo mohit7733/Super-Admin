@@ -30,11 +30,6 @@ import "./DietPlanPurchase.css";
 
 const DietPlanPurchase = () => {
   const navigate = useNavigate();
-
-  // ================================
-  // STATES
-  // ================================
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [purchases, setPurchases] = useState([]);
@@ -49,7 +44,7 @@ const DietPlanPurchase = () => {
     active_assignments: 0,
   });
 
-  // Backend search and filters
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -60,20 +55,18 @@ const DietPlanPurchase = () => {
   const [patientId, setPatientId] = useState("");
   const [paymentGateway, setPaymentGateway] = useState("");
 
-  // Pagination
+
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [nextPage, setNextPage] = useState(null);
   const [previousPage, setPreviousPage] = useState(null);
 
-  // Details modal
+ 
   const [selectedPurchase, setSelectedPurchase] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // ================================
-  // SEARCH DEBOUNCE
-  // ================================
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -84,10 +77,6 @@ const DietPlanPurchase = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // ================================
-  // GET DIET PURCHASES
-  // BACKEND SEARCH + FILTER
-  // ================================
 
   const getPurchases = async (currentPage, signal) => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -107,37 +96,37 @@ const DietPlanPurchase = () => {
       params.append("page", currentPage);
       params.append("page_size", pageSize);
 
-      // Search
+      
       if (debouncedSearch) {
         params.append("search", debouncedSearch);
       }
 
-      // Payment Status
+   
       if (statusFilter) {
         params.append("status", statusFilter);
       }
 
-      // Diet Plan UUID
+    
       if (dietPlanId.trim()) {
         params.append("diet_plan_id", dietPlanId.trim());
       }
 
-      // Customer UUID
+     
       if (customerId.trim()) {
         params.append("customer_id", customerId.trim());
       }
 
-      // Patient UUID
+     
       if (patientId.trim()) {
         params.append("patient_id", patientId.trim());
       }
 
-      // Payment Gateway
+      
       if (paymentGateway.trim()) {
         params.append("payment_gateway", paymentGateway.trim());
       }
 
-      // Assignment Status
+      
       if (assignmentFilter) {
         params.append("assignment_status", assignmentFilter);
       }
@@ -478,15 +467,10 @@ const DietPlanPurchase = () => {
     }
   };
 
-  // ================================
-  // PAGINATION
-  // ================================
 
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
-  // ================================
-  // RENDER
-  // ================================
+  
 
   return (
     <>
@@ -684,8 +668,7 @@ const DietPlanPurchase = () => {
                   <button
                     onClick={() => {
                       setPage((prev) => prev);
-                      // The current page can also be refreshed by changing
-                      // a filter or using the browser's retry action.
+                 
                       const controller = new AbortController();
                       getPurchases(page, controller.signal);
                     }}

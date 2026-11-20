@@ -29,7 +29,11 @@ const Patient = () => {
   const [Count, setCount] = useState(0);
   const totalPages = Math.ceil(Count / pagesize);
   const [AddError, setAddError] = useState({});
-
+const [patientStats, setPatientStats] = useState({
+  total: 0,
+  active: 0,
+  inactive: 0,
+});
   const [newPatient, setNewPatient] = useState({
     name: '',
     gender: '',
@@ -55,16 +59,19 @@ const Patient = () => {
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
- const getAllpatientList = async (page = 1 ,search = searchTerm) => {
+ 
+const getAllpatientList = async (page = 1, search = searchTerm) => {
   const token = sessionStorage.getItem("superadmin_token");
 
   if (!token) {
     toast.error("Session expired. Please login again");
+    sessionStorage.removeItem("superadmin_token");
     navigate("/login");
     return;
   }
 
   setPatientLoading(true);
+  setPatientError(null);
 
   try {
     const response = await fetch(
@@ -79,28 +86,49 @@ const Patient = () => {
         },
       }
     );
-    
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
+
+    // Session validation
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
 
     const data = await response.json();
 
     console.log("Patient API Response:", data);
 
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.message || "Failed to fetch patient data");
+    }
+
+    
     setPatientData(data?.data?.results || []);
+
     setCount(data?.data?.count || 0);
+
+   
+    setPatientStats({
+      total: data?.data?.total_counts?.total ?? 0,
+      active: data?.data?.total_counts?.active ?? 0,
+      inactive: data?.data?.total_counts?.inactive ?? 0,
+    });
+
+    
     setNextPage(data?.data?.next || null);
     setPreviousPage(data?.data?.previous || null);
     setCurrentpage(page);
 
-  } catch (err) {
-    console.error("Patient Fetch Error:", err);
+  } catch (error) {
+    console.error("Patient Fetch Error:", error);
 
-    setPatientError("Something went wrong while fetching patient data.");
+    setPatientError(
+      error.message || "Something went wrong while fetching patient data."
+    );
+
+    setPatientData([]);
+    setCount(0);
 
     toast.error("Failed to fetch patient data", {
       position: "top-center",
@@ -177,35 +205,62 @@ setSelectedPatient(null);
         <h1>Patient</h1>
       </div>
 
-         <div className="stats2-grid">
-              <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
-                <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                  <FaUsers size={12} />
-                </div>
-                <div className="stat2-info">
-                  <h3>Total Patient</h3>
-                  <div className="stat2-value">0</div>
-                </div>
-              </div>
-              <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
-                <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                  <FaChartLine size={12} />
-                </div>
-                <div className="stat2-info">
-                  <h3>Active Patient</h3>
-                  <div className="stat2-value">0</div>
-                </div>
-              </div>
-              <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
-                <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-                  <FaCalendarAlt size={12} />
-                </div>
-                <div className="stat2-info">
-                  <h3> Inactive Patient</h3>
-                  <div className="stat2-value">0</div>
-                </div>
-              </div>
-            </div>
+     
+<div className="stats2-grid">
+
+  
+  <div className="stat2-card" style={{ borderTopColor: "#0D614E" }}>
+    <div
+      className="stat2-icon"
+      style={{ background: "#0D614E20", color: "#0D614E" }}
+    >
+      <FaUsers size={16} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Total Patients</h3>
+      <div className="stat2-value">
+        {patientStats.total}
+      </div>
+    </div>
+  </div>
+
+  {/* Active Patients */}
+  <div className="stat2-card" style={{ borderTopColor: "#16A34A" }}>
+    <div
+      className="stat2-icon"
+      style={{ background: "#16A34A20", color: "#16A34A" }}
+    >
+      <FaChartLine size={16} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Active Patients</h3>
+      <div className="stat2-value">
+        {patientStats.active}
+      </div>
+    </div>
+  </div>
+
+  {/* Inactive Patients */}
+  <div className="stat2-card" style={{ borderTopColor: "#DC2626" }}>
+    <div
+      className="stat2-icon"
+      style={{ background: "#DC262620", color: "#DC2626" }}
+    >
+      <FaCalendarAlt size={16} />
+    </div>
+
+    <div className="stat2-info">
+      <h3>Inactive Patients</h3>
+      <div className="stat2-value">
+        {patientStats.inactive}
+      </div>
+    </div>
+  </div>
+
+</div>
+
 
       <div className="controls-section">
         <div className="search-wrapper">

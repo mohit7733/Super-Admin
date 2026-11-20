@@ -18,12 +18,19 @@ const CustomerTransaction = () => {
   const [TransactionError, setTransactionError] = useState(null);
   const [TransactionLoading, setTransactionLoading] = useState(false);
 
+  // Dynamic Stats
+  const [stats, setStats] = useState({
+    pending: 0,
+    success: 0,
+    failed: 0,
+    refunded: 0,
+    total_revenue: 0,
+  });
+
   const { customerId } = useParams();
   const navigate = useNavigate();
 
-
   const pagesize = 10;
-
   const [totalCount, setTotalCount] = useState(0);
   const [currentpage, setCurrentPage] = useState(1);
   const [Nextpage, setNextPage] = useState(null);
@@ -31,7 +38,6 @@ const CustomerTransaction = () => {
 
   const totalPages = Math.ceil(totalCount / pagesize);
 
- 
   const startItem =
     totalCount === 0 ? 0 : (currentpage - 1) * pagesize + 1;
 
@@ -50,78 +56,90 @@ const CustomerTransaction = () => {
       return [1, "...", totalPages - 1, totalPages];
     }
 
-    return [
-      1,
-      "...",
-      currentpage,
-      "...",
-      totalPages,
-    ];
+    return [1, "...", currentpage, "...", totalPages];
   };
 
-  // Fetch transactions
-  const getTransactionlist = useCallback(async (page = 1) => {
-    const token = sessionStorage.getItem("superadmin_token");
+  // Fetch Transactions
+  const getTransactionlist = useCallback(
+    async (page = 1) => {
+      const token = sessionStorage.getItem("superadmin_token");
 
-    if (!token) {
-      toast.error("Session Expired, Login Again");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      setTransactionLoading(true);
-      setTransactionError(null);
-
-      const response = await fetch(
-        `${BASE_URL}/payments/admin/transactions/?customer_id=${customerId}&type=all&page=${page}&page_size=${pagesize}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "ngrok-skip-browser-warning": "true",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      console.log("Transaction API Response:", data);
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch transactions");
+      if (!token) {
+        toast.error("Session Expired, Login Again");
+        navigate("/login");
+        return;
       }
 
-      const result = data.data;
+      try {
+        setTransactionLoading(true);
+        setTransactionError(null);
 
-      setTransactionData(result?.results || []);
-      setTotalCount(result?.count || 0);
-      setNextPage(result?.next || null);
-      setPreviousPage(result?.previous || null);
-      setCurrentPage(page);
+        const response = await fetch(
+          `${BASE_URL}/payments/admin/transactions/?customer_id=${customerId}&type=all&page=${page}&page_size=${pagesize}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+              "ngrok-skip-browser-warning": "true",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-    } catch (error) {
-      console.error(error);
+        const data = await response.json();
 
-      setTransactionError(
-        "Something went wrong while fetching transactions"
-      );
+        console.log("Transaction API Response:", data);
 
-      toast.error("Failed to fetch Transaction Data");
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data.message || "Failed to fetch transactions"
+          );
+        }
 
-    } finally {
-      setTransactionLoading(false);
-    }
-  }, [customerId, navigate]);
+        const result = data.data;
 
-  // Initial API call
+        // Transaction List
+        setTransactionData(result?.results || []);
+
+        // Pagination
+        setTotalCount(result?.count || 0);
+        setNextPage(result?.next || null);
+        setPreviousPage(result?.previous || null);
+        setCurrentPage(page);
+
+        // Dynamic Stats from API
+        setStats({
+          pending: result?.stats?.pending ?? 0,
+          success: result?.stats?.success ?? 0,
+          failed: result?.stats?.failed ?? 0,
+          refunded: result?.stats?.refunded ?? 0,
+          total_revenue: result?.stats?.total_revenue ?? 0,
+        });
+
+      } catch (error) {
+        console.error("Transaction API Error:", error);
+
+        setTransactionError(
+          "Something went wrong while fetching transactions"
+        );
+
+        toast.error(
+          error.message || "Failed to fetch Transaction Data"
+        );
+      } finally {
+        setTransactionLoading(false);
+      }
+    },
+    [customerId, navigate]
+  );
+
+  
   useEffect(() => {
     getTransactionlist(1);
   }, [getTransactionlist]);
 
-  // Status styling
+  
   const getStatusStyle = (status) => {
     const value = status?.toLowerCase();
 
@@ -170,6 +188,14 @@ const CustomerTransaction = () => {
     }
   };
 
+  // Currency Formatter
+  const formatCurrency = (amount) => {
+    return Number(amount || 0).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
   return (
     <>
       <div className="transaction-main-card">
@@ -188,21 +214,24 @@ const CustomerTransaction = () => {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Dynamic Stats */}
         <div className="vendors-stats stats2-grid">
 
+          {/* Pending */}
           <div className="stat2-card">
             <div
               className="stat2-icon"
-              style={{ background: "#0D614E20", color: "#0D614E" }}
+              style={{  background: "#0D614E20", color: "#0D614E" }}
             >
               <FaClock size={16} />
             </div>
             <div className="stat2-info">
               <h3>Pending</h3>
+              <h2>{stats.pending}</h2>
             </div>
           </div>
 
+          {/* Success */}
           <div className="stat2-card">
             <div
               className="stat2-icon"
@@ -212,21 +241,25 @@ const CustomerTransaction = () => {
             </div>
             <div className="stat2-info">
               <h3>Success</h3>
+              <h2>{stats.success}</h2>
             </div>
           </div>
 
+          {/* Failed */}
           <div className="stat2-card">
             <div
               className="stat2-icon"
-              style={{ background: "#0D614E20", color: "#0D614E" }}
+              style={{ background: "#fee2e2", color: "#dc2626" }}
             >
               <FaTimesCircle size={16} />
             </div>
             <div className="stat2-info">
               <h3>Failed</h3>
+              <h2>{stats.failed}</h2>
             </div>
           </div>
 
+          {/* Refunded */}
           <div className="stat2-card">
             <div
               className="stat2-icon"
@@ -236,9 +269,11 @@ const CustomerTransaction = () => {
             </div>
             <div className="stat2-info">
               <h3>Refunded</h3>
+              <h2>{stats.refunded}</h2>
             </div>
           </div>
 
+          {/* Total Revenue */}
           <div className="stat2-card">
             <div
               className="stat2-icon"
@@ -248,6 +283,7 @@ const CustomerTransaction = () => {
             </div>
             <div className="stat2-info">
               <h3>Total Revenue</h3>
+              <h2>₹ {formatCurrency(stats.total_revenue)}</h2>
             </div>
           </div>
 
@@ -255,7 +291,6 @@ const CustomerTransaction = () => {
 
         {/* Transaction Table */}
         <div className="table-wrapper">
-
           <table className="data-table">
 
             <thead>
@@ -271,9 +306,7 @@ const CustomerTransaction = () => {
             </thead>
 
             <tbody>
-
               {TransactionLoading ? (
-
                 Array(4).fill(0).map((_, i) => (
                   <tr key={i}>
                     <td colSpan="7">
@@ -281,9 +314,7 @@ const CustomerTransaction = () => {
                     </td>
                   </tr>
                 ))
-
               ) : TransactionError ? (
-
                 <tr>
                   <td
                     colSpan="7"
@@ -296,18 +327,20 @@ const CustomerTransaction = () => {
                     {TransactionError}
                   </td>
                 </tr>
-
               ) : TransactionData.length > 0 ? (
-
                 TransactionData.map((transaction) => (
                   <tr key={transaction.id}>
 
-                    <td>{transaction.transaction_id}</td>
+                    <td>
+                      {transaction.reference_code ||
+                        transaction.transaction_id ||
+                        "N/A"}
+                    </td>
 
                     <td>
                       <span
                         className={`transaction-type ${
-                          transaction.type?.toLowerCase() === "order"
+                          transaction.transaction_type?.toLowerCase() === "product"
                             ? "order"
                             : "consultation"
                         }`}
@@ -321,10 +354,14 @@ const CustomerTransaction = () => {
                     <td>
                       {transaction.transaction_type?.toLowerCase() === "product"
                         ? transaction.customer?.name || "N/A"
-                        : transaction.patient?.name || "N/A"}
+                        : transaction.patient?.name ||
+                          transaction.customer?.name ||
+                          "N/A"}
                     </td>
 
-                    <td>₹ {transaction.amount || 0}</td>
+                    <td>
+                      ₹ {formatCurrency(transaction.amount)}
+                    </td>
 
                     <td>
                       {transaction.paid_at
@@ -349,7 +386,7 @@ const CustomerTransaction = () => {
                     </td>
 
                     <td>
-                      {transaction?.payment_method || "N/A"}
+                      {transaction.payment_method || "N/A"}
                     </td>
 
                     <td>
@@ -363,9 +400,7 @@ const CustomerTransaction = () => {
 
                   </tr>
                 ))
-
               ) : (
-
                 <tr>
                   <td
                     colSpan="7"
@@ -377,9 +412,7 @@ const CustomerTransaction = () => {
                     No Transaction Found
                   </td>
                 </tr>
-
               )}
-
             </tbody>
           </table>
 
@@ -398,9 +431,7 @@ const CustomerTransaction = () => {
                 {/* Previous */}
                 <button
                   className="pagination-arrow"
-                  onClick={() =>
-                    getTransactionlist(currentpage - 1)
-                  }
+                  onClick={() => getTransactionlist(currentpage - 1)}
                   disabled={!previousPage || TransactionLoading}
                   aria-label="Previous page"
                 >
@@ -408,18 +439,15 @@ const CustomerTransaction = () => {
                 </button>
 
                 {/* Page Numbers */}
-                {getVisiblePages().map((page, index) => (
+                {getVisiblePages().map((page, index) =>
                   page === "..." ? (
-
                     <span
                       key={`dots-${index}`}
                       className="pagination-dots"
                     >
                       ...
                     </span>
-
                   ) : (
-
                     <button
                       key={page}
                       className={`pagination-number ${
@@ -430,16 +458,13 @@ const CustomerTransaction = () => {
                     >
                       {page}
                     </button>
-
                   )
-                ))}
+                )}
 
                 {/* Next */}
                 <button
                   className="pagination-arrow"
-                  onClick={() =>
-                    getTransactionlist(currentpage + 1)
-                  }
+                  onClick={() => getTransactionlist(currentpage + 1)}
                   disabled={!Nextpage || TransactionLoading}
                   aria-label="Next page"
                 >

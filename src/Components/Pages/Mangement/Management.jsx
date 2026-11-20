@@ -37,7 +37,7 @@ const[AvailableslotError,setAvailableslotError]=useState(null);
 const [rescheduleReason, setRescheduleReason] = useState("");
 
 
-    const navigate = useNavigate();
+const navigate = useNavigate();
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString("en-GB", {
@@ -156,10 +156,21 @@ const token = sessionStorage.getItem("superadmin_token");
 
     const data = await response.json();
 
-   
-if (data.success) {
-  setAvailableslotData(data.data.availability);
-} else {
+ if (data.success) {
+  const activeAvailableSlots = (data.data.availability || [])
+    .map((availability) => ({
+      ...availability,
+      slots: (availability.slots || []).filter(
+        (slot) =>
+          slot.is_active === true &&
+          slot.status === "available" &&
+          slot.status !== "booked"
+      ),
+    }))
+    .filter((availability) => availability.slots.length > 0);
+
+  setAvailableslotData(activeAvailableSlots);
+}else {
       toast.error(data.message || "Failed to get all cancellation request");
     }
 
@@ -261,7 +272,7 @@ const handleAppointmentAction = async (action) => {
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaClipboardList size={24} />
+      <FaClipboardList size={12} />
     </div>
     <div className="stat2-info">
       <h3>Total Requests</h3>
@@ -269,13 +280,13 @@ const handleAppointmentAction = async (action) => {
     </div>
   </div>
 
-  {/* Pending Requests */}
+
   <div className="stat2-card">
     <div
       className="stat2-icon"
     style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaClock size={24} />
+      <FaClock size={12} />
     </div>
     <div className="stat2-info">
       <h3>Pending Requests</h3>
@@ -290,7 +301,7 @@ const handleAppointmentAction = async (action) => {
       className="stat2-icon"
       style={{ background: "#0D614E20", color: "#0D614E" }}
     >
-      <FaCheckCircle size={24} />
+      <FaCheckCircle size={12} />
     </div>
     <div className="stat2-info">
     

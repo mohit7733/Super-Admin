@@ -2313,248 +2313,151 @@ const EventBanner = () => {
                                                 </label>
                                             </td>
 
-                                            {/* ACTIONS */}
-                                            <td
-                                                className={
-                                                    index ===
-                                                        events.length -
-                                                        1
-                                                        ? "action-td action-td-up"
-                                                        : "action-td"
-                                                }
-                                                onClick={(
-                                                    e
-                                                ) =>
-                                                    e.stopPropagation()
-                                                }
-                                            >
-                                                <button
-                                                    type="button"
-                                                    className="action-menu-toggle"
-                                                    onClick={(
-                                                        e
-                                                    ) => {
-                                                        e.stopPropagation();
+                                           {/* ACTIONS */}
+<td
+  className={
+    index === events.length - 1
+      ? "action-td action-td-up"
+      : "action-td"
+  }
+  onClick={(e) => e.stopPropagation()}
+>
+  <button
+    type="button"
+    className="action-menu-toggle"
+    onClick={(e) => {
+      e.stopPropagation();
 
-                                                        setOpenMenuId(
-                                                            openMenuId ===
-                                                                item.id
-                                                                ? null
-                                                                : item.id
-                                                        );
-                                                    }}
-                                                >
-                                                    <FiMoreVertical />
-                                                </button>
+      setOpenMenuId(
+        openMenuId === item.id ? null : item.id
+      );
+    }}
+  >
+    <span className="icon">
+      <FiMoreVertical />
+    </span>
+  </button>
 
-                                                {openMenuId ===
-                                                    item.id && (
-                                                        <div
-                                                            className="action-buttons-modal"
-                                                            onClick={(
-                                                                e
-                                                            ) =>
-                                                                e.stopPropagation()
-                                                            }
-                                                        >
-                                                            {/* EDIT */}
-                                                            <button
-                                                                type="button"
-                                                                className="action-btn1"
-                                                                onClick={() => {
-                                                                    setOpenMenuId(
-                                                                        null
-                                                                    );
+  {openMenuId === item.id && (
+    <div
+      className="action-buttons-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* EDIT */}
+      <button
+        type="button"
+        className="action-btn1"
+        onClick={() => {
+          setOpenMenuId(null);
+          openEdit(item);
+        }}
+      >
+        <span className="icon">
+          <FaEdit />
+        </span>
+        <span>Edit</span>
+      </button>
 
-                                                                    openEdit(
-                                                                        item
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <span className="icon">
-                                                                    <FaEdit />
-                                                                </span>
+      {/* ENQUEUE */}
+      {status !== "live" &&
+        status !== "queued" &&
+        status !== "ended" && (
+          <button
+            type="button"
+            className="action-btn1"
+            disabled={rowBusy || Boolean(enqueueReason)}
+            title={enqueueReason || "Enqueue Event"}
+            onClick={() => {
+              setOpenMenuId(null);
+              openConfirm("enqueue", item);
+            }}
+          >
+            <span className="icon">
+              <FaHourglassHalf />
+            </span>
+            <span>Enqueue</span>
+          </button>
+        )}
 
-                                                                <span>
-                                                                    Edit
-                                                                </span>
-                                                            </button>
+      {/* CANCEL QUEUE */}
+      {status === "queued" && (
+        <button
+          type="button"
+          className="action-btn1"
+          disabled={rowBusy}
+          onClick={() => {
+            setOpenMenuId(null);
+            openConfirm("cancel", item);
+          }}
+        >
+          <span className="icon">
+            <FiRefreshCw />
+          </span>
+          <span>Cancel Queue</span>
+        </button>
+      )}
 
-                                                            {/* ENQUEUE */}
-                                                            {status !==
-                                                                "live" &&
-                                                                status !==
-                                                                "queued" &&
-                                                                status !==
-                                                                "ended" && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="action-btn1"
-                                                                        disabled={
-                                                                            rowBusy ||
-                                                                            Boolean(
-                                                                                enqueueReason
-                                                                            )
-                                                                        }
-                                                                        title={
-                                                                            enqueueReason ||
-                                                                            "Enqueue Event"
-                                                                        }
-                                                                        onClick={() => {
-                                                                            setOpenMenuId(
-                                                                                null
-                                                                            );
+      {/* END LIVE */}
+      {status === "live" && (
+        <button
+          type="button"
+          className="action-btn1"
+          disabled={rowBusy}
+          onClick={() => {
+            setOpenMenuId(null);
+            openConfirm("end", item);
+          }}
+        >
+          <span className="icon">
+            <FaStop />
+          </span>
+          <span>End Live</span>
+        </button>
+      )}
 
-                                                                            openConfirm(
-                                                                                "enqueue",
-                                                                                item
-                                                                            );
-                                                                        }}
-                                                                    >
-                                                                        <span className="icon">
-                                                                            <FaHourglassHalf />
-                                                                        </span>
+      {/* GO LIVE */}
+      {status !== "live" &&
+        new Date(item.ends_at) > new Date() && (
+          <button
+            type="button"
+            className="action-btn1"
+            disabled={rowBusy}
+            onClick={() => {
+              setOpenMenuId(null);
+              openConfirm("goLive", item);
+            }}
+          >
+            <span className="icon">
+              <FaPlay />
+            </span>
+            <span>Go Live</span>
+          </button>
+        )}
 
-                                                                        <span>
-                                                                            Enqueue
-                                                                        </span>
-                                                                    </button>
-                                                                )}
-
-                                                            {/* CANCEL QUEUE */}
-                                                            {status ===
-                                                                "queued" && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="action-btn1"
-                                                                        disabled={
-                                                                            rowBusy
-                                                                        }
-                                                                        onClick={() => {
-                                                                            setOpenMenuId(
-                                                                                null
-                                                                            );
-
-                                                                            openConfirm(
-                                                                                "cancel",
-                                                                                item
-                                                                            );
-                                                                        }}
-                                                                    >
-                                                                        <span className="icon">
-                                                                            <FiRefreshCw />
-                                                                        </span>
-
-                                                                        <span>
-                                                                            Cancel
-                                                                            Queue
-                                                                        </span>
-                                                                    </button>
-                                                                )}
-
-                                                            {/* END LIVE */}
-                                                            {status ===
-                                                                "live" && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="action-btn1"
-                                                                        disabled={
-                                                                            rowBusy
-                                                                        }
-                                                                        onClick={() => {
-                                                                            setOpenMenuId(
-                                                                                null
-                                                                            );
-
-                                                                            openConfirm(
-                                                                                "end",
-                                                                                item
-                                                                            );
-                                                                        }}
-                                                                    >
-                                                                        <span className="icon">
-                                                                            <FaStop />
-                                                                        </span>
-
-                                                                        <span>
-                                                                            End
-                                                                            Live
-                                                                        </span>
-                                                                    </button>
-                                                                )}
-
-                                                            {/* GO LIVE */}
-                                                            {status !==
-                                                                "live" &&
-                                                                new Date(
-                                                                    item.ends_at
-                                                                ) >
-                                                                new Date() && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="action-btn1"
-                                                                        disabled={
-                                                                            rowBusy
-                                                                        }
-                                                                        onClick={() => {
-                                                                            setOpenMenuId(
-                                                                                null
-                                                                            );
-
-                                                                            openConfirm(
-                                                                                "goLive",
-                                                                                item
-                                                                            );
-                                                                        }}
-                                                                    >
-                                                                        <span className="icon">
-                                                                            <FaPlay />
-                                                                        </span>
-
-                                                                        <span>
-                                                                            Go
-                                                                            Live
-                                                                        </span>
-                                                                    </button>
-                                                                )}
-
-                                                            {/* DELETE */}
-                                                            <button
-                                                                type="button"
-                                                                className="action-btn1 delete-action"
-                                                                disabled={
-                                                                    rowBusy ||
-                                                                    status ===
-                                                                    "live"
-                                                                }
-                                                                title={
-                                                                    status ===
-                                                                        "live"
-                                                                        ? "End the live event before deleting"
-                                                                        : "Delete Event"
-                                                                }
-                                                                onClick={() => {
-                                                                    setOpenMenuId(
-                                                                        null
-                                                                    );
-
-                                                                    openConfirm(
-                                                                        "delete",
-                                                                        item
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <span className="icon">
-                                                                    <FiTrash2 />
-                                                                </span>
-
-                                                                <span>
-                                                                    Delete
-                                                                </span>
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                            </td>
+      {/* DELETE */}
+      <button
+        type="button"
+        className="action-btn1 delete-action"
+        disabled={rowBusy || status === "live"}
+        title={
+          status === "live"
+            ? "End the live event before deleting"
+            : "Delete Event"
+        }
+        onClick={() => {
+          setOpenMenuId(null);
+          openConfirm("delete", item);
+        }}
+        
+      >
+        <span className="icon">
+          <FiTrash2 />
+        </span>
+        <span>Delete</span>
+      </button>
+    </div>
+  )}
+</td>
                                         </tr>
                                     );
                                 }

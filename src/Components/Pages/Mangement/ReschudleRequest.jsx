@@ -221,15 +221,21 @@ const ReschudleRequest = () => {
 
       const data = await response.json();
 
-      if (data.success) {
-        const availability = Array.isArray(
-          data?.data?.availability
-        )
-          ? data.data.availability
-          : [];
+   if (data.success) {
+  const activeAvailableSlots = (data.data.availability || [])
+    .map((availability) => ({
+      ...availability,
+      slots: (availability.slots || []).filter(
+        (slot) =>
+          slot.is_active === true &&
+          slot.status === "available" &&
+          slot.status !== "booked"
+      ),
+    }))
+    .filter((availability) => availability.slots.length > 0);
 
-        setAvailableslotData(availability);
-      } else {
+  setAvailableslotData(activeAvailableSlots);
+} else {
         toast.error(
           data.message || "Failed to get available slots"
         );
@@ -415,7 +421,7 @@ const ReschudleRequest = () => {
               color: "#0D614E",
             }}
           >
-            <FaClock size={24} />
+            <FaClock size={12} />
           </div>
 
           <div className="stat2-info">
@@ -437,7 +443,7 @@ const ReschudleRequest = () => {
               color: "#0D614E",
             }}
           >
-            <FaCheckCircle size={24} />
+            <FaCheckCircle size={12} />
           </div>
 
           <div className="stat2-info">
@@ -459,7 +465,7 @@ const ReschudleRequest = () => {
               color: "#0D614E",
             }}
           >
-            <FaTimesCircle size={24} />
+            <FaTimesCircle size={12} />
           </div>
 
           <div className="stat2-info">
@@ -576,13 +582,12 @@ const ReschudleRequest = () => {
                       {item.patient_number || "-"}
                     </td>
 
-                    {/* DOCTOR */}
-
+                
                     <td>
                       {item.doctor_name || "-"}
                     </td>
 
-                    {/* BOOKING DATE */}
+                   
 
                     <td>
                       {slot?.date
