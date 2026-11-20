@@ -673,7 +673,7 @@ function App() {
           }
         />
 
-<Route
+{/* <Route
           path="/content/eventbanner"
           element={
             <ProtectedRoute permission="manage_event_banner">
@@ -682,7 +682,7 @@ function App() {
               </Layout>
             </ProtectedRoute>
           }
-        />
+        /> */}
 
         
 
