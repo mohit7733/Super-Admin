@@ -1177,19 +1177,24 @@ const availableServiceCategories = ServiceCategoryData.filter(
                       )}
                     </td>
 
-                    <td>
-                      <label className="switch">
-                        <input
-                          type="checkbox"
-                          checked={isActive}
-                          onChange={() => {
+                   
+                      <td>
+                    <span className={`status-badge ${item.is_active ? "status-active" : "status-inactive"}`}>
+                      {item.is_active ? "Active" : "Inactive"}
+                    </span>
+                    <br />
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={item.is_active}
+                       onChange={() => {
                             setSelectedProductCategory(item);
                             setProductCategoryStatusModal(true);
                           }}
-                        />
-                        <span className="slider round" />
-                      </label>
-                    </td>
+                      />
+                      <span className="slider round"></span>
+                    </label>
+                  </td>
 
                     <td>{item.sequence ?? "-"}</td>
 
@@ -1642,7 +1647,7 @@ const availableServiceCategories = ServiceCategoryData.filter(
               </div>
 
               <div className="form-group">
-                <label>Upload Image</label>
+                <label>Upload Image <span className="required">*</span></label>
 
                 <div className="upload-box1">
                   <input

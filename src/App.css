@@ -480,7 +480,7 @@
 }
 
 .status-filter {
-  padding: 6px 10px;
+ padding: 12px 13px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   font-size: 11px;
@@ -12468,4 +12468,150 @@ flex-direction:column;
 }
 .table-responsive {
   overflow: visible !important;
+}
+/* Vendor pagination - screenshot-matched style */
+.vendor-pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  padding: 24px 10px;
+  margin-top: 12px;
+  border-top: 1px solid #e5e9ed;
+}
+
+.vendor-pagination-info {
+  color: #75839b;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.vendor-pagination-info strong {
+  color: #35445d;
+  font-weight: 700;
+}
+
+.vendor-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.vendor-page-number {
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #475569;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vendor-page-number:hover:not(:disabled) {
+  background: #eaf3f0;
+  color: #0D614E;
+}
+
+.vendor-page-number.active {
+  background: #0D614E;
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(13, 97, 78, 0.2);
+}
+
+.vendor-page-number:disabled {
+  cursor: default;
+}
+
+.vendor-page-dots {
+  width: 35px;
+  text-align: center;
+  color: #526078;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.vendor-page-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #e5e9ed;
+  border-radius: 50%;
+  background: #fff;
+  color: #64748b;
+  font-size: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.vendor-page-arrow:hover:not(:disabled) {
+  border-color: #0D614E;
+  color: #0D614E;
+  background: #f4faf7;
+}
+
+.vendor-page-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Clear search and status filters */
+.vendor-clear-filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 15px;
+  border: 1px solid #e5bcbc;
+  border-radius: 7px;
+  background: #fff;
+  color: #d34b4b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.vendor-clear-filter-btn:hover:not(:disabled) {
+  background: #fff1f1;
+  border-color: #d34b4b;
+}
+
+.vendor-clear-filter-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .vendor-pagination-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .vendor-pagination {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .vendor-page-number {
+    width: 38px;
+    height: 40px;
+  }
+
+  .vendor-page-arrow {
+    width: 40px;
+    height: 40px;
+  }
 }

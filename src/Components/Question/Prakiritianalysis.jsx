@@ -15,7 +15,6 @@ const Prakiritianalysis = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
-  // Search State
   const [SearchPrakriti, setSearchPrakriti] = useState("");
 
   const [formData, setFormData] = useState({
@@ -38,6 +37,31 @@ const Prakiritianalysis = () => {
     { length: totalPages },
     (_, i) => i + 1
   );
+
+  // RESET FORM
+  const resetForm = () => {
+    setFormData({
+      prakriti_type: "",
+      core_essence: "",
+      dos: [""],
+      donts: [""],
+    });
+
+    setEditId(null);
+  };
+
+  // CLOSE ADD / EDIT MODAL
+  const closeModal = () => {
+    setOpenModal(false);
+    resetForm();
+  };
+
+  // CLOSE MODAL ON OUTSIDE CLICK
+  const handleModalOutsideClick = (e) => {
+    if (e.target === e.currentTarget) {
+      closeModal();
+    }
+  };
 
   // GET PRAKRITI DATA
   const getPrakritiData = async (page = 1) => {
@@ -250,18 +274,6 @@ const Prakiritianalysis = () => {
     setOpenModal(true);
   };
 
-  // RESET FORM
-  const resetForm = () => {
-    setFormData({
-      prakriti_type: "",
-      core_essence: "",
-      dos: [""],
-      donts: [""],
-    });
-
-    setEditId(null);
-  };
-
   // ADD / UPDATE PRAKRITI
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -334,8 +346,7 @@ const Prakiritianalysis = () => {
           : "Prakriti Added Successfully"
       );
 
-      resetForm();
-      setOpenModal(false);
+      closeModal();
       getPrakritiData();
     } catch (error) {
       console.error("Error:", error);
@@ -424,9 +435,7 @@ const Prakiritianalysis = () => {
       {/* SEARCH AND ADD BUTTON */}
       <div className="Question-controls">
         <div className="filter-question">
-
           <div className="prakriti-search-wrapper">
-
             <div className="prakriti-search-box">
               <input
                 type="text"
@@ -450,7 +459,6 @@ const Prakiritianalysis = () => {
               )}
             </div>
 
-            {/* CLEAR FILTER BUTTON */}
             {SearchPrakriti && (
               <button
                 type="button"
@@ -460,7 +468,6 @@ const Prakiritianalysis = () => {
                 Clear Filters
               </button>
             )}
-
           </div>
 
           <button
@@ -504,9 +511,7 @@ const Prakiritianalysis = () => {
               filteredPrakritiData.map((item, index) => (
                 <tr key={item.id}>
                   <td>{index + 1}</td>
-
                   <td>{item.prakriti_type}</td>
-
                   <td>{item.content?.core_essence}</td>
 
                   <td>
@@ -558,7 +563,7 @@ const Prakiritianalysis = () => {
           </tbody>
         </table>
 
-        {/* PAGINATION - EXISTING STRUCTURE */}
+        {/* PAGINATION */}
         {totalPages > 1 && (
           <div className="pagination">
             <button
@@ -597,9 +602,14 @@ const Prakiritianalysis = () => {
 
       {/* ADD / EDIT MODAL */}
       {openModal && (
-        <div className="prakriti-modal-overlay">
-          <div className="prakriti-modal">
-
+        <div
+          className="prakriti-modal-overlay"
+          onClick={handleModalOutsideClick}
+        >
+          <div
+            className="prakriti-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="prakriti-modal-header">
               <div>
                 <h2>
@@ -614,10 +624,7 @@ const Prakiritianalysis = () => {
               <button
                 type="button"
                 className="close-btn"
-                onClick={() => {
-                  setOpenModal(false);
-                  resetForm();
-                }}
+                onClick={closeModal}
               >
                 ✕
               </button>
@@ -627,7 +634,6 @@ const Prakiritianalysis = () => {
               onSubmit={handleSubmit}
               className="prakriti-form"
             >
-
               {/* PRAKRITI TYPE */}
               <div className="form-group">
                 <label>Prakriti Type</label>
@@ -684,19 +690,14 @@ const Prakiritianalysis = () => {
                           placeholder={`Enter do ${index + 1}`}
                           value={item}
                           onChange={(e) =>
-                            handleDosChange(
-                              index,
-                              e.target.value
-                            )
+                            handleDosChange(index, e.target.value)
                           }
                         />
 
                         <button
                           type="button"
                           className="delete-icon-btn"
-                          onClick={() =>
-                            removeDosField(index)
-                          }
+                          onClick={() => removeDosField(index)}
                         >
                           <FiTrash2 />
                         </button>
@@ -734,19 +735,14 @@ const Prakiritianalysis = () => {
                           placeholder={`Enter don't ${index + 1}`}
                           value={item}
                           onChange={(e) =>
-                            handleDontsChange(
-                              index,
-                              e.target.value
-                            )
+                            handleDontsChange(index, e.target.value)
                           }
                         />
 
                         <button
                           type="button"
                           className="delete-icon-btn"
-                          onClick={() =>
-                            removeDontsField(index)
-                          }
+                          onClick={() => removeDontsField(index)}
                         >
                           <FiTrash2 />
                         </button>
@@ -761,10 +757,7 @@ const Prakiritianalysis = () => {
                 <button
                   type="button"
                   className="cancel-btn"
-                  onClick={() => {
-                    setOpenModal(false);
-                    resetForm();
-                  }}
+                  onClick={closeModal}
                 >
                   Cancel
                 </button>
@@ -787,13 +780,11 @@ const Prakiritianalysis = () => {
       {deleteModal && (
         <div className="modal">
           <div className="modal-content">
-
             <h3>
               Are you sure you want to delete this Prakriti?
             </h3>
 
             <div className="form-buttons">
-
               <button
                 className="otp-btn verify-btn"
                 onClick={() => handleDelete(deleteId)}
@@ -809,7 +800,6 @@ const Prakiritianalysis = () => {
               >
                 No
               </button>
-
             </div>
           </div>
         </div>

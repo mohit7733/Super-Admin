@@ -5,7 +5,9 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
+
 import { useNavigate } from "react-router-dom";
+
 import {
   FaEye,
   FaStar,
@@ -19,6 +21,7 @@ import {
   FaCalendarAlt,
   FaSyncAlt,
 } from "react-icons/fa";
+
 import { toast } from "react-toastify";
 
 import BASE_URL from "../../../Base";
@@ -45,12 +48,11 @@ const Doctorreview = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
   const navigate = useNavigate();
 
-  // Normalize API status
+  // Normalize status
   const getStatus = (review) => {
     const status = String(review?.status || "")
       .toLowerCase()
@@ -88,7 +90,7 @@ const Doctorreview = () => {
     });
   };
 
-  // Fetch all available API pages
+  // Fetch all doctor reviews
   const getDoctorReviewList = useCallback(async () => {
     const token = sessionStorage.getItem("superadmin_token");
 
@@ -103,8 +105,6 @@ const Doctorreview = () => {
 
     try {
       let page = 1;
-      let totalCount = null;
-      let totalPagesFromApi = null;
 
       const allReviews = [];
       const fetchedIds = new Set();
@@ -144,43 +144,51 @@ const Doctorreview = () => {
           );
         }
 
+        // Support both API response formats
         const reviews = Array.isArray(data.data)
           ? data.data
           : Array.isArray(data.data?.results)
           ? data.data.results
           : [];
 
-        if (totalCount === null && data.count !== undefined) {
-          totalCount = Number(data.count);
+        console.log("API Page:", page);
+        console.log("API Count:", data.count);
+        console.log("Records Received:", reviews.length);
 
-          if (Number.isFinite(totalCount)) {
-            totalPagesFromApi = Math.ceil(
-              totalCount / PAGE_SIZE
-            );
-          }
-        }
-
+        // Add only unique records
         reviews.forEach((review) => {
-          if (review?.id && !fetchedIds.has(review.id)) {
-            fetchedIds.add(review.id);
+          if (
+            review?.id !== undefined &&
+            review?.id !== null &&
+            !fetchedIds.has(String(review.id))
+          ) {
+            fetchedIds.add(String(review.id));
             allReviews.push(review);
           }
         });
 
-        // Stop when all API pages have been fetched
-        if (totalPagesFromApi !== null) {
-          if (page >= totalPagesFromApi) break;
-        } else {
-          if (reviews.length < PAGE_SIZE) break;
+        // Stop when API returns no records
+        if (reviews.length === 0) {
+          break;
         }
 
-        if (reviews.length === 0) break;
+        // Stop when there are fewer records than API page size
+        if (reviews.length < PAGE_SIZE) {
+          break;
+        }
 
         page += 1;
       }
 
+      console.log("Total Unique Reviews:", allReviews.length);
+      console.log(
+        "Actual Frontend Pages:",
+        Math.ceil(allReviews.length / PAGE_SIZE)
+      );
+
       setDoctorReviewData(allReviews);
       setCurrentPage(1);
+
     } catch (error) {
       console.error("Error fetching doctor reviews:", error);
 
@@ -192,6 +200,7 @@ const Doctorreview = () => {
       toast.error(
         error.message || "Failed to fetch review data"
       );
+
     } finally {
       setLoadingDoctorReview(false);
     }
@@ -201,14 +210,7 @@ const Doctorreview = () => {
     getDoctorReviewList();
   }, [getDoctorReviewList]);
 
-  // Statistics intentionally kept at zero for now
-  const stats = {
-    total: 0,
-    active: 0,
-    inactive: 0,
-  };
-
-  // Search and filter the COMPLETE fetched dataset
+  // Search and status filtering
   const filteredReviews = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
 
@@ -242,16 +244,24 @@ const Doctorreview = () => {
     });
   }, [DoctorReviewData, searchTerm, statusFilter]);
 
-  // Reset to first page whenever search or filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter]);
-
-  // Pagination is applied AFTER search and filtering
+  // Calculate pages from actual filtered records
   const totalPages = Math.ceil(
     filteredReviews.length / PAGE_SIZE
   );
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  // Correct page if records are reduced
+  useEffect(() => {
+    if (currentPage > Math.max(1, totalPages)) {
+      setCurrentPage(Math.max(1, totalPages));
+    }
+  }, [currentPage, totalPages]);
+
+  // Pagination after filtering
   const paginatedReviews = useMemo(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE;
 
@@ -261,14 +271,18 @@ const Doctorreview = () => {
     );
   }, [filteredReviews, currentPage]);
 
-  // Keep the current page valid when the dataset changes
-  useEffect(() => {
-    if (totalPages === 0 && currentPage !== 1) {
-      setCurrentPage(1);
-    } else if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
+  // Statistics
+  const stats = useMemo(() => {
+    return {
+      total: DoctorReviewData.length,
+      active: DoctorReviewData.filter(
+        (item) => getStatus(item) === "active"
+      ).length,
+      inactive: DoctorReviewData.filter(
+        (item) => getStatus(item) === "inactive"
+      ).length,
+    };
+  }, [DoctorReviewData]);
 
   // Clear filters
   const clearFilters = () => {
@@ -317,7 +331,8 @@ const Doctorreview = () => {
       return;
     }
 
-    const action = status === "active" ? "active" : "inactive";
+    const action =
+      status === "active" ? "active" : "inactive";
 
     if (action === "inactive" && !rejectionReason.trim()) {
       toast.error("Reason is required.");
@@ -366,9 +381,9 @@ const Doctorreview = () => {
       if (!response.ok || data?.success === false) {
         throw new Error(
           data?.errors?.action?.[0] ||
-            data?.errors?.reason?.[0] ||
-            data?.message ||
-            "Failed to update review status."
+          data?.errors?.reason?.[0] ||
+          data?.message ||
+          "Failed to update review status."
         );
       }
 
@@ -383,11 +398,12 @@ const Doctorreview = () => {
       setReason("");
       setSelectedItem(null);
 
-      // Refresh the complete dataset after updating status
       await getDoctorReviewList();
+
     } catch (error) {
       console.error("Error updating review status:", error);
       toast.error(error.message || "Something went wrong.");
+
     } finally {
       setUpdatingId(null);
     }
@@ -405,6 +421,7 @@ const Doctorreview = () => {
     confirmStatusChange("inactive", reason.trim());
   };
 
+  // Close reject modal
   const closeRejectModal = () => {
     if (updatingId !== null) return;
 
@@ -413,6 +430,7 @@ const Doctorreview = () => {
     setReason("");
   };
 
+  // Close active confirmation modal
   const closeActiveConfirmModal = () => {
     if (updatingId !== null) return;
 
@@ -529,7 +547,6 @@ const Doctorreview = () => {
             }
           >
             <option value="all">All Status</option>
-          
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
@@ -575,14 +592,8 @@ const Doctorreview = () => {
           <tbody>
             {LoadingDoctorReview ? (
               <tr>
-                <td
-                  colSpan="7"
-                  style={{
-                    textAlign: "center",
-                    padding: 30,
-                  }}
-                >
-                  Loading all doctor reviews...
+                <td colSpan="7" style={{ textAlign: "center", padding: 30 }}>
+                  Loading doctor reviews...
                 </td>
               </tr>
             ) : ErrorDoctorReview ? (
@@ -641,10 +652,7 @@ const Doctorreview = () => {
                       disabled={updatingId === item.id}
                       value={getStatus(item)}
                       onChange={(event) =>
-                        handleStatusChange(
-                          item,
-                          event.target.value
-                        )
+                        handleStatusChange(item, event.target.value)
                       }
                       className="status-dropdown"
                     >
@@ -669,13 +677,7 @@ const Doctorreview = () => {
               ))
             ) : (
               <tr>
-                <td
-                  colSpan="7"
-                  style={{
-                    textAlign: "center",
-                    padding: 24,
-                  }}
-                >
+                <td colSpan="7" style={{ textAlign: "center", padding: 24 }}>
                   {searchTerm || statusFilter !== "all"
                     ? "No reviews match your search or filter."
                     : "No doctor reviews found."}
@@ -710,9 +712,6 @@ const Doctorreview = () => {
             )}
             {" of "}
             {filteredReviews.length} reviews
-            {(searchTerm || statusFilter !== "all") 
-}
-         
           </div>
 
           <div
@@ -724,26 +723,22 @@ const Doctorreview = () => {
           >
             <button
               type="button"
-              disabled={currentPage === 1}
+              disabled={currentPage <= 1}
               onClick={() =>
-                setCurrentPage((prev) =>
-                  Math.max(1, prev - 1)
-                )
+                setCurrentPage((prev) => Math.max(1, prev - 1))
               }
             >
               Previous
             </button>
 
             <span>
-              Page {totalPages === 0 ? 0 : currentPage} of{" "}
-              {totalPages}
+              Page {totalPages === 0 ? 0 : currentPage} of {totalPages}
             </span>
 
             <button
               type="button"
               disabled={
-                totalPages === 0 ||
-                currentPage >= totalPages
+                totalPages === 0 || currentPage >= totalPages
               }
               onClick={() =>
                 setCurrentPage((prev) =>
@@ -801,14 +796,10 @@ const Doctorreview = () => {
 
             <div className="active-confirm-review-info">
               <span>Patient Name</span>
-              <strong>
-                {selectedItem.patient_name || "N/A"}
-              </strong>
+              <strong>{selectedItem.patient_name || "N/A"}</strong>
 
               <span>Doctor Name</span>
-              <strong>
-                {selectedItem.doctor_name || "N/A"}
-              </strong>
+              <strong>{selectedItem.doctor_name || "N/A"}</strong>
             </div>
 
             <div className="active-confirm-actions">
@@ -866,8 +857,8 @@ const Doctorreview = () => {
             </h2>
 
             <p className="reason-subtitle">
-              Please provide a reason for marking this doctor
-              review inactive.
+              Please provide a reason for marking this doctor review
+              inactive.
             </p>
 
             <div className="vendor-info-card reject-card">
@@ -895,9 +886,7 @@ const Doctorreview = () => {
                 <textarea
                   className="reason-box reject-reason-box"
                   value={reason}
-                  onChange={(event) =>
-                    setReason(event.target.value)
-                  }
+                  onChange={(event) => setReason(event.target.value)}
                   placeholder="Enter reason for marking this review inactive..."
                   rows={4}
                   disabled={updatingId !== null}
@@ -906,12 +895,10 @@ const Doctorreview = () => {
               </div>
 
               <div className="info-box reject-info-box">
-                <span className="infos-icon reject-infos-icon">
-                  !
-                </span>
+                <span className="infos-icon reject-infos-icon">!</span>
                 <span>
-                  The reason will be submitted along with the
-                  inactive status.
+                  The reason will be submitted along with the inactive
+                  status.
                 </span>
               </div>
 
@@ -928,9 +915,7 @@ const Doctorreview = () => {
                 <button
                   type="submit"
                   className="approve-btn rejects-btn"
-                  disabled={
-                    !reason.trim() || updatingId !== null
-                  }
+                  disabled={!reason.trim() || updatingId !== null}
                 >
                   {updatingId !== null
                     ? "Updating..."

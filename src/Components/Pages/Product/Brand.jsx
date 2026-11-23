@@ -284,6 +284,13 @@ const Brand = () => {
       newErrors.name = "Brand name is required";
     }
 
+    if (
+      String(BrandForm.sequence).trim() === "" ||
+      !Number.isInteger(Number(BrandForm.sequence))
+    ) {
+      newErrors.sequence = "Sequence is required and must be a valid integer";
+    }
+
     if (!BrandForm.logo) {
       newErrors.logo = "Brand logo is required";
     }
@@ -323,7 +330,7 @@ const Brand = () => {
             name: BrandForm.name.trim(),
             description: BrandForm.description,
             is_active: BrandForm.is_active,
-            sequence: BrandForm.sequence,
+            sequence: Number(BrandForm.sequence),
             logo: logoUrl,
           }),
         }
@@ -344,8 +351,18 @@ const Brand = () => {
         resetBrandForm();
         await getbrandlist();
       } else {
+        const apiErrors = data?.errors || {};
+        setAddErrors((prev) => ({
+          ...prev,
+          ...(apiErrors.name?.[0] ? { name: apiErrors.name[0] } : {}),
+          ...(apiErrors.sequence?.[0]
+            ? { sequence: apiErrors.sequence[0] }
+            : {}),
+        }));
+
         toast.error(
-          data?.errors?.name?.[0] ||
+          apiErrors.sequence?.[0] ||
+            apiErrors.name?.[0] ||
             data?.message ||
             "Failed to add brand"
         );
@@ -366,6 +383,13 @@ const Brand = () => {
 
     if (!editForm.name.trim()) {
       newErrors.name = "Brand name is required";
+    }
+
+    if (
+      String(editForm.sequence).trim() === "" ||
+      !Number.isInteger(Number(editForm.sequence))
+    ) {
+      newErrors.sequence = "Sequence is required and must be a valid integer";
     }
 
     setEditErrors(newErrors);
@@ -407,7 +431,7 @@ const Brand = () => {
             name: editForm.name.trim(),
             description: editForm.description,
             is_active: editForm.is_active,
-            sequence: editForm.sequence,
+            sequence: Number(editForm.sequence),
             logo: logoUrl,
           }),
         }
@@ -427,8 +451,18 @@ const Brand = () => {
         setEditModal(false);
         await getbrandlist();
       } else {
+        const apiErrors = data?.errors || {};
+        setEditErrors((prev) => ({
+          ...prev,
+          ...(apiErrors.name?.[0] ? { name: apiErrors.name[0] } : {}),
+          ...(apiErrors.sequence?.[0]
+            ? { sequence: apiErrors.sequence[0] }
+            : {}),
+        }));
+
         toast.error(
-          data?.errors?.name?.[0] ||
+          apiErrors.sequence?.[0] ||
+            apiErrors.name?.[0] ||
             data?.message ||
             "Failed to update brand"
         );
@@ -925,15 +959,26 @@ const Brand = () => {
               </div>
 
               <div className="form-group">
-                <label>Sequence</label>
+                <label>
+                  Sequence <span className="required">*</span>
+                </label>
 
                 <input
                   type="number"
                   name="sequence"
+                  step="1"
                   value={BrandForm.sequence}
-                  onChange={handleBrandChange}
+                  onChange={(e) => {
+                    handleBrandChange(e);
+                    setAddErrors((prev) => ({ ...prev, sequence: "" }));
+                  }}
                   placeholder="Enter sequence"
+                  aria-invalid={Boolean(addErrors.sequence)}
                 />
+
+                {addErrors.sequence && (
+                  <p className="error-text">{addErrors.sequence}</p>
+                )}
               </div>
 
               <div className="form-group">
@@ -1115,15 +1160,23 @@ const Brand = () => {
               </div>
 
               <div className="form-group">
-                <label>Sequence</label>
+                <label>
+                  Sequence <span className="required">*</span>
+                </label>
 
                 <input
                   type="number"
                   name="sequence"
+                  step="1"
                   value={editForm.sequence}
                   onChange={handleEditChange}
                   placeholder="Enter sequence"
+                  aria-invalid={Boolean(editErrors.sequence)}
                 />
+
+                {editErrors.sequence && (
+                  <p className="error-text">{editErrors.sequence}</p>
+                )}
               </div>
 
               <div className="form-group">
