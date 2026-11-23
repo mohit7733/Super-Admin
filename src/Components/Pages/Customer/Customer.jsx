@@ -12,8 +12,8 @@ import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
 import { FaCalendarCheck } from "react-icons/fa";
-
-
+import { FaSyncAlt } from "react-icons/fa";
+import { FaFilter ,FaTimes} from "react-icons/fa";
 
 const userId = localStorage.getItem("USER_ID")
 
@@ -40,6 +40,7 @@ const initialFormErrors = {
 const Customers = () => {
   const [searchcustomerTerm, setSearchcustomerTerm] = useState("")
   const [customerData, setCustomerData] = useState([])
+  
   const [error, setCustomerError] = useState(null)
   const [Loading, setCustomerLoading] = useState(true)
   const [CustomerForm, setCustomerForm] = useState(initialCustomerFormState)
@@ -73,7 +74,22 @@ const[CustomerStatusModal,setCustomerStatusModal]=useState(false);
 const[IsUpdating,setIsUpdating]=useState(false);
 const [todayCount, setTodayCount] = useState(0);
 
+const formatDateTime = (date) => {
+  if (!date) return "N/A";
 
+  const parsedDate = new Date(date);
+
+  if (isNaN(parsedDate.getTime())) return "N/A";
+
+  return parsedDate.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
   
 
@@ -331,21 +347,56 @@ setSelectedCustomer(null);
         </div>
       </div>
 
-      <div className="controls-section">
-        <div className="search-wrapper">
-          <BsSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search customers by name, email, or phone..."
-            value={searchcustomerTerm}
-            onChange={(e) => setSearchcustomerTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
-        <div className="action-buttons">
-         
-        </div>
-      </div>
+    <div className="filter-category">
+  <div className="filter-controls">
+
+    <div className="search-wrapper">
+      <BsSearch className="search-icon" />
+
+      <input
+        type="text"
+        placeholder="Search customers by name, email, or phone..."
+        value={searchcustomerTerm}
+        onChange={(e) => {
+          setSearchcustomerTerm(e.target.value);
+          setCurrentPage(1);
+        }}
+        className="search-input"
+      />
+
+      {searchcustomerTerm && (
+        <button
+          type="button"
+          className="clear-search"
+          onClick={() => {
+            setSearchcustomerTerm("");
+            setCurrentPage(1);
+          }}
+          title="Clear Search"
+        >
+          <FaTimes />
+        </button>
+      )}
+    </div>
+
+    {searchcustomerTerm && (
+      <button
+        type="button"
+        className="clear-filters-btn"
+        title="Clear Filter"
+        onClick={() => {
+          setSearchcustomerTerm("");
+          setCurrentPage(1);
+          setOpenMenuId(null);
+          getCustomerList(1, "");
+        }}
+      >
+        <FiTrash2 />
+      </button>
+    )}
+
+  </div>
+</div>
 
       <div className="table-wrapper">
 
@@ -358,6 +409,7 @@ setSelectedCustomer(null);
               <th>Email</th>
               <th>Gender</th>
               <th>Phone Number</th>
+              <th>Created At</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
@@ -403,7 +455,10 @@ setSelectedCustomer(null);
                   <td>{customer.first_name||"N/A"} </td>
                   <td>{customer.email||"N/A"}</td>
                   <td>{customer.gender||"N/A"}</td>
-                  <td>{customer.verified_phone_number||"N/A"}</td>
+            <td>{customer.verified_phone_number||"N/A"}</td>
+              <td>
+  {formatDateTime(customer.created_at)}
+</td>    
   <td>
           <label className="switch">
             <input

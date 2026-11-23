@@ -211,19 +211,13 @@ const ConsultationRefundRequest = () => {
     getRefundRequests,
   ]);
 
-  /* =====================================================
-     VIEW
-  ===================================================== */
-
+  
   const handleView = (item) => {
     setOpenActionId(null);
     setViewModal(item);
   };
 
-  /* =====================================================
-     APPROVE
-  ===================================================== */
-
+ 
   const handleApprove = (item) => {
     setOpenActionId(null);
     setApproveModal(item);

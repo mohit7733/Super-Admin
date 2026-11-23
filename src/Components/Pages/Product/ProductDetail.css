@@ -1780,7 +1780,7 @@
    STATUS BADGES
    ============================================ */
 .status-badge {
-  display: inline-flex;
+  /* display: inline-flex; */
   align-items: center;
   gap: var(--space-xs);
   padding: 4px 16px;

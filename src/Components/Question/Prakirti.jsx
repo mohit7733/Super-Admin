@@ -941,8 +941,12 @@ const handleAddSubmit = async (e) => {
 
 
   {editModalOpen && (
-  <div className="prakriti-modal-overlay">
-    <div className="prakriti-modal">
+  <div className="prakriti-modal-overlay"
+  
+  onClick={() =>  setEditModalOpen(false)}
+  >
+    <div className="prakriti-modal"
+      onClick={(e) => e.stopPropagation()}>
 
       <div className="prakriti-modal-header">
         <div>
@@ -1254,9 +1258,14 @@ const handleAddSubmit = async (e) => {
 
 
    {AddQuestionModal && (
-  <div className="prakriti-modal-overlay">
-    <div className="prakriti-modal">
-
+   <div
+    className="prakriti-modal-overlay"
+    onClick={() => setAddQuestinModal(false)}
+  >
+    <div
+      className="prakriti-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="prakriti-modal-header">
         <div>
           <h2>Add Question</h2>
@@ -1365,7 +1374,7 @@ const handleAddSubmit = async (e) => {
   }}
 />
 
-  {/* IMAGE AREA */}
+
  {choice.image ? (
   <div className="selected-image-box">
 

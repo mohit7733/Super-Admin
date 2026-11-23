@@ -827,7 +827,7 @@ useEffect(()=>{
 </label>
 
 <label className="disease-dropdown-wrapper">
-Select Disease
+Select Disease<em>*</em>
 <div className="multi-select">
 
   <div

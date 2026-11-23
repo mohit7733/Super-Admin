@@ -736,7 +736,12 @@ const Medical = () => {
         }
 
         {AddformModal && (
-  <div className="modal">
+  <div className="modal"
+    onClick={() => {
+      setAddformModal(false);
+      setAddform(initalAddForm);
+    }}
+  >
     <form
       className="customer-form"
       onSubmit={(e) => {
@@ -866,7 +871,9 @@ const Medical = () => {
 )}
 
         {EditformModal && (
-          <div className="modal">
+          <div className="modal"
+          onClick={() => setEditformModal(false)}
+>
             <form
               className="customer-form"
               onSubmit={(e) => {

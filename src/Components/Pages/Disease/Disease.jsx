@@ -66,13 +66,14 @@ const Disease = () => {
   const [editForm, setEditForm] = useState({
     health_category_id: "",
     name: "",
+    code: "",
     alternate_name: "",
     description: "",
     prakriti: "",
     symptoms: [""],
     is_active: false,
     image_url: null,
-    sequence:"",
+    sequence: "",
   });
 
   const [formData, setFormData] = useState({
@@ -144,14 +145,18 @@ const filterData = (data, search, status, healthCategory) => {
     setEditForm({
       health_category_id: item.health_category_id || "",
       name: item.name || "",
+      code: item.code || "",
       alternate_name: item.alternate_name || "",
       description: item.description || "",
       prakriti: item.prakriti || "",
       symptoms: item.symptoms?.length ? item.symptoms : [""],
       is_active: item.is_active || false,
       image_url: item.image_url || null,
+      sequence: item.sequence ?? "",
     });
     setImageFile(null);
+    setDiseaseErrors({});
+    if (diseaseFileRef.current) diseaseFileRef.current.value = "";
     setEditModal(true);
   };
 
@@ -161,6 +166,7 @@ const filterData = (data, search, status, healthCategory) => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    setDiseaseErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleEditSymptom = (index, value) => {
@@ -238,6 +244,53 @@ const validateDiseaseForm = () => {
 
   return true;
 };
+
+  const validateEditDiseaseForm = () => {
+    const errors = {};
+
+    if (!editForm.health_category_id) {
+      errors.health_category_id = "Category is required";
+    }
+
+    if (!editForm.prakriti) {
+      errors.prakriti = "Prakriti is required";
+    }
+
+    if (!editForm.name || !editForm.name.trim()) {
+      errors.name = "Disease name is required";
+    }
+
+    const code = (editForm.code || "").trim();
+    if (!code) {
+      errors.code = "Disease code is required";
+    } else if (!/^[A-Z]{5}$/.test(code)) {
+      errors.code = "Disease code must be exactly 5 uppercase letters";
+    }
+
+    // Keep the existing image if present; if removed, a new image is required.
+    if (!editForm.image_url && !imageFile) {
+      errors.image = "Disease image is required";
+    }
+
+    const validSymptoms = (editForm.symptoms || []).filter(
+      (item) => item.trim() !== ""
+    );
+    if (validSymptoms.length === 0) {
+      errors.symptoms = "At least one symptom is required";
+    }
+
+    setDiseaseErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      toast.dismiss();
+      Object.values(errors).forEach((message, index) => {
+        setTimeout(() => toast.error(message), index * 100);
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   const validateCategoryForm = () => {
   let errors = {};
@@ -770,7 +823,14 @@ if (response.ok) {
   const handleUpdateDisease = async (e) => {
     e.preventDefault();
 
+    if (!validateEditDiseaseForm()) return;
+
     const token = sessionStorage.getItem("superadmin_token");
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
 
     try {
       setIsUpdating(true);
@@ -787,6 +847,7 @@ if (response.ok) {
       const payload = {
         health_category_id: editForm.health_category_id,
         name: editForm.name.trim(),
+        code: editForm.code.trim().toUpperCase(),
         alternate_name: editForm.alternate_name,
         description: editForm.description,
         prakriti: editForm.prakriti,
@@ -1208,7 +1269,7 @@ const exportToExcel = async () => {
           {(searchTerm || statusFilter !== "all" ||
   HealthCategoryFilter !== "all") && (
             <button className="clear-filters-btn" onClick={clearFilters}>
-              Clear Filters
+              <FiTrash2/>
             </button>
           )}
         </div>
@@ -1882,11 +1943,19 @@ const exportToExcel = async () => {
 
       
       {editModal && (
-        <div className="prakriti-modal-overlay" onClick={() => setEditModal(false)}>
+        <div className="prakriti-modal-overlay" onClick={() => {
+          setEditModal(false);
+          setDiseaseErrors({});
+          setImageFile(null);
+        }}>
           <div className="prakriti-modal" onClick={(e) => e.stopPropagation()}>
             <div className="prakriti-modal-header">
               <h2>Edit Disease</h2>
-              <button className="modal-close-btn" onClick={() => setEditModal(false)}>
+              <button className="modal-close-btn" onClick={() => {
+                setEditModal(false);
+                setDiseaseErrors({});
+                setImageFile(null);
+              }}>
                 ✕
               </button>
             </div>
@@ -1898,6 +1967,7 @@ const exportToExcel = async () => {
                   name="health_category_id"
                   value={editForm.health_category_id}
                   onChange={handleEditChange}
+                  className={diseaseErrors.health_category_id ? "error-input" : ""}
                 >
                   <option value="">Select Health Category</option>
               {HealthCategoryData
@@ -1910,6 +1980,9 @@ const exportToExcel = async () => {
     </option>
   ))}
                 </select>
+                {diseaseErrors.health_category_id && (
+                  <p className="error-text">{diseaseErrors.health_category_id}</p>
+                )}
               </div>
 
               <div className="form-group">
@@ -1918,6 +1991,7 @@ const exportToExcel = async () => {
                   name="prakriti"
                   value={editForm.prakriti}
                   onChange={handleEditChange}
+                  className={diseaseErrors.prakriti ? "error-input" : ""}
                 >
                   <option value="">Select Prakriti</option>
                   {prakritiTypes.map((prakriti, index) => (
@@ -1926,6 +2000,9 @@ const exportToExcel = async () => {
                     </option>
                   ))}
                 </select>
+                {diseaseErrors.prakriti && (
+                  <p className="error-text">{diseaseErrors.prakriti}</p>
+                )}
               </div>
 
               <div className="form-group">
@@ -1936,7 +2013,35 @@ const exportToExcel = async () => {
                   value={editForm.name}
                   placeholder="Enter disease name"
                   onChange={handleEditChange}
+                  className={diseaseErrors.name ? "error-input" : ""}
                 />
+                {diseaseErrors.name && (
+                  <p className="error-text">{diseaseErrors.name}</p>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Disease Code <span className="required">*</span></label>
+                <input
+                  type="text"
+                  name="code"
+                  value={editForm.code}
+                  placeholder="Enter Disease Code (A-Z, 5 Letters)"
+                  maxLength={5}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase();
+                    if (/[^A-Z]/.test(value)) {
+                      toast.error("Disease code should contain only letters (A-Z)");
+                      return;
+                    }
+                    setEditForm((prev) => ({ ...prev, code: value.slice(0, 5) }));
+                    setDiseaseErrors((prev) => ({ ...prev, code: "" }));
+                  }}
+                  className={diseaseErrors.code ? "error-input" : ""}
+                />
+                {diseaseErrors.code && (
+                  <p className="error-text">{diseaseErrors.code}</p>
+                )}
               </div>
 
               <div className="form-group">
@@ -1978,7 +2083,13 @@ const exportToExcel = async () => {
                           type="text"
                           placeholder={`Enter symptom ${index + 1}`}
                           value={item}
-                          onChange={(e) => handleEditSymptom(index, e.target.value)}
+                          onChange={(e) => {
+                            handleEditSymptom(index, e.target.value);
+                            if (e.target.value.trim()) {
+                              setDiseaseErrors((prev) => ({ ...prev, symptoms: "" }));
+                            }
+                          }}
+                          className={diseaseErrors.symptoms ? "error-input" : ""}
                         />
                         <button
                           type="button"
@@ -1991,11 +2102,14 @@ const exportToExcel = async () => {
                     </div>
                   ))}
                 </div>
+                {diseaseErrors.symptoms && (
+                  <p className="error-text">{diseaseErrors.symptoms}</p>
+                )}
               </div>
 
               <div className="form-group">
-                <label>Disease Image</label>
-                <div className="upload-box1">
+                <label>Disease Image <span className="required">*</span></label>
+                <div className={`upload-box1 ${diseaseErrors.image ? "error-input" : ""}`}>
                   <input
                     ref={diseaseFileRef}
                     type="file"
@@ -2003,9 +2117,10 @@ const exportToExcel = async () => {
                     id="editDiseaseUpload"
                     style={{ display: "none" }}
                     onChange={(e) => {
-                      const file = e.target.files[0];
+                      const file = e.target.files?.[0];
                       if (file) {
                         setImageFile(file);
+                        setDiseaseErrors((prev) => ({ ...prev, image: "" }));
                       }
                     }}
                   />
@@ -2051,6 +2166,7 @@ const exportToExcel = async () => {
                           className="delete-btn-preview"
                           onClick={() => {
                             setImageFile(null);
+                            setDiseaseErrors((prev) => ({ ...prev, image: "Disease image is required" }));
                             setEditForm((prev) => ({
                               ...prev,
                               image_url: null,
@@ -2073,6 +2189,9 @@ const exportToExcel = async () => {
                     </label>
                   )}
                 </div>
+                {diseaseErrors.image && (
+                  <p className="error-text">{diseaseErrors.image}</p>
+                )}
               </div>
 
               <div className="form-group">
@@ -2089,7 +2208,11 @@ const exportToExcel = async () => {
               </div>
 
               <div className="modal-footer">
-                <button type="button" className="cancel-btn" onClick={() => setEditModal(false)}>
+                <button type="button" className="cancel-btn" onClick={() => {
+                  setEditModal(false);
+                  setDiseaseErrors({});
+                  setImageFile(null);
+                }}>
                   Cancel
                 </button>
                 <button type="submit" className="save-btn" disabled={isUpdating}>

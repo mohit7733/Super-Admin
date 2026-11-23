@@ -161,7 +161,7 @@ const CustomerDietPlanPurchase = ({ patientId }) => {
     });
   };
 
-  // FORMAT AMOUNT
+ 
   const formatAmount = (amount, currency = "INR") => {
     if (amount === null || amount === undefined || amount === "") {
       return "N/A";

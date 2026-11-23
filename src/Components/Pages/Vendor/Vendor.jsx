@@ -499,7 +499,42 @@ console.log("Vendor list fetched");
     }
   };
 
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const getPaginationItems = () => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    if (currentpage <= 2) {
+      return [1, 2, "...", totalPages];
+    }
+
+    if (currentpage >= totalPages - 1) {
+      return [1, "...", totalPages - 1, totalPages];
+    }
+
+    return [
+      1,
+      "...",
+      currentpage - 1,
+      currentpage,
+      currentpage + 1,
+      "...",
+      totalPages,
+    ];
+  };
+
+  const startItem = totalCount === 0
+    ? 0
+    : (currentpage - 1) * pageSize + 1;
+  const endItem = Math.min(currentpage * pageSize, totalCount);
+  const hasActiveFilters = searchTerm.trim() !== "" || statusFilter !== "";
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("");
+    setcurentpage(1);
+    setOpenMenuId(null);
+  };
 
 
   const exportToCSV = () => {
@@ -606,42 +641,74 @@ console.log("Vendor list fetched");
           </div>
         </div>
       </div>
-     <div className="controls-section">
-  <div className="search-wrapper">
-    <BsSearch className="search-icon" />
+   
+<div className="filter-category">
+  <div className="filter-controls">
 
-    <input
-      type="text"
-      placeholder="Search vendors by store name..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="search-input"
-    />
+    <div className="search-wrapper">
+      <BsSearch className="search-icon" />
+
+      <input
+        type="text"
+        placeholder="Search vendors by store name..."
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setcurentpage(1);
+        }}
+        className="search-input"
+      />
+
+      {searchTerm && (
+        <button
+          type="button"
+          className="clear-search"
+          onClick={() => {
+            setSearchTerm("");
+            setcurentpage(1);
+          }}
+          title="Clear Search"
+        >
+          <IoClose />
+        </button>
+      )}
+    </div>
+
+  
+
+    <select
+      className="status-filter"
+      value={statusFilter}
+      onChange={(e) => {
+        setStatusFilter(e.target.value);
+        setcurentpage(1);
+      }}
+    >
+      <option value="">All Statuses</option>
+      <option value="pending">Pending</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+      <option value="suspended">Suspended</option>
+    </select>
+      {(searchTerm || statusFilter) && (
+      <button
+        type="button"
+        className="clear-filters-btn"
+        title="Clear Filters"
+        onClick={() => {
+          setSearchTerm("");
+          setStatusFilter("");
+          setcurentpage(1);
+          setOpenMenuId(null);
+        }}
+      >
+        <FiTrash2 />
+      </button>
+    )}
+
   </div>
-
- 
-<div className="action-buttons">
-   <select
-    className="status-filter"
-    value={statusFilter}
-    onChange={(e) => {
-      setStatusFilter(e.target.value);
-      setcurentpage(1);
-    }}
-  >
-    <option value="">All Statuses</option>
-    <option value="pending">Pending</option>
-    <option value="approved">Approved</option>
-    <option value="rejected">Rejected</option>
-    <option value="suspended">Suspended</option>
-  </select>
 </div>
 
- 
-
-
- 
-</div>
      <div className="table-wrapper">
   <table className="data-table" ref={bulktableRef}>
     <thead>
@@ -795,39 +862,112 @@ console.log("Vendor list fetched");
     </tbody>
   </table>
 
+<div className="order-pagination-container">
+
+  <div className="order-pagination-info">
+    Showing <strong>{startItem}</strong> to{" "}
+    <strong>{endItem}</strong> of{" "}
+    <strong>{totalCount}</strong> vendors
+  </div>
+
   {totalPages > 1 && (
-    <div className="pagination">
+    <div className="order-pagination-buttons">
+
+      {/* PREVIOUS */}
       <button
-        onClick={() => getVendorList(currentpage - 1, searchTerm,statusFilter)}
-        disabled={!previousPage}
+        type="button"
+        className="order-pagination-btn order-pagination-arrow"
+        onClick={() =>
+          getVendorList(currentpage - 1, searchTerm, statusFilter)
+        }
+        disabled={!previousPage || loading}
+        aria-label="Previous page"
       >
-        Prev
+        ‹
       </button>
 
-      {pages.map((page) => (
+      {/* FIRST PAGE */}
+      <button
+        type="button"
+        className={`order-pagination-btn ${
+          currentpage === 1 ? "order-pagination-active" : ""
+        }`}
+        onClick={() => getVendorList(1, searchTerm, statusFilter)}
+        disabled={loading || currentpage === 1}
+      >
+        1
+      </button>
+
+      {/* LEFT DOTS */}
+      {currentpage > 3 && (
+        <span className="order-pagination-dots">...</span>
+      )}
+
+      {/* MIDDLE PAGES */}
+      {Array.from(
+        { length: totalPages },
+        (_, index) => index + 1
+      )
+        .filter(
+          (page) =>
+            page !== 1 &&
+            page !== totalPages &&
+            page >= currentpage - 1 &&
+            page <= currentpage + 1
+        )
+        .map((page) => (
+          <button
+            type="button"
+            key={page}
+            className={`order-pagination-btn ${
+              currentpage === page ? "order-pagination-active" : ""
+            }`}
+            onClick={() =>
+              getVendorList(page, searchTerm, statusFilter)
+            }
+            disabled={loading || currentpage === page}
+          >
+            {page}
+          </button>
+        ))}
+
+      {/* RIGHT DOTS */}
+      {currentpage < totalPages - 2 && (
+        <span className="order-pagination-dots">...</span>
+      )}
+
+      {/* LAST PAGE */}
+      {totalPages > 1 && (
         <button
-          key={page}
-          onClick={() => getVendorList(page, searchTerm,statusFilter)}
-          style={{
-            fontWeight: currentpage === page ? "bold" : "normal",
-            background:
-              currentpage === page ? "#0D614E" : "#fff",
-            color:
-              currentpage === page ? "#fff" : "#0D614E",
-          }}
+          type="button"
+          className={`order-pagination-btn ${
+            currentpage === totalPages ? "order-pagination-active" : ""
+          }`}
+          onClick={() =>
+            getVendorList(totalPages, searchTerm, statusFilter)
+          }
+          disabled={loading || currentpage === totalPages}
         >
-          {page}
+          {totalPages}
         </button>
-      ))}
+      )}
 
+      {/* NEXT */}
       <button
-        onClick={() => getVendorList(currentpage + 1, searchTerm)}
-        disabled={!Nextpage}
+        type="button"
+        className="order-pagination-btn order-pagination-arrow"
+        onClick={() =>
+          getVendorList(currentpage + 1, searchTerm, statusFilter)
+        }
+        disabled={!Nextpage || loading}
+        aria-label="Next page"
       >
-        Next
+        ›
       </button>
+
     </div>
   )}
+</div>
 </div>
       {/* {modalOpen && (
         <div className="modal">
@@ -1263,7 +1403,10 @@ console.log("Vendor list fetched");
 
 
        {VendoropenModal && (
-        <div className="modal-overlay" onClick={() => setVendorData(false)}>
+     <div
+  className="modal-overlay"
+  onClick={() => setVendorModal(false)}
+>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Uploaded Documents</h3>
 
@@ -1306,9 +1449,12 @@ console.log("Vendor list fetched");
 ) : (
   <p className="no-docs">No documents uploaded.</p>
 )}
-            <button className="close1-btn1" onClick={() => setVendorModal(false)}>
-              Close
-            </button>
+           <button
+  className="close1-btn1"
+  onClick={() => setVendorModal(false)}
+>
+  Close
+</button>
           </div>
         </div>
       )} 
@@ -1568,4 +1714,27 @@ disabled={isApproving || !SelectedVendor ?.policies_accepted}
 }
 
 export default Vendor;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
