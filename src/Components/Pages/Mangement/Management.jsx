@@ -261,8 +261,8 @@ const handleAppointmentAction = async (action) => {
   return (
     <>
      <div className="page-header">
-        <h1>Appointment Management</h1>
-        <p className="page-paragraph"> Manage Apointment details,Reschedule ,Cancelled appointment</p>
+        <h1>Cancellation Requests Management</h1>
+        <p className="page-paragraph"> Manage all cancellation requests</p>
       </div>
     
 <div className="vendors-stats stats2-grid">

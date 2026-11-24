@@ -3,28 +3,32 @@ import React, { useEffect, useState } from "react";
 import {
   FaTimesCircle,
   FaClipboardList,
-  FaCheckCircle,
   FaClock,
   FaTimes,
 } from "react-icons/fa";
-import { MdEventRepeat, MdClose } from "react-icons/md";
+import { MdEventRepeat } from "react-icons/md";
 import { BsSearch } from "react-icons/bs";
+import { FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
-
 
 const ManagementHistory = () => {
   const navigate = useNavigate();
 
- 
+  // =====================================
+  // STATES
+  // =====================================
 
   const [appointmentSearch, setAppointmentSearch] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedStartTime, setSelectedStartTime] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
 
   const [appointmentData, setAppointmentData] = useState([]);
   const [appointmentLoading, setAppointmentLoading] = useState(false);
-  
   const [appointmentError, setAppointmentError] = useState(null);
 
   const [consultationCounts, setConsultationCounts] = useState({
@@ -35,18 +39,34 @@ const ManagementHistory = () => {
     completed: 0,
     missed: 0,
   });
+
   const [currentPage, setCurrentPage] = useState(1);
-const pageSize = 10;
+  const pageSize = 10;
+  const [totalCount, setTotalCount] = useState(0);
 
-const [totalCount, setTotalCount] = useState(0);
-const [nextPage, setNextPage] = useState(null);
-const [previousPage, setPreviousPage] = useState(null);
+  const totalPages = Math.ceil(totalCount / pageSize);
 
-const totalPages = Math.ceil(totalCount / pageSize);
+  // =====================================
+  // STATUS OPTIONS
+  // =====================================
 
-  
+  const statusOptions = [
+    { label: "Pending", value: "pending" },
+    { label: "Confirmed", value: "confirmed" },
+    { label: "Cancelled", value: "cancelled" },
+    { label: "Completed", value: "completed" },
+    { label: "Reschedule", value: "reschedule" },
+    { label: "Rescheduled", value: "rescheduled" },
+    {
+      label: "Cancellation Requested",
+      value: "cancellation_requested",
+    },
+    { label: "Missed", value: "missed" },
+  ];
 
-  
+  // =====================================
+  // FORMAT DATE
+  // =====================================
 
   const formatDate = (date) => {
     if (!date) return "-";
@@ -58,6 +78,10 @@ const totalPages = Math.ceil(totalCount / pageSize);
     });
   };
 
+  // =====================================
+  // FORMAT TIME
+  // =====================================
+
   const formatTime = (time) => {
     if (!time) return "-";
 
@@ -68,6 +92,10 @@ const totalPages = Math.ceil(totalCount / pageSize);
     });
   };
 
+  // =====================================
+  // FORMAT STATUS
+  // =====================================
+
   const formatStatus = (status) => {
     if (!status) return "-";
 
@@ -76,344 +104,273 @@ const totalPages = Math.ceil(totalCount / pageSize);
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
- const getStatusStyle = (status) => {
-  switch (status) {
-    case "pending":
-      return {
-        color: "#9A6700",
-        backgroundColor: "#FFF4CC",
-      };
+  // =====================================
+  // STATUS STYLE
+  // =====================================
 
-    case "confirmed":
-      return {
-        color: "#18794E",
-        backgroundColor: "#E6F6EE",
-      };
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "pending":
+        return {
+          color: "#9A6700",
+          backgroundColor: "#FFF4CC",
+        };
 
-    case "cancelled":
-      return {
-        color: "#C62828",
-        backgroundColor: "#FDE8E8",
-      };
+      case "confirmed":
+        return {
+          color: "#18794E",
+          backgroundColor: "#E6F6EE",
+        };
 
-    case "completed":
-      return {
-        color: "#1769AA",
-        backgroundColor: "#E8F1FB",
-      };
+      case "cancelled":
+        return {
+          color: "#C62828",
+          backgroundColor: "#FDE8E8",
+        };
 
-    case "reschedule":
-      return {
-        color: "#7A4E00",
-        backgroundColor: "#FFF0D6",
-      };
+      case "completed":
+        return {
+          color: "#1769AA",
+          backgroundColor: "#E8F1FB",
+        };
 
-    case "rescheduled":
-      return {
-        color: "#6B46C1",
-        backgroundColor: "#F0EAFE",
-      };
+      case "reschedule":
+        return {
+          color: "#7A4E00",
+          backgroundColor: "#FFF0D6",
+        };
 
-    case "cancellation_requested":
-      return {
-        color: "#B54708",
-        backgroundColor: "#FFF0E1",
-      };
+      case "rescheduled":
+        return {
+          color: "#6B46C1",
+          backgroundColor: "#F0EAFE",
+        };
 
-    case "missed":
-      return {
-        color: "#8B1E3F",
-        backgroundColor: "#FCE7EF",
-      };
+      case "cancellation_requested":
+        return {
+          color: "#B54708",
+          backgroundColor: "#FFF0E1",
+        };
 
-    default:
-      return {
-        color: "#555",
-        backgroundColor: "#F1F1F1",
-      };
-  }
-};
+      case "missed":
+        return {
+          color: "#8B1E3F",
+          backgroundColor: "#FCE7EF",
+        };
+
+      default:
+        return {
+          color: "#555",
+          backgroundColor: "#F1F1F1",
+        };
+    }
+  };
+
+  // =====================================
+  // GET CURRENT SLOT
+  // =====================================
 
   const getCurrentSlot = (item) => {
-    
     if (item?.slot?.length > 0) {
       return item.slot[0];
     }
 
-  
     if (item?.status_history?.length > 0) {
       for (let i = item.status_history.length - 1; i >= 0; i--) {
         const history = item.status_history[i];
 
-     
-        if (history?.new_slot) {
-          return history.new_slot;
-        }
-
-       
-        if (history?.slot) {
-          return history.slot;
-        }
+        if (history?.new_slot) return history.new_slot;
+        if (history?.slot) return history.slot;
       }
     }
 
     return null;
   };
 
+  // =====================================
+  // GET LATEST HISTORY
+  // =====================================
 
   const getLatestHistory = (item) => {
-    if (!item?.status_history?.length) {
-      return null;
-    }
+    if (!item?.status_history?.length) return null;
 
     return item.status_history[item.status_history.length - 1];
   };
 
+  // =====================================
+  // GET CONSULTATION HISTORY API
+  // =====================================
 
+  const getConsultationHistory = async (
+    page = 1,
+    filters = {}
+  ) => {
+    const token = sessionStorage.getItem("superadmin_token");
 
-  const getConsultationHistory = async (page = 1) => {
-  const token = sessionStorage.getItem("superadmin_token");
-
-  if (!token) {
-    toast.error("Session expired. Please login again");
-    navigate("/login");
-    return;
-  }
-
-  setAppointmentLoading(true);
-  setAppointmentError(null);
-
-  try {
-    const response = await fetch(
-      `${BASE_URL}/doctors/admin/consultation-history/?page=${page}&page_size=${pageSize}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
-    );
-
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("superadmin_token");
+    if (!token) {
       toast.error("Session expired. Please login again");
       navigate("/login");
       return;
     }
 
-    const data = await response.json();
+    setAppointmentLoading(true);
+    setAppointmentError(null);
 
-    if (data.success) {
-      setAppointmentData(data.data?.results || []);
+    try {
+      const params = new URLSearchParams();
 
-      setTotalCount(data.data?.count || 0);
+      params.append("page", page);
+      params.append("page_size", pageSize);
 
-      setNextPage(data.data?.next || null);
-      setPreviousPage(data.data?.previous || null);
+      // SEARCH
+      if (filters.search?.trim()) {
+        params.append("search", filters.search.trim());
+      }
 
-      setCurrentPage(page);
+      // APPOINTMENT DATE
+      if (filters.date) {
+        params.append("date", filters.date);
+      }
 
-      setConsultationCounts(
-        data.data?.total_counts || {
-          total: 0,
-          confirmed: 0,
-          rescheduled: 0,
-          cancelled: 0,
-          completed: 0,
-          missed: 0,
+      // SLOT START TIME
+      if (filters.start_time) {
+        params.append("start_time", filters.start_time);
+      }
+
+      // STATUS FILTER
+      if (filters.status) {
+        params.append("status", filters.status);
+      }
+
+      const response = await fetch(
+        `${BASE_URL}/doctors/admin/consultation-history/?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
         }
       );
-    } else {
-      toast.error(
-        data.message || "Failed to fetch consultation history"
-      );
-    }
-  } catch (error) {
-    console.error("Consultation History Error:", error);
 
-    setAppointmentError(
-      "Something went wrong while fetching consultation history."
-    );
-
-    toast.error("Failed to fetch consultation history");
-  } finally {
-    setAppointmentLoading(false);
-  }
-};
-<div className="order-pagination-container">
-
-  <div className="order-pagination-info">
-    Showing{" "}
-
-    <strong>
-      {totalCount === 0
-        ? 0
-        : (currentPage - 1) * pageSize + 1}
-    </strong>{" "}
-
-    to{" "}
-
-    <strong>
-      {Math.min(currentPage * pageSize, totalCount)}
-    </strong>{" "}
-
-    of <strong>{totalCount}</strong> consultations
-  </div>
-
-  <div className="order-pagination-buttons">
-
-    {/* PREVIOUS */}
-    <button
-      className="order-pagination-btn order-pagination-arrow"
-      disabled={currentPage === 1 || appointmentLoading}
-      onClick={() => {
-        const newPage = currentPage - 1;
-
-        setCurrentPage(newPage);
-
-        getConsultationHistory(newPage);
-      }}
-    >
-      ‹
-    </button>
-
-   
-    {totalPages > 0 && (
-      <button
-        className={`order-pagination-btn ${
-          currentPage === 1
-            ? "order-pagination-active"
-            : ""
-        }`}
-        disabled={appointmentLoading}
-        onClick={() => {
-          setCurrentPage(1);
-          getConsultationHistory(1);
-        }}
-      >
-        1
-      </button>
-    )}
-
-
-    {currentPage > 3 && (
-      <span className="order-pagination-dots">
-        ...
-      </span>
-    )}
-
-   
-    {Array.from(
-      { length: totalPages },
-      (_, index) => index + 1
-    )
-      .filter((page) => {
-        return (
-          page !== 1 &&
-          page !== totalPages &&
-          page >= currentPage - 1 &&
-          page <= currentPage + 1
-        );
-      })
-      .map((page) => (
-        <button
-          key={page}
-          className={`order-pagination-btn ${
-            currentPage === page
-              ? "order-pagination-active"
-              : ""
-          }`}
-          disabled={appointmentLoading}
-          onClick={() => {
-            setCurrentPage(page);
-            getConsultationHistory(page);
-          }}
-        >
-          {page}
-        </button>
-      ))}
-
-    {/* RIGHT DOTS */}
-    {currentPage < totalPages - 2 && (
-      <span className="order-pagination-dots">
-        ...
-      </span>
-    )}
-
-    {totalPages > 1 && (
-      <button
-        className={`order-pagination-btn ${
-          currentPage === totalPages
-            ? "order-pagination-active"
-            : ""
-        }`}
-        disabled={appointmentLoading}
-        onClick={() => {
-          setCurrentPage(totalPages);
-          getConsultationHistory(totalPages);
-        }}
-      >
-        {totalPages}
-      </button>
-    )}
-
-    {/* NEXT */}
-    <button
-      className="order-pagination-btn order-pagination-arrow"
-      disabled={
-        currentPage === totalPages ||
-        appointmentLoading
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
       }
-      onClick={() => {
-        const newPage = currentPage + 1;
 
-        setCurrentPage(newPage);
+      const data = await response.json();
 
-        getConsultationHistory(newPage);
-      }}
-    >
-      ›
-    </button>
+      if (response.ok && data.success) {
+        setAppointmentData(data.data?.results || []);
+        setTotalCount(data.data?.count || 0);
+        setCurrentPage(page);
 
-  </div>
-</div>
+        setConsultationCounts(
+          data.data?.total_counts || {
+            total: 0,
+            confirmed: 0,
+            rescheduled: 0,
+            cancelled: 0,
+            completed: 0,
+            missed: 0,
+          }
+        );
+      } else {
+        setAppointmentData([]);
+        setTotalCount(0);
 
- 
+        toast.error(
+          data.message || "Failed to fetch consultation history"
+        );
+      }
+    } catch (error) {
+      console.error("Consultation History Error:", error);
+
+      setAppointmentError(
+        "Something went wrong while fetching consultation history."
+      );
+
+      setAppointmentData([]);
+      setTotalCount(0);
+    } finally {
+      setAppointmentLoading(false);
+    }
+  };
+
+  // =====================================
+  // DEBOUNCE SEARCH + FILTERS
+  // API CALL AFTER 500ms
+  // =====================================
 
   useEffect(() => {
-    getConsultationHistory();
-  }, []);
+    const timer = setTimeout(() => {
+      getConsultationHistory(1, {
+        search: appointmentSearch,
+        date: selectedDate,
+        start_time: selectedStartTime,
+        status: selectedStatus,
+      });
+    }, 500);
 
- 
+    return () => clearTimeout(timer);
+  }, [
+    appointmentSearch,
+    selectedDate,
+    selectedStartTime,
+    selectedStatus,
+  ]);
 
+  // =====================================
+  // CLEAR SEARCH
+  // =====================================
 
-  const filteredAppointments = appointmentData.filter((item) => {
-    const search = appointmentSearch.toLowerCase().trim();
+  const handleClearSearch = () => {
+    setAppointmentSearch("");
+  };
 
-    if (!search) {
-      return true;
+  // =====================================
+  // CLEAR ALL FILTERS
+  // =====================================
+
+  const handleClearFilters = () => {
+    setAppointmentSearch("");
+    setSelectedDate("");
+    setSelectedStartTime("");
+    setSelectedStatus("");
+  };
+
+  // =====================================
+  // PAGINATION
+  // =====================================
+
+  const handlePageChange = (page) => {
+    if (
+      page < 1 ||
+      page > totalPages ||
+      appointmentLoading
+    ) {
+      return;
     }
 
-    return (
-      item.patient_name?.toLowerCase().includes(search) ||
-      item.doctor_name?.toLowerCase().includes(search) ||
-      item.patient_number?.toLowerCase().includes(search) ||
-      item.status?.toLowerCase().includes(search)
-    );
-  });
+    getConsultationHistory(page, {
+      search: appointmentSearch,
+      date: selectedDate,
+      start_time: selectedStartTime,
+      status: selectedStatus,
+    });
+  };
 
-  /* =========================
-     RENDER
-  ========================= */
+  // =====================================
+  // RENDER
+  // =====================================
 
   return (
     <>
-      {/* =========================
-          PAGE HEADER
-      ========================= */}
+      {/* PAGE HEADER */}
 
       <div className="page-header">
         <h1>Appointment Management</h1>
@@ -424,13 +381,11 @@ const totalPages = Math.ceil(totalCount / pageSize);
         </p>
       </div>
 
-      {/* =========================
+      {/* =====================================
           STATS
-      ========================= */}
+      ===================================== */}
 
       <div className="vendors-stats stats2-grid">
-
-        {/* Total */}
         <div className="stat2-card">
           <div
             className="stat2-icon"
@@ -444,14 +399,12 @@ const totalPages = Math.ceil(totalCount / pageSize);
 
           <div className="stat2-info">
             <h3>Total Consultations</h3>
-
             <div className="stat2-value">
               {consultationCounts.total}
             </div>
           </div>
         </div>
 
-        {/* Confirmed */}
         <div className="stat2-card">
           <div
             className="stat2-icon"
@@ -465,7 +418,6 @@ const totalPages = Math.ceil(totalCount / pageSize);
 
           <div className="stat2-info">
             <h3>Confirmed</h3>
-
             <div className="stat2-value">
               {consultationCounts.confirmed}
             </div>
@@ -485,14 +437,12 @@ const totalPages = Math.ceil(totalCount / pageSize);
 
           <div className="stat2-info">
             <h3>Rescheduled</h3>
-
             <div className="stat2-value">
               {consultationCounts.rescheduled}
             </div>
           </div>
         </div>
 
-        {/* Cancelled */}
         <div className="stat2-card">
           <div
             className="stat2-icon"
@@ -506,7 +456,6 @@ const totalPages = Math.ceil(totalCount / pageSize);
 
           <div className="stat2-info">
             <h3>Cancelled</h3>
-
             <div className="stat2-value">
               {consultationCounts.cancelled}
             </div>
@@ -514,29 +463,101 @@ const totalPages = Math.ceil(totalCount / pageSize);
         </div>
       </div>
 
-      {/* =========================
-          SEARCH
-      ========================= */}
+      {/* =====================================
+          SEARCH AND FILTERS
+      ===================================== */}
 
-      <div className="controls-section">
-        <div className="search-wrapper">
-          <BsSearch className="search-icon" />
+      <div className="filter-category">
+        <div className="filter-controls">
+
+          {/* SEARCH */}
+
+          <div className="search-wrapper">
+            <BsSearch className="search-icon" />
+
+            <input
+              type="text"
+              placeholder="Search by patient, doctor or phone..."
+              value={appointmentSearch}
+              onChange={(e) =>
+                setAppointmentSearch(e.target.value)
+              }
+              className="search-input"
+            />
+
+            {appointmentSearch && (
+              <button
+                type="button"
+                className="clear-search"
+                onClick={handleClearSearch}
+                title="Clear Search"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+
+          {/* STATUS FILTER */}
+
+          <select
+            className="status-filter-select"
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+          >
+            <option value="">All Status</option>
+
+            {statusOptions.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
+
+          {/* APPOINTMENT DATE */}
 
           <input
-            type="text"
-            placeholder="Search by patient, doctor, phone or status..."
-            value={appointmentSearch}
-            onChange={(e) =>
-              setAppointmentSearch(e.target.value)
-            }
-            className="search-input"
+            type="date"
+            className="status-filter-select"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            title="Filter by Appointment Date"
           />
+
+          {/* SLOT START TIME */}
+
+          <input
+            type="time"
+            className="status-filter-select"
+            value={selectedStartTime}
+            onChange={(e) =>
+              setSelectedStartTime(e.target.value)
+            }
+            title="Filter by Slot Start Time"
+          />
+
+          {/* CLEAR ALL FILTERS */}
+
+          {(appointmentSearch ||
+            selectedStatus ||
+            selectedDate ||
+            selectedStartTime) && (
+            <button
+              type="button"
+              className="clear-filters-btn"
+              onClick={handleClearFilters}
+              title="Clear All Filters"
+              disabled={appointmentLoading}
+            >
+              <FiTrash2 />
+           
+            </button>
+          )}
         </div>
       </div>
 
-      {/* =========================
-          TABLE
-      ========================= */}
+      {/* =====================================
+          APPOINTMENT TABLE
+      ===================================== */}
 
       <div className="table-wrapper">
         <table className="data-table">
@@ -549,7 +570,6 @@ const totalPages = Math.ceil(totalCount / pageSize);
               <th>Appointment Date</th>
               <th>Slot</th>
               <th>Reason</th>
-              {/* <th>Last Updated</th> */}
               <th>Status</th>
             </tr>
           </thead>
@@ -560,7 +580,7 @@ const totalPages = Math.ceil(totalCount / pageSize);
                 .fill(0)
                 .map((_, index) => (
                   <tr key={index}>
-                    <td colSpan="9">
+                    <td colSpan="8">
                       <div className="skeleton-row"></div>
                     </td>
                   </tr>
@@ -568,38 +588,31 @@ const totalPages = Math.ceil(totalCount / pageSize);
             ) : appointmentError ? (
               <tr>
                 <td
-                  colSpan="9"
+                  colSpan="8"
                   style={{
                     color: "red",
                     textAlign: "center",
+                    padding: "25px",
                   }}
                 >
                   {appointmentError}
                 </td>
               </tr>
-            ) : filteredAppointments.length > 0 ? (
-              filteredAppointments.map((item, index) => {
-             
-
+            ) : appointmentData.length > 0 ? (
+              appointmentData.map((item, index) => {
                 const slot = getCurrentSlot(item);
-
-               
-
-                const latestHistory =
-                  getLatestHistory(item);
+                const latestHistory = getLatestHistory(item);
 
                 return (
                   <tr key={item.id}>
-                  
-                    <td>{index + 1}</td>
+                    <td>
+                      {(currentPage - 1) * pageSize + index + 1}
+                    </td>
 
-                  
                     <td>{item.patient_name || "-"}</td>
 
-                 
                     <td>{item.patient_number || "-"}</td>
 
-                    
                     <td>{item.doctor_name || "-"}</td>
 
                     <td>
@@ -607,54 +620,28 @@ const totalPages = Math.ceil(totalCount / pageSize);
                         ? formatDate(slot.date)
                         : "-"}
                     </td>
-  
+
                     <td>
                       {slot
-                        ? `${formatTime(
-                            slot.start_time
-                          )} - ${formatTime(
+                        ? `${formatTime(slot.start_time)} - ${formatTime(
                             slot.end_time
                           )}`
                         : "-"}
                     </td>
 
-                    
                     <td>
                       {latestHistory?.reason ||
                         item.notes ||
                         "-"}
                     </td>
 
-{/*                 
                     <td>
-                      {item.updated_at
-                        ? formatDate(item.updated_at)
-                        : "-"}
-                    </td> */}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                  
-                    <td>
-                    <span
-  className="status-badge"
-  style={getStatusStyle(item.status)}
->
-  {formatStatus(item.status)}
-</span>
+                      <span
+                        className="status-badge"
+                        style={getStatusStyle(item.status)}
+                      >
+                        {formatStatus(item.status)}
+                      </span>
                     </td>
                   </tr>
                 );
@@ -662,9 +649,10 @@ const totalPages = Math.ceil(totalCount / pageSize);
             ) : (
               <tr>
                 <td
-                  colSpan="9"
+                  colSpan="8"
                   style={{
                     textAlign: "center",
+                    padding: "25px",
                   }}
                 >
                   No Consultation History Found
@@ -673,152 +661,122 @@ const totalPages = Math.ceil(totalCount / pageSize);
             )}
           </tbody>
         </table>
+
+        {/* =====================================
+            PAGINATION
+        ===================================== */}
+
         <div className="order-pagination-container">
+          <div className="order-pagination-info">
+            Showing{" "}
+            <strong>
+              {totalCount === 0
+                ? 0
+                : (currentPage - 1) * pageSize + 1}
+            </strong>{" "}
+            to{" "}
+            <strong>
+              {Math.min(currentPage * pageSize, totalCount)}
+            </strong>{" "}
+            of <strong>{totalCount}</strong> consultations
+          </div>
 
-  <div className="order-pagination-info">
-    Showing{" "}
+          {totalPages > 0 && (
+            <div className="order-pagination-buttons">
+              <button
+                className="order-pagination-btn order-pagination-arrow"
+                disabled={currentPage === 1 || appointmentLoading}
+                onClick={() =>
+                  handlePageChange(currentPage - 1)
+                }
+              >
+                ‹
+              </button>
 
-    <strong>
-      {totalCount === 0
-        ? 0
-        : (currentPage - 1) * pageSize + 1}
-    </strong>{" "}
+              <button
+                className={`order-pagination-btn ${
+                  currentPage === 1
+                    ? "order-pagination-active"
+                    : ""
+                }`}
+                disabled={appointmentLoading}
+                onClick={() => handlePageChange(1)}
+              >
+                1
+              </button>
 
-    to{" "}
+              {currentPage > 3 && (
+                <span className="order-pagination-dots">
+                  ...
+                </span>
+              )}
 
-    <strong>
-      {Math.min(currentPage * pageSize, totalCount)}
-    </strong>{" "}
+              {Array.from(
+                { length: totalPages },
+                (_, index) => index + 1
+              )
+                .filter(
+                  (page) =>
+                    page !== 1 &&
+                    page !== totalPages &&
+                    page >= currentPage - 1 &&
+                    page <= currentPage + 1
+                )
+                .map((page) => (
+                  <button
+                    key={page}
+                    className={`order-pagination-btn ${
+                      currentPage === page
+                        ? "order-pagination-active"
+                        : ""
+                    }`}
+                    disabled={appointmentLoading}
+                    onClick={() => handlePageChange(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
 
-    of <strong>{totalCount}</strong> consultations
-  </div>
+              {currentPage < totalPages - 2 && (
+                <span className="order-pagination-dots">
+                  ...
+                </span>
+              )}
 
-  <div className="order-pagination-buttons">
+              {totalPages > 1 && (
+                <button
+                  className={`order-pagination-btn ${
+                    currentPage === totalPages
+                      ? "order-pagination-active"
+                      : ""
+                  }`}
+                  disabled={appointmentLoading}
+                  onClick={() =>
+                    handlePageChange(totalPages)
+                  }
+                >
+                  {totalPages}
+                </button>
+              )}
 
-    {/* PREVIOUS */}
-    <button
-      className="order-pagination-btn order-pagination-arrow"
-      disabled={currentPage === 1 || appointmentLoading}
-      onClick={() => {
-        const newPage = currentPage - 1;
-
-        setCurrentPage(newPage);
-
-        getConsultationHistory(newPage);
-      }}
-    >
-      ‹
-    </button>
-
-    {/* FIRST PAGE */}
-    {totalPages > 0 && (
-      <button
-        className={`order-pagination-btn ${
-          currentPage === 1
-            ? "order-pagination-active"
-            : ""
-        }`}
-        disabled={appointmentLoading}
-        onClick={() => {
-          setCurrentPage(1);
-          getConsultationHistory(1);
-        }}
-      >
-        1
-      </button>
-    )}
-
-    {/* LEFT DOTS */}
-    {currentPage > 3 && (
-      <span className="order-pagination-dots">
-        ...
-      </span>
-    )}
-
-    {/* MIDDLE PAGES */}
-    {Array.from(
-      { length: totalPages },
-      (_, index) => index + 1
-    )
-      .filter((page) => {
-        return (
-          page !== 1 &&
-          page !== totalPages &&
-          page >= currentPage - 1 &&
-          page <= currentPage + 1
-        );
-      })
-      .map((page) => (
-        <button
-          key={page}
-          className={`order-pagination-btn ${
-            currentPage === page
-              ? "order-pagination-active"
-              : ""
-          }`}
-          disabled={appointmentLoading}
-          onClick={() => {
-            setCurrentPage(page);
-            getConsultationHistory(page);
-          }}
-        >
-          {page}
-        </button>
-      ))}
-
-    
-    {currentPage < totalPages - 2 && (
-      <span className="order-pagination-dots">
-        ...
-      </span>
-    )}
-
-  
-    {totalPages > 1 && (
-      <button
-        className={`order-pagination-btn ${
-          currentPage === totalPages
-            ? "order-pagination-active"
-            : ""
-        }`}
-        disabled={appointmentLoading}
-        onClick={() => {
-          setCurrentPage(totalPages);
-          getConsultationHistory(totalPages);
-        }}
-      >
-        {totalPages}
-      </button>
-    )}
-
-  
-    <button
-      className="order-pagination-btn order-pagination-arrow"
-      disabled={
-        currentPage === totalPages ||
-        appointmentLoading
-      }
-      onClick={() => {
-        const newPage = currentPage + 1;
-
-        setCurrentPage(newPage);
-
-        getConsultationHistory(newPage);
-      }}
-    >
-      ›
-    </button>
-
-  </div>
-</div>
+              <button
+                className="order-pagination-btn order-pagination-arrow"
+                disabled={
+                  currentPage === totalPages ||
+                  appointmentLoading
+                }
+                onClick={() =>
+                  handlePageChange(currentPage + 1)
+                }
+              >
+                ›
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-   
-
-      <ToastContainer
-        position="top-center"
-        autoClose={1000}
-      />
+      <ToastContainer position="top-center" autoClose={1000} />
     </>
   );
 };
