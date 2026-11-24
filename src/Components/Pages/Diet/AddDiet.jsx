@@ -71,12 +71,13 @@ const createEmptyMeal = (dayNumber, index) => {
     icon: meal.icon,
 
     diet: [
-      {
-        id: `item-${Date.now()}`,
-        name: "",
-        quantity: "",
-        notes: "",
-      },
+    {
+  id: `item-${Date.now()}-${Math.random()}`,
+  name: "",
+  quantity: "",
+  notes: "",
+  preparation_steps: [],
+}
     ],
     diet_gallery: [],
     recipe: [""],
@@ -489,18 +490,20 @@ const addDietPlan = async () => {
         const mealKey = meal.name.toLowerCase();
 
         schedule[dayKey][mealKey] = {
-          diet: (meal.diet || []).map((item) => ({
-            name: item.name,
-            quantity: item.quantity,
-            notes: item.notes,
-          })),
-  recipe: (meal.recipe || []).filter(Boolean),
-          preparation_steps: meal.steps
-            ? meal.steps
-                .split("\n")
-                .map((step) => step.trim())
-                .filter(Boolean)
-            : [],
+    diet: (meal.diet || []).map((item) => ({
+  name: item.name,
+  quantity: item.quantity,
+  notes: item.notes,
+
+  preparation_steps: meal.steps
+    ? meal.steps
+        .split("\n")
+        .map((step) => step.trim())
+        .filter(Boolean)
+    : [],
+})),
+
+recipe: (meal.recipe || []).filter(Boolean),
 
 
           nutrition: {
