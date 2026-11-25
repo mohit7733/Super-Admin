@@ -5,7 +5,6 @@ import {
   FaClock,
   FaClipboardList,
   FaCheckCircle,
-  FaEye,
   FaFilePrescription,
 } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
@@ -14,173 +13,35 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BASE_URL from "../../../Base";
-import ApproveMedicine from "./ApproveMedicine";
+
 const DiseaseMangement = () => {
   const navigate = useNavigate();
+
+  // ----------------------------------------
+  // STATES
+  // ----------------------------------------
 
   const [ApprovalRequestData, setApprovalRequestData] = useState([]);
   const [ApprovalRequestLoading, setApprovalRequestLoading] = useState(false);
   const [ApprovalRequestError, setApprovalRequestError] = useState(null);
+
+  // Search and filters
   const [approvalSearch, setApprovalSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const [approveModal, setApproveModal] = useState(false);
-  const [SelectedApprovalRequest, setSelectedApprovalRequest] = useState(null);
+  // Frontend pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const [selectedVariantIds, setSelectedVariantIds] = useState([]);
-  const [approvedQuantities, setApprovedQuantities] = useState({});
-  const [adminNotes, setAdminNotes] = useState("");
-  const [isApproving, setIsApproving] = useState(false);
-
+  // Rejection modal
   const [RejectionVendorModal, setRejectionModal] = useState(false);
+  const [SelectedApprovalRequest, setSelectedApprovalRequest] = useState(null);
   const [Reason, setReason] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
 
-  const [ProductData, setProductData] = useState([]);
-  const [ProductLoading, setProductLoading] = useState(false);
-  const [medicineSearch, setMedicineSearch] = useState("");
-  const [expandedSearchProducts, setExpandedSearchProducts] = useState({});
-
-  // --------------------------------------------------
-  // HELPERS
-  // --------------------------------------------------
-
-  const normalizeId = (id) =>
-    id === undefined || id === null ? "" : String(id).trim();
-
-  const normalizeText = (value) =>
-    String(value ?? "").trim().toLowerCase();
-
-  const getVariantId = (variant) =>
-    variant?.id ??
-    variant?.variant_id ??
-    variant?.variantId ??
-    variant?.product_variant_id ??
-    null;
-
-  const getVariantStock = (variant) => {
-    if (!variant) return null;
-
-    const stockFields = [
-      "quantity",
-      "stock_quantity",
-      "available_stock",
-      "stock",
-    ];
-
-    for (const field of stockFields) {
-      const value = variant[field];
-
-      if (value !== undefined && value !== null && value !== "") {
-        const stock = Number(value);
-
-        if (Number.isFinite(stock) && stock >= 0) {
-          return stock;
-        }
-      }
-    }
-
-    return null;
-  };
-
-  const getVariantTitle = (variant) =>
-    variant?.title ||
-    variant?.variant_title ||
-    variant?.name ||
-    "";
-
-  // --------------------------------------------------
-  // IMPORTANT FIX:
-  // Find the same variant that is shown in search results.
-  // First match IDs, then use medicine details if IDs differ.
-  // --------------------------------------------------
-
-  const getProductVariantById = (variantId, medicine = null) => {
-    const targetId = normalizeId(variantId);
-
-    const allVariants = (ProductData || []).flatMap((product) =>
-      (product?.variants || []).map((variant) => ({
-        ...variant,
-        __parentProduct: product,
-      }))
-    );
-
-    // 1. Exact variant ID match
-    if (targetId) {
-      const matchedById = allVariants.find((variant) => {
-        const possibleIds = [
-          variant?.id,
-          variant?.variant_id,
-          variant?.variantId,
-          variant?.product_variant_id,
-        ];
-
-        return possibleIds.some(
-          (id) => normalizeId(id) === targetId
-        );
-      });
-
-      if (matchedById) return matchedById;
-    }
-
-    // 2. If IDs differ, match using variant title + size.
-    // Brand is also checked when both sides provide it.
-    if (medicine) {
-      const requestedTitle = normalizeText(
-        medicine?.variant_title ||
-        medicine?.title ||
-        medicine?.name
-      );
-
-      const requestedSize = normalizeText(medicine?.size);
-      const requestedBrand = normalizeText(medicine?.brand_name);
-
-      if (requestedTitle) {
-        const matchedByDetails = allVariants.find((variant) => {
-          const product = variant.__parentProduct;
-
-          const productTitle = normalizeText(getVariantTitle(variant));
-          const productSize = normalizeText(variant?.size);
-          const productBrand = normalizeText(
-            variant?.brand_name || product?.brand_name
-          );
-
-          const titleMatches = productTitle === requestedTitle;
-
-          const sizeMatches =
-            !requestedSize ||
-            !productSize ||
-            productSize === requestedSize;
-
-          const brandMatches =
-            !requestedBrand ||
-            !productBrand ||
-            productBrand === requestedBrand;
-
-          return titleMatches && sizeMatches && brandMatches;
-        });
-
-        if (matchedByDetails) return matchedByDetails;
-      }
-    }
-
-    return null;
-  };
-
-  const getStockForVariant = (variantId, medicine = null) => {
-    const productVariant = getProductVariantById(variantId, medicine);
-
-    // Use the exact same stock field as the search variant.
-    if (productVariant) {
-      return getVariantStock(productVariant);
-    }
-
-    // No matching product variant means stock is unknown.
-    // Do not assume requested quantity is actual inventory.
-    return null;
-  };
-
-  // --------------------------------------------------
+  // ----------------------------------------
   // FETCH APPROVAL REQUESTS
-  // --------------------------------------------------
+  // ----------------------------------------
 
   const getMedicineApprovalList = async () => {
     const token = sessionStorage.getItem("superadmin_token");
@@ -217,12 +78,18 @@ const DiseaseMangement = () => {
       const data = await response.json();
 
       if (data.success) {
-        setApprovalRequestData(data.data || []);
+        const requests = Array.isArray(data.data)
+          ? data.data
+          : data.data?.results || [];
+
+        setApprovalRequestData(requests);
       } else {
         setApprovalRequestError(
           data.message || "Failed to fetch medicine approval requests"
         );
-        toast.error(data.message || "Failed to fetch medicine approval requests");
+        toast.error(
+          data.message || "Failed to fetch medicine approval requests"
+        );
       }
     } catch (error) {
       console.error("Medicine Approval Fetch Error:", error);
@@ -233,475 +100,104 @@ const DiseaseMangement = () => {
     }
   };
 
-  // --------------------------------------------------
-  // FETCH PRODUCTS
-  // --------------------------------------------------
-
-  const getAllProducts = async () => {
-    const token = sessionStorage.getItem("superadmin_token");
-
-    if (!token) {
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
-
-    setProductLoading(true);
-
-    try {
-      const response = await fetch(
-        `${BASE_URL}/vendors/admin/product/?page=1&page_size=1000`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-        }
-      );
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        toast.error(data.message || "Failed to fetch products");
-        return;
-      }
-
-      const products = data.data?.results || data.data || [];
-
-      setProductData(Array.isArray(products) ? products : []);
-    } catch (error) {
-      console.error("Get Products Error:", error);
-      toast.error("Failed to fetch products");
-    } finally {
-      setProductLoading(false);
-    }
-  };
-
   useEffect(() => {
     getMedicineApprovalList();
-    getAllProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --------------------------------------------------
-  // SELECTED MEDICINES
-  // --------------------------------------------------
+  // ----------------------------------------
+  // SEARCH AND STATUS FILTER
+  // ----------------------------------------
 
-  const getSelectedMedicineDetails = () => {
-    const medicines = [];
+  const filteredRequests = ApprovalRequestData.filter((item) => {
+    const medicines = item.requested_variants || [];
 
-    // Already requested medicines
-    (SelectedApprovalRequest?.requested_variants || []).forEach(
-      (requestedItem) => {
+    const medicineText = medicines
+      .map((requestedItem) => {
         const medicine = requestedItem?.variant;
-        const variantId = getVariantId(medicine);
 
-        if (!variantId) return;
+        return [
+          medicine?.brand_name,
+          medicine?.variant_title,
+          medicine?.title,
+          medicine?.name,
+          medicine?.size,
+        ]
+          .filter(Boolean)
+          .join(" ");
+      })
+      .join(" ");
 
-        const isSelected = selectedVariantIds.some(
-          (id) => normalizeId(id) === normalizeId(variantId)
-        );
+    const searchText = [
+      item.patient_name,
+      item.patient_id,
+      item.status,
+      item.id,
+      medicineText,
+    ]
+      .join(" ")
+      .toLowerCase();
 
-        if (!isSelected) return;
-
-        const productVariant = getProductVariantById(
-          variantId,
-          medicine
-        );
-
-        const stock = getStockForVariant(variantId, medicine);
-
-        medicines.push({
-          variantId,
-          name:
-            getVariantTitle(productVariant) ||
-            getVariantTitle(medicine) ||
-            "Medicine",
-          brand:
-            productVariant?.brand_name ||
-            productVariant?.__parentProduct?.brand_name ||
-            medicine?.brand_name ||
-            "No Brand",
-          size: productVariant?.size || medicine?.size || "-",
-          sellingPrice:
-            productVariant?.selling_price ??
-            medicine?.selling_price ??
-            productVariant?.price ??
-            0,
-          stock,
-        });
-      }
+    const matchesSearch = searchText.includes(
+      approvalSearch.trim().toLowerCase()
     );
 
-    // Medicines added from product search
-    (ProductData || []).forEach((product) => {
-      (product?.variants || []).forEach((variant) => {
-        const variantId = getVariantId(variant);
+    const matchesStatus =
+      statusFilter === "all" || item.status === statusFilter;
 
-        if (!variantId) return;
+    return matchesSearch && matchesStatus;
+  });
 
-        const isSelected = selectedVariantIds.some(
-          (id) => normalizeId(id) === normalizeId(variantId)
-        );
+  // ----------------------------------------
+  // FRONTEND PAGINATION
+  // ----------------------------------------
 
-        if (!isSelected) return;
+  const totalFilteredRequests = filteredRequests.length;
 
-        const alreadyExists = medicines.some(
-          (item) =>
-            normalizeId(item.variantId) === normalizeId(variantId)
-        );
+  const totalPages = Math.ceil(
+    totalFilteredRequests / itemsPerPage
+  );
 
-        if (alreadyExists) return;
+  const safeCurrentPage = Math.min(
+    currentPage,
+    Math.max(totalPages, 1)
+  );
 
-        medicines.push({
-          variantId,
-          name: getVariantTitle(variant) || product?.name || "Medicine",
-          brand: variant?.brand_name || product?.brand_name || "No Brand",
-          size: variant?.size || "-",
-          sellingPrice: variant?.selling_price ?? variant?.price ?? 0,
-          stock: getStockForVariant(variantId, variant),
-        });
-      });
-    });
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
 
-    return medicines;
+  const visibleRequests = filteredRequests.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  const handleSearchChange = (value) => {
+    setApprovalSearch(value);
+    setCurrentPage(1);
   };
 
-  const toggleSearchProductVariants = (productId) => {
-    setExpandedSearchProducts((prev) => ({
-      ...prev,
-      [productId]: !prev[productId],
-    }));
+  const handleStatusChange = (value) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
   };
 
-  
-
-  const handleVariantSelection = (variantId, medicine = null) => {
-    const normalizedId = normalizeId(variantId);
-
-    setSelectedVariantIds((prev) => {
-      const alreadySelected = prev.some(
-        (id) => normalizeId(id) === normalizedId
-      );
-
-      if (alreadySelected) {
-        setApprovedQuantities((prevQuantities) => {
-          const updated = { ...prevQuantities };
-          delete updated[normalizedId];
-          delete updated[variantId];
-          return updated;
-        });
-
-        return prev.filter(
-          (id) => normalizeId(id) !== normalizedId
-        );
-      }
-
-      const stock = getStockForVariant(variantId, medicine);
-
-      if (stock === null) {
-        toast.error(
-          "Stock could not be verified for this medicine. Please check the product variant."
-        );
-        return prev;
-      }
-
-      if (stock <= 0) {
-        toast.error("This medicine is out of stock.");
-        return prev;
-      }
-
-      setApprovedQuantities((prevQuantities) => ({
-        ...prevQuantities,
-        [normalizedId]: 1,
-      }));
-
-      return [...prev, variantId];
-    });
+  const handlePageSizeChange = (value) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
   };
 
-  const handleQuantityChange = (variantId, value, stock) => {
-    const key = normalizeId(variantId);
-
-    if (stock === null || !Number.isFinite(Number(stock))) {
-      toast.error("Stock is unavailable for this medicine.");
-      return;
-    }
-
-    const availableStock = Number(stock);
-
-    if (value === "") {
-      setApprovedQuantities((prev) => ({
-        ...prev,
-        [key]: "",
-      }));
-      return;
-    }
-
-    const quantity = Number(value);
-
-    if (!Number.isInteger(quantity) || quantity < 1) {
-      setApprovedQuantities((prev) => ({
-        ...prev,
-        [key]: "",
-      }));
-      return;
-    }
-
-    if (quantity > availableStock) {
-      toast.error(`Only ${availableStock} units are available in stock.`);
-
-      setApprovedQuantities((prev) => ({
-        ...prev,
-        [key]: availableStock,
-      }));
-      return;
-    }
-
-    setApprovedQuantities((prev) => ({
-      ...prev,
-      [key]: quantity,
-    }));
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
-  // --------------------------------------------------
-  // OPEN APPROVAL MODAL
-  // --------------------------------------------------
-
-const handleOpenApproveModal = (item) => {
-  navigate(`/ApprovePrescription/${item.id}`);
-};
-
-  const closeApproveModal = () => {
-    if (isApproving) return;
-
-    setApproveModal(false);
-    setSelectedApprovalRequest(null);
-    setSelectedVariantIds([]);
-    setApprovedQuantities({});
-    setAdminNotes("");
-    setMedicineSearch("");
-    setExpandedSearchProducts({});
-  };
-
-  
-
-  const handleApproveRequest = async () => {
-    if (!SelectedApprovalRequest) return;
-
-    if (selectedVariantIds.length === 0) {
-      toast.error("Please select at least one medicine");
-      return;
-    }
-
-    const quantities = {};
-
-    for (const variantId of selectedVariantIds) {
-      const medicine = (
-        SelectedApprovalRequest?.requested_variants || []
-      ).find(
-        (item) =>
-          normalizeId(getVariantId(item?.variant)) ===
-          normalizeId(variantId)
-      )?.variant;
-
-      const stock = getStockForVariant(variantId, medicine);
-
-      if (stock === null) {
-        toast.error(
-          "Stock could not be verified for a selected medicine."
-        );
-        return;
-      }
-
-      const quantity = Number(
-        approvedQuantities[normalizeId(variantId)] ??
-        approvedQuantities[variantId]
-      );
-
-      if (
-        !Number.isInteger(quantity) ||
-        quantity < 1 ||
-        quantity > stock
-      ) {
-        toast.error(
-          `Enter a valid quantity between 1 and ${stock}.`
-        );
-        return;
-      }
-
-      quantities[variantId] = quantity;
-    }
-
-    const token = sessionStorage.getItem("superadmin_token");
-
-    if (!token) {
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
-
-    setIsApproving(true);
-
-    try {
-      const payload = {
-        status: "approved",
-        variant_ids: selectedVariantIds,
-        quantities,
-      };
-
-      if (adminNotes.trim()) {
-        payload.admin_notes = adminNotes.trim();
-      }
-
-      const response = await fetch(
-        `${BASE_URL}/customers/admin/prescription-requests/?id=${SelectedApprovalRequest.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success(data.message || "Prescription approved successfully");
-
-        setApproveModal(false);
-        setSelectedApprovalRequest(null);
-        setSelectedVariantIds([]);
-        setApprovedQuantities({});
-        setAdminNotes("");
-
-        getMedicineApprovalList();
-        getAllProducts();
-      } else {
-        toast.error(data.message || "Failed to approve prescription");
-      }
-    } catch (error) {
-      console.error("Approve Prescription Error:", error);
-      toast.error("Something went wrong while approving prescription");
-    } finally {
-      setIsApproving(false);
-    }
-  };
-
-  // --------------------------------------------------
-  // REJECT PRESCRIPTION
-  // --------------------------------------------------
-
-  const submitRejection = async () => {
-    if (!SelectedApprovalRequest) return;
-
-    if (!Reason.trim()) {
-      toast.error("Please enter rejection reason");
-      return;
-    }
-
-    const token = sessionStorage.getItem("superadmin_token");
-
-    if (!token) {
-      toast.error("Session expired. Please login again");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `${BASE_URL}/customers/admin/prescription-requests/?id=${SelectedApprovalRequest.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify({
-            status: "rejected",
-            rejection_reason: Reason.trim(),
-          }),
-        }
-      );
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("superadmin_token");
-        toast.error("Session expired. Please login again");
-        navigate("/login");
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success(data.message || "Prescription rejected successfully");
-
-        setRejectionModal(false);
-        setReason("");
-        setSelectedApprovalRequest(null);
-
-        getMedicineApprovalList();
-      } else {
-        toast.error(data.message || "Failed to reject prescription");
-      }
-    } catch (error) {
-      console.error("Reject Prescription Error:", error);
-      toast.error("Something went wrong while rejecting prescription");
-    }
-  };
-
-  // --------------------------------------------------
-  // SEARCH PRODUCTS
-  // --------------------------------------------------
-
-  const searchedProducts = ProductData.filter((product) => {
-    const search = medicineSearch.trim().toLowerCase();
-
-    if (!search) return false;
-
-    const productName = product?.name?.toLowerCase() || "";
-    const brandName = product?.brand_name?.toLowerCase() || "";
-
-    const variantMatch = (product?.variants || []).some((variant) => {
-      return [
-        variant?.title,
-        variant?.variant_title,
-        variant?.name,
-        variant?.size,
-      ].some((value) => String(value || "").toLowerCase().includes(search));
-    });
-
-    return (
-      productName.includes(search) ||
-      brandName.includes(search) ||
-      variantMatch
+  const handleNextPage = () => {
+    setCurrentPage((prev) =>
+      Math.min(prev + 1, totalPages)
     );
-  }).slice(0, 8);
+  };
 
-  // --------------------------------------------------
+  // ----------------------------------------
   // TABLE HELPERS
-  // --------------------------------------------------
+  // ----------------------------------------
 
   const formatDate = (date) => {
     if (!date) return "-";
@@ -745,35 +241,21 @@ const handleOpenApproveModal = (item) => {
       case "cancelled":
         return "Cancelled";
       default:
-        return status ? status.replaceAll("_", " ") : "-";
+        return status
+          ? status.replaceAll("_", " ")
+          : "-";
     }
   };
 
-  const filteredRequests = ApprovalRequestData.filter((item) => {
-    const medicines = item.requested_variants || [];
+  const getVariantTitle = (variant) =>
+    variant?.title ||
+    variant?.variant_title ||
+    variant?.name ||
+    "";
 
-    const medicineText = medicines
-      .map((requestedItem) => {
-        const medicine = requestedItem?.variant;
-
-        return [
-          medicine?.brand_name,
-          medicine?.variant_title,
-          medicine?.size,
-        ].join(" ");
-      })
-      .join(" ");
-
-    const searchText = [
-      item.patient_name,
-      medicineText,
-      item.status,
-    ]
-      .join(" ")
-      .toLowerCase();
-
-    return searchText.includes(approvalSearch.trim().toLowerCase());
-  });
+  // ----------------------------------------
+  // STATISTICS
+  // ----------------------------------------
 
   const totalRequests = ApprovalRequestData.length;
 
@@ -787,15 +269,137 @@ const handleOpenApproveModal = (item) => {
 
   const rejectedRequests = ApprovalRequestData.filter(
     (item) =>
-      item.status === "cancelled" || item.status === "rejected"
+      item.status === "cancelled" ||
+      item.status === "rejected"
   ).length;
 
-  // --------------------------------------------------
+  // ----------------------------------------
+  // OPEN APPROVAL PAGE
+  // ----------------------------------------
+
+  const handleOpenApprovePage = (item) => {
+    navigate(`/ApprovePrescription/${item.id}`);
+  };
+
+  // ----------------------------------------
+  // REJECTION MODAL
+  // ----------------------------------------
+
+  const openRejectionModal = (item) => {
+    setSelectedApprovalRequest(item);
+    setReason("");
+    setRejectionModal(true);
+  };
+
+  const closeRejectionModal = () => {
+    if (isRejecting) return;
+
+    setRejectionModal(false);
+    setReason("");
+    setSelectedApprovalRequest(null);
+  };
+
+  // ----------------------------------------
+  // REJECT PRESCRIPTION API
+  // ----------------------------------------
+
+  const submitRejection = async () => {
+    if (!SelectedApprovalRequest) return;
+
+    if (!Reason.trim()) {
+      toast.error("Please enter rejection reason");
+      return;
+    }
+
+    const token = sessionStorage.getItem("superadmin_token");
+
+    if (!token) {
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    setIsRejecting(true);
+
+    try {
+      const response = await fetch(
+        `${BASE_URL}/customers/admin/prescription-requests/?id=${SelectedApprovalRequest.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({
+            status: "rejected",
+            rejection_reason: Reason.trim(),
+          }),
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(
+          data.message || "Prescription rejected successfully"
+        );
+
+        closeRejectionModal();
+        getMedicineApprovalList();
+      } else {
+        toast.error(
+          data.message || "Failed to reject prescription"
+        );
+      }
+    } catch (error) {
+      console.error("Reject Prescription Error:", error);
+      toast.error(
+        "Something went wrong while rejecting prescription"
+      );
+    } finally {
+      setIsRejecting(false);
+    }
+  };
+
+  // ----------------------------------------
+  // PAGINATION BUTTONS
+  // ----------------------------------------
+
+  const getPaginationNumbers = () => {
+    const pages = [];
+
+    for (let page = 1; page <= totalPages; page++) {
+      if (
+        page === 1 ||
+        page === totalPages ||
+        Math.abs(page - safeCurrentPage) <= 1
+      ) {
+        pages.push(page);
+      }
+    }
+
+    return pages;
+  };
+
+  const paginationNumbers = getPaginationNumbers();
+
+  // ----------------------------------------
   // UI
-  // --------------------------------------------------
+  // ----------------------------------------
 
   return (
     <>
+      {/* PAGE HEADER */}
+
       <div className="page-header">
         <h1>Medicine Approval</h1>
         <p className="page-paragraph">
@@ -803,11 +407,20 @@ const handleOpenApproveModal = (item) => {
         </p>
       </div>
 
+      {/* STATISTICS */}
+
       <div className="vendors-stats stats2-grid">
         <div className="stat2-card">
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
-            <FaClipboardList size={20} />
+          <div
+            className="stat2-icon"
+            style={{
+              background: "#0D614E20",
+              color: "#0D614E",
+            }}
+          >
+            <FaClipboardList size={16} />
           </div>
+
           <div className="stat2-info">
             <h3>Total Requests</h3>
             <div className="stat2-value">{totalRequests}</div>
@@ -815,9 +428,16 @@ const handleOpenApproveModal = (item) => {
         </div>
 
         <div className="stat2-card">
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+          <div
+            className="stat2-icon"
+            style={{
+              background: "#0D614E20",
+              color: "#0D614E",
+            }}
+          >
             <FaClock size={12} />
           </div>
+
           <div className="stat2-info">
             <h3>Pending Requests</h3>
             <div className="stat2-value">{pendingRequests}</div>
@@ -825,9 +445,16 @@ const handleOpenApproveModal = (item) => {
         </div>
 
         <div className="stat2-card">
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+          <div
+            className="stat2-icon"
+            style={{
+              background: "#0D614E20",
+              color: "#0D614E",
+            }}
+          >
             <FaCheckCircle size={12} />
           </div>
+
           <div className="stat2-info">
             <h3>Approved Requests</h3>
             <div className="stat2-value">{approvedRequests}</div>
@@ -835,9 +462,16 @@ const handleOpenApproveModal = (item) => {
         </div>
 
         <div className="stat2-card">
-          <div className="stat2-icon" style={{ background: "#0D614E20", color: "#0D614E" }}>
+          <div
+            className="stat2-icon"
+            style={{
+              background: "#0D614E20",
+              color: "#0D614E",
+            }}
+          >
             <FaTimesCircle size={12} />
           </div>
+
           <div className="stat2-info">
             <h3>Rejected Requests</h3>
             <div className="stat2-value">{rejectedRequests}</div>
@@ -845,18 +479,72 @@ const handleOpenApproveModal = (item) => {
         </div>
       </div>
 
-      <div className="controls-section">
-        <div className="search-wrapper">
-          <BsSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search patient, medicine, brand..."
-            value={approvalSearch}
-            onChange={(e) => setApprovalSearch(e.target.value)}
-            className="search-input"
-          />
-        </div>
-      </div>
+      {/* SEARCH AND FILTER */}
+<div className="filter-category">
+  <div className="filter-controls">
+    {/* SEARCH */}
+    <div className="search-wrapper">
+      <BsSearch className="search-icon" />
+
+      <input
+        type="text"
+        placeholder="Search by patient, ID, medicine or brand..."
+        value={approvalSearch}
+        onChange={(e) => {
+          setApprovalSearch(e.target.value);
+          setCurrentPage(1);
+        }}
+        className="search-input"
+      />
+
+      {approvalSearch && (
+        <button
+          type="button"
+          className="clear-search"
+          onClick={() => {
+            setApprovalSearch("");
+            setCurrentPage(1);
+          }}
+        >
+          <IoClose />
+        </button>
+      )}
+    </div>
+
+    {/* STATUS FILTER */}
+    <select
+      className="status-filter-select"
+      value={statusFilter}
+      onChange={(e) => {
+        setStatusFilter(e.target.value);
+        setCurrentPage(1);
+      }}
+    >
+      <option value="all">All Status</option>
+      <option value="pending_review">Pending Review</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+      <option value="cancelled">Cancelled</option>
+    </select>
+
+    {/* CLEAR FILTERS */}
+    {(approvalSearch || statusFilter !== "all") && (
+      <button
+        type="button"
+        className="clear-filters-btn"
+        title="Clear Filters"
+        onClick={() => {
+          setApprovalSearch("");
+          setStatusFilter("all");
+          setCurrentPage(1);
+        }}
+      >
+        <IoClose />
+      </button>
+    )}
+  </div>
+</div>
+      {/* TABLE */}
 
       <div className="table-wrapper">
         <table className="data-table">
@@ -875,19 +563,29 @@ const handleOpenApproveModal = (item) => {
 
           <tbody>
             {ApprovalRequestLoading ? (
-              Array(4).fill(0).map((_, index) => (
-                <tr key={index}>
-                  <td colSpan="8"><div className="skeleton-row" /></td>
-                </tr>
-              ))
+              Array(4)
+                .fill(0)
+                .map((_, index) => (
+                  <tr key={index}>
+                    <td colSpan="8">
+                      <div className="skeleton-row" />
+                    </td>
+                  </tr>
+                ))
             ) : ApprovalRequestError ? (
               <tr>
-                <td colSpan="8" style={{ color: "red", textAlign: "center" }}>
+                <td
+                  colSpan="8"
+                  style={{
+                    color: "red",
+                    textAlign: "center",
+                  }}
+                >
                   {ApprovalRequestError}
                 </td>
               </tr>
-            ) : filteredRequests.length > 0 ? (
-              filteredRequests.map((item, index) => {
+            ) : visibleRequests.length > 0 ? (
+              visibleRequests.map((item, index) => {
                 const medicines = item.requested_variants || [];
 
                 const totalPrice = medicines.reduce(
@@ -895,7 +593,10 @@ const handleOpenApproveModal = (item) => {
                     const price = Number(
                       requestedItem?.variant?.selling_price || 0
                     );
-                    const quantity = Number(requestedItem?.quantity || 1);
+
+                    const quantity = Number(
+                      requestedItem?.quantity || 1
+                    );
 
                     return total + price * quantity;
                   },
@@ -904,16 +605,36 @@ const handleOpenApproveModal = (item) => {
 
                 return (
                   <tr key={item.id}>
-                    <td>{index + 1}</td>
+                    {/* SERIAL NUMBER */}
+
+                    <td>{startIndex + index + 1}</td>
+
+                    {/* PATIENT */}
 
                     <td>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                        <strong>{item.patient_name || "-"}</strong>
-                        <span style={{ fontSize: 11, color: "#777" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 3,
+                        }}
+                      >
+                        <strong>
+                          {item.patient_name || "-"}
+                        </strong>
+
+                        <span
+                          style={{
+                            fontSize: 11,
+                            color: "#777",
+                          }}
+                        >
                           Patient ID: {item.patient_id || "-"}
                         </span>
                       </div>
                     </td>
+
+                    {/* PRESCRIPTION */}
 
                     <td>
                       {item.file_url ? (
@@ -930,33 +651,47 @@ const handleOpenApproveModal = (item) => {
                             fontWeight: 600,
                           }}
                         >
-                          <FaFilePrescription /> View
+                          <FaFilePrescription />
+                          View
                         </a>
-                      ) : "-"}
+                      ) : (
+                        "-"
+                      )}
                     </td>
 
-                    <td>
-                      <div className="medicine-table-list">
-                        {medicines.length ? medicines.map((requestedItem, i) => (
-                          <span key={requestedItem?.id || getVariantId(requestedItem?.variant) || i}>
-                            {requestedItem?.variant?.size ||
-                              getVariantTitle(requestedItem?.variant) ||
-                              "-"}
-                          </span>
-                        )) : "-"}
-                      </div>
-                    </td>
+                    {/* MEDICINES */}
+
+                  <td>
+  {(
+    item.approved_cart_items?.length
+      ? item.approved_cart_items
+      : item.requested_variants || []
+  )
+    .map((medicine) => medicine.variant?.variant_title)
+    .filter(Boolean)
+    .join(", ") || "N/A"}
+</td>
+                    {/* PRICE */}
 
                     <td>₹{totalPrice.toFixed(2)}</td>
 
+                    {/* DATE */}
+
                     <td>
                       <div className="created-cell">
-                        <span>{formatDate(item.created_at)}</span>
+                        <span>
+                          {formatDate(item.created_at)}
+                        </span>
+
                         <small>
-                          {formatDateTime(item.created_at).split(",")[1]?.trim() || "-"}
+                          {formatDateTime(item.created_at)
+                            .split(",")[1]
+                            ?.trim() || "-"}
                         </small>
                       </div>
                     </td>
+
+                    {/* STATUS */}
 
                     <td>
                       <span
@@ -972,6 +707,8 @@ const handleOpenApproveModal = (item) => {
                       </span>
                     </td>
 
+                    {/* ACTIONS */}
+
                     <td>
                       <div className="medicine-action-group">
                         {item.status === "pending_review" && (
@@ -980,7 +717,9 @@ const handleOpenApproveModal = (item) => {
                               type="button"
                               className="medicine-action-btn medicine-approve-btn"
                               title="Approve Request"
-                              onClick={() => handleOpenApproveModal(item)}
+                              onClick={() =>
+                                handleOpenApprovePage(item)
+                              }
                             >
                               <FaCheckCircle />
                             </button>
@@ -989,11 +728,9 @@ const handleOpenApproveModal = (item) => {
                               type="button"
                               className="medicine-action-btn medicine-reject-btn"
                               title="Reject Request"
-                              onClick={() => {
-                                setSelectedApprovalRequest(item);
-                                setReason("");
-                                setRejectionModal(true);
-                              }}
+                              onClick={() =>
+                                openRejectionModal(item)
+                              }
                             >
                               <FaTimesCircle />
                             </button>
@@ -1011,6 +748,12 @@ const handleOpenApproveModal = (item) => {
                             <FaTimesCircle /> Rejected
                           </span>
                         )}
+
+                        {item.status === "cancelled" && (
+                          <span className="medicine-action-status">
+                            Cancelled
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -1018,7 +761,10 @@ const handleOpenApproveModal = (item) => {
               })
             ) : (
               <tr>
-                <td colSpan="8" style={{ textAlign: "center" }}>
+                <td
+                  colSpan="8"
+                  style={{ textAlign: "center", padding: "25px" }}
+                >
                   No Medicine Approval Requests Found
                 </td>
               </tr>
@@ -1027,479 +773,184 @@ const handleOpenApproveModal = (item) => {
         </table>
       </div>
 
-      {/* APPROVE MODAL */}
-      {approveModal && SelectedApprovalRequest && (
-        <div className="confirm-overlay">
-          <div className="confirm-modal medicine-approval-modal">
-            <button
-              className="closes-modal"
-              onClick={closeApproveModal}
-              disabled={isApproving}
+      {/* PAGINATION */}
+
+      {!ApprovalRequestLoading &&
+        !ApprovalRequestError &&
+        totalFilteredRequests > 0 && (
+          <div
+            className="medicine-pagination"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "15px",
+              padding: "16px 5px",
+              marginTop: "10px",
+            }}
+          >
+            {/* RECORD INFORMATION */}
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                flexWrap: "wrap",
+              }}
             >
-              <IoClose />
-            </button>
-
-            <div className="approval-icon-wrapper">
-              <FaCheckCircle className="approval-icon" />
-            </div>
-
-            <h2 className="confirm-title">Approve Prescription</h2>
-
-            <p className="confirm-description">
-              Select the medicines you want to approve and update quantities if required.
-            </p>
-
-            <div className="vendor-info-card medicine-patient-card">
-              <div className="vendor-row">
-                <span className="label">Patient Name</span>
-                <span className="value approve-text">
-                  {SelectedApprovalRequest.patient_name || "N/A"}
-                </span>
-              </div>
-            </div>
-
-            <div className="medicine-approval-section">
-              <div className="medicine-section-header">
-                <div>
-                  <h3>Select Medicines</h3>
-                  <p>Select the medicines to include in approval.</p>
-                </div>
-                <span className="medicine-selected-count">
-                  {selectedVariantIds.length} Selected
-                </span>
-              </div>
-
-              <div className="medicine-approval-list">
-                {(SelectedApprovalRequest.requested_variants || []).map(
-                  (requestedItem, index) => {
-                    const medicine = requestedItem?.variant;
-                    const variantId = getVariantId(medicine);
-
-                    if (!variantId) return null;
-
-                    const key = normalizeId(variantId);
-                    const isSelected = selectedVariantIds.some(
-                      (id) => normalizeId(id) === key
-                    );
-
-                    const productVariant = getProductVariantById(
-                      variantId,
-                      medicine
-                    );
-
-                    const stock = getStockForVariant(variantId, medicine);
-
-                    const title =
-                      getVariantTitle(productVariant) ||
-                      getVariantTitle(medicine) ||
-                      "Medicine";
-
-                    const price =
-                      productVariant?.selling_price ??
-                      medicine?.selling_price ??
-                      productVariant?.price ??
-                      0;
-
-                    return (
-                      <div
-                        key={key || index}
-                        className={`medicine-approval-item ${
-                          isSelected ? "medicine-approval-item-selected" : ""
-                        }`}
-                      >
-                        <label className="medicine-select-checkbox">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => handleVariantSelection(variantId, medicine)}
-                          />
-                          <span className="medicine-checkmark">
-                            {isSelected && <FaCheckCircle />}
-                          </span>
-                        </label>
-
-                        <div className="medicine-details">
-                          <strong>{title}</strong>
-                          <div className="medicine-meta">
-                            <span>
-                              {productVariant?.brand_name ||
-                                productVariant?.__parentProduct?.brand_name ||
-                                medicine?.brand_name ||
-                                "No Brand"}
-                            </span>
-                            <span>₹{Number(price).toFixed(2)}</span>
-                            <span>
-                              Stock: {stock === null ? "Unavailable" : stock}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="medicine-quantity">
-                          <label>Quantity</label>
-                          <input
-                            type="number"
-                            min="1"
-                            max={stock ?? undefined}
-                            value={approvedQuantities[key] ?? ""}
-                            disabled={!isSelected || stock === null || stock <= 0}
-                            onChange={(e) =>
-                              handleQuantityChange(variantId, e.target.value, stock)
-                            }
-                          />
-                        </div>
-                      </div>
-                    );
-                  }
-                )}
-              </div>
-            </div>
-
-            {/* SELECTED MEDICINES */}
-            <div className="add-medicine-section">
-              {getSelectedMedicineDetails().length > 0 && (
-                <div className="selected-medicines-section">
-                  <div className="selected-medicines-header">
-                    <div>
-                      <h3>Selected Medicines</h3>
-                      <p>These medicines will be included in the approval.</p>
-                    </div>
-                    <span className="selected-medicines-count">
-                      {getSelectedMedicineDetails().length} Selected
-                    </span>
-                  </div>
-
-                  <div className="selected-medicines-list">
-                    {getSelectedMedicineDetails().map((medicine) => {
-                      const key = normalizeId(medicine.variantId);
-
-                      return (
-                        <div
-                          key={key}
-                          className="selected-medicine-item"
-                        >
-                          <div className="selected-medicine-check">
-                            <FaCheckCircle />
-                          </div>
-
-                          <div className="selected-medicine-details">
-                            <strong>{medicine.name}</strong>
-                            <div className="selected-medicine-meta">
-                              <span>{medicine.brand}</span>
-                              <span>Size: {medicine.size}</span>
-                              <span>
-                                Stock: {medicine.stock === null ? "Unavailable" : medicine.stock}
-                              </span>
-                              <span className="selected-medicine-price">
-                                ₹{Number(medicine.sellingPrice).toFixed(2)}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="selected-medicine-quantity">
-                            <label>Qty</label>
-                            <input
-                              type="number"
-                              min="1"
-                              max={medicine.stock ?? undefined}
-                              value={approvedQuantities[key] ?? ""}
-                              disabled={
-                                medicine.stock === null ||
-                                medicine.stock <= 0
-                              }
-                              onChange={(e) =>
-                                handleQuantityChange(
-                                  medicine.variantId,
-                                  e.target.value,
-                                  medicine.stock
-                                )
-                              }
-                            />
-                          </div>
-
-                          <button
-                            type="button"
-                            className="selected-medicine-remove"
-                            title="Remove medicine"
-                            onClick={() =>
-                              handleVariantSelection(medicine.variantId)
-                            }
-                          >
-                            <IoClose />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* SEARCH */}
-              <div className="add-medicine-search-wrapper">
-                <BsSearch className="add-medicine-search-icon" />
-
-                <input
-                  type="text"
-                  value={medicineSearch}
-                  onChange={(e) => setMedicineSearch(e.target.value)}
-                  placeholder="Search medicine, brand or variant..."
-                  className="add-medicine-search-input"
-                />
-
-                {medicineSearch && (
-                  <button
-                    type="button"
-                    className="add-medicine-clear"
-                    onClick={() => setMedicineSearch("")}
-                  >
-                    <IoClose />
-                  </button>
-                )}
-              </div>
-
-              {medicineSearch.trim() && (
-                <div className="add-medicine-results">
-                  {ProductLoading ? (
-                    <div className="add-medicine-empty">Loading medicines...</div>
-                  ) : searchedProducts.length > 0 ? (
-                    searchedProducts.map((product) => {
-                      const allVariants = product?.variants || [];
-                      const isExpanded = expandedSearchProducts[product.id];
-
-                      return (
-                        <div key={product.id} className="add-medicine-product">
-                          <div className="add-medicine-product-row">
-                            <div className="add-medicine-result-info">
-                              <strong>{product?.name || "Unnamed Product"}</strong>
-                              <span>{product?.brand_name || "No Brand"}</span>
-                            </div>
-
-                            <button
-                              type="button"
-                              className="view-variants-btn"
-                              disabled={allVariants.length === 0}
-                              onClick={() =>
-                                toggleSearchProductVariants(product.id)
-                              }
-                            >
-                              <FaEye />
-                              {isExpanded ? "Hide Variants" : "View Variants"}
-                            </button>
-                          </div>
-
-                          {allVariants.length === 0 && (
-                            <div className="variant-unavailable-message">
-                              No variants available for this product.
-                            </div>
-                          )}
-
-                          {isExpanded && allVariants.length > 0 && (
-                            <div className="add-medicine-variants">
-                              {allVariants.map((variant, index) => {
-                                const variantId = getVariantId(variant);
-
-                                if (!variantId) return null;
-
-                                const key = normalizeId(variantId);
-                                const quantity = getVariantStock(variant);
-                                const approvalStatus =
-                                  variant?.approval_status || "";
-
-                                const isOutOfStock =
-                                  quantity === null || quantity <= 0;
-
-                                const isApproved =
-                                  approvalStatus === "approved";
-
-                                const canSelect =
-                                  isApproved && !isOutOfStock;
-
-                                const isSelected = selectedVariantIds.some(
-                                  (id) => normalizeId(id) === key
-                                );
-
-                                let unavailableReason = "";
-
-                                if (!isApproved) {
-                                  unavailableReason =
-                                    approvalStatus === "rejected"
-                                      ? "This variant is rejected."
-                                      : approvalStatus === "suspended"
-                                      ? "This variant is suspended."
-                                      : approvalStatus === "pending" ||
-                                        approvalStatus === "pending_review"
-                                      ? "This variant is pending approval."
-                                      : "This variant is not approved.";
-                                } else if (isOutOfStock) {
-                                  unavailableReason =
-                                    "Stock is unavailable or out of stock.";
-                                }
-
-                                return (
-                                  <div
-                                    key={key || index}
-                                    className={`add-medicine-variant-row ${
-                                      isSelected ? "add-medicine-variant-selected" : ""
-                                    } ${
-                                      !canSelect ? "add-medicine-variant-disabled" : ""
-                                    }`}
-                                  >
-                                    <label
-                                      className={`medicine-select-checkbox ${
-                                        !canSelect ? "medicine-checkbox-disabled" : ""
-                                      }`}
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={isSelected}
-                                        disabled={!canSelect && !isSelected}
-                                        onChange={() =>
-                                          handleVariantSelection(variantId, variant)
-                                        }
-                                      />
-                                      <span className="medicine-checkmark">
-                                        {isSelected && <FaCheckCircle />}
-                                      </span>
-                                    </label>
-
-                                    <div className="add-medicine-variant-info">
-                                      <strong>
-                                        {getVariantTitle(variant) || "Variant"}
-                                      </strong>
-
-                                      <div className="add-medicine-variant-meta">
-                                        <span>
-                                          Stock: {quantity === null ? "Unavailable" : quantity}
-                                        </span>
-                                        <span>
-                                          ₹{Number(variant?.selling_price ?? variant?.price ?? 0).toFixed(2)}
-                                        </span>
-                                        <span
-                                          className={
-                                            !isOutOfStock
-                                              ? "variant-status-approved"
-                                              : "variant-status-rejected"
-                                          }
-                                        >
-                                          {isOutOfStock ? "Out of Stock" : "Available"}
-                                        </span>
-                                      </div>
-
-                                      {approvalStatus &&
-                                        approvalStatus !== "approved" && (
-                                          <div className="variant-unavailable-reason">
-                                            Status: {approvalStatus.replace(/_/g, " ")}
-                                          </div>
-                                        )}
-
-                                      {!canSelect && (
-                                        <div className="variant-unavailable-reason">
-                                          {unavailableReason}
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    {isSelected && canSelect && (
-                                      <div className="medicine-quantity">
-                                        <label>Quantity</label>
-                                        <input
-                                          type="number"
-                                          min="1"
-                                          max={quantity}
-                                          value={approvedQuantities[key] ?? ""}
-                                          onChange={(e) =>
-                                            handleQuantityChange(
-                                              variantId,
-                                              e.target.value,
-                                              quantity
-                                            )
-                                          }
-                                        />
-                                        <small
-                                          style={{
-                                            display: "block",
-                                            marginTop: 4,
-                                            fontSize: 9,
-                                            color: "#7b8582",
-                                            whiteSpace: "nowrap",
-                                          }}
-                                        >
-                                          Max: {quantity}
-                                        </small>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="add-medicine-empty">No medicine found</div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="medicine-admin-notes">
-              <label>Admin Notes</label>
-              <textarea
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                placeholder="Add an optional internal note..."
-                rows="3"
-              />
-            </div>
-
-            {selectedVariantIds.length === 0 && (
-              <div className="policy-warning">
-                <span className="policy-warning-icon">i</span>
-                <span>
-                  Please select at least one medicine before approving this prescription.
-                </span>
-              </div>
-            )}
-
-            <div className="confirm-buttons">
-              <button
-                className="cancels-btn"
-                disabled={isApproving}
-                onClick={closeApproveModal}
+              <span
+                style={{
+                  fontSize: "13px",
+                  color: "#666",
+                }}
               >
-                Cancel
+                Showing <strong>{startIndex + 1}</strong> to{" "}
+                <strong>
+                  {Math.min(
+                    startIndex + itemsPerPage,
+                    totalFilteredRequests
+                  )}
+                </strong>{" "}
+                of <strong>{totalFilteredRequests}</strong> requests
+              </span>
+
+              <select
+                value={itemsPerPage}
+                onChange={(e) =>
+                  handlePageSizeChange(e.target.value)
+                }
+                style={{
+                  padding: "7px 10px",
+                  border: "1px solid #dce5e1",
+                  borderRadius: "6px",
+                  outline: "none",
+                  color: "#333",
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                <option value={5}>5 / Page</option>
+                <option value={10}>10 / Page</option>
+                <option value={20}>20 / Page</option>
+                <option value={50}>50 / Page</option>
+              </select>
+            </div>
+
+            {/* PAGE BUTTONS */}
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                type="button"
+                disabled={safeCurrentPage === 1}
+                onClick={handlePreviousPage}
+                style={{
+                  padding: "8px 12px",
+                  border: "1px solid #dce5e1",
+                  borderRadius: "6px",
+                  background:
+                    safeCurrentPage === 1 ? "#f5f5f5" : "#fff",
+                  color:
+                    safeCurrentPage === 1 ? "#aaa" : "#0D614E",
+                  cursor:
+                    safeCurrentPage === 1
+                      ? "not-allowed"
+                      : "pointer",
+                }}
+              >
+                Previous
               </button>
 
+              {paginationNumbers.map((page, index) => {
+                const previousPage =
+                  paginationNumbers[index - 1];
+
+                return (
+                  <React.Fragment key={page}>
+                    {index > 0 &&
+                      previousPage !== page - 1 && (
+                        <span
+                          style={{
+                            padding: "0 3px",
+                            color: "#777",
+                          }}
+                        >
+                          ...
+                        </span>
+                      )}
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPage(page)}
+                      style={{
+                        minWidth: "34px",
+                        height: "34px",
+                        border: "1px solid #dce5e1",
+                        borderRadius: "6px",
+                        background:
+                          safeCurrentPage === page
+                            ? "#0D614E"
+                            : "#fff",
+                        color:
+                          safeCurrentPage === page
+                            ? "#fff"
+                            : "#333",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {page}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+
               <button
-                className={`approve-btn ${
-                  isApproving || selectedVariantIds.length === 0
-                    ? "approve-btn-disabled"
-                    : ""
-                }`}
-                disabled={isApproving || selectedVariantIds.length === 0}
-                onClick={handleApproveRequest}
+                type="button"
+                disabled={safeCurrentPage === totalPages}
+                onClick={handleNextPage}
+                style={{
+                  padding: "8px 12px",
+                  border: "1px solid #dce5e1",
+                  borderRadius: "6px",
+                  background:
+                    safeCurrentPage === totalPages
+                      ? "#f5f5f5"
+                      : "#fff",
+                  color:
+                    safeCurrentPage === totalPages
+                      ? "#aaa"
+                      : "#0D614E",
+                  cursor:
+                    safeCurrentPage === totalPages
+                      ? "not-allowed"
+                      : "pointer",
+                }}
               >
-                {isApproving
-                  ? "Approving..."
-                  : `Approve ${selectedVariantIds.length} Medicine${
-                      selectedVariantIds.length !== 1 ? "s" : ""
-                    }`}
+                Next
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* REJECTION MODAL */}
+
       {RejectionVendorModal && SelectedApprovalRequest && (
         <div className="confirm-overlay">
           <div className="reason-modal modern-reason-modal medicine-reject-modal">
             <button
+              type="button"
               className="closes-modal"
-              onClick={() => {
-                setRejectionModal(false);
-                setReason("");
-              }}
+              onClick={closeRejectionModal}
+              disabled={isRejecting}
             >
               <IoClose />
             </button>
@@ -1515,6 +966,7 @@ const handleOpenApproveModal = (item) => {
             <div className="vendor-info-card reject-card">
               <div className="vendor-row">
                 <span className="label">Patient Name</span>
+
                 <span className="value reject-text">
                   {SelectedApprovalRequest.patient_name || "N/A"}
                 </span>
@@ -1525,51 +977,67 @@ const handleOpenApproveModal = (item) => {
               <div className="reject-medicines-header">
                 <div>
                   <h3>Requested Medicines</h3>
-                  <p>Medicines included in this prescription request.</p>
+                  <p>
+                    Medicines included in this prescription request.
+                  </p>
                 </div>
 
                 <span className="reject-medicine-count">
-                  {SelectedApprovalRequest.requested_variants?.length || 0} Medicines
+                  {SelectedApprovalRequest.requested_variants?.length || 0}{" "}
+                  Medicines
                 </span>
               </div>
 
               <div className="reject-medicines-list">
-                {(SelectedApprovalRequest.requested_variants || []).map(
-                  (requestedItem, index) => {
-                    const medicine = requestedItem?.variant;
-                    const variantId = getVariantId(medicine);
+                {(
+                  SelectedApprovalRequest.requested_variants || []
+                ).map((requestedItem, index) => {
+                  const medicine = requestedItem?.variant;
 
-                    if (!variantId) return null;
+                  return (
+                    <div
+                      key={
+                        medicine?.id ||
+                        requestedItem?.id ||
+                        index
+                      }
+                      className="reject-medicine-item"
+                    >
+                      <div className="reject-medicine-info">
+                        <div className="reject-medicine-name">
+                          {getVariantTitle(medicine) || "Medicine"}
+                        </div>
 
-                    return (
-                      <div
-                        key={normalizeId(variantId) || index}
-                        className="reject-medicine-item"
-                      >
-                        <div className="reject-medicine-info">
-                          <div className="reject-medicine-name">
-                            {getVariantTitle(medicine) || "Medicine"}
-                          </div>
+                        <div className="reject-medicine-meta">
+                          <span>
+                            {medicine?.brand_name || "No Brand"}
+                          </span>
 
-                          <div className="reject-medicine-meta">
-                            <span>{medicine?.brand_name || "No Brand"}</span>
-                            <span>Size: {medicine?.size || "N/A"}</span>
-                            <span>
-                              ₹{Number(medicine?.selling_price ?? 0).toFixed(2)}
-                            </span>
-                          </div>
+                          <span>
+                            Size: {medicine?.size || "N/A"}
+                          </span>
+
+                          <span>
+                            ₹
+                            {Number(
+                              medicine?.selling_price ?? 0
+                            ).toFixed(2)}
+                          </span>
                         </div>
                       </div>
-                    );
-                  }
-                )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
+
+            {/* REJECTION REASON */}
 
             <div className="reason-field">
               <label>
                 Rejection Reason <span>*</span>
               </label>
+
               <textarea
                 className="reason-box reject-reason-box"
                 value={Reason}
@@ -1580,35 +1048,46 @@ const handleOpenApproveModal = (item) => {
             </div>
 
             <div className="info-box reject-info-box">
-              <span className="infos-icon reject-infos-icon">✕</span>
+              <span className="infos-icon reject-infos-icon">
+                ✕
+              </span>
+
               <span>
                 The customer will be notified about the rejection reason.
               </span>
             </div>
 
+            {/* MODAL BUTTONS */}
+
             <div className="confirm-buttons">
               <button
+                type="button"
                 className="cancels-btn"
-                onClick={() => {
-                  setRejectionModal(false);
-                  setReason("");
-                }}
+                onClick={closeRejectionModal}
+                disabled={isRejecting}
               >
                 Cancel
               </button>
 
               <button
+                type="button"
                 className="approve-btn rejects-btn"
                 onClick={submitRejection}
+                disabled={isRejecting || !Reason.trim()}
               >
-                Reject Prescription
+                {isRejecting
+                  ? "Rejecting..."
+                  : "Reject Prescription"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <ToastContainer position="top-center" autoClose={1000} />
+      <ToastContainer
+        position="top-center"
+        autoClose={1000}
+      />
     </>
   );
 };
