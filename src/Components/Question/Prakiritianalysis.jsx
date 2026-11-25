@@ -5,6 +5,7 @@ import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 
 const Prakiritianalysis = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -804,7 +805,12 @@ const Prakiritianalysis = () => {
           </div>
         </div>
       )}
+      
+
+   <ToastContainer position="top-center" autoClose={2000} />
+
     </>
+    
   );
 };
 

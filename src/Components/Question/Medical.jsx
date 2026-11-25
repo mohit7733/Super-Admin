@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaTimes } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const initalAddForm = {
   experience_type: "medical_history",
   question: "",
@@ -725,7 +727,7 @@ const Medical = () => {
       `}</style>
 
       <div className="page-header">
-        <h1> Medical Questions</h1>
+        <h1> Vikriti Question Management</h1>
       </div>
 
       <div>
@@ -983,7 +985,7 @@ const Medical = () => {
               <div className="medical-edit-header">
                 <div>
                   <h2>Add Question</h2>
-                  <p>Create New Medical Question</p>
+                  <p>Create New Vikriti Question</p>
                 </div>
                 <button
                   type="button"
@@ -1149,7 +1151,7 @@ const Medical = () => {
       <div className="medical-edit-header">
         <div>
           <h2>Edit Question</h2>
-          <p>Edit Medical Question</p>
+          <p>Edit Vikriti Question</p>
         </div>
 
         <button
@@ -1426,7 +1428,7 @@ const Medical = () => {
       )}
 
       </div>
-
+ <ToastContainer position="top-center" autoClose={2000} />
 
     </>
   )

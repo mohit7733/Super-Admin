@@ -543,7 +543,7 @@ const YogaSession = () => {
         }
       }
 
-      // Upload new video
+  
       if (video) {
         videoUrl = await uploadImage(video);
 
@@ -590,7 +590,7 @@ const YogaSession = () => {
 
       const data = await response.json();
 
-      if (response.ok && data.status === "success") {
+      if (response.ok && data.success === true) {
         toast.success(
           isEditMode
             ? "Yoga Session Updated Successfully"
@@ -1415,6 +1415,7 @@ const YogaSession = () => {
               <div className="form-group">
 
                 <label>
+
                   Title <span className="required">*</span>
                 </label>
 

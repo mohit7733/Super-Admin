@@ -9,6 +9,8 @@ import { FaEdit } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
 import { FaTimes } from 'react-icons/fa';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const initialAddForm = {
   experience_type: "prakriti",
@@ -151,6 +153,17 @@ const uploadImage = async (file) => {
       fetchedOnce.current = true;
     }
   }, [])
+  useEffect(() => {
+  const handleOutsideClick = () => {
+    setOpenMenuId(null);
+  };
+
+  document.addEventListener("click", handleOutsideClick);
+
+  return () => {
+    document.removeEventListener("click", handleOutsideClick);
+  };
+}, []);
 
 
   const handleDelete = async (id) => {
@@ -818,109 +831,99 @@ const handleAddSubmit = async (e) => {
                       ? question.choices?.map(choice => choice.value).join(", ")
                       : "No Choices"}
                   </td>
-                  <td style={{ position: "relative" }} onClick={(e) => e.stopPropagation()}>
-                    <button
-                      className="action-menu-toggle"
-                      onClick={() =>
-                        setOpenMenuId(openMenuId === question.id ? null : question.id)
-                      }
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "20px",
-                      }}
-                    >
-                  <span className='icon'>
-                    <BsThreeDotsVertical />
-                    </span>    
-                    </button>
-
-
-
-
-                    {openMenuId === question.id && (
-                      <div
-                        className="action-buttons-modal"
-
-                      >
-
-
-<button
-  className="action-btn1"
-  onClick={() => {
-
-    setEditingQuestion(question);
-
-    setEditForm({
-      id: question.id,
-
-      experience_type:
-        question.experience_type ||
-        "prakriti",
-
-      question:
-        question.question || "",
-
-      choices:
-        question.choices?.length
-          ? question.choices.map(
-              (
-                choice,
-                index
-              ) => ({
-                index,
-
-                value:
-                  choice.value ||
-                  "",
-
-                image: null,
-
-                image_path:
-                  choice.image_path ||
-                  "",
-              })
-            )
-          : [],
-    });
-
-    setEditError({});
-
-    setEditModalOpen(true);
-  }}
+               <td
+  style={{ position: "relative" }}
+  onClick={(e) => e.stopPropagation()}
 >
-  <span className="icon">
-    <FaEdit />
-  </span>
+  {/* THREE DOTS BUTTON */}
+  <button
+    type="button"
+    className="action-menu-toggle"
+    onClick={(e) => {
+      e.stopPropagation();
 
-  <span>Edit Detail</span>
-</button>
-                       
+      setOpenMenuId(
+        openMenuId === question.id ? null : question.id
+      );
+    }}
+    style={{
+      background: "transparent",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "20px",
+    }}
+  >
+    <span className="icon">
+      <BsThreeDotsVertical />
+    </span>
+  </button>
 
-                        <button
-                          className="action-btn1"
-                          title="Delete Customer"
-                          onClick={() => {
-                            setQuestionId(question.id);
-                            setDeleteModal(true);
+  {/* ACTION MENU */}
+  {openMenuId === question.id && (
+    <div
+      className="action-buttons-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
 
+      {/* EDIT BUTTON */}
+      <button
+        type="button"
+        className="action-btn1"
+        onClick={() => {
+          setOpenMenuId(null);
 
-                          }}
+          setEditingQuestion(question);
 
+          setEditForm({
+            id: question.id,
 
-                        >
-                          <span className="icon-delete"
-                          ><FiTrash2/></span>
-                          <span className='delete-text'>Delete</span>
-                        </button>
+            experience_type:
+              question.experience_type || "prakriti",
 
+            question: question.question || "",
 
+            choices: question.choices?.length
+              ? question.choices.map((choice, index) => ({
+                  index,
+                  value: choice.value || "",
+                  image: null,
+                  image_path: choice.image_path || "",
+                }))
+              : [],
+          });
 
+          setEditError({});
+          setEditModalOpen(true);
+        }}
+      >
+        <span className="icon">
+          <FaEdit />
+        </span>
 
-                      </div>
-                    )}
-                  </td>
+        <span>Edit Detail</span>
+      </button>
+
+      {/* DELETE BUTTON */}
+      <button
+        type="button"
+        className="action-btn1"
+        title="Delete Question"
+        onClick={() => {
+          setOpenMenuId(null);
+          setQuestionId(question.id);
+          setDeleteModal(true);
+        }}
+      >
+        <span className="icon-delete">
+          <FiTrash2 />
+        </span>
+
+        <span className="delete-text">Delete</span>
+      </button>
+
+    </div>
+  )}
+</td>
 
 
                 </tr>
@@ -1541,7 +1544,7 @@ const handleAddSubmit = async (e) => {
 )}
 
 
-
+   <ToastContainer position="top-center" autoClose={2000} />
 
       </>
 
