@@ -328,6 +328,12 @@ export const SidebarData = () => [
       permission: "view_reschudle_request",
      icon: <FaSyncAlt size={12} />,
     },
+      {
+      title: "Consultation Refund Requests",
+      path: "/Order/ConsultationRefundRequests",
+      permission: "view_consultation_refund",
+      icon: <FaMoneyBillWave size={18} />
+    },
     
     {
   title: "Medicine Approval",
@@ -335,6 +341,7 @@ export const SidebarData = () => [
   permission: "view_medicine_approval",
   icon: <FaCapsules size={18} />,
 },
+
   ],
 },
 
@@ -553,12 +560,7 @@ icon: <AdminPanelSettingsIcon sx={{ fontSize: 20 }} />,
   permission: "view_order_refund",
   icon: <FaMoneyBillWave size={18} />
 },
-    {
-      title: "Consultation Refund Requests",
-      path: "/Order/ConsultationRefundRequests",
-      permission: "view_consultation_refund",
-      icon: <FaMoneyBillWave size={18} />
-    },
+  
      {
       title: "Return Requests",
       path: "/ReturnRequests",

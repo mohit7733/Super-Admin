@@ -4,7 +4,7 @@ import BASE_URL from '../../Base';
 import { toast } from 'react-toastify';
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useNavigate } from 'react-router-dom';
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaTimes } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { FaEye } from "react-icons/fa";
 const initalAddForm = {
@@ -26,6 +26,7 @@ const Medical = () => {
   const [SelectedQuestionId, setSelectedQuestionId] = useState(null);
   const [EditformModal, setEditformModal] = useState(false);
   const [Editform, setEditform] = useState(initalAddForm);
+  const [previewImage, setPreviewImage] = useState(null);
   const fetchOnce = useRef();
   const [AddError, setAddError] = useState({});
   const [SearchQuestion, setSearchQuestion] = useState("");
@@ -106,30 +107,30 @@ const Medical = () => {
         : {}),
     }));
   };
-  const handleEditChoiceChange = (
-    index,
-    field,
-    value
-  ) => {
-    const updated = [...Editform.choices];
-
-    updated[index][field] = value;
-
-    setEditform({
-      ...Editform,
-      choices: updated,
-    });
+  const handleEditChoiceChange = (index, field, value) => {
+    setEditform((prev) => ({
+      ...prev,
+      choices: prev.choices.map((choice, i) =>
+        i === index ? { ...choice, [field]: value } : choice
+      ),
+    }));
   };
+
   const addEditChoice = () => {
-    setEditform({
-      ...Editform,
-      choices: [...Editform.choices, { text: "" }],
-    });
+    setEditform((prev) => ({
+      ...prev,
+      choices: [
+        ...prev.choices,
+        { value: "", image: null, image_path: "" },
+      ],
+    }));
   };
 
   const removeEditChoice = (index) => {
-    const updated = Editform.choices.filter((_, i) => i !== index);
-    setEditform({ ...Editform, choices: updated });
+    setEditform((prev) => ({
+      ...prev,
+      choices: prev.choices.filter((_, i) => i !== index),
+    }));
   };
 
 
@@ -218,14 +219,19 @@ const Medical = () => {
 
             return {
               index,
-              value: choice.value,
-              image_path: imageUrl,
+              value: choice.value?.trim() || "",
+              image_path: imageUrl || "",
             };
           }
         )
       );
 
 
+
+      if (Addform.answer_type !== "text" && updatedChoices.some((choice) => !choice.image_path)) {
+        toast.error("Please upload an image for every choice");
+        return;
+      }
 
       const payload = {
         experience_type: "medical_history",
@@ -345,26 +351,42 @@ const Medical = () => {
     try {
       const token = sessionStorage.getItem("superadmin_token");
 
+      if (!token) {
+        toast.error("Session expired. Please login again");
+        Navigate("/login");
+        return;
+      }
+
+      const updatedChoices = await Promise.all(
+        (Editform.choices || []).map(async (choice, index) => {
+          let imagePath = choice.image_path || "";
+
+          // Upload a newly selected image; otherwise retain the existing image.
+          if (choice.image instanceof File) {
+            imagePath = await uploadImage(choice.image);
+          }
+
+          return {
+            index,
+            value: choice.value?.trim() || "",
+            image_path: imagePath || "",
+          };
+        })
+      );
+
+      if (
+        Editform.answer_type !== "text" &&
+        updatedChoices.some((choice) => !choice.image_path)
+      ) {
+        toast.error("Please upload an image for every choice");
+        return;
+      }
+
       const payload = {
-        experience_type:
-          Editform.experience_type,
-
+        experience_type: Editform.experience_type || "medical_history",
         question: Editform.question,
-
-        answer_type:
-          Editform.answer_type,
-
-        choices:
-          Editform.answer_type === "text"
-            ? []
-            : Editform.choices.map(
-              (choice, index) => ({
-                index,
-                value: choice.value,
-                image_path:
-                  choice.image_path || "",
-              })
-            ),
+        answer_type: Editform.answer_type,
+        choices: Editform.answer_type === "text" ? [] : updatedChoices,
       };
 
       const res = await fetch(
@@ -374,6 +396,7 @@ const Medical = () => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
           },
           body: JSON.stringify(payload),
         }
@@ -381,21 +404,28 @@ const Medical = () => {
 
       const data = await res.json();
 
+      if (res.status === 401 || res.status === 403) {
+        sessionStorage.removeItem("superadmin_token");
+        toast.error("Session expired. Please login again");
+        Navigate("/login");
+        return;
+      }
+
       if (!res.ok) {
         const errorMsg =
           data?.errors?.questions?.non_field_errors?.[0] ||
-          "Error updating question ❌";
-
+          data?.message ||
+          "Error updating question";
         toast.error(errorMsg);
         return;
       }
 
-      toast.success("Question Updated Successfully ✅");
-
+      toast.success("Question Updated Successfully");
       setEditformModal(false);
       getAllMedicalQuestion();
     } catch (err) {
-      toast.error("Error updating question ❌");
+      console.error("Update Medical Question Error:", err);
+      toast.error("Error updating question");
     }
   };
 
@@ -449,6 +479,209 @@ const Medical = () => {
         Search and answer-type filter styles
       */}
       <style>{`
+        .medical-edit-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 22px;
+          background: rgba(25, 31, 43, 0.68);
+          backdrop-filter: blur(3px);
+        }
+        .medical-edit-modal {
+          width: min(940px, 96vw);
+          max-height: 92vh;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          background: #fff;
+          border-radius: 15px;
+          box-shadow: 0 18px 55px rgba(0,0,0,.24);
+        }
+        .medical-edit-header {
+          flex: 0 0 auto;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 18px 24px 15px;
+          border-bottom: 1px solid #e8e8e8;
+        }
+        .medical-edit-header h2 {
+          margin: 0;
+          color: #172033;
+          font-size: 21px;
+          font-weight: 700;
+        }
+        .medical-edit-header p {
+          margin: 8px 0 0;
+          color: #60718c;
+          font-size: 16px;
+        }
+        .medical-edit-close {
+          width: 42px;
+          height: 42px;
+          border: 0;
+          border-radius: 10px;
+          background: #f2f3f6;
+          color: #697386;
+          font-size: 23px;
+          cursor: pointer;
+        }
+        .medical-edit-form {
+          min-height: 0;
+          overflow-y: auto;
+          padding: 22px 25px 28px;
+        }
+        .medical-edit-form .form-group { margin-bottom: 20px; }
+        .medical-edit-form .form-group > label {
+          display: block;
+          margin-bottom: 9px;
+          color: #202938;
+          font-weight: 600;
+        }
+        .medical-edit-form .form-group > input,
+        .medical-edit-form .form-group > select {
+          width: 100%;
+          min-height: 48px;
+          box-sizing: border-box;
+          padding: 11px 14px;
+          border: 1px solid #d9dce2;
+          border-radius: 10px;
+          background: #fff;
+          color: #202938;
+          font-size: 16px;
+        }
+        .medical-edit-form .choice-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin: 0 0 6px;
+        }
+        .medical-edit-form .choice-header h4 {
+          margin: 0;
+          font-size: 16px;
+          color: #111827;
+        }
+        .medical-edit-form .AddButton {
+          border: 0;
+          border-radius: 10px;
+          padding: 13px 19px;
+          background: #0d614e;
+          color: white;
+          font-weight: 700;
+          cursor: pointer;
+        }
+        .medical-edit-form .choice-card {
+          margin: 7px 0 18px;
+          padding: 13px;
+          border: 1px solid #e0e0e0;
+          border-radius: 13px;
+          background: #fafafa;
+        }
+        .medical-edit-form .choice-card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 13px;
+        }
+        .medical-edit-form .choice-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #292929;
+        }
+        .medical-edit-form .remove-choice-btn,
+        .medical-edit-form .delete-image-btn {
+          width: 42px;
+          height: 42px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+          border: 0;
+          border-radius: 10px;
+          background: #fff0f0;
+          color: #ef3340;
+          cursor: pointer;
+          font-size: 16px;
+        }
+        .medical-edit-form .choice-fields {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+          align-items: center;
+        }
+        .medical-edit-form .choice-input {
+          width: 100%;
+          min-width: 0;
+          height: 56px;
+          box-sizing: border-box;
+          padding: 12px 16px;
+          border: 1px solid #dedede;
+          border-radius: 11px;
+          background: #fff;
+          font-size: 16px;
+          color: #172033;
+        }
+        .medical-edit-form .hidden-file-input { display: none; }
+        .medical-edit-form .selected-image-box,
+        .medical-edit-form .upload-image-btn {
+          min-width: 0;
+          min-height: 56px;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 7px 8px 7px 12px;
+          border: 1px solid #d7dce4;
+          border-radius: 11px;
+          background: #fff;
+          color: #60718c;
+        }
+        .medical-edit-form .choice-preview-image {
+          width: 38px;
+          height: 38px;
+          flex: 0 0 auto;
+          object-fit: contain;
+          border-radius: 6px;
+        }
+        .medical-edit-form .choice-image-name {
+          flex: 1;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+        .medical-edit-form .upload-image-btn { cursor: pointer; }
+        .medical-edit-form .form-buttons {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+          margin-top: 38px;
+        }
+        .medical-edit-form .form-buttons button {
+          min-height: 53px;
+          border: 0;
+          border-radius: 8px;
+          background: #0d614e;
+          color: #fff;
+          font-size: 18px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .medical-edit-form .form-buttons button:last-child {
+          background: #dedede;
+          color: #333;
+        }
+        @media (max-width: 650px) {
+          .medical-edit-overlay { padding: 10px; }
+          .medical-edit-modal { width: 100%; max-height: 95vh; }
+          .medical-edit-form .choice-fields,
+          .medical-edit-form .form-buttons { grid-template-columns: 1fr; }
+          .medical-edit-header { padding: 15px; }
+          .medical-edit-form { padding: 18px 15px 22px; }
+        }
         .medical-question-filters {
           display: flex;
           align-items: center;
@@ -736,235 +969,102 @@ const Medical = () => {
         }
 
         {AddformModal && (
-  <div className="modal"
-    onClick={() => {
-      setAddformModal(false);
-      setAddform(initalAddForm);
-    }}
-  >
-    <form
-      className="customer-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit();
-      }}
-    >
-      <h2>Add Question</h2>
-
-      <label>Question</label>
-
-      <input
-        type="text"
-        name="question"
-        placeholder="Enter Question"
-        value={Addform.question}
-        onChange={handleInputChange}
-      />
-
-      <label>Question Type</label>
-
-      <select
-        name="answer_type"
-        value={Addform.answer_type}
-        onChange={handleInputChange}
-      >
-        <option value="">Select Type</option>
-        <option value="choice">Single Choice</option>
-        <option value="multi_choice">Multiple Choice</option>
-        <option value="text">Text</option>
-      </select>
-
-      {(Addform.answer_type === "choice" ||
-        Addform.answer_type === "multi_choice") && (
-        <>
-          <div className="choice-header">
-            <h4>Choices</h4>
-
-            <button
-              type="button"
-              className="AddButton"
-              onClick={addChoice}
+          <div
+            className="medical-edit-overlay"
+            onClick={() => {
+              setAddformModal(false);
+              setAddform(initalAddForm);
+            }}
+          >
+            <div
+              className="medical-edit-modal"
+              onClick={(e) => e.stopPropagation()}
             >
-              + Add Choice
-            </button>
-          </div>
-
-          {Addform.choices.map((choice, index) => (
-            <div key={index} className="choice-card">
-              <div className="choice-card-header">
-                <span className="choice-title">
-                  Choice {index + 1}
-                </span>
-
+              <div className="medical-edit-header">
+                <div>
+                  <h2>Add Question</h2>
+                  <p>Create New Medical Question</p>
+                </div>
                 <button
                   type="button"
-                  className="remove-choice-btn"
-                  onClick={() => removeChoice(index)}
+                  className="medical-edit-close"
+                  onClick={() => {
+                    setAddformModal(false);
+                    setAddform(initalAddForm);
+                  }}
                 >
-                  <FiTrash2 />
+                  <FaTimes />
                 </button>
               </div>
 
-              <div className="choice-fields">
-                <input
-                  type="text"
-                  placeholder={`Enter Choice ${index + 1}`}
-                  value={choice.value}
-                  onChange={(e) =>
-                    handleChoiceChange(
-                      index,
-                      "value",
-                      e.target.value
-                    )
-                  }
-                  className="choice-input"
-                />
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    handleChoiceChange(
-                      index,
-                      "image",
-                      e.target.files[0]
-                    )
-                  }
-                  className="choice-file"
-                />
-
-                {choice.image && (
-                  <img
-                    src={URL.createObjectURL(choice.image)}
-                    alt="preview"
-                    style={{
-                      width: "70px",
-                      height: "70px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-
-      <div className="form-buttons">
-        <button type="submit">
-          Add Question
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setAddformModal(false);
-            setAddform(initalAddForm);
-          }}
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
-  </div>
-)}
-
-        {EditformModal && (
-          <div className="modal"
-          onClick={() => setEditformModal(false)}
->
-            <form
-              className="customer-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleUpdate();
-              }}
-            >
-              <h2>Edit Question</h2>
-
-              <label>Question</label>
-
-              <input
-                type="text"
-                name="question"
-                placeholder="Enter Question"
-                value={Editform.question}
-                onChange={handleEditInputChange}
-              />
-
-              <label>Question Type</label>
-
-              <select
-                name="answer_type"
-                value={Editform.answer_type}
-                onChange={handleEditInputChange}
+              <form
+                className="medical-edit-form"
+                onClick={(e) => e.stopPropagation()}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSubmit();
+                }}
               >
-                <option value="">Select Type</option>
+                <div className="form-group">
+                  <label>Question</label>
+                  <input
+                    type="text"
+                    name="question"
+                    placeholder="Enter Your Question"
+                    value={Addform.question}
+                    onChange={handleInputChange}
+                  />
+                </div>
 
-                <option value="choice">
-                  Single Choice
-                </option>
+                <div className="form-group">
+                  <label>Question Type</label>
+                  <select
+                    name="answer_type"
+                    value={Addform.answer_type}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Select Type</option>
+                    <option value="choice">Single Choice</option>
+                    <option value="multi_choice">Multiple Choice</option>
+                    <option value="text">Text</option>
+                  </select>
+                </div>
 
-                <option value="multi_choice">
-                  Multiple Choice
-                </option>
-
-                <option value="text">
-                  Text
-                </option>
-              </select>
-
-              {(Editform.answer_type === "choice" ||
-                Editform.answer_type === "multi_choice") && (
-                  <>
+                {(Addform.answer_type === "choice" ||
+                  Addform.answer_type === "multi_choice") && (
+                  <div className="form-group">
                     <div className="choice-header">
                       <h4>Choices</h4>
-
                       <button
                         type="button"
-                        onClick={addEditChoice}
                         className="AddButton"
+                        onClick={addChoice}
                       >
                         + Add Choice
                       </button>
                     </div>
 
-                    {Editform.choices.map((choice, index) => (
-                      <div
-                        key={index}
-                        className="choice-card"
-                      >
+                    {Addform.choices.map((choice, index) => (
+                      <div key={index} className="choice-card">
                         <div className="choice-card-header">
-
-                          <span className="choice-title">
-                            Choice {index + 1}
-                          </span>
-
+                          <span className="choice-title">Choice {index + 1}</span>
                           <button
                             type="button"
                             className="remove-choice-btn"
-                            onClick={() =>
-                              removeEditChoice(index)
-                            }
+                            onClick={() => removeChoice(index)}
                           >
                             <FiTrash2 />
                           </button>
                         </div>
 
                         <div className="choice-fields">
-
                           <input
                             type="text"
-                            placeholder={`Enter Choice ${index + 1
-                              }`}
-                            value={choice.value}
+                            placeholder={`Enter Choice ${index + 1}`}
+                            value={choice.value || ""}
                             onChange={(e) =>
-                              handleEditChoiceChange(
-                                index,
-                                "value",
-                                e.target.value
-                              )
+                              handleChoiceChange(index, "value", e.target.value)
                             }
                             className="choice-input"
                           />
@@ -972,57 +1072,363 @@ const Medical = () => {
                           <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) =>
-                              handleEditChoiceChange(
-                                index,
-                                "image",
-                                e.target.files[0]
-                              )
-                            }
-                            className="choice-file"
+                            id={`add-form-choice-image-${index}`}
+                            className="hidden-file-input"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleChoiceChange(index, "image", file);
+                            }}
                           />
 
-                          {choice.image_path && (
-                            <img
-                              src={choice.image_path}
-                              alt="choice"
-                              style={{
-                                width: "70px",
-                                height: "70px",
-                                objectFit: "cover",
-                                borderRadius: "8px",
-                              }}
-                            />
+                          {choice.image ? (
+                            <div className="selected-image-box">
+                              <img
+                                src={URL.createObjectURL(choice.image)}
+                                alt="Selected choice"
+                                className="choice-preview-image"
+                                onClick={() => setPreviewImage(URL.createObjectURL(choice.image))}
+                                style={{ cursor: "pointer" }}
+                              />
+                              <span className="choice-image-name">{choice.image.name}</span>
+                              <button
+                                type="button"
+                                className="delete-image-btn"
+                                onClick={() => {
+                                  handleChoiceChange(index, "image", null);
+                                  const input = document.getElementById(`add-form-choice-image-${index}`);
+                                  if (input) input.value = "";
+                                }}
+                              >
+                                <FiTrash2 />
+                              </button>
+                            </div>
+                          ) : (
+                            <label
+                              htmlFor={`add-form-choice-image-${index}`}
+                              className="upload-image-btn"
+                            >
+                              <span>📷</span>
+                              <span>Click here to upload image</span>
+                            </label>
                           )}
                         </div>
                       </div>
                     ))}
-                  </>
+                  </div>
                 )}
 
-              <div className="form-buttons">
-                <button type="submit">
-                  Update
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setEditformModal(false)
-                  }
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+                <div className="form-buttons">
+                  <button type="submit">Add Question</button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddformModal(false);
+                      setAddform(initalAddForm);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
+
+     
+{EditformModal && (
+  <div
+    className="medical-edit-overlay"
+    onClick={() => setEditformModal(false)}
+  >
+    <div
+      className="medical-edit-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      {/* HEADER */}
+      <div className="medical-edit-header">
+        <div>
+          <h2>Edit Question</h2>
+          <p>Edit Medical Question</p>
+        </div>
+
+        <button
+          type="button"
+          className="medical-edit-close"
+          onClick={() => setEditformModal(false)}
+        >
+          <FaTimes />
+        </button>
+      </div>
+
+      {/* FORM */}
+      <form
+        className="medical-edit-form"
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleUpdate();
+        }}
+      >
+
+        {/* QUESTION */}
+        <div className="form-group">
+          <label>Question</label>
+
+          <input
+            type="text"
+            name="question"
+            placeholder="Enter Your Question"
+            value={Editform.question}
+            onChange={handleEditInputChange}
+          />
+        </div>
+
+        {/* QUESTION TYPE */}
+        <div className="form-group">
+          <label>Question Type</label>
+
+          <select
+            name="answer_type"
+            value={Editform.answer_type}
+            onChange={handleEditInputChange}
+          >
+            <option value="">Select Type</option>
+            <option value="choice">Single Choice</option>
+            <option value="multi_choice">Multiple Choice</option>
+            <option value="text">Text</option>
+          </select>
+        </div>
+
+        {/* CHOICES */}
+        {(Editform.answer_type === "choice" ||
+          Editform.answer_type === "multi_choice") && (
+          <div className="form-group">
+
+            <div className="choice-header">
+              <h4>Choices</h4>
+
+              <button
+                type="button"
+                className="AddButton"
+                onClick={addEditChoice}
+              >
+                + Add Choice
+              </button>
+            </div>
+
+            {Editform.choices?.map((choice, index) => (
+              <div
+                key={index}
+                className="choice-card"
+              >
+
+                {/* CHOICE HEADER */}
+                <div className="choice-card-header">
+                  <span className="choice-title">
+                    Choice {index + 1}
+                  </span>
+
+                  <button
+                    type="button"
+                    className="remove-choice-btn"
+                    onClick={() => removeEditChoice(index)}
+                  >
+                    <FiTrash2 />
+                  </button>
+                </div>
+
+                {/* CHOICE FIELDS */}
+                <div className="choice-fields">
+
+                  <input
+                    type="text"
+                    placeholder={`Enter Choice ${index + 1}`}
+                    value={choice.value || ""}
+                    onChange={(e) =>
+                      handleEditChoiceChange(
+                        index,
+                        "value",
+                        e.target.value
+                      )
+                    }
+                    className="choice-input"
+                  />
+
+                  {/* FILE INPUT */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id={`edit-form-choice-image-${index}`}
+                    className="hidden-file-input"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+
+                      if (file) {
+                        handleEditChoiceChange(
+                          index,
+                          "image",
+                          file
+                        );
+                      }
+                    }}
+                  />
+
+                  {/* NEW IMAGE */}
+                  {choice.image ? (
+                    <div className="selected-image-box">
+
+                      <img
+                        src={URL.createObjectURL(choice.image)}
+                        alt="Selected"
+                        className="choice-preview-image"
+                        onClick={() =>
+                          setPreviewImage(
+                            URL.createObjectURL(choice.image)
+                          )
+                        }
+                        style={{ cursor: "pointer" }}
+                      />
+
+                      <span className="choice-image-name">
+                        {choice.image.name}
+                      </span>
+
+                      <button
+                        type="button"
+                        className="delete-image-btn"
+                        onClick={() => {
+                          handleEditChoiceChange(
+                            index,
+                            "image",
+                            null
+                          );
+
+                          const input = document.getElementById(
+                            `edit-form-choice-image-${index}`
+                          );
+
+                          if (input) input.value = "";
+                        }}
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+
+                  ) : choice.image_path ? (
+
+                    /* EXISTING IMAGE */
+                    <div className="selected-image-box">
+
+                      <img
+                        src={choice.image_path}
+                        alt="Choice"
+                        className="choice-preview-image"
+                        onClick={() =>
+                          setPreviewImage(choice.image_path)
+                        }
+                        style={{ cursor: "pointer" }}
+                      />
+
+                      <span className="choice-image-name">
+                        Existing Image
+                      </span>
+
+                      <button
+                        type="button"
+                        className="delete-image-btn"
+                        onClick={() =>
+                          handleEditChoiceChange(
+                            index,
+                            "image_path",
+                            ""
+                          )
+                        }
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+
+                  ) : (
+
+                    /* UPLOAD IMAGE */
+                    <label
+                      htmlFor={`edit-form-choice-image-${index}`}
+                      className="upload-image-btn"
+                    >
+                      <span>📷</span>
+                      <span>Click here to upload image</span>
+                    </label>
+                  )}
+
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* BUTTONS */}
+        <div className="form-buttons">
+
+          <button type="submit">
+            Update Question
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setEditformModal(false)}
+          >
+            Cancel
+          </button>
+
+        </div>
+
+      </form>
+    </div>
+  </div>
+)}
+
+
+      {previewImage && (
+        <div
+          className="medical-edit-overlay"
+          style={{ zIndex: 10001 }}
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            className="medical-edit-modal"
+            style={{ width: "min(760px, 94vw)", maxHeight: "90vh" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="medical-edit-header">
+              <div>
+                <h2>Image Preview</h2>
+                <p>View selected choice image</p>
+              </div>
+              <button
+                type="button"
+                className="medical-edit-close"
+                onClick={() => setPreviewImage(null)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div style={{ padding: 24, textAlign: "center", overflow: "auto" }}>
+              <img
+                src={previewImage}
+                alt="Choice preview"
+                style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain", borderRadius: 10 }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       </div>
 
 
     </>
-
   )
 }
 
