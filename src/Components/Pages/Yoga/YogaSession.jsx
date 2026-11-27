@@ -373,8 +373,12 @@ const YogaSession = () => {
       const data = await response.json();
 
       if (data.success) {
-        setDiseaseListData(data.data?.results || []);
-      } else {
+  const activeDiseases = (data.data?.results || []).filter(
+    (item) => item.is_active === true
+  );
+
+  setDiseaseListData(activeDiseases);
+}else {
         toast.error(data.message || "Failed to fetch diseases");
         setDiseaseError(data.message);
       }

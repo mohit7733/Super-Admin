@@ -109,6 +109,7 @@ import StockManagement from './Components/Pages/Product/StockManagement';
 import AllActivities from './Components/Pages/AllActivities/AllActivities'
 import FaqCategory from './Components/Pages/Faq/FaqCategory';
 import DietPlanPurchase from './Components/Pages/Diet/DietPlanPurchase';
+import DoctorEditprofile from './Components/Pages/Doctor/DoctorEditprofile';
 
 
 const Layout = ({ children }) => {
@@ -231,7 +232,18 @@ function App() {
             </ProtectedRoute>
           }
         />
-       
+      
+
+<Route
+  path="/Doctor/edit/:id"
+  element={
+    <ProtectedRoute>
+      <Layout>
+        <DoctorEditprofile/>
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
         <Route
           path="/reward/edit/:id"
           element={

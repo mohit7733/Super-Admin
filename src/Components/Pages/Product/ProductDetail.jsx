@@ -1371,98 +1371,87 @@ const handleVariantAction = async (
 
 
        
+{/* HSN Code */}
+{actionType === "approve" && (
+  <div className="hsn-tax-field">
+    <label className="label" htmlFor="approval-hsn-code">
+      HSN Code <span>*</span>
+    </label>
 
-        {/* HSN Code */}
-        {actionType === "approve" && (
-          <div className="vendor-row hsn-tax-field">
-            <label className="label" htmlFor="approval-hsn-code">
-              HSN Code <span>*</span>
-            </label>
+    <div className="hsn-input-wrap">
+      <input
+        id="approval-hsn-code"
+        type="text"
+        inputMode="numeric"
+        autoComplete="off"
+        maxLength={8}
+        value={hsnCode}
+        placeholder="Enter 8-digit HSN Code"
+        className={`approval-input ${
+          hsnError ? "approval-input-error" : ""
+        }`}
+        onChange={(e) => {
+          const rawValue = e.target.value;
+          const numericValue = rawValue.replace(/\D/g, "").slice(0, 8);
 
-            <div className="hsn-input-wrap">
-              <input
-                id="approval-hsn-code"
-                type="text"
-                inputMode="numeric"
-                autoComplete="off"
-                maxLength={8}
-                value={hsnCode}
-                placeholder="Enter 8-digit HSN Code"
-                className={`approval-input ${
-                  hsnError ? "approval-input-error" : ""
-                }`}
-                onChange={(e) => {
-                  const rawValue = e.target.value;
-                  const numericValue = rawValue
-                    .replace(/\D/g, "")
-                    .slice(0, 8);
+          setHsnCode(numericValue);
 
-                  setHsnCode(numericValue);
+          if (/\D/.test(rawValue)) {
+            setHsnError("Only numbers are allowed.");
+          } else if (
+            numericValue.length > 0 &&
+            numericValue.length !== 8
+          ) {
+            setHsnError("HSN Code must be exactly 8 digits.");
+          } else {
+            setHsnError("");
+          }
+        }}
+      />
 
-                  if (/\D/.test(rawValue)) {
-                    setHsnError("Only numbers are allowed.");
-                  } else if (
-                    numericValue.length > 0 &&
-                    numericValue.length !== 8
-                  ) {
-                    setHsnError(
-                      "HSN Code must be exactly 8 digits."
-                    );
-                  } else {
-                    setHsnError("");
-                  }
-                }}
-              />
+      {hsnError && (
+        <small className="validation-error">{hsnError}</small>
+      )}
+    </div>
+  </div>
+)}
 
-              {hsnError && (
-                <small className="validation-error">
-                  {hsnError}
-                </small>
-              )}
-            </div>
-          </div>
-        )}
+{/* Tax Class */}
+{actionType === "approve" && (
+  <div className="hsn-tax-field">
+    <label className="label" htmlFor="approval-tax-class">
+      Tax Class <span>*</span>
+    </label>
 
-        {/* Tax Class */}
-        {actionType === "approve" && (
-          <div className="vendor-row hsn-tax-field">
-            <label className="label" htmlFor="approval-tax-class">
-              Tax Class <span>*</span>
-            </label>
+    <div className="hsn-input-wrap">
+      <select
+        id="approval-tax-class"
+        value={taxClass}
+        className={`approval-input approval-select ${
+          taxClassError ? "approval-input-error" : ""
+        }`}
+        onChange={(e) => {
+          setTaxClass(e.target.value);
+          setTaxClassError(
+            e.target.value ? "" : "Please select Tax Class."
+          );
+        }}
+      >
+        <option value="">Select Tax Class</option>
 
-            <div className="hsn-input-wrap">
-              <select
-                id="approval-tax-class"
-                value={taxClass}
-                className={`approval-input approval-select ${
-                  taxClassError ? "approval-input-error" : ""
-                }`}
-                onChange={(e) => {
-                  setTaxClass(e.target.value);
-                  setTaxClassError(
-                    e.target.value
-                      ? ""
-                      : "Please select Tax Class."
-                  );
-                }}
-              >
-                <option value="">Select Tax Class</option>
+        {taxClasses.map((tax) => (
+          <option key={tax.id} value={tax.id}>
+            {tax.name} ({tax.percentage}%)
+          </option>
+        ))}
+      </select>
 
-                {taxClasses.map((tax) => (
-                  <option key={tax.id} value={tax.id}>
-                    {tax.name} ({tax.percentage}%)
-                  </option>
-                ))}
-              </select>
-
-              {taxClassError && (
-                <small className="validation-error">
-                  {taxClassError}
-                </small>
-              )}
-            </div>
-          </div>
-        )}
+      {taxClassError && (
+        <small className="validation-error">{taxClassError}</small>
+      )}
+    </div>
+  </div>
+)}
       </div>
 
       {/* Reject / Suspend Reason */}
