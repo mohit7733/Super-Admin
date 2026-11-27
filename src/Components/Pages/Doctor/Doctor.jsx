@@ -13,9 +13,11 @@ import {
 } from "react-icons/bs";
 import { FaTrash, FaUsers, FaEdit, FaEye, FaCheckCircle } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
+import { FaPlus } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 
 import Calender from "./Calendar";
+import AddDoctorSlots from "./AddDoctorSlots";
 
 const initialDoctorForm = {
   profile_image: "",
@@ -92,7 +94,7 @@ const Doctor = () => {
   const [phoneErrors, setPhoneErrors] = useState({});
   const [otpErrors, setOtpErrors] = useState({});
   const otpRefs = useRef([]);
-
+const [showAddSlotModal, setShowAddSlotModal] = useState(false);
   // Selected records
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
@@ -415,6 +417,70 @@ const Doctor = () => {
       setLoading(false);
     }
   };
+ 
+const handleSaveDoctorSlots = async (payload) => {
+  const token = sessionStorage.getItem("superadmin_token");
+
+  if (!token) {
+    toast.error("Session expired. Please login again");
+    sessionStorage.removeItem("superadmin_token");
+    navigate("/login");
+    return;
+  }
+
+  if (!selectedDoctor?.id) {
+    toast.error("Doctor ID not found");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/doctors/admin/availability/?doctor_id=${selectedDoctor.id}`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("superadmin_token");
+      toast.error("Session expired. Please login again");
+      navigate("/login");
+      return;
+    }
+
+    const data = await response.json();
+
+    if (!response.ok || data.success === false) {
+      toast.error(data.message || "Failed to add doctor slots");
+      throw new Error(data.message || "Failed to add doctor slots");
+    }
+
+    toast.success(data.message || "Doctor slots added successfully!");
+
+    setShowAddSlotModal(false);
+    setSelectedDoctor(null);
+
+    return data;
+
+  } catch (error) {
+    console.error("Save Doctor Slots Error:", error);
+
+    if (error.message !== "Failed to add doctor slots" &&
+        error.message !== "Doctor ID not found") {
+      toast.error("Something went wrong while saving slots.");
+    }
+
+    throw error;
+  }
+};
+
 
   // Search and status filter - single debounced API effect
   useEffect(() => {
@@ -647,6 +713,10 @@ const Doctor = () => {
     setCurrentPage(1);
     setOpenthreedotId(null);
   };
+  const handleAddSlot = (item) => {
+  setSelectedDoctor(item);
+  setShowAddSlotModal(true);
+};
 
   // Pagination navigation
   const handlePageChange = (page) => {
@@ -676,7 +746,6 @@ const Doctor = () => {
         </p>
       </div>
 
-      {/* Doctor Statistics */}
       <div className="vendors-stats stats2-grid">
         <div className="stat2-card">
           <div
@@ -932,56 +1001,94 @@ const Doctor = () => {
                       </span>
                     </button>
 
-                    {OpenthreedotId === item.id && (
-                      <div className="action-buttons-modal">
-                        <button
-                          className="action-btn1"
-                          title="Detail Page"
-                          onClick={() => {
-                            setOpenthreedotId(null);
-                            handleNavigateDoctor(item.id);
-                          }}
-                        >
-                          <span className="icon">
-                            <FaEye />
-                          </span>
-                          <span>Detail Page</span>
-                        </button>
+                  
+{OpenthreedotId === item.id && (
+  <div className="action-buttons-modal">
 
-                        <button
-                          className="action-btn1"
-                          title={
-                            item.is_dietitian
-                              ? "Remove as Dietician"
-                              : "Add as Dietician"
-                          }
-                          onClick={() => handleDieticianToggle(item)}
-                        >
-                          <span className="icon">
-                            {item.is_dietitian ? "✕" : "🥗"}
-                          </span>
-                          <span>
-                            {item.is_dietitian
-                              ? "Remove as Dietician"
-                              : "Add as Dietician"}
-                          </span>
-                        </button>
+    {/* Detail Page */}
+    <button
+      className="action-btn1"
+      title="Detail Page"
+      onClick={() => {
+        setOpenthreedotId(null);
+        handleNavigateDoctor(item.id);
+      }}
+    >
+      <span className="icon">
+        <FaEye />
+      </span>
+      <span>Detail Page</span>
+    </button>
 
-                        <button
-                          className="action-btn1"
-                          title="Update Sequence"
-                          onClick={() => {
-                            setOpenthreedotId(null);
-                            handleSequenceClick(item);
-                          }}
-                        >
-                          <span className="icon">
-                            <FaEdit />
-                          </span>
-                          <span>Update Sequence</span>
-                        </button>
-                      </div>
-                    )}
+    {/* Edit Profile - NEW */}
+    <button
+      className="action-btn1"
+      title="Edit Profile"
+      onClick={() => {
+        setOpenthreedotId(null);
+        navigate(`/Doctor/edit/${item.id}`, {
+          state: { doctor: item },
+        });
+      }}
+    >
+      <span className="icon">
+        <FaEdit />
+      </span>
+      <span>Edit Profile</span>
+    </button>
+
+    {/* Dietician Toggle */}
+    <button
+      className="action-btn1"
+      title={
+        item.is_dietitian
+          ? "Remove as Dietician"
+          : "Add as Dietician"
+      }
+      onClick={() => handleDieticianToggle(item)}
+    >
+      <span className="icon">
+        {item.is_dietitian ? "✕" : "🥗"}
+      </span>
+      <span>
+        {item.is_dietitian
+          ? "Remove as Dietician"
+          : "Add as Dietician"}
+      </span>
+    </button>
+
+    {/* Update Sequence */}
+    <button
+      className="action-btn1"
+      title="Update Sequence"
+      onClick={() => {
+        setOpenthreedotId(null);
+        handleSequenceClick(item);
+      }}
+    >
+      <span className="icon">
+        <FaEdit />
+      </span>
+      <span>Update Sequence</span>
+    </button>
+    {/* Add Slot */}
+<button
+  className="action-btn1"
+  title="Add Slot"
+  onClick={() => {
+    setOpenthreedotId(null);
+    handleAddSlot(item);
+  }}
+>
+  <span className="icon">
+    <FaPlus />
+  </span>
+  <span>Add Slot</span>
+</button>
+
+  </div>
+)}
+
                   </td>
                 </tr>
               ))
@@ -1453,6 +1560,16 @@ const Doctor = () => {
           </div>
         </div>
       )}
+{showAddSlotModal && (
+  <AddDoctorSlots
+    doctor={selectedDoctor}
+    onClose={() => {
+      setShowAddSlotModal(false);
+      setSelectedDoctor(null);
+    }}
+    onSave={handleSaveDoctorSlots}
+  />
+)}
 
       <ToastContainer position="top-center" autoClose={2000} />
     </>

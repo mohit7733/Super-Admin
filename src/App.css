@@ -12217,7 +12217,7 @@ flex-direction:column;
   align-items: center;
   width: 320px;
   height: 42px;
-  border: 1px solid #dcdcdc;
+ 
   border-radius: 6px;
   background: #fff;
   padding: 0 12px;
@@ -12320,7 +12320,7 @@ flex-direction:column;
   width: 100%;
   height: 45px;
   padding: 10px 15px;
-  border: 1px solid #0D614E;
+  
   border-radius: 10px;
   font-size: 14px;
   outline: none;

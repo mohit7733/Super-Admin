@@ -3783,4 +3783,63 @@
   .hsn-tax-field > .label {
     padding-top: 0;
   }
+}/* HSN and Tax Class professional alignment */
+.vendor-info-card .hsn-tax-field {
+  display: flex !important;
+  /* flex-direction: column !important; */
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  width: 100%;
+  gap: 8px;
+  padding: 12px 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.vendor-info-card .hsn-tax-field .label {
+  display: block;
+  width: 100%;
+  text-align: left !important;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  padding: 0;
+}
+
+.hsn-tax-field .label span {
+  color: #dc2626;
+}
+
+.hsn-input-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hsn-tax-field .approval-input {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+}
+
+.hsn-tax-field .approval-input:focus {
+  border-color: #0D614E;
+  box-shadow: 0 0 0 3px rgba(13, 97, 78, 0.08);
+}
+
+.hsn-tax-field .approval-input-error {
+  border-color: #dc2626 !important;
+}
+
+.hsn-tax-field .validation-error {
+  font-size: 12px;
+  color: #dc2626;
 }
